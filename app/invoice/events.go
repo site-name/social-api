@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
 // UpsertInvoiceEvent is shortcut for creating invoice events
-func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOptions) (*model.InvoiceEvent, *model.AppError) {
+func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOptions) (*model.InvoiceEvent, *model_helper.AppError) {
 	invoiceEvent := new(model.InvoiceEvent)
 
 	invoiceEvent.Type = option.Type
@@ -27,13 +28,13 @@ func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOp
 
 	invoiceEvent, err := a.srv.Store.InvoiceEvent().Upsert(invoiceEvent)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrNotFound); ok {
-			return nil, model.NewAppError("UpsertInvoiceEvent", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpsertInvoiceEvent", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
 		}
-		return nil, model.NewAppError("UpsertInvoiceEvent", "app.invoice.error_upserting_invoice_event.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UpsertInvoiceEvent", "app.invoice.error_upserting_invoice_event.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return invoiceEvent, nil

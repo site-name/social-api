@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"crypto/rand"
 	"crypto/sha256"
-	"database/sql/driver"
 	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
@@ -57,87 +56,6 @@ var validId *regexp.Regexp = regexp.MustCompile(ValidIdRegex)
 // IsSamlFile checks if filename is a SAML file.
 func IsSamlFile(saml *SamlSettings, filename string) bool {
 	return filename == *saml.PublicCertificateFile || filename == *saml.PrivateKeyFile || filename == *saml.IdpCertificateFile
-}
-
-type StringInterface map[string]any
-type StringInterfaces []StringInterface
-
-func (s StringInterface) DeepCopy() StringInterface {
-	if s == nil {
-		return nil
-	}
-
-	res := StringInterface{}
-	for key, value := range s {
-		res[key] = value
-	}
-
-	return res
-}
-
-// Get trys finding and returns the value associated with given key.
-func (s StringInterface) Get(key string, defaultValue ...any) any {
-	if vl, ok := s[key]; ok {
-		return vl
-	}
-
-	if len(defaultValue) > 0 {
-		return defaultValue[0]
-	}
-
-	return nil
-}
-
-// Pop trys finding and returns the value associated with given key.
-// If the key does not exist:
-//
-// 1) Check if any default value given, returns the first value
-//
-// 2) returns nil
-//
-// Also delete the key-value from the map if found
-func (s StringInterface) Pop(key string, defaultValue ...any) any {
-	v := s.Get(key)
-	delete(s, key)
-	return v
-}
-
-func (si *StringInterface) Scan(value any) error {
-	if value == nil {
-		return nil
-	}
-
-	switch t := value.(type) {
-	case []byte:
-		return json.Unmarshal(t, si)
-	case string:
-		return json.Unmarshal([]byte(t), si)
-	default:
-		return fmt.Errorf("unsupported value type: %T", value)
-	}
-}
-
-func (si StringInterface) Value() (driver.Value, error) {
-	return json.Marshal(si)
-}
-
-func (si *StringInterfaces) Scan(value any) error {
-	if value == nil {
-		return nil
-	}
-
-	switch t := value.(type) {
-	case []byte:
-		return json.Unmarshal(t, si)
-	case string:
-		return json.Unmarshal([]byte(t), si)
-	default:
-		return fmt.Errorf("unsupported value type: %T", value)
-	}
-}
-
-func (si StringInterfaces) Value() (driver.Value, error) {
-	return json.Marshal(si)
 }
 
 // GetPointerOfValue takes a primitive value, returns pointer to it.
@@ -296,13 +214,6 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 		return NewAppError("AppErrorFromJson", "model.utils.decode_json.app_error", nil, "body: "+str, http.StatusInternalServerError)
 	}
 	return &er
-}
-
-// Merge addkey-value pairs from `other` to current StringInterface
-func (m StringInterface) Merge(other StringInterface) {
-	for key, value := range other {
-		m[key] = value
-	}
 }
 
 func GetPreferredTimezone(timezone Map[string, string]) string {
@@ -718,7 +629,7 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 //			}
 //		]
 //	}
-func DraftJSContentToRawText(content StringInterface, sep string) string {
+func DraftJSContentToRawText(content map[string]any, sep string) string {
 	if sep == "" {
 		sep = "/n"
 	}
@@ -732,7 +643,7 @@ func DraftJSContentToRawText(content StringInterface, sep string) string {
 		return ""
 	}
 
-	blocksSlice, ok := blocks.([]StringInterface)
+	blocksSlice, ok := blocks.([]map[string]any)
 	if !ok {
 		return ""
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // Get export fields, all headers and headers mapping.
@@ -20,7 +21,7 @@ func (a *ServiceCsv) GetExportFieldsAndHeadersInfo(
 		Channels   []string
 		Fields     []string
 	},
-) ([]string, []string, []string, *model.AppError) {
+) ([]string, []string, []string, *model_helper.AppError) {
 	exportFields, fileHeaders := GetProductExportFieldsAndHeaders(exportInfo)
 	attributeHeaders, appErr := a.GetAttributeHeaders(exportInfo)
 	if appErr != nil {
@@ -57,7 +58,7 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	Warehouses []string
 	Channels   []string
 	Fields     []string
-}) ([]string, *model.AppError) {
+}) ([]string, *model_helper.AppError) {
 	if len(exportInfo.Attributes) == 0 {
 		return []string{}, nil
 	}
@@ -66,7 +67,7 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 		attributes_01 []*model.Attribute
 		attributes_02 []*model.Attribute
 		atomicValue   atomic.Int32
-		appErrChan    = make(chan *model.AppError)
+		appErrChan    = make(chan *model_helper.AppError)
 	)
 	defer close(appErrChan)
 
@@ -130,7 +131,7 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
 	Warehouses []string
 	Channels   []string
 	Fields     []string
-}) ([]string, *model.AppError) {
+}) ([]string, *model_helper.AppError) {
 	if len(exportInfo.Warehouses) == 0 {
 		return []string{}, nil
 	}
@@ -163,7 +164,7 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
 	Warehouses []string
 	Channels   []string
 	Fields     []string
-}) ([]string, *model.AppError) {
+}) ([]string, *model_helper.AppError) {
 	if len(exportInfo.Channels) == 0 {
 		return []string{}, nil
 	}

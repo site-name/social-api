@@ -10,6 +10,7 @@ import (
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -94,7 +95,7 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	}
 
 	if args.CountryCode == nil || !args.CountryCode.IsValid() {
-		return nil, model.NewAppError("ProductVariant.Stocks", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariant.Stocks", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
 	}
 
 	if embedCtx.CurrentChannelID == "" {
@@ -393,13 +394,13 @@ type ProductVariantChannelListingUpdateInput struct {
 	Input []ProductVariantChannelListingAddInput
 }
 
-func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *web.Context) *model.AppError {
+func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *web.Context) *model_helper.AppError {
 	// validate channels:
 	channelIDsMeetMap := map[UUID]bool{}
 	for _, item := range p.Input {
 		existed := channelIDsMeetMap[item.ChannelID]
 		if existed {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
 		}
 		channelIDsMeetMap[item.ChannelID] = true
 	}
@@ -413,7 +414,7 @@ func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *we
 	}
 
 	if len(channelIDsMeetMap) != len(productChannelListings) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
 	}
 
 	// clean prices

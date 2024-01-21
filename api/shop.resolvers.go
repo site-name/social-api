@@ -13,6 +13,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -30,7 +31,7 @@ func (r *Resolver) ShopSettingsUpdate(ctx context.Context, args struct{ Input Sh
 
 		urlParse, err := url.Parse(*inputUrl)
 		if err != nil || !lo.Contains(allowedClientHosts, urlParse.Host) {
-			return nil, model.NewAppError("ShopSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShopSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
 		}
 	}
 
@@ -103,7 +104,7 @@ func (r *Resolver) ShopFetchTaxRates(ctx context.Context) (*ShopFetchTaxRates, e
 	}
 
 	if !boolValue {
-		return nil, model.NewAppError("ShopFetchTaxRates", "api.shop.no_credential_for_tax_plugin.app_error", nil, "Please provile a valid credential for your tax plugin", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("ShopFetchTaxRates", "api.shop.no_credential_for_tax_plugin.app_error", nil, "Please provile a valid credential for your tax plugin", http.StatusNotAcceptable)
 	}
 
 	shop, err := r.Shop(ctx)
@@ -207,7 +208,7 @@ func (r *Resolver) GiftCardSettingsUpdate(ctx context.Context, args struct {
 	}
 
 	if *expiryType == model.EXPIRY_PERIOD && args.Input.ExpiryPeriod == nil {
-		return nil, model.NewAppError("GiftCardSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryPeriod"}, "expiry period settings are reuired for expiry period", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftCardSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryPeriod"}, "expiry period settings are reuired for expiry period", http.StatusBadRequest)
 	} else if *expiryType == model.NEVER_EXPIRE {
 		args.Input.ExpiryPeriod = nil
 	}

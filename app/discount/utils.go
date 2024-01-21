@@ -11,26 +11,27 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // IncreaseVoucherUsage increase voucher's uses by 1
-func (a *ServiceDiscount) IncreaseVoucherUsage(voucher *model.Voucher) *model.AppError {
+func (a *ServiceDiscount) IncreaseVoucherUsage(voucher *model.Voucher) *model_helper.AppError {
 	voucher.Used++
 	_, appErr := a.UpsertVoucher(voucher)
 	return appErr
 }
 
 // DecreaseVoucherUsage decreases voucher's uses by 1
-func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *model.Voucher) *model.AppError {
+func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *model.Voucher) *model_helper.AppError {
 	voucher.Used--
 	_, appErr := a.UpsertVoucher(voucher)
 	return appErr
 }
 
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
-func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError) {
+func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) (*model.NotApplicable, *model_helper.AppError) {
 	_, appErr := a.VoucherCustomerByOptions(&model.VoucherCustomerFilterOption{
 		Conditions: squirrel.Eq{
 			model.VoucherCustomerTableName + ".VoucherID":     voucher.Id,
@@ -53,7 +54,7 @@ func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, cust
 }
 
 // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
-func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model.AppError {
+func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model_helper.AppError {
 	err := a.srv.Store.VoucherCustomer().DeleteInBulk(&model.VoucherCustomerFilterOption{
 		Conditions: squirrel.Eq{
 			model.VoucherCustomerTableName + ".VoucherID":     voucher.Id,
@@ -61,14 +62,14 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, c
 		},
 	})
 	if err != nil {
-		return model.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model_helper.AppError) {
 	// this checks whether the given product is on sale
 	isProductOnSale := discountInfo.ProductIDs.Contains(product.Id) ||
 		(product.CategoryID != nil && discountInfo.CategoryIDs.Contains(*product.CategoryID)) ||
@@ -85,14 +86,14 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 		}
 	}
 
-	return nil, model.NewAppError("GetProductDiscountOnSale", "app.discount.discount_not_applicable_for_product.app_error", nil, "", http.StatusNotAcceptable)
+	return nil, model_helper.NewAppError("GetProductDiscountOnSale", "app.discount.discount_not_applicable_for_product.app_error", nil, "", http.StatusNotAcceptable)
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError) {
 	var (
 		atomicValue                 atomic.Int32
-		appErrChan                  = make(chan *model.AppError)
+		appErrChan                  = make(chan *model_helper.AppError)
 		valueChan                   = make(chan types.DiscountCalculator)
 		discountCalculatorFunctions []types.DiscountCalculator
 	)
@@ -133,7 +134,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 //
 // `discounts` is optional
-func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model.AppError) {
+func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model_helper.AppError) {
 	if len(discounts) > 0 {
 
 		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL, variantID)
@@ -144,7 +145,7 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price 
 		for _, discountFunc := range discountCalFuncs {
 			discountedIface, err := discountFunc(price, nil)
 			if err != nil {
-				return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			discountedPrice := discountedIface.(*goprices.Money)
 			if discountedPrice.LessThan(price) {
@@ -157,7 +158,7 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price 
 }
 
 // ValidateVoucherForCheckout validates given voucher
-func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model_helper.AppError) {
 	quantity, appErr := a.srv.CheckoutService().CalculateCheckoutQuantity(lines)
 	if appErr != nil {
 		return nil, appErr
@@ -174,7 +175,7 @@ func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interfaces.PluginMa
 	return a.ValidateVoucher(voucher, checkoutSubTotal, quantity, customerEmail, checkoutInfo.Channel.Id, checkoutInfo.User.Id)
 }
 
-func (a *ServiceDiscount) ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
 
 	if ord.VoucherID == nil {
 		return // returns immediately if order has no voucher
@@ -207,7 +208,7 @@ func (a *ServiceDiscount) ValidateVoucherInOrder(ord *model.Order) (notApplicabl
 	return a.ValidateVoucher(voucher, orderSubTotal, orderTotalQuantity, orderCustomerEmail, ord.ChannelID, orderOwnerId)
 }
 
-func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
 	notApplicableErr, appErr = a.ValidateMinSpent(voucher, totalPrice, channelID)
 	if appErr != nil || notApplicableErr != nil {
 		return
@@ -233,10 +234,10 @@ func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *go
 }
 
 // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
-func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) {
+func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model_helper.AppError) {
 	// validate params
 	if len(prices) == 0 {
-		return nil, model.NewAppError("GetProductsVoucherDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "please provide prices list", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "please provide prices list", http.StatusBadRequest)
 	}
 
 	minPrice, _ := util.MinMaxMoneyInMoneySlice(prices)
@@ -253,7 +254,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 
 	var (
 		atomicValue atomic.Int32
-		appErrChan  = make(chan *model.AppError)
+		appErrChan  = make(chan *model_helper.AppError)
 		valueChan   = make(chan *goprices.Money)
 	)
 	defer func() {
@@ -284,7 +285,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 		case money := <-valueChan:
 			addedMoney, err := totalAmount.Add(money)
 			if err != nil {
-				return nil, model.NewAppError("GetProductsVoucherDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
 			totalAmount = addedMoney
 		default:
@@ -295,7 +296,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 }
 
 // FetchCategories returns a map with keys are sale ids, values are slices of category ids
-func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string, *model.AppError) {
+func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string, *model_helper.AppError) {
 	saleCategories, appErr := a.SaleCategoriesByOption(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
 		return nil, appErr
@@ -323,7 +324,7 @@ func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string
 }
 
 // FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
-func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]string, *model.AppError) {
+func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]string, *model_helper.AppError) {
 	saleCollections, appErr := a.SaleCollectionsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
 		return nil, appErr
@@ -350,7 +351,7 @@ func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]strin
 }
 
 // FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
-func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, *model.AppError) {
+func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, *model_helper.AppError) {
 	saleProducts, appErr := a.SaleProductsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
 		return nil, appErr
@@ -377,7 +378,7 @@ func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, 
 }
 
 // FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
-func (s *ServiceDiscount) FetchVariants(saleIDs []string) (map[string][]string, *model.AppError) {
+func (s *ServiceDiscount) FetchVariants(saleIDs []string) (map[string][]string, *model_helper.AppError) {
 	saleProductVariants, appErr := s.SaleProductVariantsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
 		return nil, appErr
@@ -404,7 +405,7 @@ func (s *ServiceDiscount) FetchVariants(saleIDs []string) (map[string][]string, 
 }
 
 // FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
-func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*model.SaleChannelListing, *model.AppError) {
+func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*model.SaleChannelListing, *model_helper.AppError) {
 	channelListings, err := a.srv.Store.
 		DiscountSaleChannelListing().
 		SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
@@ -412,7 +413,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 			SelectRelatedChannel: true,
 		})
 	if err != nil {
-		return nil, model.NewAppError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	channelListingMap := map[string]map[string]*model.SaleChannelListing{}
@@ -424,7 +425,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	return channelListingMap, nil
 }
 
-func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError) {
+func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model_helper.AppError) {
 	// finds active sales
 	activeSales, appErr := a.ActiveSales(&date)
 	if appErr != nil {
@@ -440,7 +441,7 @@ func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo,
 		variants            map[string][]string
 		saleChannelListings map[string]map[string]*model.SaleChannelListing
 		atomicValue         atomic.Int32
-		appErrChan          = make(chan *model.AppError)
+		appErrChan          = make(chan *model_helper.AppError)
 	)
 	defer close(appErrChan)
 	atomicValue.Add(5) //
@@ -520,17 +521,17 @@ func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo,
 }
 
 // FetchActiveDiscounts returns discounts that are activated
-func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model.DiscountInfo, *model.AppError) {
+func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model.DiscountInfo, *model_helper.AppError) {
 	return a.FetchDiscounts(time.Now().UTC())
 }
 
 // FetchCatalogueInfo may return a map with keys are ["categories", "collections", "products", "variants"].
 //
 // values are slices of uuid strings
-func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]string, *model.AppError) {
+func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]string, *model_helper.AppError) {
 	var (
 		res        = map[string][]string{}
-		appError   = make(chan *model.AppError)
+		appError   = make(chan *model_helper.AppError)
 		val        = make(chan any)
 		atmicValue atomic.Int32
 	)

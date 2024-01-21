@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -27,7 +28,7 @@ func init() {
 	})
 }
 
-func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model.AppError) {
+func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model_helper.AppError) {
 	mnu, err := s.srv.Store.Menu().GetByOptions(options)
 	if err != nil {
 		var statucCode int = http.StatusInternalServerError
@@ -35,22 +36,22 @@ func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Me
 			statucCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), statucCode)
+		return nil, model_helper.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), statucCode)
 	}
 
 	return mnu, nil
 }
 
-func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model.AppError) {
+func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model_helper.AppError) {
 	mnu, err := s.srv.Store.Menu().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return mnu, nil
 }
 
-func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model.AppError) {
+func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model_helper.AppError) {
 	menu, err := s.srv.Store.Menu().Save(menu)
 	if err != nil {
 		var statusCode = http.StatusInternalServerError
@@ -58,7 +59,7 @@ func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model.AppError
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("UpsertMenu", "app.menu.upsert_menu.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertMenu", "app.menu.upsert_menu.app_error", nil, err.Error(), statusCode)
 	}
 
 	return menu, nil

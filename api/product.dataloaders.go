@@ -10,6 +10,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -210,7 +211,7 @@ func productTypeByProductIdLoader(ctx context.Context, productIDs []string) []*d
 		productTypes   []*model.ProductType
 		productMap     = map[string]string{}             // keys are product ids, values are product type ids
 		productTypeMap = map[string]*model.ProductType{} // keys are product type ids
-		appErr         *model.AppError
+		appErr         *model_helper.AppError
 		err            error
 	)
 
@@ -1348,7 +1349,7 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		Store.AttributeVariant().
 		FilterByOptions(filterOptions)
 	if err != nil {
-		err = model.NewAppError("variantAttributesByProductTypeIdLoader", "app.attribute.variant_attributes_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("variantAttributesByProductTypeIdLoader", "app.attribute.variant_attributes_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 
@@ -1441,7 +1442,7 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 
 	attributeVariants, err := embedCtx.App.Srv().Store.AttributeVariant().FilterByOptions(filterOptions)
 	if err != nil {
-		err = model.NewAppError("attributeVariantsByProductTypeIdLoader", "app.attribute.attribute_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("attributeVariantsByProductTypeIdLoader", "app.attribute.attribute_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for idx := range productTypeIDs {
 			res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Error: err}
 		}
@@ -1473,7 +1474,7 @@ func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs 
 
 	assignedProductAttributes, err := embedCtx.App.Srv().Store.AssignedProductAttribute().FilterByOptions(&filterOptions)
 	if err != nil {
-		err = model.NewAppError("assignedProductAttributesByProductIdLoader", "app.attribute.assigned_product_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("assignedProductAttributesByProductIdLoader", "app.attribute.assigned_product_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for idx := range productIDs {
 			res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Error: err}
 		}
@@ -1506,7 +1507,7 @@ func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs
 
 	assignedVariantAttributes, err := embedCtx.App.Srv().Store.AssignedVariantAttribute().FilterByOption(filterOptions)
 	if err != nil {
-		err = model.NewAppError("assignedVariantAttributesByProductVariantId", "app.attribute.assigned_variant_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("assignedVariantAttributesByProductVariantId", "app.attribute.assigned_variant_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for idx := range variantIDs {
 			res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Error: err}
 		}
@@ -1539,7 +1540,7 @@ func attributeValuesByAssignedProductAttributeIdLoader(ctx context.Context, ids 
 			Conditions: squirrel.Eq{model.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
-		err = model.NewAppError("attributeValuesByAssignedProductAttributeIdLoader", "app.attribute.assigned_product_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("attributeValuesByAssignedProductAttributeIdLoader", "app.attribute.assigned_product_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 
@@ -1588,7 +1589,7 @@ func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids 
 			Conditions: squirrel.Eq{model.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
-		err = model.NewAppError("attributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("attributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 

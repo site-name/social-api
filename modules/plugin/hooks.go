@@ -87,7 +87,7 @@ type Hooks interface {
 	// API.
 	//
 	// Minimum server version: 5.2
-	// ExecuteCommand(c *Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError)
+	// ExecuteCommand(c *Context, args *model.CommandArgs) (*model.CommandResponse, *model_helper.AppError)
 
 	// UserHasBeenCreated is invoked after a user was created.
 	//

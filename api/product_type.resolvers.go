@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -43,7 +44,7 @@ func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input Pro
 		args.Input.VariantAttributes,
 	} {
 		if len(ids) > 0 {
-			var appErr *model.AppError
+			var appErr *model_helper.AppError
 			attributes[idx], appErr = embedCtx.App.Srv().AttributeService().AttributesByOption(&model.AttributeFilterOption{
 				Conditions: squirrel.Eq{model.AttributeTableName + ".Id": ids},
 			})
@@ -53,7 +54,7 @@ func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input Pro
 
 			// check if there are some attribute(s) that is not product type
 			if attributes[idx] != nil && lo.SomeBy(attributes[idx], func(item *model.Attribute) bool { return item.Type != model.PRODUCT_TYPE }) {
-				return nil, model.NewAppError("ProductTypeCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("ProductTypeCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
 			}
 		}
 	}
@@ -81,7 +82,7 @@ func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id UUID }
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("ProductTypeDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductTypeDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -92,7 +93,7 @@ func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id UUID }
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("ProductTypeDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductTypeDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ProductTypeDelete{
@@ -114,7 +115,7 @@ func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids [
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("ProductTypeBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductTypeBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -126,7 +127,7 @@ func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids [
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("ProductTypeBulkDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductTypeBulkDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ProductTypeBulkDelete{
@@ -170,7 +171,7 @@ func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 		args.Input.VariantAttributes,
 	} {
 		if len(ids) > 0 {
-			var appErr *model.AppError
+			var appErr *model_helper.AppError
 			attributes[idx], appErr = embedCtx.App.Srv().AttributeService().AttributesByOption(&model.AttributeFilterOption{
 				Conditions: squirrel.Eq{model.AttributeTableName + ".Id": ids},
 			})
@@ -180,7 +181,7 @@ func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 
 			// check if there are some attribute(s) that is not product type
 			if attributes[idx] != nil && lo.SomeBy(attributes[idx], func(item *model.Attribute) bool { return item.Type != model.PRODUCT_TYPE }) {
-				return nil, model.NewAppError("ProductTypeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("ProductTypeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
 			}
 		}
 	}
@@ -204,7 +205,7 @@ func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct
 }) (*ProductTypeReorderAttributes, error) {
 	// validate params
 	// if !args.Type.IsValid() {
-	// 	return nil, model.NewAppError("ProductTypeReorderAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Type"}, "please provide valid product attribute type", http.StatusBadRequest)
+	// 	return nil, model_helper.NewAppError("ProductTypeReorderAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Type"}, "please provide valid product attribute type", http.StatusBadRequest)
 	// }
 
 	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

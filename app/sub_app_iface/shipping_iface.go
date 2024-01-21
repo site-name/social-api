@@ -12,32 +12,32 @@ import (
 // ShippingService contains methods for working with shippings
 type ShippingService interface {
 	// ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-	ApplicableShippingMethodsForCheckout(checkout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
+	ApplicableShippingMethodsForCheckout(checkout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model_helper.AppError)
 	// ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-	ApplicableShippingMethodsForOrder(order *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
+	ApplicableShippingMethodsForOrder(order *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model_helper.AppError)
 	// DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
-	DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError)
+	DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model_helper.AppError)
 	// FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
 	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
-	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError)
-	ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model.AppError
+	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model_helper.AppError)
+	ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError
 	// Prepare mapping shipping method to price from channel listings
-	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
+	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model_helper.AppError)
 	// ShippingMethodByOption returns a shipping method with given options
-	ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model.AppError)
+	ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model_helper.AppError)
 	// ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
-	ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model.AppError)
+	ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model_helper.AppError)
 	// ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
-	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
+	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model_helper.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
-	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
-	CreateShippingMethodPostalCodeRules(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
-	DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
-	DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError)
-	DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model.AppError
-	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
-	UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
-	UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
-	UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError)
+	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model_helper.AppError)
+	CreateShippingMethodPostalCodeRules(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model_helper.AppError)
+	DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model_helper.AppError
+	DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError)
+	DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model_helper.AppError
+	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model_helper.AppError)
+	UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model_helper.AppError)
+	UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model_helper.AppError)
+	UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model_helper.AppError)
 }

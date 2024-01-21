@@ -1,11 +1,11 @@
 package commands
 
 import (
-	"context"
+	"strings"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
@@ -18,9 +18,11 @@ func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
 }
 
 func getUserFromUserArg(a *app.App, userArg string) *model.User {
-	user, _ := a.Srv().Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
-		Conditions: squirrel.Expr("Users.Email = lower(?) OR Users.Username = ? OR Users.Id = ?", userArg, userArg, userArg),
-	})
+	user, _ := a.Srv().Store.User().Get(
+		model.UserWhere.Email.EQ(strings.ToLower(userArg)),
+		qm.Or(model.UserColumns.Username+" = ?", userArg),
+		qm.Or(model.UserColumns.ID+" = ?", userArg),
+	)
 
 	return user
 }

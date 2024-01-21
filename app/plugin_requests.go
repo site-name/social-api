@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -79,19 +79,19 @@ func (s *Server) ServePluginPublicRequest(w http.ResponseWriter, r *http.Request
 func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, handler func(*plugin.Context, http.ResponseWriter, *http.Request)) {
 	token := ""
 	context := &plugin.Context{
-		RequestId:      model.NewId(),
+		RequestId:      model_helper.NewId(),
 		IpAddress:      util.GetIPAddress(r, s.Config().ServiceSettings.TrustedProxyIPHeader),
 		AcceptLanguage: r.Header.Get("Accept-Language"),
 		UserAgent:      r.UserAgent(),
 	}
 	cookieAuth := false
 
-	authHeader := r.Header.Get(model.HeaderAuth)
-	if strings.HasPrefix(strings.ToUpper(authHeader), model.HeaderBearer+" ") {
-		token = authHeader[len(model.HeaderBearer)+1:]
-	} else if strings.HasPrefix(strings.ToLower(authHeader), model.HeaderToken+" ") {
-		token = authHeader[len(model.HeaderToken)+1:]
-	} else if cookie, _ := r.Cookie(model.SESSION_COOKIE_TOKEN); cookie != nil {
+	authHeader := r.Header.Get(model_helper.HeaderAuth)
+	if strings.HasPrefix(strings.ToUpper(authHeader), model_helper.HeaderBearer+" ") {
+		token = authHeader[len(model_helper.HeaderBearer)+1:]
+	} else if strings.HasPrefix(strings.ToLower(authHeader), model_helper.HeaderToken+" ") {
+		token = authHeader[len(model_helper.HeaderToken)+1:]
+	} else if cookie, _ := r.Cookie(model_helper.SESSION_COOKIE_TOKEN); cookie != nil {
 		token = cookie.Value
 		cookieAuth = true
 	} else {
@@ -111,31 +111,31 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 		if session != nil && err == nil && cookieAuth && r.Method != "GET" {
 			sentToken := ""
 
-			if r.Header.Get(model.HeaderCsrfToken) == "" {
+			if r.Header.Get(model_helper.HeaderCsrfToken) == "" {
 				bodyBytes, _ := io.ReadAll(r.Body)
 				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 				r.ParseForm()
 				sentToken = r.FormValue("csrf")
 				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			} else {
-				sentToken = r.Header.Get(model.HeaderCsrfToken)
+				sentToken = r.Header.Get(model_helper.HeaderCsrfToken)
 			}
 
-			expectedToken := session.GetCSRF()
+			expectedToken := model_helper.SessionGetCSRF(*session)
 
 			if sentToken == expectedToken {
 				csrfCheckPassed = true
 			}
 
 			// ToDo(DSchalla) 2019/01/04: Remove after deprecation period and only allow CSRF Header (MM-13657)
-			if r.Header.Get(model.HeaderRequestedWith) == model.HeaderRequestedWith_XML && !csrfCheckPassed {
+			if r.Header.Get(model_helper.HeaderRequestedWith) == model_helper.HeaderRequestedWith_XML && !csrfCheckPassed {
 				csrfErrorMessage := "CSRF Check failed for request - Please migrate your plugin to either send a CSRF Header or Form Field, XMLHttpRequest is deprecated"
 				sid := ""
 				userID := ""
 
-				if session.Id != "" {
-					sid = session.Id
-					userID = session.UserId
+				if session.ID != "" {
+					sid = session.ID
+					userID = session.UserID
 				}
 
 				fields := []slog.Field{
@@ -156,25 +156,25 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 			csrfCheckPassed = true
 		}
 
-		if (session != nil && session.Id != "") && err == nil && csrfCheckPassed {
-			r.Header.Set("Mattermost-User-Id", session.UserId)
-			context.SessionId = session.Id
+		if (session != nil && session.ID != "") && err == nil && csrfCheckPassed {
+			r.Header.Set("Mattermost-User-Id", session.UserID)
+			context.SessionId = session.ID
 		}
 	}
 
 	cookies := r.Cookies()
 	r.Header.Del("Cookie")
 	for _, c := range cookies {
-		if c.Name != model.SESSION_COOKIE_TOKEN {
+		if c.Name != model_helper.SESSION_COOKIE_TOKEN {
 			r.AddCookie(c)
 		}
 	}
-	r.Header.Del(model.HeaderAuth)
+	r.Header.Del(model_helper.HeaderAuth)
 	r.Header.Del("Referer")
 
 	params := mux.Vars(r)
 
-	subpath, _ := model.GetSubpathFromConfig(s.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(s.Config())
 
 	newQuery := r.URL.Query()
 	newQuery.Del("access_token")

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/templates"
@@ -422,13 +423,13 @@ func (es *Service) CreateVerifyEmailToken(userID string, newEmail string) (*mode
 	return token, nil
 }
 
-func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model.AppError {
+func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model_helper.AppError {
 	tokens, err := es.store.Token().GetAllTokensByType(model.TokenTypeVerifyEmail)
 	if err != nil {
-		return model.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	var appErr *model.AppError
+	var appErr *model_helper.AppError
 	for _, token := range tokens {
 		tokenExtra := struct {
 			UserId string
@@ -436,7 +437,7 @@ func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model.AppE
 		}{}
 
 		if err := json.Unmarshal([]byte(token.Extra), &tokenExtra); err != nil {
-			appErr = model.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens_parse.error", nil, err.Error(), http.StatusInternalServerError)
+			appErr = model_helper.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens_parse.error", nil, err.Error(), http.StatusInternalServerError)
 			continue
 		}
 
@@ -445,7 +446,7 @@ func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model.AppE
 		}
 
 		if err := es.store.Token().Delete(token.Token); err != nil {
-			appErr = model.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens_delete.error", nil, err.Error(), http.StatusInternalServerError)
+			appErr = model_helper.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens_delete.error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -115,7 +116,7 @@ func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []str
 	var shippingZones model.ShippingZones
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Warehouses").Find(&shippingZones, "Id IN ?", shippingZoneIDs).Error
 	if err != nil {
-		appErr := model.NewAppError("warehousesByShippingZoneIDLoader", "api.warehouse.shipping_zones_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+		appErr := model_helper.NewAppError("warehousesByShippingZoneIDLoader", "api.warehouse.shipping_zones_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for i := range shippingZoneIDs {
 			res[i] = &dataloader.Result[model.Warehouses]{Error: appErr}
 		}
@@ -333,7 +334,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx contex
 	)
 
 	// the result map has keys are variant ids
-	var batchLoadQuantitiesByCountry = func(countryCode, channelID string, variantIDs []string) (map[string]int, *model.AppError) {
+	var batchLoadQuantitiesByCountry = func(countryCode, channelID string, variantIDs []string) (map[string]int, *model_helper.AppError) {
 		stockFilterOptions := &model.StockFilterOption{
 			AnnotateAvailableQuantity: true,
 		}
@@ -345,7 +346,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx contex
 			Warehouse().
 			WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID)
 		if err != nil {
-			return nil, model.NewAppError("availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader", "app.warehouse.warehouse_shipping_zones_by_country_code_and_channel_id.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader", "app.warehouse.warehouse_shipping_zones_by_country_code_and_channel_id.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		var warehouseShippingZonesMap = map[string][]string{} // keys are warehouse ids, values are shipping zone ids
@@ -440,7 +441,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	batchLoadStocksByCountry := func(countryCode, channelID string, variantIDs []string) (map[string]model.Stocks, *model.AppError) {
+	batchLoadStocksByCountry := func(countryCode, channelID string, variantIDs []string) (map[string]model.Stocks, *model_helper.AppError) {
 		countryCode = strings.ToUpper(countryCode)
 
 		stockFilterOptions := &model.StockFilterOption{

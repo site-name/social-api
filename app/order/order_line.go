@@ -6,36 +6,37 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) UpsertOrderLine(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, *model_helper.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok { // this not found error is caused by Get method
 			status = http.StatusNotFound
 		}
-		return nil, model.NewAppError("UpsertOrderLine", "app.order.error_upserting_order_line.app_error", nil, err.Error(), status)
+		return nil, model_helper.NewAppError("UpsertOrderLine", "app.order.error_upserting_order_line.app_error", nil, err.Error(), status)
 	}
 
 	return orderLine, nil
 }
 
 // DeleteOrderLines perform bulk delete given order lines
-func (a *ServiceOrder) DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *model.AppError {
+func (a *ServiceOrder) DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *model_helper.AppError {
 	err := a.srv.Store.OrderLine().BulkDelete(tx, orderLineIDs)
 	if err != nil {
-		return model.NewAppError("DeleteOrderLines", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("DeleteOrderLines", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
 // OrderLinesByOption returns a list of order lines by given option
-func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model.AppError) {
+func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model_helper.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().FilterbyOption(option)
 	var (
 		statusCode int
@@ -49,14 +50,14 @@ func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("OrderLinesByOption", "app.order.error_finding_order_lines_by_option.app_error", nil, errMessage, statusCode)
+		return nil, model_helper.NewAppError("OrderLinesByOption", "app.order.error_finding_order_lines_by_option.app_error", nil, errMessage, statusCode)
 	}
 
 	return orderLines, nil
 }
 
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
-func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model_helper.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
@@ -67,7 +68,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.Ord
 	var (
 		digitalOrderLines []*model.OrderLine
 		atomicValue       atomic.Int32
-		appErrChan        = make(chan *model.AppError)
+		appErrChan        = make(chan *model_helper.AppError)
 		dititalLineChan   = make(chan *model.OrderLine) // every digital orderlines are sent to this channel
 	)
 	defer close(appErrChan)
@@ -104,21 +105,21 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.Ord
 }
 
 // OrderLineById returns an order line byt given orderLineID
-func (a *ServiceOrder) OrderLineById(orderLineID string) (*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) OrderLineById(orderLineID string) (*model.OrderLine, *model_helper.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Get(orderLineID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("OrderLineById", "app.order.missing_order_line.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("OrderLineById", "app.order.missing_order_line.app_error", nil, err.Error(), statusCode)
 	}
 
 	return orderLine, nil
 }
 
 // OrderLineIsDigital Check if a variant is digital and contains digital content.
-func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *model_helper.AppError) {
 	if orderLine.VariantID == nil {
 		return false, nil
 	}
@@ -141,10 +142,10 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 
@@ -153,7 +154,7 @@ func (a *ServiceOrder) BulkUpsertOrderLines(transaction *gorm.DB, orderLines []*
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("BulkUpsertOrderLines", "app.order.error_bulk_update_order_lines.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("BulkUpsertOrderLines", "app.order.error_bulk_update_order_lines.app_error", nil, err.Error(), statusCode)
 	}
 
 	return orderLines, nil

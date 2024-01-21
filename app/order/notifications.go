@@ -8,6 +8,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -18,7 +19,7 @@ func (s *ServiceOrder) getDefaultImagesPayload(images model.ProductMedias) model
 	return nil
 }
 
-func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.StringInterface, *model_helper.AppError) {
 	assignedPrdAttributes, appErr := s.srv.AttributeService().AssignedProductAttributesByOption(&model.AssignedProductAttributeFilterOption{
 		Conditions: squirrel.Expr(model.AssignedProductAttributeTableName+".ProductID = ?", product.Id),
 		Preloads: []string{
@@ -57,7 +58,7 @@ func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.Str
 	return res, nil
 }
 
-func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringInterface, *model_helper.AppError) {
 	productMedias, appErr := s.srv.ProductService().ProductMediasByOption(&model.ProductMediaFilterOption{
 		Conditions: squirrel.Expr(model.ProductMediaTableName+".ProductID = ?", product.Id),
 	})
@@ -85,11 +86,11 @@ func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringIn
 	return res, nil
 }
 
-func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (model.StringInterface, *model_helper.AppError) {
 	productMedias := variant.ProductMedias
 
 	if len(productMedias) == 0 {
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		productMedias, appErr = s.srv.ProductService().ProductMediasByOption(&model.ProductMediaFilterOption{
 			VariantID: squirrel.Expr(model.ProductVariantMediaTableName+".product_variant_id = ?", variant.Id),
 		})
@@ -113,7 +114,7 @@ func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (
 }
 
 // NOTE: given order line should have `ProductVariant` field preloaded by caller(s)
-func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringInterface, *model_helper.AppError) {
 	orderLineIsDigital, appErr := s.OrderLineIsDigital(line)
 	if appErr != nil {
 		return nil, appErr
@@ -199,10 +200,10 @@ func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringI
 	}, nil
 }
 
-func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLines) ([]model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLines) ([]model.StringInterface, *model_helper.AppError) {
 	// if some order line(s) don't have ProductVariant field populated, then populate them
 	if lo.SomeBy(orderLines, func(item *model.OrderLine) bool { return item != nil && item.ProductVariant == nil }) {
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		orderLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 			Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": orderLines.IDs()},
 			Preload:    []string{"ProductVariant"},
@@ -245,7 +246,7 @@ func getAddressPayload(address *model.Address) model.StringInterface {
 	}
 }
 
-func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInterface, *model_helper.AppError) {
 	orderDiscounts, appErr := s.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
 		Conditions: squirrel.Expr(model.OrderDiscountTableName+".OrderID = ?", order.Id),
 	})
@@ -287,7 +288,7 @@ func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInte
 	}, nil
 }
 
-func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *string) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *string) (model.StringInterface, *model_helper.AppError) {
 	var orderDetailsUrl string
 
 	if redirectUrl != nil {
@@ -390,11 +391,11 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 	return orderPayload, nil
 }
 
-func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentLine) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentLine) (model.StringInterface, *model_helper.AppError) {
 	orderLine := line.OrderLine
 
 	if orderLine == nil {
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		orderLine, appErr = s.OrderLineById(line.OrderLineID)
 		if appErr != nil {
 			return nil, appErr
@@ -413,7 +414,7 @@ func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentL
 	}, nil
 }
 
-func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillment *model.Fulfillment) (model.StringInterface, *model.AppError) {
+func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillment *model.Fulfillment) (model.StringInterface, *model_helper.AppError) {
 	fulfillmentLines, appErr := s.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Conditions: squirrel.Expr(model.FulfillmentLineTableName+".FulfillmentID = ?", fulfillment.Id),
 		Preloads:   []string{"OrderLine"},
@@ -468,23 +469,23 @@ func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillm
 }
 
 // SendPaymentConfirmation sends notification with the payment confirmation
-func (s *ServiceOrder) SendPaymentConfirmation(order model.Order, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendPaymentConfirmation(order model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
-func (s *ServiceOrder) SendOrderCancelledConfirmation(order *model.Order, user *model.User, _, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendOrderCancelledConfirmation(order *model.Order, user *model.User, _, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
 // SendOrderConfirmation sends notification with order confirmation
-func (s *ServiceOrder) SendOrderConfirmation(order *model.Order, redirectURL string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendOrderConfirmation(order *model.Order, redirectURL string, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
 // SendFulfillmentConfirmationToCustomer
 //
 // NOTE: user can be nil
-func (s *ServiceOrder) SendFulfillmentConfirmationToCustomer(order *model.Order, fulfillment *model.Fulfillment, user *model.User, _, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendFulfillmentConfirmationToCustomer(order *model.Order, fulfillment *model.Fulfillment, user *model.User, _, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
@@ -493,11 +494,11 @@ func (s *ServiceOrder) SendOrderConfirmed(order model.Order, user *model.User, _
 
 }
 
-func (s *ServiceOrder) SendOrderRefundedConfirmation(order model.Order, user *model.User, _ interface{}, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendOrderRefundedConfirmation(order model.Order, user *model.User, _ interface{}, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
-func (s *ServiceOrder) SendFulfillmentUpdate(order *model.Order, fulfillment *model.Fulfillment, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceOrder) SendFulfillmentUpdate(order *model.Order, fulfillment *model.Fulfillment, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	fulfillmentPayload, appErr := s.getDefaultFulfillmentPayload(order, fulfillment)
 	if appErr != nil {
 		return appErr

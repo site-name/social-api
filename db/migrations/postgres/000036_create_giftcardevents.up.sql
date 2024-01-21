@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS giftcard_events (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   date bigint NOT NULL,
-  type GiftcardEventType NOT NULL,
+  type giftcard_event_type NOT NULL,
   parameters jsonb,
   user_id uuid,
   giftcard_id uuid NOT NULL

@@ -8,6 +8,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
 )
 
@@ -35,20 +36,19 @@ func (tl TokenLocation) String() string {
 
 // ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it into token and token location
 func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
-	authHeader := r.Header.Get(model.HeaderAuth)
-
 	// Attempt to parse the token from the cookie
-	if cookie, err := r.Cookie(model.SESSION_COOKIE_TOKEN); err == nil {
+	if cookie, err := r.Cookie(model_helper.SESSION_COOKIE_TOKEN); err == nil {
 		return cookie.Value, TokenLocationCookie
 	}
 
+	authHeader := r.Header.Get(model_helper.HeaderAuth)
 	// Parse the token from the header
-	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model.HeaderBearer {
+	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model_helper.HeaderBearer {
 		// Default session token
 		return authHeader[7:], TokenLocationHeader
 	}
 
-	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model.HeaderToken {
+	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model_helper.HeaderToken {
 		// OAuth token
 		return authHeader[6:], TokenLocationHeader
 	}
@@ -57,10 +57,10 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 }
 
 // PluginContext
-func PluginContext(c *request.Context) *plugin.Context {
+func PluginContext(c request.Context) *plugin.Context {
 	return &plugin.Context{
 		RequestId:      c.RequestId(),
-		SessionId:      c.Session().Id,
+		SessionId:      c.Session().ID,
 		IpAddress:      c.IpAddress(),
 		AcceptLanguage: c.AcceptLanguage(),
 		UserAgent:      c.UserAgent(),
@@ -70,10 +70,10 @@ func PluginContext(c *request.Context) *plugin.Context {
 // ToLocalCurrency performs convert given price to local currency
 //
 // NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
-func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError) {
+func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{}, *model_helper.AppError) {
 	// validate if currency exchange is enabled
 	if a.Config().ThirdPartySettings.OpenExchangeRateApiKey == nil {
-		return nil, model.NewAppError("ToLocalCurrency", "app.setting.currency_conversion_disabled.app_error", nil, "", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("ToLocalCurrency", "app.setting.currency_conversion_disabled.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
 	// validate price is valid:
@@ -84,12 +84,12 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 		fromCurrency = t.MyCurrency()
 
 	default:
-		return nil, model.NewAppError("ToLocalCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ToLocalCurrency", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
 	}
 	// validate provided currency is valid:
 	currency = strings.ToUpper(currency)
 	if goprices.CurrenciesMap[currency] == "" {
-		return nil, model.NewAppError("ToLocalCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ToLocalCurrency", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
 	}
 
 	if !strings.EqualFold(currency, fromCurrency) {
@@ -107,20 +107,20 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 // `conversionrate` can be nil
 //
 // NOTE: `base` and `toCurrency` must be validated before given to me.
-func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError) {
-	var appErr *model.AppError
+func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model_helper.AppError) {
+	var appErr *model_helper.AppError
 
 	impl, ok := base.(goprices.Currencyable)
 	if ok {
-		if !strings.EqualFold(impl.MyCurrency(), model.DEFAULT_CURRENCY) &&
-			!strings.EqualFold(toCurrency, model.DEFAULT_CURRENCY) {
-			base, appErr = a.ExchangeCurrency(base, model.DEFAULT_CURRENCY, conversionRate)
+		if !strings.EqualFold(impl.MyCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
+			!strings.EqualFold(toCurrency, model_helper.DEFAULT_CURRENCY.String()) {
+			base, appErr = a.ExchangeCurrency(base, model_helper.DEFAULT_CURRENCY.String(), conversionRate)
 			if appErr != nil {
 				return nil, appErr
 			}
 		}
 	} else {
-		return nil, model.NewAppError("ExchangeCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "base"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ExchangeCurrency", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "base"}, "", http.StatusBadRequest)
 	}
 
 	if conversionRate == nil {
@@ -181,7 +181,7 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 
 // GetConversionRate get conversion rate to use in exchange.
 // It first try getting exchange rate from cache and returns the found value. If nothing found, it try finding from database
-func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError) {
+func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model_helper.AppError) {
 	fromCurrency = strings.ToUpper(fromCurrency)
 	toCurrency = strings.ToUpper(toCurrency)
 
@@ -189,7 +189,7 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 		reverseRate  bool
 		rateCurrency string
 	)
-	if toCurrency == model.DEFAULT_CURRENCY {
+	if toCurrency == model_helper.DEFAULT_CURRENCY.String() {
 		rateCurrency = fromCurrency
 		reverseRate = true
 	} else {
@@ -204,7 +204,7 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 	} else {
 		exchangeRatesFromDatabase, err := a.Store.OpenExchangeRate().GetAll()
 		if err != nil {
-			return nil, model.NewAppError("GetConversionRate", "app.currency.error_finding_conversion_rates.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("GetConversionRate", "app.currency.error_finding_conversion_rates.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		for _, exchangeRate := range exchangeRatesFromDatabase {
@@ -224,15 +224,15 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 
 // GetProtocol returns request's protocol
 func GetProtocol(r *http.Request) string {
-	if r.Header.Get(model.HeaderForwardedProto) == "https" || r.TLS != nil {
+	if r.Header.Get(model_helper.HeaderForwardedProto) == "https" || r.TLS != nil {
 		return "https"
 	}
 	return "http"
 }
 
-func (s *Server) GetSiteContext() model.StringInterface {
+func (s *Server) GetSiteContext() map[string]any {
 	settings := s.Config().ServiceSettings
-	return model.StringInterface{
+	return map[string]any{
 		"domain":    settings.SiteURL,
 		"site_name": settings.SiteName,
 	}

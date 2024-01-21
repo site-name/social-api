@@ -102,7 +102,7 @@ func (s *SearchUserStore) PermanentDelete(userId string) error {
 }
 
 // func (s *SearchUserStore) autocompleteUsersInChannelByEngine(engine searchengine.SearchEngineInterface, teamId, channelId, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error) {
-// 	var err *model.AppError
+// 	var err *model_helper.AppError
 // 	uchanIds := []string{}
 // 	nuchanIds := []string{}
 // 	sanitizedTerm := sanitizeSearchTerm(term)

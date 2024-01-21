@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -19,7 +20,7 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 }) (*InvoiceRequest, error) {
 	// validate params
 	if !model.IsValidId(args.OrderID) {
-		return nil, model.NewAppError("InvoiceRequest", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceRequest", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -93,7 +94,7 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceRequestDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceRequestDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -138,12 +139,12 @@ func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id str
 // If order is draft or unconfirmed, return error.
 //
 // If order has no BillingAddressID, return error.
-func commonCleanOrder(order *model.Order) *model.AppError {
+func commonCleanOrder(order *model.Order) *model_helper.AppError {
 	if order.IsDraft() || order.IsUnconfirmed() {
-		return model.NewAppError("commonCleanOrder", "app.order.order_draft_unconfirmed.app_error", nil, "cannot create an invoice for draft or unconfirmed order", http.StatusNotAcceptable)
+		return model_helper.NewAppError("commonCleanOrder", "app.order.order_draft_unconfirmed.app_error", nil, "cannot create an invoice for draft or unconfirmed order", http.StatusNotAcceptable)
 	}
 	if order.BillingAddressID == nil {
-		return model.NewAppError("commonCleanOrder", "app.order.order_billing_address_not_set.app_error", nil, "cannot create an invoice for order without biling address", http.StatusNotAcceptable)
+		return model_helper.NewAppError("commonCleanOrder", "app.order.order_billing_address_not_set.app_error", nil, "cannot create an invoice for order without biling address", http.StatusNotAcceptable)
 	}
 	return nil
 }
@@ -155,7 +156,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 }) (*InvoiceCreate, error) {
 	// validate args
 	if !model.IsValidId(args.OrderID) {
-		return nil, model.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -173,7 +174,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 
 	// clean input
 	if args.Input.Number == "" || args.Input.URL == "" {
-		return nil, model.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "url or number"}, "url and number input cannot be empty", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "url or number"}, "url and number input cannot be empty", http.StatusBadRequest)
 	}
 
 	newInvoice := &model.Invoice{
@@ -222,14 +223,14 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	err := embedCtx.App.Srv().Store.Invoice().Delete(nil, args.Id)
 	if err != nil {
-		return nil, model.NewAppError("InvoiceDelete", "app.invoice.delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("InvoiceDelete", "app.invoice.delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	_, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventCreationOptions{
@@ -256,7 +257,7 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -280,7 +281,7 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	}
 
 	if number == "" || anUrl == "" {
-		return nil, model.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "number/url"}, "number and url must be set after update operation", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "number/url"}, "number and url must be set after update operation", http.StatusNotAcceptable)
 	}
 
 	invoice.Number = number
@@ -317,7 +318,7 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceSendNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -333,13 +334,13 @@ func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id 
 	// clean instance
 	switch {
 	case invoice.Status != model.JobStatusSuccess:
-		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.status_not_success.app_error", nil, "Provided invoice is not ready to be sent", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", "app.invoice.status_not_success.app_error", nil, "Provided invoice is not ready to be sent", http.StatusNotAcceptable)
 	case invoice.ExternalUrl == "":
-		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.url_not_set.app_error", nil, "Provided invoice needs to have an URL", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", "app.invoice.url_not_set.app_error", nil, "Provided invoice needs to have an URL", http.StatusNotAcceptable)
 	case invoice.Number == "":
-		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.number_not_set.app_error", nil, "Provided invoice needs to have an invoice number", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", "app.invoice.number_not_set.app_error", nil, "Provided invoice needs to have an invoice number", http.StatusNotAcceptable)
 	case invoice.OrderID == nil:
-		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.order_not_set.app_error", nil, "provided invoice needs an associated order", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", "app.invoice.order_not_set.app_error", nil, "provided invoice needs an associated order", http.StatusNotAcceptable)
 	}
 
 	orderEmail, appErr := embedCtx.App.Srv().OrderService().CustomerEmail(invoice.GetOrder())
@@ -347,7 +348,7 @@ func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id 
 		return nil, appErr
 	}
 	if orderEmail == "" {
-		return nil, model.NewAppError("InvoiceSendNotification", "app.order.order_email_not_set.app_error", nil, "provided invoice order needs an email address", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceSendNotification", "app.order.order_email_not_set.app_error", nil, "provided invoice order needs an email address", http.StatusNotAcceptable)
 	}
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()

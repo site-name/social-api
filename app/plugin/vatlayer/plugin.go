@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 var manifest = &interfaces.PluginManifest{
@@ -132,7 +133,7 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 }
 
 // previousValue must be either TaxedMoneyRange or TaxedMoney
-func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
+func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if vp.skipPlugin(previousValue) {
 		return &previousValue, nil
 	}
@@ -161,14 +162,14 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 
 	sum, err := checkoutSubTotal.Add(checkoutShippingPrice)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	checkoutInfo.Checkout.PopulateNonDbFields() // this is needed
 	if checkoutInfo.Checkout.Discount != nil {
 		sum, err = sum.Sub(checkoutInfo.Checkout.Discount)
 		if err != nil {
-			return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -179,7 +180,7 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 //
 // If the plugin doesn't have cached taxes for a given country it will fetch it
 // from cache or db.
-func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppError) {
+func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model_helper.AppError) {
 	if country == "" {
 		country = vp.config.OriginCountry
 		if country == "" {

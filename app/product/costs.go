@@ -4,6 +4,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -11,7 +12,7 @@ func GetProductCostsData(
 	variantChannelListings []*model.ProductVariantChannelListing,
 	hasVariants bool,
 	currency string,
-) (*goprices.MoneyRange, []float64, *model.AppError) {
+) (*goprices.MoneyRange, []float64, *model_helper.AppError) {
 	purchaseCostsRange, _ := util.ZeroMoneyRange(currency)
 	margins := []float64{0.0, 0.0}
 

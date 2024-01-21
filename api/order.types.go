@@ -10,6 +10,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -659,7 +660,7 @@ func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod
 	// NOTE:
 	// For now we don't proceed with orders that have no shipping address
 	if o.order.ShippingAddressID == nil {
-		return nil, model.NewAppError("Order.AvaiableShippingMethods", "app.order.order_has_no_shipping_address.app_error", nil, "please set shipping address for order first", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("Order.AvaiableShippingMethods", "app.order.order_has_no_shipping_address.app_error", nil, "please set shipping address for order first", http.StatusNotAcceptable)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

@@ -11,19 +11,19 @@ import (
 	"path"
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
-func RenderWebAppError(config *model.Config, w http.ResponseWriter, r *http.Request, err *model.AppError, s crypto.Signer) {
+func RenderWebAppError(config *model_helper.Config, w http.ResponseWriter, r *http.Request, err *model_helper.AppError, s crypto.Signer) {
 	RenderWebError(config, w, r, err.StatusCode, url.Values{
 		"message": []string{err.Message},
 	}, s)
 }
 
-func RenderWebError(config *model.Config, w http.ResponseWriter, r *http.Request, status int, params url.Values, s crypto.Signer) {
+func RenderWebError(config *model_helper.Config, w http.ResponseWriter, r *http.Request, status int, params url.Values, s crypto.Signer) {
 	queryString := params.Encode()
 
-	subpath, _ := model.GetSubpathFromConfig(config)
+	subpath, _ := model_helper.GetSubpathFromConfig(config)
 
 	h := crypto.SHA256
 	sum := h.New()

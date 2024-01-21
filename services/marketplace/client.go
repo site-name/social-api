@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/services/httpservice"
 )
@@ -62,7 +61,7 @@ func (c *Client) GetPlugins(request *model_helper.MarketplacePluginFilter) ([]*m
 	}
 }
 
-func (c *Client) GetPlugin(filter *model_helper.MarketplacePluginFilter, pluginVersion string) (*model.BaseMarketplacePlugin, error) {
+func (c *Client) GetPlugin(filter *model_helper.MarketplacePluginFilter, pluginVersion string) (*model_helper.BaseMarketplacePlugin, error) {
 	plugins, err := c.GetPlugins(filter)
 	if err != nil {
 		return nil, err

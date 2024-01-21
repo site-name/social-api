@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 )
 
@@ -36,8 +37,8 @@ type WebConnConfig struct {
 
 	// unexported
 	sequence         int
-	activeQueue      chan model.WebSocketMessage
-	deadQueue        []*model.WebSocketEvent
+	activeQueue      chan model_helper.WebSocketMessage
+	deadQueue        []*model_helper.WebSocketEvent
 	deadQueuePointer int
 }
 

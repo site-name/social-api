@@ -9,6 +9,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -200,7 +201,7 @@ func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) 
 
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("").Find(&methods, "Id IN ?", ids).Error
 	if err != nil {
-		err = model.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model_helper.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for idx := range ids {
 			res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
 		}

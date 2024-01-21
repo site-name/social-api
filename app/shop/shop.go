@@ -20,13 +20,13 @@ func init() {
 }
 
 // ShopById finds shop by given id
-// func (a *ServiceShop) ShopById(shopID string) (model.ShopSettings, *model.AppError) {
+// func (a *ServiceShop) ShopById(shopID string) (model.ShopSettings, *model_helper.AppError) {
 // 	return a.ShopByOptions(&model.ShopFilterOptions{
 // 		Id: squirrel.Eq{model.ShopTableName + ".Id": shopID},
 // 	})
 // }
 
-// func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (model.ShopSettings, *model.AppError) {
+// func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (model.ShopSettings, *model_helper.AppError) {
 // 	shop, err := a.srv.Store.Shop().GetByOptions(options)
 // 	if err != nil {
 // 		statusCode := http.StatusInternalServerError
@@ -34,7 +34,7 @@ func init() {
 // 			statusCode = http.StatusNotFound
 // 		}
 
-// 		return nil, model.NewAppError("ShopByOptions", "app.shop.error_finding_shop_by_options.app_error", nil, err.Error(), statusCode)
+// 		return nil, model_helper.NewAppError("ShopByOptions", "app.shop.error_finding_shop_by_options.app_error", nil, err.Error(), statusCode)
 // 	}
 
 // 	return shop, nil

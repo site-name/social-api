@@ -16,7 +16,7 @@ type RolePermissions struct {
 	Permissions []string
 }
 
-func Rolepatching(role *model.Role, patch *RolePatch) {
+func PatchRole(role *model.Role, patch RolePatch) {
 	if patch.Permissions != nil {
 		role.Permissions = strings.Join(*patch.Permissions, " ")
 	}

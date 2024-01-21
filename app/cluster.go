@@ -1,14 +1,14 @@
 package app
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // Registers a given function to be called when the cluster leader may have changed. Returns a unique ID for the
 // listener which can later be used to remove it. If clustering is not enabled in this build, the callback will never
 // be called.
 func (s *Server) AddClusterLeaderChangedListener(listener func()) string {
-	id := model.NewId()
+	id := model_helper.NewId()
 	s.clusterLeaderListeners.Store(id, listener)
 	return id
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -104,7 +105,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 	var channelIdOrSlug string
 	if args.Channel != nil {
 		if !slug.IsSlug(*args.Channel) && !model.IsValidId(*args.Channel) {
-			return nil, model.NewAppError("Category.Products", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("Category.Products", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
 		}
 		channelIdOrSlug = *args.Channel
 	}

@@ -7,10 +7,11 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
-func (a *ServiceProduct) GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model.AppError {
+func (a *ServiceProduct) GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model_helper.AppError {
 	assignedVariantAttributes, appErr := a.srv.
 		AttributeService().
 		AssignedVariantAttributesByOption(&model.AssignedVariantAttributeFilterOption{

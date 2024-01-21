@@ -5,11 +5,12 @@ import (
 
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"gorm.io/gorm"
 )
 
 // CleanCheckoutShipping
-func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError {
 	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr
@@ -19,11 +20,11 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo,
 		deliveruMethodInfo := checkoutInfo.DeliveryMethodInfo
 
 		if deliveruMethodInfo.GetDeliveryMethod() == nil {
-			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_set.app_error", nil, "", http.StatusNotImplemented)
+			return model_helper.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
 		if !deliveruMethodInfo.IsValidDeliveryMethod() {
-			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_address_not_set.app_error", nil, "", http.StatusNotImplemented)
+			return model_helper.NewAppError("CleanCheckoutShipping", "app.discount.shipping_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
 		if !deliveruMethodInfo.IsMethodInValidMethods(&checkoutInfo) {
@@ -31,22 +32,22 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo,
 			if appErr != nil {
 				return appErr
 			}
-			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_valid_for_shipping_address.app_error", nil, "", http.StatusNotImplemented)
+			return model_helper.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_valid_for_shipping_address.app_error", nil, "", http.StatusNotImplemented)
 		}
 	}
 
 	return nil
 }
 
-func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model_helper.AppError {
 	if checkoutInfo.BillingAddress == nil {
-		return model.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
+		return model_helper.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
 
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model_helper.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}
@@ -62,7 +63,7 @@ func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.P
 			return paymentErr, appErr
 		}
 
-		return nil, model.NewAppError("CleanCHeckoutPayment", "app.checkout.checkout_not_fully_paid.app_error", nil, "", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("CleanCHeckoutPayment", "app.checkout.checkout_not_fully_paid.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
 	return nil, nil

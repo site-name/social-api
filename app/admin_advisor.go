@@ -5,15 +5,16 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (a *App) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError) {
+func (a *App) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model_helper.AppError) {
 	systemDataList, nErr := a.Srv().Store.System().Get()
 	if nErr != nil {
-		return nil, model.NewAppError("GetWarnMetricsStatus", "app.system.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetWarnMetricsStatus", "app.system.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
 	isE0Edition := model.BuildEnterpriseReady == "true" // license == nil was already validated upstream
@@ -146,7 +147,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 }
 
 //nolint:golint,unused,deadcode
-// func (a *App) notifyAdminsOfWarnMetricStatus(c *request.Context, warnMetricId string, isE0Edition bool) *model.AppError {
+// func (a *App) notifyAdminsOfWarnMetricStatus(c *request.Context, warnMetricId string, isE0Edition bool) *model_helper.AppError {
 // 	// get warn metrics bot
 // 	warnMetricsBot, err := a.GetWarnMetricsBot()
 // 	if err != nil {
@@ -155,7 +156,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 
 // 	warnMetric, ok := model.WarnMetricsTable[warnMetricId]
 // 	if !ok {
-// 		return model.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.invalid_metric.app_error", nil, "", http.StatusInternalServerError)
+// 		return model_helper.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.invalid_metric.app_error", nil, "", http.StatusInternalServerError)
 // 	}
 
 // 	perPage := 25
@@ -175,7 +176,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 // 		}
 
 // 		if len(sysAdminsList) == 0 {
-// 			return model.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.empty_admin_list.app_error", nil, "", http.StatusInternalServerError)
+// 			return model_helper.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.empty_admin_list.app_error", nil, "", http.StatusInternalServerError)
 // 		}
 // 		sysAdmins = append(sysAdmins, sysAdminsList...)
 
@@ -197,7 +198,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 
 // 		warnMetricStatus, warnMetricDisplayTexts := a.getWarnMetricStatusAndDisplayTextsForId(warnMetricId, T, isE0Edition)
 // 		if warnMetricStatus == nil {
-// 			return model.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.invalid_metric.app_error", nil, "", http.StatusInternalServerError)
+// 			return model_helper.NewAppError("NotifyAdminsOfWarnMetricStatus", "app.system.warn_metric.notification.invalid_metric.app_error", nil, "", http.StatusInternalServerError)
 // 		}
 
 // 		botPost := &model.Post{
@@ -266,7 +267,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 // 	return nil
 // }
 
-func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model.AppError {
+func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model_helper.AppError {
 	if warnMetric, ok := model.WarnMetricsTable[warnMetricId]; ok {
 		data, nErr := a.Srv().Store.System().GetByName(warnMetric.Id)
 		if nErr == nil && data != nil && data.Value == model.WarnMetricStatusAck {
@@ -276,7 +277,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 
 		if !forceAck {
 			if *a.Config().EmailSettings.SMTPServer == "" {
-				return model.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.missing_server.app_error", nil, i18n.T("api.context.invalid_param.app_error", map[string]interface{}{"Name": "SMTPServer"}), http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.missing_server.app_error", nil, i18n.T("api.context.invalid_param.app_error", map[string]interface{}{"Name": "SMTPServer"}), http.StatusInternalServerError)
 			}
 			T := i18n.GetUserTranslations(sender.Locale)
 			data := a.Srv().EmailService.NewEmailTemplateData(sender.Locale)
@@ -301,7 +302,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 
 			warnMetricStatus, warnMetricDisplayTexts := a.getWarnMetricStatusAndDisplayTextsForId(warnMetricId, T, false)
 			if warnMetricStatus == nil {
-				return model.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.invalid_warn_metric.app_error", nil, "", http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.invalid_warn_metric.app_error", nil, "", http.StatusInternalServerError)
 			}
 
 			subject := T("api.templates.warn_metric_ack.subject")
@@ -311,11 +312,11 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 
 			body, err := a.Srv().TemplatesContainer().RenderToString("warn_metric_ack", data)
 			if err != nil {
-				return model.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 
 			if err := mail.SendMailUsingConfig(model.MM_SUPPORT_ADVISOR_ADDRESS, subject, body, mailConfig, false, sender.Email); err != nil {
-				return model.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 		}
 
@@ -326,7 +327,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 	return nil
 }
 
-func (a *App) setWarnMetricsStatusAndNotify(warnMetricId string) *model.AppError {
+func (a *App) setWarnMetricsStatusAndNotify(warnMetricId string) *model_helper.AppError {
 	// Ack all metric warnings on the server
 	if err := a.setWarnMetricsStatus(model.WarnMetricStatusAck); err != nil {
 		return err
@@ -340,7 +341,7 @@ func (a *App) setWarnMetricsStatusAndNotify(warnMetricId string) *model.AppError
 	return nil
 }
 
-func (a *App) setWarnMetricsStatus(status string) *model.AppError {
+func (a *App) setWarnMetricsStatus(status string) *model_helper.AppError {
 	slog.Debug("Set monitoring status for all warn metrics", slog.String("status", status))
 	for _, warnMetric := range model.WarnMetricsTable {
 		if err := a.setWarnMetricsStatusForId(warnMetric.Id, status); err != nil {
@@ -350,13 +351,13 @@ func (a *App) setWarnMetricsStatus(status string) *model.AppError {
 	return nil
 }
 
-func (a *App) setWarnMetricsStatusForId(warnMetricId string, status string) *model.AppError {
+func (a *App) setWarnMetricsStatusForId(warnMetricId string, status string) *model_helper.AppError {
 	slog.Debug("Store status for warn metric", slog.String("warnMetricId", warnMetricId), slog.String("status", status))
 	if err := a.Srv().Store.System().SaveOrUpdateWithWarnMetricHandling(&model.System{
 		Name:  warnMetricId,
 		Value: status,
 	}); err != nil {
-		return model.NewAppError("setWarnMetricsStatusForId", "app.system.warn_metric.store.app_error", map[string]interface{}{"WarnMetricName": warnMetricId}, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("setWarnMetricsStatusForId", "app.system.warn_metric.store.app_error", map[string]interface{}{"WarnMetricName": warnMetricId}, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

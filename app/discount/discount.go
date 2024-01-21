@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type ServiceDiscount struct {
@@ -39,7 +40,7 @@ func (*ServiceDiscount) Decorator(preValue any) types.DiscountCalculator {
 			*goprices.TaxedMoney,
 			*goprices.TaxedMoneyRange:
 		default:
-			return nil, model.NewAppError("DiscountCalculator", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "first"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("DiscountCalculator", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "first"}, "", http.StatusBadRequest)
 		}
 
 		if fromGross == nil { // fixed discount

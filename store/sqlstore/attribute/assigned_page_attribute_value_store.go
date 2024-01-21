@@ -26,7 +26,7 @@ func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue *model.A
 	}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
+func (as *SqlAssignedPageAttributeValueStore) Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
 	if err := as.GetMaster().Create(assignedPageAttrValue).Error; err != nil {
 		if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
 			return nil, store.NewErrInvalidInput(model.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", assignedPageAttrValue.ValueID+"/"+assignedPageAttrValue.AssignmentID)

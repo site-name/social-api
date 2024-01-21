@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
@@ -96,6 +97,21 @@ const (
 )
 
 // ----- address ---------
+
+type AddressTypeEnum string
+
+const (
+	ADDRESS_TYPE_SHIPPING AddressTypeEnum = "shipping"
+	ADDRESS_TYPE_BILLING  AddressTypeEnum = "billing"
+)
+
+func (e AddressTypeEnum) IsValid() bool {
+	switch e {
+	case ADDRESS_TYPE_SHIPPING, ADDRESS_TYPE_BILLING:
+		return true
+	}
+	return false
+}
 
 func AddressFullname(a model.Address) string {
 	return fmt.Sprintf("%s %s", a.FirstName, a.LastName)
@@ -214,7 +230,7 @@ func SessionPreSave(s *model.Session) {
 	}
 }
 
-func SessionIsUnrestricted(s *model.Session) bool {
+func SessionIsUnrestricted(s model.Session) bool {
 	return s.Local
 }
 
@@ -241,10 +257,7 @@ func SessionIsExpired(s model.Session) bool {
 	if s.ExpiresAt <= 0 {
 		return false
 	}
-	if GetMillis() > s.ExpiresAt {
-		return true
-	}
-	return false
+	return GetMillis() > s.ExpiresAt
 }
 
 // Deprecated: SetExpireInDays is deprecated and should not be used.
@@ -383,9 +396,41 @@ type UserPatch struct {
 	FirstName   *string             `json:"first_name"`
 	LastName    *string             `json:"last_name"`
 	Email       *string             `json:"email"`
-	Locale      *model.Languagecode `json:"locale"`
+	Locale      *model.LanguageCode `json:"locale"`
 	Timezone    model_types.JsonMap `json:"timezone"`
 	NotifyProps model_types.JsonMap `json:"notify_props,omitempty"`
+}
+
+type UserAuth struct {
+	Password    string  `json:"password,omitempty"`
+	AuthData    *string `json:"auth_data,omitempty"`
+	AuthService string  `json:"auth_service,omitempty"`
+}
+
+var _ util.Hashable = (*UserWrapper)(nil)
+
+type UserWrapper struct {
+	model.User
+}
+
+// GetEmail implements util.Hashable.
+func (u UserWrapper) GetEmail() string {
+	return u.Email
+}
+
+// GetId implements util.Hashable.
+func (u UserWrapper) GetId() string {
+	return u.ID
+}
+
+// GetLastLogin implements util.Hashable.
+func (u UserWrapper) GetLastLogin() time.Time {
+	return util.TimeFromMillis(u.LastActivityAt)
+}
+
+// GetPassword implements util.Hashable.
+func (u UserWrapper) GetPassword() string {
+	return u.Password
 }
 
 func UserIsLDAP(u model.User) bool {
@@ -449,7 +494,7 @@ func userCommonPre(u *model.User) {
 	}
 
 	u.Locale = strings.ToUpper(u.Locale)
-	if model.Languagecode(u.Locale).IsValid() != nil {
+	if model.LanguageCode(u.Locale).IsValid() != nil {
 		u.Locale = DEFAULT_LOCALE.String()
 	}
 	if u.Timezone == nil {
@@ -643,7 +688,7 @@ func UserToPatch(u model.User) UserPatch {
 		FirstName: &u.FirstName,
 		LastName:  &u.LastName,
 		Email:     &u.Email,
-		Locale:    GetPointerOfValue(model.Languagecode(u.Locale)),
+		Locale:    GetPointerOfValue(model.LanguageCode(u.Locale)),
 		Timezone:  u.Timezone,
 	}
 }
@@ -743,7 +788,7 @@ func UserIsValid(u model.User) *AppError {
 	if u.Password != "" && !u.AuthData.IsNil() && *u.AuthData.String != "" {
 		return InvalidUserError("auth_data_pwd", u.ID, *u.AuthData.String)
 	}
-	if model.Languagecode(u.Locale).IsValid() != nil {
+	if model.LanguageCode(u.Locale).IsValid() != nil {
 		return InvalidUserError(model.UserColumns.Locale, u.ID, u.Locale)
 	}
 	if len(u.Timezone) > 0 {
@@ -849,4 +894,73 @@ func TermsOfServiceIsValid(t model.TermsOfService) *AppError {
 	}
 
 	return nil
+}
+
+type CustomerEventType string
+
+func (t CustomerEventType) IsValid() bool {
+	switch t {
+	case CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED,
+		CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT,
+		CUSTOMER_EVENT_TYPE_PASSWORD_RESET,
+		CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED,
+		CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST,
+		CUSTOMER_EVENT_TYPE_EMAIL_CHANGED,
+		CUSTOMER_EVENT_TYPE_PLACED_ORDER,
+		CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER,
+		CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
+		CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED,
+		CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED,
+		CUSTOMER_EVENT_TYPE_NAME_ASSIGNED,
+		CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED,
+		CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED,
+		CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED:
+		return true
+	default:
+		return false
+	}
+}
+
+// some available types for CustomerEvent's Type attribute
+const (
+	CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED          CustomerEventType = "ACCOUNT_CREATED"
+	CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT CustomerEventType = "PASSWORD_RESET_LINK_SENT"
+	CUSTOMER_EVENT_TYPE_PASSWORD_RESET           CustomerEventType = "PASSWORD_RESET"
+	CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED         CustomerEventType = "PASSWORD_CHANGED"
+	CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST     CustomerEventType = "EMAIL_CHANGED_REQUEST"
+	CUSTOMER_EVENT_TYPE_EMAIL_CHANGED            CustomerEventType = "EMAIL_CHANGED"
+	CUSTOMER_EVENT_TYPE_PLACED_ORDER             CustomerEventType = "PLACED_ORDER"            // created an order
+	CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER      CustomerEventType = "NOTE_ADDED_TO_ORDER"     // added a note to one of their orders
+	CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED  CustomerEventType = "DIGITAL_LINK_DOWNLOADED" // downloaded a digital good
+	CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED         CustomerEventType = "CUSTOMER_DELETED"        // staff user deleted a customer
+	CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED           CustomerEventType = "EMAIL_ASSIGNED"          // the staff user assigned a email to the customer
+	CUSTOMER_EVENT_TYPE_NAME_ASSIGNED            CustomerEventType = "NAME_ASSIGNED"           // the staff user added set a name to the customer
+	CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED      CustomerEventType = "NOTE_ADDED"              // the staff user added a note to the customer
+	CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED        CustomerEventType = "ACCOUNT_ACTIVATED"
+	CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED      CustomerEventType = "ACCOUNT_DEACTIVATED"
+)
+
+type MfaSecret struct {
+	Secret string `json:"secret"`
+	QRCode string `json:"qr_code"`
+}
+
+// UserSearch captures the parameters provided by a client for initiating a user search.
+type UserSearch struct {
+	Term          string   `json:"term"`
+	AllowInactive bool     `json:"allow_inactive"`
+	Limit         int      `json:"limit"`
+	Role          string   `json:"role"`
+	Roles         []string `json:"roles"`
+}
+
+// Make sure you acually want to use this function. In context.go there are functions to check permissions
+//
+// This function should not be used to check permissions.
+func IsInRole(userRoles string, inRole string) bool {
+	return strings.Contains(userRoles, inRole)
+}
+
+type UsersStats struct {
+	TotalUsersCount int64 `json:"total_users_count"`
 }

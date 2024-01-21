@@ -11,6 +11,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -26,18 +27,18 @@ type AppIface interface {
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
 	// Configs return system's configurations
-	Config() *model.Config
+	Config() *model_helper.Config
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// GetComplianceReports returns compliances along with an app error
-	GetComplianceReports(page, perPage int) (model.Compliances, *model.AppError)
+	GetComplianceReports(page, perPage int) (model_helper.Compliances, *model_helper.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
-	GetSanitizedConfig() *model.Config
+	GetSanitizedConfig() *model_helper.Config
 	// GetSiteURL returns service's siteurl configuration.
 	GetSiteURL() string
 	// InvalidateCacheForUser
@@ -55,13 +56,13 @@ type AppIface interface {
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
 	// Publish puplish websocket events
-	Publish(message *model.WebSocketEvent)
+	Publish(message *model_helper.WebSocketEvent)
 	// ResetPermissionsSystem reset permission system
-	ResetPermissionsSystem() *model.AppError
+	ResetPermissionsSystem() *model_helper.AppError
 	// SaveComplianceReport
-	SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model.AppError)
+	SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model_helper.AppError)
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
-	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
+	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model_helper.AppError)
 	// Srv returns system server
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
@@ -86,17 +87,17 @@ type AppIface interface {
 	DoSystemConsoleRolesCreationMigration()
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	GetAudits(userID string, limit int) (model.Audits, *model.AppError)
-	GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model.AppError)
+	GetAudits(userID string, limit int) (model.Audits, *model_helper.AppError)
+	GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model_helper.AppError)
 	GetClusterId() string
 	GetClusterStatus() []*model.ClusterInfo
-	GetComplianceFile(job *model.Compliance) ([]byte, *model.AppError)
-	GetComplianceReport(reportID string) (*model.Compliance, *model.AppError)
-	GetLogs(page, perPage int) ([]string, *model.AppError)
-	GetLogsSkipSend(page, perPage int) ([]string, *model.AppError)
+	GetComplianceFile(job *model.Compliance) ([]byte, *model_helper.AppError)
+	GetComplianceReport(reportID string) (*model.Compliance, *model_helper.AppError)
+	GetLogs(page, perPage int) ([]string, *model_helper.AppError)
+	GetLogsSkipSend(page, perPage int) ([]string, *model_helper.AppError)
 	GetOpenGraphMetadata(requestURL string) ([]byte, error)
-	GetSystemInstallDate() (int64, *model.AppError)
-	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
+	GetSystemInstallDate() (int64, *model_helper.AppError)
+	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model_helper.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	ImageProxy() *imageproxy.ImageProxy
@@ -106,7 +107,7 @@ type AppIface interface {
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
 	NewClusterDiscoveryService() *ClusterDiscoveryService
-	NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model.AppError
+	NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model_helper.AppError
 	OriginChecker() func(*http.Request) bool
 	PostActionCookieSecret() []byte
 	ReloadConfig() error

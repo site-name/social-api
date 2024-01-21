@@ -13,6 +13,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -26,7 +27,7 @@ func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("PaymentCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -60,12 +61,12 @@ func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if paymentErr != nil {
-		return nil, model.NewAppError("PaymentCapture", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentCapture", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("PaymentCapture", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentCapture", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &PaymentCapture{
@@ -82,7 +83,7 @@ func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("PaymentRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -117,12 +118,12 @@ func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 	}
 
 	if paymentErr != nil {
-		return nil, model.NewAppError("PaymentRefund", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentRefund", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("PaymentRefund", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentRefund", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &PaymentRefund{
@@ -136,7 +137,7 @@ func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID UUID 
 
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("PaymentVoid", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentVoid", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -171,12 +172,12 @@ func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID UUID 
 	}
 
 	if paymentErr != nil {
-		return nil, model.NewAppError("PaymentVoid", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentVoid", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("PaymentVoid", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentVoid", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &PaymentVoid{
@@ -200,7 +201,7 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 	}
 
 	if !channel.IsActive {
-		return nil, model.NewAppError("PaymentInitialize", "app.channel.channel_not_active", nil, fmt.Sprintf("Channel with id=%s is inactive", args.ChannelID), http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("PaymentInitialize", "app.channel.channel_not_active", nil, fmt.Sprintf("Channel with id=%s is inactive", args.ChannelID), http.StatusNotAcceptable)
 	}
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
@@ -208,13 +209,13 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 
 	data, err := json.Marshal(response.Data)
 	if err != nil {
-		return nil, model.NewAppError("PaymentInitialize", model.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentInitialize", model.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var mapData = JSONString{}
 	err = json.Unmarshal(data, &mapData)
 	if err != nil {
-		return nil, model.NewAppError("PaymentInitialize", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentInitialize", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &PaymentInitialize{

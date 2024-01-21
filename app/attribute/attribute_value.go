@@ -7,31 +7,32 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
-func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError) {
+func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model_helper.AppError) {
 	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeID},
 	})
 }
 
-func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError) {
+func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model_helper.AppError) {
 	values, err := s.srv.Store.AttributeValue().FilterByOptions(option)
 	if err != nil {
-		return nil, model.NewAppError("FilterAttributeValuesByOptions", "app.attribute.error_finding_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FilterAttributeValuesByOptions", "app.attribute.error_finding_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return values, nil
 }
 
 // UpsertAttributeValue insderts or updates given attribute value then returns it
-func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError) {
+func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model_helper.AppError) {
 	attrValue, err := a.srv.Store.AttributeValue().Upsert(attrValue)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 
@@ -39,16 +40,16 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue)
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return nil, model.NewAppError("UpsertAttributeValue", "app.attribute.error_upserting_attribute_value.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertAttributeValue", "app.attribute.error_upserting_attribute_value.app_error", nil, err.Error(), statusCode)
 	}
 
 	return attrValue, nil
 }
 
-func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model.AppError) {
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model_helper.AppError) {
 	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 
@@ -57,7 +58,7 @@ func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("BulkUpsertAttributeValue", "app.attribute.error_upserting_attribute_values.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("BulkUpsertAttributeValue", "app.attribute.error_upserting_attribute_values.app_error", nil, err.Error(), statusCode)
 	}
 
 	return values, nil
@@ -93,7 +94,7 @@ func (s *ServiceAttribute) newReordering(values model.AttributeValues, operation
 	}
 }
 
-func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *model.AppError) {
+func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *model_helper.AppError) {
 	if !r.runned { // check if runned or not
 		// indicate runned
 		r.runned = true
@@ -230,7 +231,7 @@ func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int)
 	}
 }
 
-func (r *Reordering) commit(transaction *gorm.DB) *model.AppError {
+func (r *Reordering) commit(transaction *gorm.DB) *model_helper.AppError {
 	// Do nothing if nothing was done
 	if len(r.OldSortMap) == 0 {
 		return nil
@@ -258,7 +259,7 @@ func (r *Reordering) commit(transaction *gorm.DB) *model.AppError {
 	return appErr
 }
 
-func (r *Reordering) Run(transaction *gorm.DB) *model.AppError {
+func (r *Reordering) Run(transaction *gorm.DB) *model_helper.AppError {
 	for key, move := range r.Operations {
 		// skip operation if it was deleted in concurrence
 		orderedNodeMap, appErr := r.orderedNodeMap(transaction)
@@ -276,10 +277,10 @@ func (r *Reordering) Run(transaction *gorm.DB) *model.AppError {
 	return r.commit(transaction)
 }
 
-func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError {
+func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model_helper.AppError {
 	transaction := s.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return model.NewAppError("PerformOrdering", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("PerformOrdering", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
@@ -290,16 +291,16 @@ func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, opera
 
 	err := transaction.Commit().Error
 	if err != nil {
-		return model.NewAppError("PerformReordering", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("PerformReordering", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
-func (s *ServiceAttribute) DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model.AppError) {
+func (s *ServiceAttribute) DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model_helper.AppError) {
 	numDeleted, err := s.srv.Store.AttributeValue().Delete(tx, ids...)
 	if err != nil {
-		return 0, model.NewAppError("DeleteAttributeValues", "app.attribute.error_delete_attribute_values_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteAttributeValues", "app.attribute.error_delete_attribute_values_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return numDeleted, nil

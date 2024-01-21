@@ -11,7 +11,7 @@ type LdapInterface interface {
 	GetUserAttributes(id string, attributes []string) (map[string]string, *model_helper.AppError)
 	CheckPassword(id string, password string) *model_helper.AppError
 	CheckPasswordAuthData(authData string, password string) *model_helper.AppError
-	CheckProviderAttributes(LS *model_helper.LdapSettings, ouser *model.User, patch *model.UserPatch) string
+	CheckProviderAttributes(LS model_helper.LdapSettings, user model.User, patch model_helper.UserPatch) string
 	SwitchToLdap(userID, ldapID, ldapPassword string) *model_helper.AppError
 	StartSynchronizeJob(waitForJobToFinish bool) (*model.Job, *model_helper.AppError)
 	RunTest() *model_helper.AppError

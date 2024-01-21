@@ -9,6 +9,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -479,7 +480,7 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 
 	filterOptions := &model.AttributeFilterOption{}
 	if args.Filter != nil {
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		filterOptions, appErr = args.Filter.parse("ProductType.AvailableAttributes")
 		if appErr != nil {
 			return nil, appErr
@@ -491,7 +492,7 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 
 	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true, filterOptions)
 	if err != nil {
-		return nil, model.NewAppError("AvailableAttributes", "app.attribute.filter_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("AvailableAttributes", "app.attribute.filter_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	keyFunc := func(a *model.Attribute) []any { return []any{model.AttributeTableName + ".Slug", a.Slug} }

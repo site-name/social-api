@@ -7,6 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ func NewSqlPluginStore(s store.Store) store.PluginStore {
 	return &SqlPluginStore{s}
 }
 
-func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginKeyValue, error) {
+func (ps *SqlPluginStore) SaveOrUpdate(kv *model_helper.PluginKeyValue) (*model_helper.PluginKeyValue, error) {
 	if err := kv.IsValid(); err != nil {
 		return nil, err
 	}
@@ -39,7 +40,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginK
 	}
 
 	query := ps.GetQueryBuilder().
-		Insert(model.PluginKeyValueStoreTableName).
+		Insert(model_helper.PluginKeyValueStoreTableName).
 		Columns("PluginId", "PKey", "PValue", "ExpireAt").
 		Values(kv.PluginId, kv.Key, kv.Value, kv.ExpireAt).
 		SuffixExpr(
@@ -58,7 +59,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginK
 	return kv, nil
 }
 
-func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps *SqlPluginStore) CompareAndSet(kv *model_helper.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}
@@ -75,7 +76,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 			Where(sq.Eq{"PluginId": kv.PluginId}).
 			Where(sq.Eq{"PKey": kv.Key}).
 			Where(sq.NotEq{"ExpireAt": int(0)}).
-			Where(sq.Lt{"ExpireAt": model.GetMillis()})
+			Where(sq.Lt{"ExpireAt": model_helper.GetMillis()})
 
 		queryString, args, err := query.ToSql()
 		if err != nil {
@@ -104,7 +105,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 			return false, errors.Wrap(err, "failed to insert PluginKeyValue")
 		}
 	} else {
-		currentTime := model.GetMillis()
+		currentTime := model_helper.GetMillis()
 
 		// Update if oldValue is not nil
 		query := ps.GetQueryBuilder().
@@ -133,7 +134,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 	return true, nil
 }
 
-func (ps SqlPluginStore) CompareAndDelete(kv *model.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps *SqlPluginStore) CompareAndDelete(kv *model_helper.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}
@@ -150,7 +151,7 @@ func (ps SqlPluginStore) CompareAndDelete(kv *model.PluginKeyValue, oldValue []b
 		Where(sq.Eq{"PValue": oldValue}).
 		Where(sq.Or{
 			sq.Eq{"ExpireAt": int(0)},
-			sq.Gt{"ExpireAt": model.GetMillis()},
+			sq.Gt{"ExpireAt": model_helper.GetMillis()},
 		})
 
 	queryString, args, err := query.ToSql()
@@ -166,12 +167,12 @@ func (ps SqlPluginStore) CompareAndDelete(kv *model.PluginKeyValue, oldValue []b
 	return true, nil
 }
 
-func (ps SqlPluginStore) SetWithOptions(pluginId string, key string, value []byte, opt model.PluginKVSetOptions) (bool, error) {
+func (ps *SqlPluginStore) SetWithOptions(pluginId string, key string, value []byte, opt model_helper.PluginKVSetOptions) (bool, error) {
 	if err := opt.IsValid(); err != nil {
 		return false, err
 	}
 
-	kv, err := model.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
+	kv, err := model_helper.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
 	if err != nil {
 		return false, err
 	}
@@ -188,7 +189,7 @@ func (ps SqlPluginStore) SetWithOptions(pluginId string, key string, value []byt
 	return savedKv != nil, nil
 }
 
-func (ps SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error) {
+func (ps *SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error) {
 	currentTime := model.GetMillis()
 	query := ps.GetQueryBuilder().Select("PluginId, PKey, PValue, ExpireAt").
 		From("PluginKeyValueStore").
@@ -213,7 +214,7 @@ func (ps SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error
 	return &kv, nil
 }
 
-func (ps SqlPluginStore) Delete(pluginId, key string) error {
+func (ps *SqlPluginStore) Delete(pluginId, key string) error {
 	query := ps.GetQueryBuilder().
 		Delete("PluginKeyValueStore").
 		Where(sq.Eq{"PluginId": pluginId}).
@@ -230,7 +231,7 @@ func (ps SqlPluginStore) Delete(pluginId, key string) error {
 	return nil
 }
 
-func (ps SqlPluginStore) DeleteAllForPlugin(pluginId string) error {
+func (ps *SqlPluginStore) DeleteAllForPlugin(pluginId string) error {
 	query := ps.GetQueryBuilder().
 		Delete("PluginKeyValueStore").
 		Where(sq.Eq{"PluginId": pluginId})
@@ -246,8 +247,8 @@ func (ps SqlPluginStore) DeleteAllForPlugin(pluginId string) error {
 	return nil
 }
 
-func (ps SqlPluginStore) DeleteAllExpired() error {
-	currentTime := model.GetMillis()
+func (ps *SqlPluginStore) DeleteAllExpired() error {
+	currentTime := model_helper.GetMillis()
 	query := ps.GetQueryBuilder().
 		Delete("PluginKeyValueStore").
 		Where(sq.NotEq{"ExpireAt": 0}).
@@ -264,7 +265,7 @@ func (ps SqlPluginStore) DeleteAllExpired() error {
 	return nil
 }
 
-func (ps SqlPluginStore) List(pluginId string, offset int, limit int) ([]string, error) {
+func (ps *SqlPluginStore) List(pluginId string, offset int, limit int) ([]string, error) {
 	if limit <= 0 {
 		limit = defaultPluginKeyFetchLimit
 	}
@@ -281,7 +282,7 @@ func (ps SqlPluginStore) List(pluginId string, offset int, limit int) ([]string,
 		Where(sq.Eq{"PluginId": pluginId}).
 		Where(sq.Or{
 			sq.Eq{"ExpireAt": int(0)},
-			sq.Gt{"ExpireAt": model.GetMillis()},
+			sq.Gt{"ExpireAt": model_helper.GetMillis()},
 		}).
 		OrderBy("PKey").
 		Limit(uint64(limit)).

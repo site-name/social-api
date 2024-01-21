@@ -2,6 +2,7 @@ package model_types
 
 import (
 	"bytes"
+	"cmp"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
@@ -469,4 +470,17 @@ func (n *NullTime) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	return json.Unmarshal(data, &n.Time)
+}
+
+// IsNotNilAndNotZero checks if given primitive pointer is not nil AND its point to value is not zero.
+// E.g
+//
+//	var number int = 10
+//	IsNotNilAndNotZero(&number) == true
+//
+//	str := ""
+//	IsNotNilAndNotZero(&str) == false
+func IsNotNilAndNotZero[T cmp.Ordered](v *T) bool {
+	var zeroValue T
+	return v != nil && *v != zeroValue
 }

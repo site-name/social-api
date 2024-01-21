@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type ServicePage struct {
@@ -22,10 +23,10 @@ func init() {
 	})
 }
 
-func (s *ServicePage) FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model.AppError) {
+func (s *ServicePage) FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model_helper.AppError) {
 	pages, err := s.srv.Store.Page().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("FindPagesByOptions", "app.page.finding_pages_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FindPagesByOptions", "app.page.finding_pages_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return pages, nil

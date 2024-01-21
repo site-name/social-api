@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS products (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_type_id uuid NOT NULL,
   name varchar(250) NOT NULL,
   slug varchar(255) NOT NULL,
   description jsonb,
   description_plain_text text NOT NULL,
-  category_id uuid,
+  category_id uuid NOT NULL,
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL,
   charge_taxes boolean,

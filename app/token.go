@@ -6,32 +6,33 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
 // SaveToken makes new Token and inserts it into database
-func (s *Server) SaveToken(tokenType model.TokenType, extraData interface{}) (*model.Token, *model.AppError) {
+func (s *Server) SaveToken(tokenType model_helper.TokenType, extraData interface{}) (*model.Token, *model_helper.AppError) {
 	data, err := json.Marshal(extraData)
 	if err != nil {
-		return nil, model.NewAppError("SaveToken", model.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaveToken", model_helper.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	token := model.NewToken(tokenType, string(data))
-	err = s.Store.Token().Save(token)
+	token := model_helper.NewToken(tokenType, string(data))
+	savedToken, err := s.Store.Token().Save(*token)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 
-		return nil, model.NewAppError("SaveToken", "app.server.error_saving_token.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaveToken", "app.server.error_saving_token.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return token, nil
+	return savedToken, nil
 }
 
 // ValidateTokenByToken finds and checks if token is expired.
 // NOTE: extraHolder must be pointer
-func (s *Server) ValidateTokenByToken(token string, tokenType model.TokenType, extraHolder any) (*model.Token, *model.AppError) {
+func (s *Server) ValidateTokenByToken(token string, tokenType model_helper.TokenType, extraHolder any) (*model.Token, *model_helper.AppError) {
 	tkn, err := s.Store.Token().GetByToken(token)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -39,20 +40,20 @@ func (s *Server) ValidateTokenByToken(token string, tokenType model.TokenType, e
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("ValidateTokenByToken", "app.server.error_finding_token.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ValidateTokenByToken", "app.server.error_finding_token.app_error", nil, err.Error(), statusCode)
 	}
 
-	if tkn.Type != tokenType {
-		return nil, model.NewAppError("ValidateTokenByToken", "app.server.token_type_invalid.app_error", nil, fmt.Sprintf("expected token type %s, got %s", tokenType, tkn.Type), http.StatusBadRequest)
+	if tkn.Type != tokenType.String() {
+		return nil, model_helper.NewAppError("ValidateTokenByToken", "app.server.token_type_invalid.app_error", nil, fmt.Sprintf("expected token type %s, got %s", tokenType, tkn.Type), http.StatusBadRequest)
 	}
-	if model.GetMillis() > tkn.CreateAt+model.MAX_TOKEN_EXIPRY_TIME {
-		return tkn, model.NewAppError("ValidateTokenByToken", "app.server.token_expired.app_error", nil, "token expired", http.StatusBadRequest)
+	if model_helper.GetMillis() > (tkn.CreatedAt + model_helper.MAX_TOKEN_EXIPRY_TIME) {
+		return tkn, model_helper.NewAppError("ValidateTokenByToken", "app.server.token_expired.app_error", nil, "token expired", http.StatusBadRequest)
 	}
 
 	if extraHolder != nil {
 		err = json.Unmarshal([]byte(tkn.Extra), extraHolder)
 		if err != nil {
-			return nil, model.NewAppError("ValidateTokenByToken", "app.server.token_unmarshal.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ValidateTokenByToken", "app.server.token_unmarshal.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 

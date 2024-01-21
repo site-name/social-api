@@ -991,7 +991,7 @@ type TimerLayerWishlistItemStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
+func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model_helper.AppError {
 	start := timemodule.Now()
 
 	result := s.AddressStore.DeleteAddresses(tx, addressIDs)
@@ -4045,7 +4045,7 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
-func (s *TimerLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *TimerLayerMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
 	start := timemodule.Now()
 
 	result, resultVar1 := s.MenuStore.Delete(ids)
@@ -4109,7 +4109,7 @@ func (s *TimerLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 	return result, err
 }
 
-func (s *TimerLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *TimerLayerMenuItemStore) Delete(ids []string) (int64, *model_helper.AppError) {
 	start := timemodule.Now()
 
 	result, resultVar1 := s.MenuItemStore.Delete(ids)
@@ -7146,7 +7146,7 @@ func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) erro
 	return err
 }
 
-func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 	start := timemodule.Now()
 
 	result := s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
@@ -7544,7 +7544,7 @@ func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 	start := timemodule.Now()
 
 	result := s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)

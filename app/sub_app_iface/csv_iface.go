@@ -12,15 +12,15 @@ import (
 // CsvService contains methods for working with csv
 type CsvService interface {
 	// CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
-	CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model.AppError)
+	CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model_helper.AppError)
 	// CreateExportFile inserts given export file into database then returns it
-	CreateExportFile(file *model.ExportFile) (*model.ExportFile, *model.AppError)
+	CreateExportFile(file *model.ExportFile) (*model.ExportFile, *model_helper.AppError)
 	// ExportEventsByOption returns a list of export events filtered using given options
-	ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model.AppError)
+	ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError)
 	// ExportFileById returns an export file found by given id
-	ExportFileById(id string) (*model.ExportFile, *model.AppError)
+	ExportFileById(id string) (*model.ExportFile, *model_helper.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products
-	ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model.AppError
+	ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model_helper.AppError
 	// Get export fields, all headers and headers mapping.
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.
@@ -30,7 +30,7 @@ type CsvService interface {
 		Warehouses []string
 		Channels   []string
 		Fields     []string
-	}) ([]string, []string, []string, *model.AppError)
+	}) ([]string, []string, []string, *model_helper.AppError)
 	// Get headers for exported attributes.
 	// Headers are build from slug and contains information if it's a product or variant
 	// attribute. Respectively for product: "slug-value (product attribute)"
@@ -40,7 +40,7 @@ type CsvService interface {
 		Warehouses []string
 		Channels   []string
 		Fields     []string
-	}) ([]string, *model.AppError)
+	}) ([]string, *model_helper.AppError)
 	// Get headers for exported channels.
 	//
 	// Headers are build from slug and exported field.
@@ -54,7 +54,7 @@ type CsvService interface {
 		Warehouses []string
 		Channels   []string
 		Fields     []string
-	}) ([]string, *model.AppError)
+	}) ([]string, *model_helper.AppError)
 	// Get headers for exported warehouses.
 	// Headers are build from slug. Example: "slug-value (warehouse quantity)"
 	GetWarehousesHeaders(exportInfo struct {
@@ -62,9 +62,9 @@ type CsvService interface {
 		Warehouses []string
 		Channels   []string
 		Fields     []string
-	}) ([]string, *model.AppError)
+	}) ([]string, *model_helper.AppError)
 	// GetDefaultExportPayload returns a map for mapping
-	GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model.AppError)
+	GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model_helper.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.
 	//
 	// It return list with product and variant data which can be used as import to
@@ -77,5 +77,5 @@ type CsvService interface {
 		Warehouses []string
 		Channels   []string
 		Fields     []string
-	}, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError
+	}, exportFields []string, headers []string, delimiter string, fileType string) *model_helper.AppError
 }

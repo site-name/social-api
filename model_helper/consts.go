@@ -102,7 +102,7 @@ const (
 const (
 	TimeZone                       = "UTC"
 	USER_AUTH_SERVICE_EMAIL        = "email"
-	DEFAULT_CURRENCY               = "USD"
+	DEFAULT_CURRENCY               = model.CurrencyUSD
 	USER_NAME_MAX_LENGTH           = 64
 	USER_EMAIL_MAX_LENGTH          = 128
 	USER_NAME_MIN_LENGTH           = 1
@@ -112,8 +112,8 @@ const (
 	URL_LINK_MAX_LENGTH            = 200
 	SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
 	IP_ADDRESS_MAX_LENGTH          = 39
-	DEFAULT_LOCALE                 = model.LanguagecodeEN // this is default language also
-	DEFAULT_COUNTRY                = model.CountrycodeUS
+	DEFAULT_LOCALE                 = model.LanguageCodeEN // this is default language also
+	DEFAULT_COUNTRY                = model.CountryCodeUS
 )
 
 var (
@@ -1190,7 +1190,7 @@ func initConsts() {
 		"admin":    true,
 	}
 
-	allCountryCodes := model.AllCountrycode()
+	allCountryCodes := model.AllCountryCode()
 	for _, code := range allCountryCodes {
 		MULTIPLE_COUNTRIES_MAX_LENGTH += len(code)
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
@@ -48,7 +49,7 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 	return s
 }
 
-func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (fs *SqlFileInfoStore) Upsert(info model.FileInfo) (*model.FileInfo, error) {
 	err := fs.GetMaster().Save(info).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert file info")
@@ -79,7 +80,7 @@ func (fs *SqlFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, er
 
 // GetWithOptions finds and returns fileinfos with given options.
 // Leave page, perPage nil to get all result.
-func (fs *SqlFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (fs *SqlFileInfoStore) GetWithOptions(conds ...qm.QueryMod) (model.FileInfoSlice, error) {
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
 		From(model.FileInfoTableName).

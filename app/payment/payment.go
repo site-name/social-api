@@ -11,6 +11,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -29,7 +30,7 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError) {
 	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions:    squirrel.Expr(model.PaymentTableName+".Id = ?", paymentID),
 		DbTransaction: transaction,
@@ -42,16 +43,16 @@ func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, loc
 }
 
 // PaymentsByOption returns all payments that satisfy given option
-func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model.AppError) {
+func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model_helper.AppError) {
 	totalCount, payments, err := a.srv.Store.Payment().FilterByOption(option)
 	if err != nil {
-		return 0, nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model_helper.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return totalCount, payments, nil
 }
 
-func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model_helper.AppError) {
 	_, payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 	})
@@ -59,7 +60,7 @@ func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *m
 		return nil, appError
 	}
 	if len(payments) == 0 {
-		return nil, model.NewAppError("GetLastOrderPayment", "app.payment.order_has_no_payment.app_error", nil, "order has no payment yet", http.StatusNotFound)
+		return nil, model_helper.NewAppError("GetLastOrderPayment", "app.payment.order_has_no_payment.app_error", nil, "order has no payment yet", http.StatusNotFound)
 	}
 
 	var latestPayment *model.Payment
@@ -72,7 +73,7 @@ func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *m
 	return latestPayment, nil
 }
 
-func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
+func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError) {
 	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
 	})
@@ -89,10 +90,10 @@ func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.App
 	return false, nil
 }
 
-func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model.AppError) {
+func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError) {
 	authorizedMoney, err := util.ZeroMoney(payment.Currency)
 	if err != nil {
-		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
@@ -118,7 +119,7 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*go
 				Currency: tran.Currency,
 			})
 			if err != nil {
-				return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.error_calculation_payment_authorized_amount.app_error", nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("PaymentGetAuthorizedAmount", "app.payment.error_calculation_payment_authorized_amount.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	}
@@ -127,7 +128,7 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*go
 }
 
 // PaymentCanVoid checks if given payment is: Active && not charged and authorized
-func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model.AppError) {
+func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model_helper.AppError) {
 	authorized, err := a.PaymentIsAuthorized(payMent.Id)
 	if err != nil {
 		return false, err
@@ -137,7 +138,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model.Ap
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model_helper.AppError) {
 	var err error
 
 	if !model.IsValidId(payMent.Id) {
@@ -146,21 +147,21 @@ func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Paym
 		payMent, err = a.srv.Store.Payment().Update(transaction, payMent)
 	}
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		var statusCode = http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("UpsertPayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertPayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
 	}
 
 	return payMent, nil
 }
 
 // GetAllPaymentsByCheckout returns all payments that belong to given checkout
-func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError) {
+func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model_helper.AppError) {
 	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
 	})
@@ -171,10 +172,10 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*mode
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) *model.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
-		return model.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

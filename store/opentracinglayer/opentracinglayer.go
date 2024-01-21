@@ -992,7 +992,7 @@ type OpenTracingLayerWishlistItemStore struct {
 	Root *OpenTracingLayer
 }
 
-func (s *OpenTracingLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
+func (s *OpenTracingLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model_helper.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.DeleteAddresses")
 	s.Root.Store.SetContext(newCtx)
@@ -4415,7 +4415,7 @@ func (s *OpenTracingLayerJobStore) UpdateStatusOptimistically(id string, current
 	return result, err
 }
 
-func (s *OpenTracingLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *OpenTracingLayerMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -4482,7 +4482,7 @@ func (s *OpenTracingLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) 
 	return result, err
 }
 
-func (s *OpenTracingLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *OpenTracingLayerMenuItemStore) Delete(ids []string) (int64, *model_helper.AppError) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -7867,7 +7867,7 @@ func (s *OpenTracingLayerUploadSessionStore) Update(session *model.UploadSession
 	return err
 }
 
-func (s *OpenTracingLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *OpenTracingLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.AddRelations")
 	s.Root.Store.SetContext(newCtx)
@@ -8292,7 +8292,7 @@ func (s *OpenTracingLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *OpenTracingLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *OpenTracingLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.RemoveRelations")
 	s.Root.Store.SetContext(newCtx)

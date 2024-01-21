@@ -22,15 +22,15 @@ type UserStore struct {
 }
 
 // AddRelations provides a mock function with given fields: transaction, userID, relations, customerNoteOnUser
-func (_m *UserStore) AddRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model.AppError {
+func (_m *UserStore) AddRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model_helper.AppError {
 	ret := _m.Called(transaction, userID, relations, customerNoteOnUser)
 
-	var r0 *model.AppError
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model.AppError); ok {
+	var r0 *model_helper.AppError
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model_helper.AppError); ok {
 		r0 = rf(transaction, userID, relations, customerNoteOnUser)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.AppError)
+			r0 = ret.Get(0).(*model_helper.AppError)
 		}
 	}
 
@@ -559,15 +559,15 @@ func (_m *UserStore) PermanentDelete(userID string) error {
 }
 
 // RemoveRelations provides a mock function with given fields: transaction, userID, relations, customerNoteOnUser
-func (_m *UserStore) RemoveRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model.AppError {
+func (_m *UserStore) RemoveRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model_helper.AppError {
 	ret := _m.Called(transaction, userID, relations, customerNoteOnUser)
 
-	var r0 *model.AppError
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model.AppError); ok {
+	var r0 *model_helper.AppError
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model_helper.AppError); ok {
 		r0 = rf(transaction, userID, relations, customerNoteOnUser)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.AppError)
+			r0 = ret.Get(0).(*model_helper.AppError)
 		}
 	}
 

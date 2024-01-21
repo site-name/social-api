@@ -1,11 +1,12 @@
 package account
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlTokenStore struct {
@@ -16,46 +17,42 @@ func NewSqlTokenStore(sqlStore store.Store) store.TokenStore {
 	return &SqlTokenStore{sqlStore}
 }
 
-func (s *SqlTokenStore) Save(token *model.Token) error {
-	return s.GetMaster().Create(token).Error
-}
+func (s *SqlTokenStore) Save(token model.Token) (*model.Token, error) {
+	model_helper.TokenPreSave(&token)
+	if err := model_helper.TokenIsValid(token); err != nil {
+		return nil, err
+	}
 
-func (s *SqlTokenStore) Delete(token string) error {
-	return s.GetMaster().Delete(&model.Token{}, "Token = ?", token).Error
-}
-
-func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
-	var token model.Token
-	err := s.GetReplica().First(&token, "Token = ?", tokenString).Error
+	err := token.Insert(s.GetMaster(), boil.Infer())
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("Token", tokenString)
-		}
-		return nil, errors.Wrapf(err, "failed to get Token with value %s", tokenString)
+		return nil, err
 	}
 
 	return &token, nil
 }
 
-func (s *SqlTokenStore) Cleanup() {
-	slog.Debug("Cleaning up token store.")
-
-	deltime := model.GetMillis() - model.MAX_TOKEN_EXIPRY_TIME
-	err := s.GetMaster().Delete(&model.Token{}, "CreateAt < ?", deltime).Error
-	if err != nil {
-		slog.Error("failed to delete tokens", slog.Err(err))
-	}
+func (s *SqlTokenStore) Delete(token string) error {
+	_, err := model.Tokens(model.TokenWhere.Token.EQ(token)).DeleteAll(s.GetMaster())
+	return err
 }
 
-func (s *SqlTokenStore) RemoveAllTokensByType(tokenType string) error {
-	return s.GetMaster().Delete(&model.Token{}, "Type = ?", tokenType).Error
-}
-
-func (s *SqlTokenStore) GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error) {
-	var tokens []*model.Token
-	err := s.GetReplica().Find(&tokens, "Type = ?", tokenType).Error
+func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
+	token, err := model.FindToken(s.GetReplica(), tokenString)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Tokens, tokenString)
+		}
 		return nil, err
 	}
-	return tokens, nil
+	return token, nil
+}
+
+func (s *SqlTokenStore) Cleanup() error {
+	deltime := model_helper.GetMillis() - model_helper.MAX_TOKEN_EXIPRY_TIME
+	_, err := model.Tokens(model.TokenWhere.CreatedAt.LT(deltime)).DeleteAll(s.GetMaster())
+	return err
+}
+
+func (s *SqlTokenStore) GetAllTokensByType(tokenType model_helper.TokenType) (model.TokenSlice, error) {
+	return model.Tokens(model.TokenWhere.Type.EQ(string(tokenType))).All(s.GetReplica())
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -112,7 +113,7 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 }) ([]*PaymentGateway, error) {
 	// validate params
 	if !model.IsValidId(args.ChannelID) {
-		return nil, model.NewAppError("Shop.AvailablePaymentGateways", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Shop.AvailablePaymentGateways", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -171,7 +172,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 }) ([]*ShippingMethod, error) {
 	// validate argument(s)
 	if !slug.IsSlug(args.Channel) {
-		return nil, model.NewAppError("Shop.AvailableShippingMethods", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Shop.AvailableShippingMethods", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 	if args.Address != nil {
 		err := args.Address.validate("AvailableShippingMethods")
@@ -265,7 +266,7 @@ func (s *Shop) DefaultCountry(ctx context.Context) (*CountryDisplay, error) {
 			Conditions: squirrel.Eq{model.VatTableName + ".CountryCode": model.DEFAULT_COUNTRY},
 		})
 		if err != nil {
-			return nil, model.NewAppError("Shop.DefaultCountry", "app.shop.error_finding_vats.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("Shop.DefaultCountry", "app.shop.error_finding_vats.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		res := &CountryDisplay{
@@ -292,7 +293,7 @@ func (s *Shop) StaffNotificationRecipients(ctx context.Context) ([]*StaffNotific
 		StaffNotificationRecipient().
 		FilterByOptions(&model.StaffNotificationRecipientFilterOptions{}) // find all
 	if err != nil {
-		return nil, model.NewAppError("Shop.StaffNotificationRecipients", "app.account.staff_notification_recipients_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("Shop.StaffNotificationRecipients", "app.account.staff_notification_recipients_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return systemRecordsToGraphql(notificationRecipients, systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient), nil

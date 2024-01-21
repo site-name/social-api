@@ -12,13 +12,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
 
 var ErrnotFound = errors.New("item not found")
 
-type apiImplCreatorFunc func(*model.Manifest) API
+type apiImplCreatorFunc func(*model_helper.Manifest) API
 
 // registeredPlugin stores the state for a given plugin that has been activated
 // or attempted to be activated this server run.
@@ -35,7 +36,7 @@ type registeredPlugin struct {
 type PrepackagedPlugin struct {
 	Path      string
 	IconData  string
-	Manifest  *model.Manifest
+	Manifest  *model_helper.Manifest
 	Signature []byte
 }
 

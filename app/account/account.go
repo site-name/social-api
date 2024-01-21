@@ -16,6 +16,7 @@ type ServiceAccount struct {
 	srv          *app.Server
 	sessionPool  sync.Pool
 	sessionCache cache.Cache
+	statusCache  cache.Cache
 
 	// optional fields
 	metrics einterfaces.MetricsInterface
@@ -24,7 +25,6 @@ type ServiceAccount struct {
 
 func init() {
 	app.RegisterService(func(s *app.Server) error {
-
 		if s.CacheProvider == nil {
 			return errors.New("s.CacheProvider must not be nil")
 		}
@@ -38,9 +38,19 @@ func init() {
 			return errors.New("could not create session cache")
 		}
 
+		statusCache, err := s.CacheProvider.NewCache(&cache.CacheOptions{
+			Size:           model_helper.STATUS_CACHE_SIZE,
+			Striped:        true,
+			StripedBuckets: max(runtime.NumCPU()-1, 1),
+		})
+		if err != nil {
+			return errors.New("could not create status cache")
+		}
+
 		s.Account = &ServiceAccount{
 			srv:          s,
 			sessionCache: sessionCache,
+			statusCache:  statusCache,
 			metrics:      s.Metrics,
 			cluster:      s.Cluster,
 			sessionPool: sync.Pool{

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -139,7 +140,7 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userWithEmail != nil {
-		return nil, model.NewAppError("RequestEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("RequestEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
 	}
 
 	// validate url
@@ -192,7 +193,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userByEmail != nil {
-		return nil, model.NewAppError("ConfirmEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ConfirmEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
 	}
 
 	currentUser, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
@@ -209,7 +210,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	// delete token
 	err := embedCtx.App.Srv().Store.Token().Delete(dbToken.Token)
 	if err != nil {
-		return nil, model.NewAppError("ConfirmEmailChange", "app.account.delete_token.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ConfirmEmailChange", "app.account.delete_token.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()

@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"github.com/lib/pq"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -98,7 +99,7 @@ func encodableError(err error) error {
 	}
 
 	switch err.(type) {
-	case *model.AppError, *pq.Error: // , *mysql.MySQLError:
+	case *model_helper.AppError, *pq.Error: // , *mysql.MySQLError:
 		return err
 	}
 
@@ -151,7 +152,7 @@ func decodableError(err error) error {
 func init() {
 	gob.Register([]interface{}{})
 	gob.Register(map[string]interface{}{})
-	gob.Register(&model.AppError{})
+	gob.Register(&model_helper.AppError{})
 	gob.Register(&pq.Error{})
 	// gob.Register(&mysql.MySQLError{})
 	gob.Register(&ErrorString{})
@@ -322,7 +323,7 @@ func (g *apiRPCClient) LoadPluginConfiguration(dest interface{}) error {
 	if err := g.client.Call("Plugin.LoadPluginConfiguration", _args, _returns); err != nil {
 		log.Printf("RPC call to LoadPluginConfiguration API failed: %s", err.Error())
 	}
-	if err := model.ModelFromJson(&dest, bytes.NewReader(_returns.A)); err != nil {
+	if err := model_helper.ModelFromJson(&dest, bytes.NewReader(_returns.A)); err != nil {
 		log.Printf("LoadPluginConfiguration API failed to unmarshal: %s", err.Error())
 	}
 	return nil
@@ -737,11 +738,11 @@ type Z_InstallPluginArgs struct {
 }
 
 type Z_InstallPluginReturns struct {
-	A *model.Manifest
-	B *model.AppError
+	A *model_helper.Manifest
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
+func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model_helper.Manifest, *model_helper.AppError) {
 	pluginStreamID := g.muxBroker.NextId()
 
 	go func() {
@@ -765,7 +766,7 @@ func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model.Manif
 
 func (s *apiRPCServer) InstallPlugin(args *Z_InstallPluginArgs, returns *Z_InstallPluginReturns) error {
 	hook, ok := s.impl.(interface {
-		InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
+		InstallPlugin(file io.Reader, replace bool) (*model_helper.Manifest, *model_helper.AppError)
 	})
 	if !ok {
 		return encodableError(fmt.Errorf("API InstallPlugin called but not implemented"))

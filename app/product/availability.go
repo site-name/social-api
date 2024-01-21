@@ -7,6 +7,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -33,17 +34,17 @@ func getTotalDiscount(unDiscounted *goprices.TaxedMoney, discounted *goprices.Ta
 // getProductPriceRange
 //
 // NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange. they must be same type
-func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (priceRangeLocal any, discountLocalCurrency any, appErr *model.AppError) {
+func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (priceRangeLocal any, discountLocalCurrency any, appErr *model_helper.AppError) {
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	localCurrency = strings.ToUpper(localCurrency)
@@ -88,7 +89,7 @@ func (a *ServiceProduct) GetVariantPrice(
 	discounts []*model.DiscountInfo,
 	chanNel model.Channel,
 
-) (*goprices.Money, *model.AppError) {
+) (*goprices.Money, *model_helper.AppError) {
 
 	variantChannelListing.PopulateNonDbFields() // must call this initially
 
@@ -110,7 +111,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 	discounts []*model.DiscountInfo,
 	chanNel model.Channel,
 
-) (*goprices.MoneyRange, *model.AppError) {
+) (*goprices.MoneyRange, *model_helper.AppError) {
 
 	// validate variantsChannelListing have same currency
 	var currency string
@@ -127,7 +128,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 					continue
 				}
 				if !strings.EqualFold(currency, listing.Currency) {
-					return nil, model.NewAppError("GetProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
+					return nil, model_helper.NewAppError("GetProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
 				}
 			}
 		}
@@ -176,7 +177,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	manager interfaces.PluginManagerInterface,
 	countryCode model.CountryCode, // can be empty
 	localCurrency string, // can be empty
-) (*model.ProductAvailability, *model.AppError) {
+) (*model.ProductAvailability, *model_helper.AppError) {
 	if countryCode == "" {
 		countryCode = model.DEFAULT_COUNTRY
 	}
@@ -266,7 +267,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 	plugins interfaces.PluginManagerInterface,
 	country model.CountryCode, // can be empty
 	localCurrency string, // can be empty
-) (*model.VariantAvailability, *model.AppError) {
+) (*model.VariantAvailability, *model_helper.AppError) {
 	variarntPrice, appErr := a.GetVariantPrice(variant, variantChannelListing, product, collections, discounts, chanNel)
 	if appErr != nil {
 		return nil, appErr
@@ -289,7 +290,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 
 	discount, err := getTotalDiscount(undiscounted, discounted)
 	if err != nil {
-		return nil, model.NewAppError("GetVariantAvailability", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetVariantAvailability", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (

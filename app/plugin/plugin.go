@@ -25,6 +25,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -43,7 +44,7 @@ func init() {
 	app.RegisterService(func(s *app.Server) error {
 		service := &ServicePlugin{srv: s}
 
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		service.pluginManager, appErr = service.newPluginManager()
 		if appErr != nil {
 			return appErr
@@ -69,16 +70,16 @@ type pluginSignaturePath struct {
 //
 // To get the plugins environment when the plugins are disabled, manually acquire the plugins
 // lock instead.
-func (a *ServicePlugin) GetPluginsEnvironment() (*plugin.Environment, *model.AppError) {
+func (a *ServicePlugin) GetPluginsEnvironment() (*plugin.Environment, *model_helper.AppError) {
 	if !*a.srv.Config().PluginSettings.Enable {
-		return nil, model.NewAppError("GetPluginsEnvironment", "app.plugin.plugin_disabled.app_error", nil, "", http.StatusLocked)
+		return nil, model_helper.NewAppError("GetPluginsEnvironment", "app.plugin.plugin_disabled.app_error", nil, "", http.StatusLocked)
 	}
 
 	a.srv.PluginsLock.RLock()
 	defer a.srv.PluginsLock.RUnlock()
 
 	if a.srv.PluginsEnvironment == nil {
-		return nil, model.NewAppError("GetPluginEnvironment", "app.plugin.plugin_not_set.app_error", nil, "", http.StatusNotImplemented)
+		return nil, model_helper.NewAppError("GetPluginEnvironment", "app.plugin.plugin_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
 	return a.srv.PluginsEnvironment, nil
 }
@@ -255,7 +256,7 @@ func (s *ServicePlugin) InitPlugins(c *request.Context, pluginDir, webappPluginD
 
 // SyncPlugins synchronizes the plugins installed locally
 // with the plugin bundles available in the file store.
-func (s *ServicePlugin) SyncPlugins() *model.AppError {
+func (s *ServicePlugin) SyncPlugins() *model_helper.AppError {
 	slog.Info("Syncing plugins from the file store")
 
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
@@ -265,7 +266,7 @@ func (s *ServicePlugin) SyncPlugins() *model.AppError {
 
 	availablePlugins, err := pluginsEnvironment.Available()
 	if err != nil {
-		return model.NewAppError("SyncPlugins", "app.plugin.sync.read_local_folder.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("SyncPlugins", "app.plugin.sync.read_local_folder.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var wg sync.WaitGroup
@@ -350,7 +351,7 @@ func (s *ServicePlugin) ShutDownPlugins() {
 	}
 }
 
-func (a *ServicePlugin) GetActivePluginManifests() ([]*model.Manifest, *model.AppError) {
+func (a *ServicePlugin) GetActivePluginManifests() ([]*model.Manifest, *model_helper.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -369,7 +370,7 @@ func (a *ServicePlugin) GetActivePluginManifests() ([]*model.Manifest, *model.Ap
 // EnablePlugin will set the config for an installed plugin to enabled, triggering asynchronous
 // activation if inactive anywhere in the cluster.
 // Notifies cluster peers through config change.
-func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
+func (s *ServicePlugin) EnablePlugin(id string) *model_helper.AppError {
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -377,7 +378,7 @@ func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
 
 	availablePlugins, err := pluginsEnvironment.Available()
 	if err != nil {
-		return model.NewAppError("EnablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("EnablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	id = strings.ToLower(id)
@@ -391,7 +392,7 @@ func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
 	}
 
 	if manifest == nil {
-		return model.NewAppError("EnablePlugin", "app.plugin.not_installed.app_error", nil, "", http.StatusNotFound)
+		return model_helper.NewAppError("EnablePlugin", "app.plugin.not_installed.app_error", nil, "", http.StatusNotFound)
 	}
 
 	s.srv.UpdateConfig(func(cfg *model.Config) {
@@ -401,9 +402,9 @@ func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
 	// This call will implicitly invoke SyncPluginsActiveState which will activate enabled plugins.
 	if _, _, err := s.srv.SaveConfig(s.srv.Config(), true); err != nil {
 		if err.Id == "ent.cluster.save_config.error" {
-			return model.NewAppError("EnablePlugin", "app.plugin.cluster.save_config.app_error", nil, "", http.StatusInternalServerError)
+			return model_helper.NewAppError("EnablePlugin", "app.plugin.cluster.save_config.app_error", nil, "", http.StatusInternalServerError)
 		}
-		return model.NewAppError("EnablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("EnablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -411,7 +412,7 @@ func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
 
 // DisablePlugin will set the config for an installed plugin to disabled, triggering deactivation if active.
 // Notifies cluster peers through config change.
-func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
+func (s *ServicePlugin) DisablePlugin(id string) *model_helper.AppError {
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -419,7 +420,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 
 	availablePlugins, err := pluginsEnvironment.Available()
 	if err != nil {
-		return model.NewAppError("DisablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("DisablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	id = strings.ToLower(id)
@@ -433,7 +434,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 	}
 
 	if manifest == nil {
-		return model.NewAppError("DisablePlugin", "app.plugin.not_installed.app_error", nil, "", http.StatusNotFound)
+		return model_helper.NewAppError("DisablePlugin", "app.plugin.not_installed.app_error", nil, "", http.StatusNotFound)
 	}
 
 	s.srv.UpdateConfig(func(cfg *model.Config) {
@@ -443,7 +444,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 
 	// This call will implicitly invoke SyncPluginsActiveState which will deactivate disabled plugins.
 	if _, _, err := s.srv.SaveConfig(s.srv.Config(), true); err != nil {
-		return model.NewAppError("DisablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("DisablePlugin", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -451,7 +452,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 
 // plugin section
 
-func (a *ServicePlugin) GetPlugins() (*model.PluginsResponse, *model.AppError) {
+func (a *ServicePlugin) GetPlugins() (*model.PluginsResponse, *model_helper.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr == nil {
 		return nil, appErr
@@ -459,7 +460,7 @@ func (a *ServicePlugin) GetPlugins() (*model.PluginsResponse, *model.AppError) {
 
 	availablePlugins, err := pluginsEnvironment.Available()
 	if err != nil {
-		return nil, model.NewAppError("GetPlugins", "app.plugin.get_plugins.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetPlugins", "app.plugin.get_plugins.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	resp := &model.PluginsResponse{Active: []*model.PluginInfo{}, Inactive: []*model.PluginInfo{}}
 	for _, plugin := range availablePlugins {
@@ -483,7 +484,7 @@ func (a *ServicePlugin) GetPlugins() (*model.PluginsResponse, *model.AppError) {
 
 // GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 // and plugins that are installed locally.
-func (a *ServicePlugin) GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model.AppError) {
+func (a *ServicePlugin) GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model_helper.AppError) {
 	plgs := map[string]*model.MarketplacePlugin{}
 
 	if *a.srv.Config().PluginSettings.EnableRemoteMarketplace && !filter.LocalOnly {
@@ -529,7 +530,7 @@ func (a *ServicePlugin) GetMarketplacePlugins(filter *model.MarketplacePluginFil
 }
 
 // getPrepackagedPlugin returns a pre-packaged plugin.
-func (s *ServicePlugin) getPrepackagedPlugin(pluginID, version string) (*plugin.PrepackagedPlugin, *model.AppError) {
+func (s *ServicePlugin) getPrepackagedPlugin(pluginID, version string) (*plugin.PrepackagedPlugin, *model_helper.AppError) {
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -542,17 +543,17 @@ func (s *ServicePlugin) getPrepackagedPlugin(pluginID, version string) (*plugin.
 		}
 	}
 
-	return nil, model.NewAppError("getPrepackagedPlugin", "app.plugin.marketplace_plugins.not_found.app_error", nil, "", http.StatusInternalServerError)
+	return nil, model_helper.NewAppError("getPrepackagedPlugin", "app.plugin.marketplace_plugins.not_found.app_error", nil, "", http.StatusInternalServerError)
 }
 
 // getRemoteMarketplacePlugin returns plugin from marketplace-server.
-func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*model.BaseMarketplacePlugin, *model.AppError) {
+func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*model.BaseMarketplacePlugin, *model_helper.AppError) {
 	marketplaceClient, err := marketplace.NewClient(
 		*s.srv.Config().PluginSettings.MarketplaceUrl,
 		s.srv.HTTPService,
 	)
 	if err != nil {
-		return nil, model.NewAppError("GetMarketplacePlugin", "app.plugin.marketplace_client.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetMarketplacePlugin", "app.plugin.marketplace_client.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	filter := s.getBaseMarketplaceFilter()
@@ -561,13 +562,13 @@ func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*m
 
 	plugin, err := marketplaceClient.GetPlugin(filter, version)
 	if err != nil {
-		return nil, model.NewAppError("GetMarketplacePlugin", "app.plugin.marketplace_plugins.not_found.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetMarketplacePlugin", "app.plugin.marketplace_plugins.not_found.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return plugin, nil
 }
 
-func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin, *model.AppError) {
+func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin, *model_helper.AppError) {
 	result := map[string]*model.MarketplacePlugin{}
 
 	_, appErr := a.GetPluginsEnvironment()
@@ -580,7 +581,7 @@ func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin,
 		a.srv.HTTPService,
 	)
 	if err != nil {
-		return nil, model.NewAppError("getRemotePlugins", "app.plugin.marketplace_client.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("getRemotePlugins", "app.plugin.marketplace_client.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	filter := a.getBaseMarketplaceFilter()
@@ -589,7 +590,7 @@ func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin,
 
 	marketplacePlugins, err := marketplaceClient.GetPlugins(filter)
 	if err != nil {
-		return nil, model.NewAppError("getRemotePlugins", "app.plugin.marketplace_client.failed_to_fetch", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("getRemotePlugins", "app.plugin.marketplace_client.failed_to_fetch", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	for _, p := range marketplacePlugins {
@@ -604,7 +605,7 @@ func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin,
 }
 
 // mergePrepackagedPlugins merges pre-packaged plugins to remote marketplace plugins list.
-func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model.AppError {
+func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model_helper.AppError {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -633,13 +634,13 @@ func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[str
 		// If available in the markteplace, only overwrite if newer.
 		prepackagedVersion, err := semver.Parse(prepackaged.Manifest.Version)
 		if err != nil {
-			return model.NewAppError("mergePrepackagedPlugins", "app.plugin.invalid_version.app_error", nil, err.Error(), http.StatusBadRequest)
+			return model_helper.NewAppError("mergePrepackagedPlugins", "app.plugin.invalid_version.app_error", nil, err.Error(), http.StatusBadRequest)
 		}
 
 		marketplacePlugin := remoteMarketplacePlugins[prepackaged.Manifest.Id]
 		marketplaceVersion, err := semver.Parse(marketplacePlugin.Manifest.Version)
 		if err != nil {
-			return model.NewAppError("mergePrepackagedPlugins", "app.plugin.invalid_version.app_error", nil, err.Error(), http.StatusBadRequest)
+			return model_helper.NewAppError("mergePrepackagedPlugins", "app.plugin.invalid_version.app_error", nil, err.Error(), http.StatusBadRequest)
 		}
 
 		if prepackagedVersion.GT(marketplaceVersion) {
@@ -651,7 +652,7 @@ func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[str
 }
 
 // mergeLocalPlugins merges locally installed plugins to remote marketplace plugins list.
-func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model.AppError {
+func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model_helper.AppError {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -659,7 +660,7 @@ func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*m
 
 	localPlugins, err := pluginsEnvironment.Available()
 	if err != nil {
-		return model.NewAppError("GetMarketplacePlugins", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("GetMarketplacePlugins", "app.plugin.config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	for _, plugin := range localPlugins {
@@ -762,7 +763,7 @@ func (s *ServicePlugin) notifyPluginEnabled(manifest *model.Manifest) error {
 	var statuses model.PluginStatuses
 
 	if s.srv.Cluster != nil {
-		var err *model.AppError
+		var err *model_helper.AppError
 		statuses, err = s.srv.Cluster.GetPluginStatuses()
 		if err != nil {
 			return err
@@ -832,10 +833,10 @@ func (s *ServicePlugin) getPluginsFromFilePaths(fileStorePaths []string) map[str
 	return pluginSignaturePathMap
 }
 
-func (s *ServicePlugin) getPluginsFromFolder() (map[string]*pluginSignaturePath, *model.AppError) {
+func (s *ServicePlugin) getPluginsFromFolder() (map[string]*pluginSignaturePath, *model_helper.AppError) {
 	fileStorePaths, appErr := s.srv.FileService().ListDirectory(fileStorePluginFolder)
 	if appErr != nil {
-		return nil, model.NewAppError("getPluginsFromDir", "app.plugin.sync.list_filestore.app_error", nil, appErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("getPluginsFromDir", "app.plugin.sync.list_filestore.app_error", nil, appErr.Error(), http.StatusInternalServerError)
 	}
 
 	return s.getPluginsFromFilePaths(fileStorePaths), nil

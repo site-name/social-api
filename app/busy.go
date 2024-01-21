@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 const (
@@ -54,7 +54,7 @@ func (b *Busy) Set(dur time.Duration) {
 	b.setWithoutNotify(dur)
 
 	if b.cluster != nil {
-		sbs := &model.ServerBusyState{
+		sbs := &model_helper.ServerBusyState{
 			Busy:      true,
 			Expires:   b.expires.Unix(),
 			ExpiresTS: b.expires.UTC().Format(TimestampFormat),
@@ -83,7 +83,7 @@ func (b *Busy) Clear() {
 	b.clearWithoutNotify()
 
 	if b.cluster != nil {
-		sbs := &model.ServerBusyState{Busy: false, Expires: time.Time{}.Unix(), ExpiresTS: ""}
+		sbs := &model_helper.ServerBusyState{Busy: false, Expires: time.Time{}.Unix(), ExpiresTS: ""}
 		b.notifyServerBusyChange(sbs)
 	}
 }
@@ -108,14 +108,14 @@ func (b *Busy) Expires() time.Time {
 }
 
 // notifyServerBusyChange informs all cluster members of a server busy state change.
-func (b *Busy) notifyServerBusyChange(sbs *model.ServerBusyState) {
+func (b *Busy) notifyServerBusyChange(sbs *model_helper.ServerBusyState) {
 	if b.cluster == nil {
 		return
 	}
 	buf, _ := json.Marshal(sbs)
-	msg := &model.ClusterMessage{
-		Event:            model.ClusterEventBusyStateChanged,
-		SendType:         model.ClusterSendReliable,
+	msg := &model_helper.ClusterMessage{
+		Event:            model_helper.ClusterEventBusyStateChanged,
+		SendType:         model_helper.ClusterSendReliable,
 		WaitForAllToSend: true,
 		Data:             buf,
 	}
@@ -123,7 +123,7 @@ func (b *Busy) notifyServerBusyChange(sbs *model.ServerBusyState) {
 }
 
 // ClusterEventChanged is called when a CLUSTER_EVENT_BUSY_STATE_CHANGED is received.
-func (b *Busy) ClusterEventChanged(sbs *model.ServerBusyState) {
+func (b *Busy) ClusterEventChanged(sbs *model_helper.ServerBusyState) {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -142,7 +142,7 @@ func (b *Busy) ToJSON() ([]byte, error) {
 	b.mux.RLock()
 	defer b.mux.RUnlock()
 
-	sbs := &model.ServerBusyState{
+	sbs := &model_helper.ServerBusyState{
 		Busy:      atomic.LoadInt32(&b.busy) != 0,
 		Expires:   b.expires.Unix(),
 		ExpiresTS: b.expires.UTC().Format(TimestampFormat),

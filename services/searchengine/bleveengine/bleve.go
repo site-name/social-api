@@ -147,12 +147,12 @@ func (b *BleveEngine) openIndexes() *model_helper.AppError {
 	var err error
 	// b.PostIndex, err = b.createOrOpenIndex(PostIndex, getPostIndexMapping())
 	// if err != nil {
-	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_post_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// 	return model_helper.NewAppError("Bleveengine.Start", "bleveengine.create_post_index.error", nil, err.Error(), http.StatusInternalServerError)
 	// }
 
 	// b.FileIndex, err = b.createOrOpenIndex(FileIndex, getFileIndexMapping())
 	// if err != nil {
-	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_file_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// 	return model_helper.NewAppError("Bleveengine.Start", "bleveengine.create_file_index.error", nil, err.Error(), http.StatusInternalServerError)
 	// }
 
 	b.UserIndex, err = b.createOrOpenIndex(UserIndex, getUserIndexMapping())
@@ -162,7 +162,7 @@ func (b *BleveEngine) openIndexes() *model_helper.AppError {
 
 	// b.ChannelIndex, err = b.createOrOpenIndex(ChannelIndex, getChannelIndexMapping())
 	// if err != nil {
-	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// 	return model_helper.NewAppError("Bleveengine.Start", "bleveengine.create_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
 	// }
 
 	atomic.StoreInt32(&b.ready, 1)

@@ -7,9 +7,9 @@ import "github.com/sitename/sitename/model"
 
 // MenuService contains methods for working with menus
 type MenuService interface {
-	MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model.AppError)
-	MenuItemsByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, *model.AppError)
-	MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model.AppError)
-	UpsertMenu(menu *model.Menu) (*model.Menu, *model.AppError)
-	UpsertMenuItem(item *model.MenuItem) (*model.MenuItem, *model.AppError)
+	MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model_helper.AppError)
+	MenuItemsByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, *model_helper.AppError)
+	MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model_helper.AppError)
+	UpsertMenu(menu *model.Menu) (*model.Menu, *model_helper.AppError)
+	UpsertMenuItem(item *model.MenuItem) (*model.MenuItem, *model_helper.AppError)
 }

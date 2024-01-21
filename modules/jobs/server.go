@@ -45,12 +45,12 @@ func (srv *JobServer) initSchedulers() {
 		clusterLeaderChanged: make(chan bool, 1),
 		jobs:                 srv,
 		isLeader:             true,
-		schedulers:           make(map[model.Jobtype]model_helper.Scheduler),
-		nextRunTimes:         make(map[model.Jobtype]*time.Time),
+		schedulers:           make(map[model.JobType]model_helper.Scheduler),
+		nextRunTimes:         make(map[model.JobType]*time.Time),
 	}
 }
 
-func (srv *JobServer) RegisterJobType(name model.Jobtype, worker model_helper.Worker, scheduler model_helper.Scheduler) {
+func (srv *JobServer) RegisterJobType(name model.JobType, worker model_helper.Worker, scheduler model_helper.Scheduler) {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
 	if worker != nil {

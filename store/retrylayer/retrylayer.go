@@ -1002,7 +1002,7 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
+func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model_helper.AppError {
 
 	return s.AddressStore.DeleteAddresses(tx, addressIDs)
 
@@ -4780,7 +4780,7 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
-func (s *RetryLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *RetryLayerMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
 
 	return s.MenuStore.Delete(ids)
 
@@ -4846,7 +4846,7 @@ func (s *RetryLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 
 }
 
-func (s *RetryLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *RetryLayerMenuItemStore) Delete(ids []string) (int64, *model_helper.AppError) {
 
 	return s.MenuItemStore.Delete(ids)
 
@@ -8548,7 +8548,7 @@ func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) erro
 
 }
 
-func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 
 	return s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
 
@@ -8978,7 +8978,7 @@ func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 
 	return s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
 

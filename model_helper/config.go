@@ -2212,7 +2212,7 @@ type LocalizationSettings struct {
 	DefaultServerLocale *string            `access:"site_localization"`
 	DefaultClientLocale *string            `access:"site_localization"`
 	AvailableLocales    *string            `access:"site_localization"`
-	DefaultCountryCode  *model.Countrycode `access:"site_localization"` // added for sitename
+	DefaultCountryCode  *model.CountryCode `access:"site_localization"` // added for sitename
 }
 
 func (s *LocalizationSettings) SetDefaults() {

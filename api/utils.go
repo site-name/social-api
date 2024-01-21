@@ -23,6 +23,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -32,8 +33,8 @@ var assets embed.FS
 // stringsContainSqlExpr is used to validate strings values contain sql statements or not
 var stringsContainSqlExpr = regexp.MustCompile(`(?i)\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)\b`)
 
-func MakeUnauthorizedError(where string) *model.AppError {
-	return model.NewAppError(where, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+func MakeUnauthorizedError(where string) *model_helper.AppError {
+	return model_helper.NewAppError(where, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
 // Unique type to hold our context.
@@ -548,15 +549,15 @@ type GraphqlParams struct {
 	Last  *int32  `json:"last"`
 
 	validated   bool
-	memoizedErr *model.AppError
+	memoizedErr *model_helper.AppError
 }
 
 // if First != nil, returns "ASC". Otherwise return "DESC"
-func (g *GraphqlParams) orderDirection() model.OrderDirection {
+func (g *GraphqlParams) orderDirection() model_helper.OrderDirection {
 	if g.First != nil {
-		return model.ASC
+		return model_helper.ASC
 	}
-	return model.DESC
+	return model_helper.DESC
 }
 
 // If First or Last is provided, return (First || Last) + 1
@@ -580,7 +581,7 @@ func (g *GraphqlParams) checkNextPageAndPreviousPage(numOfRecorsCound int) (hasN
 	return
 }
 
-func (g *GraphqlParams) validate(where string) *model.AppError {
+func (g *GraphqlParams) validate(where string) *model_helper.AppError {
 	if g.validated {
 		return g.memoizedErr
 	}
@@ -588,15 +589,15 @@ func (g *GraphqlParams) validate(where string) *model.AppError {
 
 	switch {
 	case (g.First != nil && *g.First < 0) || (g.Last != nil && *g.Last < 0):
-		g.memoizedErr = model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last cannot be negative", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last cannot be negative", http.StatusBadRequest)
 	case (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil):
-		g.memoizedErr = model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
 	case g.First != nil && g.Before != nil:
-		g.memoizedErr = model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can not go together", http.StatusBadRequest)
 	case g.Last != nil && g.After != nil:
-		g.memoizedErr = model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can not go together", http.StatusBadRequest)
 	case g.Before != nil && g.After != nil:
-		g.memoizedErr = model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can not go together", http.StatusBadRequest)
 	default:
 		g.memoizedErr = nil
 	}
@@ -694,7 +695,7 @@ func constructCountableConnection[R any, D any](
 	return res
 }
 
-func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnection[DestT], *model.AppError) {
+func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnection[DestT], *model_helper.AppError) {
 	appErr := g.validate(where)
 	if appErr != nil {
 		return nil, appErr
@@ -710,7 +711,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	operand, err := parseGraphqlCursor(&g.GraphqlParams)
 	if err != nil {
-		return nil, model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (
@@ -751,7 +752,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	// if not found, sort.Search returns exactly first int argument passed. We need to check it here
 	if index >= totalCount {
-		return nil, model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 	}
 
 	// hasPreviousPage = true
@@ -804,7 +805,7 @@ func prepareFilterExpression(fieldName string, index int, cursors []any, sorting
 	return extraExpression, fieldExpression
 }
 
-func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *model.AppError) {
+func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *model_helper.AppError) {
 	appErr := g.validate(where)
 	if appErr != nil {
 		return nil, appErr
@@ -812,14 +813,14 @@ func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *mo
 
 	operand, err := parseGraphqlCursor(g)
 	if err != nil {
-		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "GraphqlParams"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "GraphqlParams"}, err.Error(), http.StatusBadRequest)
 	}
 
 	var (
 		cursors          = make([]any, 0, len(operand)/2)
 		sortingFields    = make(util.AnyArray[string], 0, len(operand)/2)
 		orderDirection   = g.orderDirection()
-		sortingAscending = orderDirection == model.ASC
+		sortingAscending = orderDirection == model_helper.ASC
 		conditions       = squirrel.Or{}
 	)
 

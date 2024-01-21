@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at bigint NOT NULL,
   payment_id uuid NOT NULL,
   token varchar(512) NOT NULL,
-  kind TransactionKind NOT NULL,
+  kind transaction_kind NOT NULL,
   is_success boolean NOT NULL,
   action_required boolean NOT NULL,
   action_required_data text NOT NULL,

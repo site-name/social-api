@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -98,7 +99,7 @@ func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
 		// TODO: checks if we need a dataloader for this
 		currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(embedCtx.AppContext.Session().UserId, p.p.Id)
 		if err != nil {
-			return nil, model.NewAppError("Payment.Metadata", "app.payment.checking_user_own_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("Payment.Metadata", "app.payment.checking_user_own_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		if currentUserOwnPayment {

@@ -4,25 +4,26 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
-func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model_helper.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("GiftcardEventsByOptions", "app.giftcard.error_finding_giftcard_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GiftcardEventsByOptions", "app.giftcard.error_finding_giftcard_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return events, nil
 }
 
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model_helper.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 
@@ -31,14 +32,14 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorm.DB, events 
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("BulkUpsertGiftcardEvents", "app.giftcard.error_upserting_giftcard_events.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("BulkUpsertGiftcardEvents", "app.giftcard.error_upserting_giftcard_events.app_error", nil, err.Error(), statusCode)
 	}
 
 	return events, nil
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -64,7 +65,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanc
 	return s.BulkUpsertGiftcardEvents(transaction, events...)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id

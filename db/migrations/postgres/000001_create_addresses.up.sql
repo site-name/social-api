@@ -8,9 +8,10 @@ CREATE TABLE IF NOT EXISTS addresses (
   city varchar(256) NOT NULL,
   city_area varchar(128) NOT NULL,
   postal_code varchar(20) NOT NULL,
-  country CountryCode NOT NULL, -- enum
+  country country_code NOT NULL, -- enum
   country_area varchar(128) NOT NULL,
   phone varchar(11) NOT NULL,
+  user_id uuid NOT NULL,
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL
 );

@@ -6,13 +6,14 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // CheckoutShippingPrice Return checkout shipping price.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if discounts == nil {
 		discounts = []*model.DiscountInfo{}
 	}
@@ -23,14 +24,14 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 
 	calculatedCheckoutShipping, err := calculatedCheckoutShipping.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutShippingPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CheckoutShippingPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutShipping, nil
 }
 
 // CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
-func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if discounts == nil {
 		discounts = []*model.DiscountInfo{}
 	}
@@ -41,14 +42,14 @@ func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInter
 
 	calculatedCheckoutSubTotal, err := calculatedCheckoutSubTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutSubTotal, nil
 }
 
 // CalculateCheckoutTotalWithGiftcards
-func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	checkoutTotal, appErr := s.CheckoutTotal(manager, checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -61,7 +62,7 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 
 	total, err := checkoutTotal.Sub(checkoutTotalGiftcardBalance)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotalWithGiftcards", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutTotalWithGiftcards", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(total.Currency)
@@ -78,7 +79,7 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 // taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if discounts == nil {
 		discounts = []*model.DiscountInfo{}
 	}
@@ -89,7 +90,7 @@ func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterfac
 
 	calculatedCheckoutTotal, err := calculatedCheckoutTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutTotal, nil
@@ -98,7 +99,7 @@ func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterfac
 // CheckoutLineTotal Return the total price of provided line, taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, checkoutLineInfo *model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, checkoutLineInfo *model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	address := checkoutInfo.ShippingAddress
 	if address == nil {
 		address = checkoutInfo.BillingAddress
@@ -115,7 +116,7 @@ func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInte
 
 	calculatedLineTotal, err := calculatedLineTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedLineTotal, nil

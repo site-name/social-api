@@ -7,22 +7,23 @@ import (
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
-func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model.AppError) {
+func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model_helper.AppError) {
 	listings, err := a.srv.Store.ShippingMethodChannelListing().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("ShippingMethodChannelListingsByOption", "app.shipping.error_finding_shipping_method_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingsByOption", "app.shipping.error_finding_shipping_method_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return listings, nil
 }
 
 // Prepare mapping shipping method to price from channel listings
-func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError) {
+func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model_helper.AppError) {
 	listings, appErr := a.ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
 		Conditions:  squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethods.IDs()},
 		ChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
@@ -37,7 +38,7 @@ func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethod
 	}), nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model_helper.AppError) {
 	listings, err := s.srv.Store.ShippingMethodChannelListing().Upsert(transaction, listings)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -45,16 +46,16 @@ func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction *gorm.
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("UpsertShippingMethodChannelListings", "app.shipping.upsert_shipping_method_channel_listings.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertShippingMethodChannelListings", "app.shipping.upsert_shipping_method_channel_listings.app_error", nil, err.Error(), statusCode)
 	}
 
 	return listings, nil
 }
 
-func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model.AppError {
+func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model_helper.AppError {
 	err := s.srv.Store.ShippingMethodChannelListing().BulkDelete(transaction, options)
 	if err != nil {
-		model.NewAppError("ShippingMethodChannelListingUpdate", "app.shipping.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
+		model_helper.NewAppError("ShippingMethodChannelListingUpdate", "app.shipping.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

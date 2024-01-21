@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -17,7 +16,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 var (
@@ -55,7 +53,7 @@ func (us *SqlUserStore) ClearCaches() {}
 
 func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
 	return []interface{}{
-		&user.Id,
+		&user.ID,
 		&user.Email,
 		&user.Username,
 		&user.FirstName,
@@ -77,52 +75,36 @@ func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
 		&user.Timezone,
 		&user.MfaActive,
 		&user.MfaSecret,
-		&user.CreateAt,
-		&user.UpdateAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 		&user.DeleteAt,
 		&user.IsActive,
 		&user.Note,
-		&user.JwtTokenKey,
+		&user.JWTTokenKey,
 		&user.LastActivityAt,
-		&user.TermsOfServiceId,
-		&user.TermsOfServiceCreateAt,
+		&user.TermsOfServiceID,
+		&user.TermsOfServiceCreatedAt,
 		&user.DisableWelcomeEmail,
 		&user.Metadata,
 		&user.PrivateMetadata,
 	}
 }
 
-// TODO: remove this
-// func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
-// 	panic("not implemented")
-// }
+func (us *SqlUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
+	user, err := model.Users(conds...).One(us.GetReplica())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Users, "conds")
+		}
+		return nil, err
+	}
 
-// DeactivateGuests
-// func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
-// 	curTime := model.GetMillis()
+	return user, nil
+}
 
-// 	err := us.GetMaster().Table(model.UserTableName).
-// 		Where("Roles = ? AND DeleteAt = ?", "system_guest", 0).
-// 		Updates(&model.User{DeleteAt: curTime}).Error
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
-// 	}
-
-// 	userIds := []string{}
-// 	err = us.GetMaster().
-// 		Raw("SELECT Id FROM "+model.UserTableName+" WHERE DeleteAt = ?", curTime).
-// 		Scan(&userIds).Error
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "failed to find Users")
-// 	}
-
-// 	return userIds, nil
-
-// 	now := model_helper.GetMillis()
-// 	model.Users(
-// 		model.UserWhere.Roles.EQ(model_helper.SystemAdminRoleId)
-// 	)
-// }
+func (us *SqlUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
+	return model.Users(conds...).All(us.GetReplica())
+}
 
 // ResetAuthDataToEmailForUsers resets the AuthData of users whose AuthService
 // is |service| to their Email. If userIDs is non-empty, only the users whose
@@ -141,12 +123,12 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 	}
 
 	if dryRun {
-		count, err := model.Users(queryMods...).Count(us.Context(), us.GetReplica())
+		count, err := model.Users(queryMods...).Count(us.GetReplica())
 		return int(count), err
 	}
 
 	numUpdated, err := model.Users(queryMods...).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.AuthData:  "Email",
 			model.UserColumns.UpdatedAt: model_helper.GetMillis(),
 		})
@@ -174,8 +156,8 @@ func (us *SqlUserStore) GetEtagForProfiles() string {
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
 	user, err := model.
-		Users(qm.OrderBy(model.UserColumns.UpdatedAt+" DESC")).
-		One(us.Context(), us.GetReplica())
+		Users(qm.OrderBy(model.UserColumns.UpdatedAt + " DESC")).
+		One(us.GetReplica())
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, model_helper.GetMillis())
 	}
@@ -188,7 +170,7 @@ func (us *SqlUserStore) Save(user model.User) (*model.User, error) {
 		return nil, err
 	}
 
-	err := user.Insert(us.Context(), us.GetMaster(), boil.Infer())
+	err := user.Insert(us.GetMaster(), boil.Infer())
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "email", user.Email)
@@ -208,7 +190,7 @@ func (us *SqlUserStore) Update(user model.User, trustedUpdateData bool) (*model_
 		return nil, err
 	}
 
-	oldUser, err := model.FindUser(us.Context(), us.GetReplica(), user.ID)
+	oldUser, err := model.FindUser(us.GetReplica(), user.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Users, user.ID)
@@ -250,7 +232,7 @@ func (us *SqlUserStore) Update(user model.User, trustedUpdateData bool) (*model_
 		model_helper.UserUpdateMentionKeysFromUsername(&user, oldUser.Username)
 	}
 
-	_, err = user.Update(us.Context(), us.GetMaster(), boil.Blacklist(blackListedColumns...))
+	_, err = user.Update(us.GetMaster(), boil.Blacklist(blackListedColumns...))
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput(model.TableNames.Users, model.UserColumns.ID, user.Email)
@@ -269,7 +251,7 @@ func (us *SqlUserStore) Update(user model.User, trustedUpdateData bool) (*model_
 func (us *SqlUserStore) UpdateLastPictureUpdate(userId string, updateMillis int64) error {
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.LastPictureUpdate: updateMillis,
 		})
 	return err
@@ -278,7 +260,7 @@ func (us *SqlUserStore) UpdateLastPictureUpdate(userId string, updateMillis int6
 func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.LastPictureUpdate: model_helper.GetMillis(),
 		})
 	return err
@@ -288,7 +270,7 @@ func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
 	now := model_helper.GetMillis()
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.UpdatedAt: now,
 		})
 	return now, err
@@ -298,7 +280,7 @@ func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 	now := model_helper.GetMillis()
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.Password:           hashedPassword,
 			model.UserColumns.LastPasswordUpdate: now,
 			model.UserColumns.AuthData:           nil,
@@ -311,7 +293,7 @@ func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 func (us *SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int) error {
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.FailedAttempts: attempts,
 		})
 	return err
@@ -337,7 +319,7 @@ func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *
 
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), updateColumns)
+		UpdateAll(us.GetMaster(), updateColumns)
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique", "AuthData", "users_authdata_key"}) {
 			return "", store.NewErrInvalidInput("User", "id", userId)
@@ -352,7 +334,7 @@ func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
 	updateAt := model_helper.GetMillis()
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.MfaSecret: secret,
 			model.UserColumns.UpdatedAt: updateAt,
 		})
@@ -363,14 +345,14 @@ func (us *SqlUserStore) UpdateMfaActive(userId string, active bool) error {
 	updateAt := model_helper.GetMillis()
 	_, err := model.
 		Users(model.UserWhere.ID.EQ(userId)).
-		UpdateAll(us.Context(), us.GetMaster(), model.M{
+		UpdateAll(us.GetMaster(), model.M{
 			model.UserColumns.MfaActive: active,
 			model.UserColumns.UpdatedAt: updateAt,
 		})
 	return err
 }
 
-func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error) {
 	queryMods := []qm.QueryMod{
 		model.UserWhere.ID.IN(userIds),
 		qm.OrderBy(model.UserColumns.Username + " ASC"),
@@ -380,13 +362,13 @@ func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, o
 		queryMods = append(queryMods, model.UserWhere.UpdatedAt.GT(options.Since))
 	}
 
-	return model.Users(queryMods...).All(us.Context(), us.GetReplica())
+	return model.Users(queryMods...).All(us.GetReplica())
 }
 
 func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
 	users, err := model.
 		Users(model.UserWhere.Roles.LIKE("%system_admin%"), qm.OrderBy(model.UserColumns.Username+" ASC")).
-		All(us.Context(), us.GetReplica())
+		All(us.GetReplica())
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +396,7 @@ func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, all
 		return nil, errors.New("sign in with username and email are disabled")
 	}
 
-	user, err := model.Users(queryMod).One(us.Context(), us.GetReplica())
+	user, err := model.Users(queryMod).One(us.GetReplica())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Users, loginId)
@@ -427,7 +409,7 @@ func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, all
 func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 	now := model_helper.GetMillis()
 
-	_, err := model.Users(model.UserWhere.ID.EQ(userId)).UpdateAll(us.Context(), us.GetMaster(), model.M{
+	_, err := model.Users(model.UserWhere.ID.EQ(userId)).UpdateAll(us.GetMaster(), model.M{
 		model.UserColumns.Email:         strings.ToLower(email),
 		model.UserColumns.EmailVerified: true,
 		model.UserColumns.UpdatedAt:     now,
@@ -439,7 +421,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 }
 
 func (us *SqlUserStore) PermanentDelete(userId string) error {
-	_, err := model.Users(model.UserWhere.ID.EQ(userId)).DeleteAll(us.Context(), us.GetMaster())
+	_, err := model.Users(model.UserWhere.ID.EQ(userId)).DeleteAll(us.GetMaster())
 	return err
 }
 
@@ -470,7 +452,7 @@ func (us *SqlUserStore) Count(options model_helper.UserCountOptions) (int64, err
 	}
 
 	var count int64
-	err = queries.Raw(queryString, args...).QueryRowContext(us.Context(), us.GetReplica()).Scan(&count)
+	err = queries.Raw(queryString, args...).QueryRow(us.GetReplica()).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -496,7 +478,7 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model_hel
 		)
 	}
 
-	return model.Statuses(queryMods...).Count(us.Context(), us.GetReplica())
+	return model.Statuses(queryMods...).Count(us.GetReplica())
 }
 
 func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error) {
@@ -517,7 +499,7 @@ func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime i
 		)
 	}
 
-	return model.Users(queryMods...).Count(us.Context(), us.GetReplica())
+	return model.Users(queryMods...).Count(us.GetReplica())
 }
 
 func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) squirrel.SelectBuilder {
@@ -568,7 +550,7 @@ func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectB
 	return query.Where("u.Roles LIKE LOWER(?)", roleParam)
 }
 
-func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOptions) ([]*model.User, error) {
+func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
 	query := us.GetQueryBuilder().
 		Select("*").
 		From(model.TableNames.Users).
@@ -577,7 +559,7 @@ func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOpti
 	return us.performSearch(query, term, options)
 }
 
-func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model_helper.UserSearchOptions) ([]*model.User, error) {
+func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
 	term = store.SanitizeSearchTerm(term, "*")
 
 	var searchType []string
@@ -611,7 +593,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 		return nil, errors.Wrap(err, "perform_search_tosql")
 	}
 
-	var users []*model.User
+	var users model.UserSlice
 	err = queries.Raw(queryString, args...).Bind(us.Context(), us.GetReplica(), &users)
 	if err != nil {
 		return nil, err
@@ -626,13 +608,13 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
 	return model.
 		Users(model.UserWhere.DeleteAt.GT(model_types.NewNullInt64(0))).
-		Count(us.Context(), us.GetReplica())
+		Count(us.GetReplica())
 }
 
 func (us *SqlUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, error) {
 	count, err := model.
 		Users(qm.Where("LOWER(email) NOT LIKE ?", "%@"+strings.ToLower(hostDomain))).
-		Count(us.Context(), us.GetReplica())
+		Count(us.GetReplica())
 	if err != nil {
 		return false, err
 	}
@@ -646,7 +628,7 @@ func (us *SqlUserStore) AnalyticsGetGuestCount() (int64, error) {
 			model.UserWhere.Roles.LIKE("%"+model_helper.SystemGuestRoleId+"%"),
 			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
 		).
-		Count(us.Context(), us.GetReplica())
+		Count(us.GetReplica())
 }
 
 func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
@@ -655,7 +637,7 @@ func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
 			model.UserWhere.Roles.LIKE("%"+model_helper.SystemAdminRoleId+"%"),
 			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
 		).
-		Count(us.Context(), us.GetReplica())
+		Count(us.GetReplica())
 }
 
 func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
@@ -675,7 +657,7 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 				qm.OrderBy(model.UserColumns.ID),
 				qm.Limit(1000),
 			).
-			All(us.Context(), tx)
+			All(tx)
 		if err != nil {
 			return err
 		}
@@ -699,7 +681,7 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 			newRolesString := strings.Join(newRoles, " ")
 			if newRolesString != user.Roles {
-				_, err = user.Update(us.Context(), tx, boil.Whitelist(model.UserColumns.Roles))
+				_, err = user.Update(tx, boil.Whitelist(model.UserColumns.Roles))
 				if err != nil {
 					return err
 				}
@@ -743,226 +725,222 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) GetAllProfiles(options *model_helper.UserGetOptions) ([]*model.User, error) {
-	replicaDB := us.GetReplica()
-
-	if options != nil {
-		if options.Inactive {
-			replicaDB = replicaDB.Where(model.UserTableName+".IsActive = ?", false)
-		} else if options.Active {
-			replicaDB = replicaDB.Where(model.UserTableName + ".IsActive")
-		}
-
-		if options.Role != "" {
-			replicaDB = replicaDB.Where(model.UserTableName+".Roles LIKE %LOWER(?)%", options.Role)
-		}
-		if options.Sort != "" {
-			replicaDB = replicaDB.Order(options.Sort)
-		}
+func (us *SqlUserStore) GetAllProfiles(options model_helper.UserGetOptions) (model.UserSlice, error) {
+	queryMods := []qm.QueryMod{}
+	if options.Inactive {
+		queryMods = append(queryMods, model.UserWhere.IsActive.EQ(false))
+	} else if options.Active {
+		queryMods = append(queryMods, model.UserWhere.IsActive.EQ(true))
 	}
 
-	var res []*model.User
-	err := replicaDB.Find(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find user profiles")
+	if options.Role != "" {
+		queryMods = append(queryMods, model.UserWhere.Roles.ILIKE(fmt.Sprintf("%LOWER(%s)%", options.Role)))
 	}
-	return res, nil
-}
-
-func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions) squirrel.SelectBuilder {
-	query := s.
-		GetQueryBuilder().
-		Select(model.UserTableName + ".*").
-		From(model.UserTableName).
-		Where(options.Conditions)
-
-	if options.HasNoOrder {
-		query = query.
-			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
-			Where("Orders.UserID IS NULL")
-
-		goto orderBy
+	if options.Sort != "" {
+		queryMods = append(queryMods, qm.OrderBy(options.Sort))
+	} else {
+		queryMods = append(queryMods, qm.OrderBy(model.UserTableColumns.Username+" ASC"))
 	}
 
-	if options.OrderID != nil {
-		query = query.
-			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
-			Where(options.OrderID)
-	}
+	queryMods = append(queryMods, qm.Offset(options.Page*options.PerPage), qm.Limit(options.PerPage))
 
-	if options.HasNoOrder || (options.AnnotateOrderCount && options.OrderCreatedDate == nil) {
-		query = query.
-			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id")
-
-		if options.HasNoOrder {
-			query = query.Where("Orders.UserID IS NULL")
-		} else if options.AnnotateOrderCount {
-			query = query.
-				Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
-				GroupBy(model.UserTableName + ".Id")
-		}
-	} else if options.OrderID != nil {
-		query = query.
-			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
-			Where(options.OrderID)
-	}
-	if options.ExcludeBoardMembers {
-		query = query.
-			LeftJoin(model.ShopStaffTableName + " ON ShopStaffs.StaffID = Users.Id").
-			Where("ShopStaffs.StaffID IS NULL")
-	}
-
-	if options.AnnotateOrderCount {
-		query = query.
-			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
-			Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
-			GroupBy(model.UserTableName + ".Id")
-	} else if options.OrderCreatedDate != nil {
-
-	}
-
-orderBy:
-	if options.GraphqlPaginationValues.OrderBy != "" {
-		query = query.OrderBy(options.GraphqlPaginationValues.OrderBy)
-	}
-	return query
-}
-
-func (s *SqlUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
-	query := s.commonSelectQueryBuilder(options)
-
-	// count total if needed
-	var totalUsersCount int64
-	if options.CountTotal {
-		countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "FilterByOptions_CountTotal_ToSql")
-		}
-
-		err = s.GetReplica().Raw(countQuery, args...).Scan(&totalUsersCount).Error
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "failed to count total number of users by given options")
-		}
-	}
-
-	// apply pagination if needed
-	// NOTE: we don't apply order by here since it's applied in commonQueryBuilder
-	if options.GraphqlPaginationValues.PaginationApplicable() {
-		query = query.
-			Limit(options.GraphqlPaginationValues.Limit).
-			Where(options.GraphqlPaginationValues.Condition)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "failed to find users by given options")
-	}
-	defer rows.Close()
-
-	var users []*model.User
-	for rows.Next() {
-		var user model.User
-		scanFields := s.ScanFields(&user)
-		if options.AnnotateOrderCount {
-			scanFields = append(scanFields, &user.OrderCount)
-		}
-
-		err := rows.Scan(scanFields...)
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "failed to scan a row of user")
-		}
-
-		users = append(users, &user)
-	}
-
-	return totalUsersCount, users, nil
-}
-
-func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
-	queryString, args, err := s.commonSelectQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	var user model.User
-	err = s.DBXFromContext(ctx).Raw(queryString, args...).First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.UserTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find users with given options")
-	}
-
-	return &user, nil
-}
-
-func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-	var association string
-
-	switch relations.(type) {
-	case []*model.Address:
-		association = "Addresses"
-	case []*model.CustomerEvent:
-		association = "CustomerEvents"
-	case []*model.CustomerNote:
-		if customerNoteOnUser {
-			association = "NotesOnMe"
-		} else {
-			association = "CustomerNotes"
-		}
-	case []*model.StaffNotificationRecipient:
-		association = "StaffNotificationRecipients"
-	}
-
-	err := transaction.Model(&model.User{Id: userID}).Association(association).Append(relations)
-	if err != nil {
-		return model.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
-func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-	var association string
-
-	switch relations.(type) {
-	case []*model.Address:
-		association = "Addresses"
-	case []*model.CustomerEvent:
-		association = "CustomerEvents"
-	case []*model.CustomerNote:
-		if customerNoteOnUser {
-			association = "NotesOnMe"
-		} else {
-			association = "CustomerNotes"
-		}
-	case []*model.StaffNotificationRecipient:
-		association = "StaffNotificationRecipients"
-	}
-
-	err := transaction.Model(&model.User{Id: userID}).Association(association).Delete(relations)
-	if err != nil {
-		return model.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
+	return model.Users(queryMods...).All(us.GetReplica())
 }
 
 func (s *SqlUserStore) IsEmpty() (bool, error) {
-	exist, err := model.Users().Exists(s.Context(), s.GetReplica())
+	exist, err := model.Users().Exists(s.GetReplica())
 	if err != nil {
 		return false, err
 	}
 	return !exist, nil
 }
+
+// func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions) squirrel.SelectBuilder {
+// 	query := s.
+// 		GetQueryBuilder().
+// 		Select(model.UserTableName + ".*").
+// 		From(model.UserTableName).
+// 		Where(options.Conditions)
+
+// 	if options.HasNoOrder {
+// 		query = query.
+// 			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+// 			Where("Orders.UserID IS NULL")
+
+// 		goto orderBy
+// 	}
+
+// 	if options.OrderID != nil {
+// 		query = query.
+// 			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+// 			Where(options.OrderID)
+// 	}
+
+// 	if options.HasNoOrder || (options.AnnotateOrderCount && options.OrderCreatedDate == nil) {
+// 		query = query.
+// 			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id")
+
+// 		if options.HasNoOrder {
+// 			query = query.Where("Orders.UserID IS NULL")
+// 		} else if options.AnnotateOrderCount {
+// 			query = query.
+// 				Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
+// 				GroupBy(model.UserTableName + ".Id")
+// 		}
+// 	} else if options.OrderID != nil {
+// 		query = query.
+// 			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+// 			Where(options.OrderID)
+// 	}
+// 	if options.ExcludeBoardMembers {
+// 		query = query.
+// 			LeftJoin(model.ShopStaffTableName + " ON ShopStaffs.StaffID = Users.Id").
+// 			Where("ShopStaffs.StaffID IS NULL")
+// 	}
+
+// 	if options.AnnotateOrderCount {
+// 		query = query.
+// 			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+// 			Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
+// 			GroupBy(model.UserTableName + ".Id")
+// 	} else if options.OrderCreatedDate != nil {
+
+// 	}
+
+// orderBy:
+// 	if options.GraphqlPaginationValues.OrderBy != "" {
+// 		query = query.OrderBy(options.GraphqlPaginationValues.OrderBy)
+// 	}
+// 	return query
+// }
+
+// func (s *SqlUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, model.UserSlice, error) {
+// 	query := s.commonSelectQueryBuilder(options)
+
+// 	// count total if needed
+// 	var totalUsersCount int64
+// 	if options.CountTotal {
+// 		countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+// 		if err != nil {
+// 			return 0, nil, errors.Wrap(err, "FilterByOptions_CountTotal_ToSql")
+// 		}
+
+// 		err = s.GetReplica().Raw(countQuery, args...).Scan(&totalUsersCount).Error
+// 		if err != nil {
+// 			return 0, nil, errors.Wrap(err, "failed to count total number of users by given options")
+// 		}
+// 	}
+
+// 	// apply pagination if needed
+// 	// NOTE: we don't apply order by here since it's applied in commonQueryBuilder
+// 	if options.GraphqlPaginationValues.PaginationApplicable() {
+// 		query = query.
+// 			Limit(options.GraphqlPaginationValues.Limit).
+// 			Where(options.GraphqlPaginationValues.Condition)
+// 	}
+
+// 	queryString, args, err := query.ToSql()
+// 	if err != nil {
+// 		return 0, nil, errors.Wrap(err, "FilterByOptions_ToSql")
+// 	}
+
+// 	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
+// 	if err != nil {
+// 		return 0, nil, errors.Wrap(err, "failed to find users by given options")
+// 	}
+// 	defer rows.Close()
+
+// 	var users model.UserSlice
+// 	for rows.Next() {
+// 		var user model.User
+// 		scanFields := s.ScanFields(&user)
+// 		if options.AnnotateOrderCount {
+// 			scanFields = append(scanFields, &user.OrderCount)
+// 		}
+
+// 		err := rows.Scan(scanFields...)
+// 		if err != nil {
+// 			return 0, nil, errors.Wrap(err, "failed to scan a row of user")
+// 		}
+
+// 		users = append(users, &user)
+// 	}
+
+// 	return totalUsersCount, users, nil
+// }
+
+// func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
+// 	queryString, args, err := s.commonSelectQueryBuilder(options).ToSql()
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+// 	}
+
+// 	var user model.User
+// 	err = s.DBXFromContext(ctx).Raw(queryString, args...).First(&user).Error
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return nil, store.NewErrNotFound(model.UserTableName, "options")
+// 		}
+// 		return nil, errors.Wrap(err, "failed to find users with given options")
+// 	}
+
+// 	return &user, nil
+// }
+
+// func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
+// 	if transaction == nil {
+// 		transaction = s.GetMaster()
+// 	}
+// 	var association string
+
+// 	switch relations.(type) {
+// 	case []*model.Address:
+// 		association = "Addresses"
+// 	case []*model.CustomerEvent:
+// 		association = "CustomerEvents"
+// 	case []*model.CustomerNote:
+// 		if customerNoteOnUser {
+// 			association = "NotesOnMe"
+// 		} else {
+// 			association = "CustomerNotes"
+// 		}
+// 	case []*model.StaffNotificationRecipient:
+// 		association = "StaffNotificationRecipients"
+// 	}
+
+// 	err := transaction.Model(&model.User{Id: userID}).Association(association).Append(relations)
+// 	if err != nil {
+// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+// 	}
+
+// 	return nil
+// }
+
+// func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
+// 	if transaction == nil {
+// 		transaction = s.GetMaster()
+// 	}
+// 	var association string
+
+// 	switch relations.(type) {
+// 	case []*model.Address:
+// 		association = "Addresses"
+// 	case []*model.CustomerEvent:
+// 		association = "CustomerEvents"
+// 	case []*model.CustomerNote:
+// 		if customerNoteOnUser {
+// 			association = "NotesOnMe"
+// 		} else {
+// 			association = "CustomerNotes"
+// 		}
+// 	case []*model.StaffNotificationRecipient:
+// 		association = "StaffNotificationRecipients"
+// 	}
+
+// 	err := transaction.Model(&model.User{Id: userID}).Association(association).Delete(relations)
+// 	if err != nil {
+// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+// 	}
+
+// 	return nil
+// }

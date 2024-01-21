@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 )
 
 // ExportProducts is called by product export job, taks needed arguments then exports products
-func (s *ServiceCsv) ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model.AppError {
+func (s *ServiceCsv) ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model_helper.AppError {
 	// if delimeter == "" {
 	// 	delimeter = ";"
 	// }
@@ -43,13 +44,13 @@ func (s *ServiceCsv) ExportProductsInBatches(
 	headers []string,
 	delimiter string,
 	fileType string,
-) *model.AppError {
+) *model_helper.AppError {
 	var createAtGt int64 = 0
 
 	for {
 		prds, err := s.srv.Store.Product().FilterByQuery(productQuery.Where("Products.CreateAt > ?", createAtGt).Limit(productFetchBatchSize))
 		if err != nil {
-			return model.NewAppError("ExportProductsInBatches", "app.csv.error_finding_products_by_query.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("ExportProductsInBatches", "app.csv.error_finding_products_by_query.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		if len(prds) == 0 {

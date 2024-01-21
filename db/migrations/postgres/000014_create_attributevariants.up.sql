@@ -1,10 +1,10 @@
-CREATE TABLE IF NOT EXISTS attribute_variants (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  attribute_id uuid NOT NULL,
-  product_type_id uuid NOT NULL,
-  variant_selection boolean NOT NULL DEFAULT false,
-  sort_order integer
-);
+-- CREATE TABLE IF NOT EXISTS attribute_variants (
+--   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+--   attribute_id uuid NOT NULL,
+--   product_type_id uuid NOT NULL,
+--   variant_selection boolean NOT NULL DEFAULT false,
+--   sort_order integer
+-- );
 
-ALTER TABLE ONLY attribute_variants
-    ADD CONSTRAINT attribute_variants_attribute_id_product_type_id_key UNIQUE (attribute_id, product_type_id);
+-- ALTER TABLE ONLY attribute_variants
+--     ADD CONSTRAINT attribute_variants_attribute_id_product_type_id_key UNIQUE (attribute_id, product_type_id);

@@ -185,7 +185,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 					desired.Images = strings.Join(cate.Images, " ")
 				}
 				if pathIdx > 0 {
-					desired.ParentID = &meetMap[parentKey].ID
+					desired.ParentID = model_types.NewNullString(meetMap[parentKey].ID)
 				}
 
 				categories = append(categories, desired)
@@ -213,7 +213,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 	slog.Info("Successfully populated categories.")
 
 	// indicate populated
-	return sqlStore.System().Save(&model.System{
+	return sqlStore.System().Save(model.System{
 		Name:  model_helper.PopulateCategoriesForTheFirstTimeKey,
 		Value: "true",
 	})

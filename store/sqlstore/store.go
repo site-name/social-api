@@ -345,7 +345,7 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 
 	unitTests := props[model_helper.SystemRanUnitTests]
 	if unitTests == "" {
-		systemTests := &model.System{Name: model_helper.SystemRanUnitTests, Value: "1"}
+		systemTests := model.System{Name: model_helper.SystemRanUnitTests, Value: "1"}
 		ss.System().Save(systemTests)
 	}
 }

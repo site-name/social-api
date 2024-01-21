@@ -12,6 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 	"golang.org/x/text/currency"
@@ -31,19 +32,19 @@ type GiftCardEvent struct {
 	ExpiryDate    *Date                 `json:"expiryDate"`
 	OldExpiryDate *Date                 `json:"oldExpiryDate"`
 
-	e *model.GiftCardEvent
+	e *model.GiftcardEvent
 
 	// User          *User                 `json:"user"`
 	// App           *App                  `json:"app"`
 }
 
-func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCardEvent {
+func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftcardEvent) *GiftCardEvent {
 	if evt == nil {
 		return nil
 	}
 
 	res := new(GiftCardEvent)
-	res.ID = evt.Id
+	res.ID = evt.ID
 	res.e = evt
 	if evt.Date != 0 {
 		res.Date = &DateTime{util.TimeFromMillis(evt.Date)}
@@ -52,27 +53,27 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 
 	msg, ok := evt.Parameters["message"]
 	if ok && msg != nil {
-		res.Message = model.GetPointerOfValue(msg.(string))
+		res.Message = model_helper.GetPointerOfValue(msg.(string))
 	}
 
 	email, ok := evt.Parameters["email"]
 	if ok && email != nil {
-		res.Email = model.GetPointerOfValue(email.(string))
+		res.Email = model_helper.GetPointerOfValue(email.(string))
 	}
 
 	orderID, ok := evt.Parameters["order_id"]
 	if ok && orderID != nil {
-		res.OrderID = model.GetPointerOfValue(orderID.(string))
+		res.OrderID = model_helper.GetPointerOfValue(orderID.(string))
 	}
 
 	tag, ok := evt.Parameters["tag"]
 	if ok && tag != nil {
-		res.Tag = model.GetPointerOfValue(tag.(string))
+		res.Tag = model_helper.GetPointerOfValue(tag.(string))
 	}
 
 	oldTag, ok := evt.Parameters["old_tag"]
 	if ok && oldTag != nil {
-		res.OldTag = model.GetPointerOfValue(oldTag.(string))
+		res.OldTag = model_helper.GetPointerOfValue(oldTag.(string))
 	}
 
 	balance, ok := evt.Parameters["balance"]
@@ -456,24 +457,24 @@ type GiftCardFilterInput struct {
 	InitialBalance *PriceRangeInput `json:"initialBalance"`
 }
 
-func (g *GiftCardFilterInput) validate() *model.AppError {
+func (g *GiftCardFilterInput) validate() *model_helper.AppError {
 	if g.Tag != nil && *g.Tag == "" {
-		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "tag"}, "tag must not be empty", http.StatusBadRequest)
+		return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "tag"}, "tag must not be empty", http.StatusBadRequest)
 	}
 	if len(g.Products) > 0 && !lo.EveryBy(g.Products, model.IsValidId) {
-		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+		return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 	if len(g.UsedBy) > 0 && !lo.EveryBy(g.UsedBy, model.IsValidId) {
-		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usedBy"}, "please provide valid user ids", http.StatusBadRequest)
+		return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usedBy"}, "please provide valid user ids", http.StatusBadRequest)
 	}
 	if g.Currency != nil {
 		_, err := currency.ParseISO(*g.Currency)
 		if err != nil {
-			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, *g.Currency+" is not a valid currency", http.StatusBadRequest)
+			return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, *g.Currency+" is not a valid currency", http.StatusBadRequest)
 		}
 	}
 	if g.Currency == nil && (g.CurrentBalance != nil || g.InitialBalance != nil) {
-		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
+		return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
 	}
 
 	for name, priceRange := range map[string]*PriceRangeInput{
@@ -484,7 +485,7 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 			priceRange.Gte != nil &&
 			priceRange.Lte != nil &&
 			*priceRange.Gte >= *priceRange.Lte {
-			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "Lte must be greater than Gte", http.StatusBadRequest)
+			return model_helper.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "Lte must be greater than Gte", http.StatusBadRequest)
 		}
 	}
 
@@ -492,7 +493,7 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 }
 
 // NOTE: Call me after calling validate()
-func (g *GiftCardFilterInput) ToSystemGiftcardFilter() (*model.GiftCardFilterOption, *model.AppError) {
+func (g *GiftCardFilterInput) ToSystemGiftcardFilter() (*model.GiftCardFilterOption, *model_helper.AppError) {
 	appErr := g.validate()
 	if appErr != nil {
 		return nil, appErr

@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -23,30 +24,30 @@ func init() {
 	})
 }
 
-func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model.AppError) {
+func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model_helper.AppError) {
 	invoices, err := s.srv.Store.Invoice().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("FilterInvoicesByOptions", "app.invoice.invoices_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FilterInvoicesByOptions", "app.invoice.invoices_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return invoices, nil
 }
 
-func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model.AppError) {
+func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model_helper.AppError) {
 	res, err := s.srv.Store.Invoice().Upsert(invoice)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrNotFound); ok {
-			return nil, model.NewAppError("UpsertInvoice", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoice.Id"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpsertInvoice", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoice.Id"}, "", http.StatusBadRequest)
 		}
-		return nil, model.NewAppError("UpsertInvoice", "app.invoice.upserting_invoice.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UpsertInvoice", "app.invoice.upserting_invoice.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return res, nil
 }
 
-func (s *ServiceInvoice) GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model.AppError) {
+func (s *ServiceInvoice) GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model_helper.AppError) {
 	invoice, err := s.srv.Store.Invoice().GetbyOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -54,7 +55,7 @@ func (s *ServiceInvoice) GetInvoiceByOptions(options *model.InvoiceFilterOptions
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("GetInvoiceByOptions", "app.invoice.invoice_by_options.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("GetInvoiceByOptions", "app.invoice.invoice_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return invoice, nil

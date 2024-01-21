@@ -11,6 +11,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -24,7 +25,7 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*da
 		categories      = map[string][]string{}
 		variants        = map[string][]string{}
 		collections     map[string][]string
-		appErr          *model.AppError
+		appErr          *model_helper.AppError
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

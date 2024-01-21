@@ -33,12 +33,14 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/jobs/active_users"
 	"github.com/sitename/sitename/modules/mail"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
@@ -121,7 +123,6 @@ type Server struct {
 	// licenseListenerId       string
 	// searchLicenseListenerId string
 	// loggerLicenseListenerId string
-	StatusCache             cache.Cache
 	openGraphDataCache      cache.Cache
 	configListenerId        string
 	clusterLeaderListenerId string
@@ -249,7 +250,7 @@ func NewServer(options ...Option) (*Server, error) {
 		} else {
 			if err := sentry.Init(sentry.ClientOptions{
 				Dsn:              SentryDSN,
-				Release:          model.BuildHash,
+				Release:          model_helper.BuildHash,
 				AttachStacktrace: true,
 				BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
 					// sanitize data sent to sentry to reduce exposure of PII
@@ -282,7 +283,7 @@ func NewServer(options ...Option) (*Server, error) {
 	if err := util.TranslationsPreInit(); err != nil {
 		return nil, errors.Wrapf(err, "unable to load Sitename translation files")
 	}
-	model.AppErrorInit(i18n.T)
+	model_helper.AppErrorInit(i18n.T)
 
 	searchEngine := searchengine.NewBroker(s.Config())
 	bleveEngine := bleveengine.NewBleveEngine(s.Config(), s.Jobs)
@@ -301,14 +302,6 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	var err error
-
-	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-		Size:           model.STATUS_CACHE_SIZE,
-		Striped:        true,
-		StripedBuckets: max(runtime.NumCPU()-1, 1),
-	}); err != nil {
-		return nil, errors.Wrap(err, "Unable to create status cache")
-	}
 	if s.openGraphDataCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size: openGraphMetadataCacheSize,
 	}); err != nil {
@@ -343,7 +336,7 @@ func NewServer(options ...Option) (*Server, error) {
 				s.Config(),
 			)
 
-			s.AddConfigListener(func(prevCfg, cfg *model.Config) {
+			s.AddConfigListener(func(prevCfg, cfg *model_helper.Config) {
 				searchStore.UpdateConfig(cfg)
 			})
 
@@ -431,7 +424,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	s.regenerateClientConfig()
 
-	subPath, err := model.GetSubpathFromConfig(s.Config())
+	subPath, err := model_helper.GetSubpathFromConfig(s.Config())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse SiteURL subpath")
 	}
@@ -466,7 +459,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	s.timezones = timezones.New()
 	// Start email batching because it's not like the other jobs
-	s.AddConfigListener(func(_, _ *model.Config) {
+	s.AddConfigListener(func(_, _ *model_helper.Config) {
 		s.EmailService.InitEmailBatching()
 	})
 
@@ -475,7 +468,7 @@ func NewServer(options ...Option) (*Server, error) {
 	if pluginsEnvironment != nil {
 		pluginsEnvironment.InitPluginHealthCheckJob(*s.Config().PluginSettings.Enable && *s.Config().PluginSettings.EnableHealthCheck)
 	}
-	s.AddConfigListener(func(_, c *model.Config) {
+	s.AddConfigListener(func(_, c *model_helper.Config) {
 		s.PluginsLock.RLock()
 		pluginsEnvironment := s.PluginsEnvironment
 		s.PluginsLock.RUnlock()
@@ -486,19 +479,19 @@ func NewServer(options ...Option) (*Server, error) {
 
 	logCurrentVersion := fmt.Sprintf(
 		"Current version is %v (%v/%v/%v/%v)",
-		model.CurrentVersion,
-		model.BuildNumber,
-		model.BuildDate,
-		model.BuildHash,
-		model.BuildHashEnterprise,
+		model_helper.CurrentVersion,
+		model_helper.BuildNumber,
+		model_helper.BuildDate,
+		model_helper.BuildHash,
+		model_helper.BuildHashEnterprise,
 	)
 	slog.Info(
 		logCurrentVersion,
-		slog.String("current_version", model.CurrentVersion),
-		slog.String("build_number", model.BuildNumber),
-		slog.String("build_date", model.BuildDate),
-		slog.String("build_hash", model.BuildHash),
-		slog.String("build_hash_enterprise", model.BuildHashEnterprise),
+		slog.String("current_version", model_helper.CurrentVersion),
+		slog.String("build_number", model_helper.BuildNumber),
+		slog.String("build_date", model_helper.BuildDate),
+		slog.String("build_hash", model_helper.BuildHash),
+		slog.String("build_hash_enterprise", model_helper.BuildHashEnterprise),
 	)
 
 	pwd, _ := os.Getwd()
@@ -520,8 +513,8 @@ func NewServer(options ...Option) (*Server, error) {
 	s.enableLoggingMetrics()
 
 	// Enable developer settings if this is a "dev" build
-	if model.BuildNumber == "dev" {
-		s.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableDeveloper = true })
+	if model_helper.BuildNumber == "dev" {
+		s.UpdateConfig(func(cfg *model_helper.Config) { *cfg.ServiceSettings.EnableDeveloper = true })
 	}
 
 	if err = s.Store.Status().ResetAll(); err != nil {
@@ -666,7 +659,7 @@ func (s *Server) initLogging() error {
 }
 
 // configureLogger applies the specified configuration to a logger.
-func (s *Server) configureLogger(name string, logger *slog.Logger, logSettings *model.LogSettings, configStore *config.Store, getPath func(string) string) error {
+func (s *Server) configureLogger(name string, logger *slog.Logger, logSettings *model_helper.LogSettings, configStore *config.Store, getPath func(string) string) error {
 	// Advanced logging is E20 only, however logging must be initialized before the license
 	// file is loaded.  If no valid E20 license exists then advanced logging will be
 	// shutdown once license is loaded/checked.
@@ -754,7 +747,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 		client = s.HTTPService.MakeClient(true)
 		params = url.Values{
 			"app_id": []string{apiKey},
-			"base":   []string{model.DEFAULT_CURRENCY}, // units other than USD require service subsciption
+			"base":   []string{model_helper.DEFAULT_CURRENCY.String()}, // units other than USD require service subsciption
 		}
 		responseValue struct {
 			Disclaimer string             `json:"disclaimer,omitempty"`
@@ -796,7 +789,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 		for currency, rate := range responseValue.Rates {
 			exchangeRate := &model.OpenExchangeRate{
 				ToCurrency: currency,
-				Rate:       model.GetPointerOfValue(decimal.NewFromFloat(rate)),
+				Rate:       model_types.NewNullDecimal(decimal.NewFromFloat(rate)),
 			}
 			s.ExchangeRateMap.Store(currency, exchangeRate)
 			exchangeRateInstances = append(exchangeRateInstances, exchangeRate)
@@ -807,12 +800,12 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			return
 		}
 
-		s.Log.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
+		s.Log.Info("Successfully fetched and set currency exchange rates", slog.Any("base_currency", model_helper.DEFAULT_CURRENCY))
 	}
 
 	// first run
 	fetchFun()
-	model.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
+	model_helper.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
 }
 
 func (s *Server) upsertCurrencyExchangeRates(newRates []*model.OpenExchangeRate) error {
@@ -834,9 +827,9 @@ func (s *Server) DatabaseTypeAndMattermostVersion() (string, string) {
 }
 
 func runReportToAWSMeterJob(s *Server) {
-	model.CreateRecurringTask("Collect and send usage report to AWS Metering Service", func() {
+	model_helper.CreateRecurringTask("Collect and send usage report to AWS Metering Service", func() {
 		doReportUsageToAWSMeteringService(s)
-	}, time.Hour*model.AwsMeteringReportInterval)
+	}, time.Hour*model_helper.AwsMeteringReportInterval)
 }
 
 func doReportUsageToAWSMeteringService(s *Server) {
@@ -846,8 +839,8 @@ func doReportUsageToAWSMeteringService(s *Server) {
 		return
 	}
 
-	dimensions := []string{model.AwsMeteringDimensionUsageHrs}
-	reports := awsMeter.GetUserCategoryUsage(dimensions, time.Now().UTC(), time.Now().Add(-model.AwsMeteringReportInterval*time.Hour).UTC())
+	dimensions := []string{model_helper.AwsMeteringDimensionUsageHrs}
+	reports := awsMeter.GetUserCategoryUsage(dimensions, time.Now().UTC(), time.Now().Add(-model_helper.AwsMeteringReportInterval*time.Hour).UTC())
 	awsMeter.ReportUserCategoryUsage(reports)
 }
 
@@ -869,7 +862,7 @@ func (s *Server) Go(f func()) {
 
 // func runCommandWebhookCleanupJob(s *Server) {
 // 	doCommandWebhookCleanup(s)
-// 	model.CreateRecurringTask("Command Hook Cleanup", func() {
+// 	model_helper.CreateRecurringTask("Command Hook Cleanup", func() {
 // 		doCommandWebhookCleanup(s)
 // 	}, time.Hour*1)
 // }
@@ -880,7 +873,7 @@ func (s *Server) Go(f func()) {
 
 func runTokenCleanupJob(s *Server) {
 	doTokenCleanup(s)
-	model.CreateRecurringTask("Token Cleanup", func() {
+	model_helper.CreateRecurringTask("Token Cleanup", func() {
 		doTokenCleanup(s)
 	}, time.Hour*1)
 }
@@ -891,20 +884,20 @@ func doTokenCleanup(s *Server) {
 
 func runSecurityJob(s *Server) {
 	doSecurity(s)
-	model.CreateRecurringTask("Security", func() {
+	model_helper.CreateRecurringTask("Security", func() {
 		doSecurity(s)
 	}, time.Hour*4)
 }
 
 func runSessionCleanupJob(s *Server) {
 	doSessionCleanup(s)
-	model.CreateRecurringTask("Session Cleanup", func() {
+	model_helper.CreateRecurringTask("Session Cleanup", func() {
 		doSessionCleanup(s)
 	}, time.Hour*24)
 }
 
 func doSessionCleanup(s *Server) {
-	s.Store.Session().Cleanup(model.GetMillis(), SessionsCleanupBatchSize)
+	s.Store.Session().Cleanup(model_helper.GetMillis(), SessionsCleanupBatchSize)
 }
 
 func doSecurity(s *Server) {
@@ -919,14 +912,14 @@ func doSecurity(s *Server) {
 // 	return s.telemetryService.TelemetryID
 // }
 
-func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
-	systemData, err := s.Store.System().GetByName(model.SystemFirstServerRunTimestampKey)
+func (s *Server) getFirstServerRunTimestamp() (int64, *model_helper.AppError) {
+	systemData, err := s.Store.System().GetByName(model_helper.SystemFirstServerRunTimestampKey)
 	if err != nil {
-		return 0, model.NewAppError("getFirstServerRunTimestamp", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("getFirstServerRunTimestamp", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	value, err := strconv.ParseInt(systemData.Value, 10, 64)
 	if err != nil {
-		return 0, model.NewAppError("getFirstServerRunTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("getFirstServerRunTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return value, nil
 }
@@ -1174,7 +1167,7 @@ func (s *Server) Start() error {
 
 	addr := *s.Config().ServiceSettings.ListenAddress
 	if addr == "" {
-		if *s.Config().ServiceSettings.ConnectionSecurity == model.CONN_SECURITY_TLS {
+		if *s.Config().ServiceSettings.ConnectionSecurity == model_helper.CONN_SECURITY_TLS {
 			addr = ":https"
 		} else {
 			addr = ":http"
@@ -1234,7 +1227,7 @@ func (s *Server) Start() error {
 	s.didFinishListen = make(chan struct{})
 	go func() {
 		var err error
-		if *s.Config().ServiceSettings.ConnectionSecurity == model.CONN_SECURITY_TLS {
+		if *s.Config().ServiceSettings.ConnectionSecurity == model_helper.CONN_SECURITY_TLS {
 
 			tlsConfig := &tls.Config{
 				PreferServerCipherSuites: true,
@@ -1264,7 +1257,7 @@ func (s *Server) Start() error {
 			} else {
 				var cipherSuites []uint16
 				for _, cipher := range s.Config().ServiceSettings.TLSOverwriteCiphers {
-					value, ok := model.ServerTLSSupportedCiphers[cipher]
+					value, ok := model_helper.ServerTLSSupportedCiphers[cipher]
 
 					if !ok {
 						slog.Warn("Unsupported cipher passed", slog.String("cipher", cipher))
@@ -1464,7 +1457,7 @@ func (s *Server) StartSearchEngine() string {
 		})
 	}
 
-	configListenerId := s.AddConfigListener(func(oldConfig *model.Config, newConfig *model.Config) {
+	configListenerId := s.AddConfigListener(func(oldConfig *model_helper.Config, newConfig *model_helper.Config) {
 		if s.SearchEngine == nil {
 			return
 		}

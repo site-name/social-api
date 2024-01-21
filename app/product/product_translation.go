@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // ProductTranslationsByOption returns a list of product translations
-func (s *ServiceProduct) ProductTranslationsByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, *model.AppError) {
+func (s *ServiceProduct) ProductTranslationsByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, *model_helper.AppError) {
 	translations, err := s.srv.Store.ProductTranslation().FilterByOption(option)
 	var (
 		errMessage string
@@ -21,7 +22,7 @@ func (s *ServiceProduct) ProductTranslationsByOption(option *model.ProductTransl
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("ProductTranslationsByOption", "app.product.error_finding_product_translations_by_option.app_error", nil, errMessage, statusCode)
+		return nil, model_helper.NewAppError("ProductTranslationsByOption", "app.product.error_finding_product_translations_by_option.app_error", nil, errMessage, statusCode)
 	}
 
 	return translations, nil

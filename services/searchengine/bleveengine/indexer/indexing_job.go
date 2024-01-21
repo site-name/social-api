@@ -100,7 +100,7 @@ func (worker *BleveIndexerWorker) Run() {
 			return
 		case job := <-worker.jobs:
 			slog.Debug("Worker: Received a new candidate job.", slog.String("workername", worker.name))
-			worker.DoJob(&job)
+			worker.DoJob(job)
 		}
 	}
 }
@@ -115,7 +115,7 @@ func (worker *BleveIndexerWorker) Stop() {
 	<-worker.stopped
 }
 
-func (worker *BleveIndexerWorker) DoJob(job *model.Job) {
+func (worker *BleveIndexerWorker) DoJob(job model.Job) {
 	claimed, err := worker.jobServer.ClaimJob(job)
 	if err != nil {
 		slog.Warn("Worker: Error occurred while trying to claim job", slog.String("workername", worker.name), slog.String("job_id", job.ID), slog.Err(err))
@@ -306,7 +306,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 		posts, err = worker.jobServer.Store.Post().GetPostsBatchForIndexing(progress.LastEntityTime, endTime, BatchSize)
 // 		if err != nil {
 // 			if tries >= 10 {
-// 				return progress, model.NewAppError("IndexPostsBatch", "app.post.get_posts_batch_for_indexing.get.app_error", nil, err.Error(), http.StatusInternalServerError)
+// 				return progress, model_helper.NewAppError("IndexPostsBatch", "app.post.get_posts_batch_for_indexing.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 // 			}
 // 			slog.Warn("Failed to get posts batch for indexing. Retrying.", slog.Err(err))
 
@@ -349,7 +349,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	return progress, nil
 // }
 
-// func (worker *BleveIndexerWorker) BulkIndexPosts(posts []*model.PostForIndexing, progress IndexingProgress) (int64, *model.AppError) {
+// func (worker *BleveIndexerWorker) BulkIndexPosts(posts []*model.PostForIndexing, progress IndexingProgress) (int64, *model_helper.AppError) {
 // 	lastCreateAt := int64(0)
 // 	batch := worker.engine.PostIndex.NewBatch()
 
@@ -368,12 +368,12 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	defer worker.engine.Mutex.RUnlock()
 
 // 	if err := worker.engine.PostIndex.Batch(batch); err != nil {
-// 		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_posts.batch_error", nil, err.Error(), http.StatusInternalServerError)
+// 		return 0, model_helper.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_posts.batch_error", nil, err.Error(), http.StatusInternalServerError)
 // 	}
 // 	return lastCreateAt, nil
 // }
 
-// func (worker *BleveIndexerWorker) IndexFilesBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
+// func (worker *BleveIndexerWorker) IndexFilesBatch(progress IndexingProgress) (IndexingProgress, *model_helper.AppError) {
 // 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
 
 // 	var files []*model.FileForIndexing
@@ -384,7 +384,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 		files, err = worker.jobServer.Store.FileInfo().GetFilesBatchForIndexing(progress.LastEntityTime, endTime, BatchSize)
 // 		if err != nil {
 // 			if tries >= 10 {
-// 				return progress, model.NewAppError("IndexFilesBatch", "app.post.get_files_batch_for_indexing.get.app_error", nil, err.Error(), http.StatusInternalServerError)
+// 				return progress, model_helper.NewAppError("IndexFilesBatch", "app.post.get_files_batch_for_indexing.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 // 			}
 // 			slog.Warn("Failed to get files batch for indexing. Retrying.", slog.Err(err))
 
@@ -427,7 +427,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	return progress, nil
 // }
 
-// func (worker *BleveIndexerWorker) BulkIndexFiles(files []*model.FileForIndexing, progress IndexingProgress) (int64, *model.AppError) {
+// func (worker *BleveIndexerWorker) BulkIndexFiles(files []*model.FileForIndexing, progress IndexingProgress) (int64, *model_helper.AppError) {
 // 	lastCreateAt := int64(0)
 // 	batch := worker.engine.FileIndex.NewBatch()
 
@@ -446,12 +446,12 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	defer worker.engine.Mutex.RUnlock()
 
 // 	if err := worker.engine.FileIndex.Batch(batch); err != nil {
-// 		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_files.batch_error", nil, err.Error(), http.StatusInternalServerError)
+// 		return 0, model_helper.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_files.batch_error", nil, err.Error(), http.StatusInternalServerError)
 // 	}
 // 	return lastCreateAt, nil
 // }
 
-// func (worker *BleveIndexerWorker) IndexChannelsBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
+// func (worker *BleveIndexerWorker) IndexChannelsBatch(progress IndexingProgress) (IndexingProgress, *model_helper.AppError) {
 // 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
 
 // 	var channels []*model.Channel
@@ -462,7 +462,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 		channels, nErr = worker.jobServer.Store.Channel().GetChannelsBatchForIndexing(progress.LastEntityTime, endTime, BatchSize)
 // 		if nErr != nil {
 // 			if tries >= 10 {
-// 				return progress, model.NewAppError("BleveIndexerWorker.IndexChannelsBatch", "app.channel.get_channels_batch_for_indexing.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+// 				return progress, model_helper.NewAppError("BleveIndexerWorker.IndexChannelsBatch", "app.channel.get_channels_batch_for_indexing.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 // 			}
 
 // 			slog.Warn("Failed to get channels batch for indexing. Retrying.", slog.Err(nErr))
@@ -505,7 +505,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	return progress, nil
 // }
 
-// func (worker *BleveIndexerWorker) BulkIndexChannels(channels []*model.Channel, progress IndexingProgress) (int64, *model.AppError) {
+// func (worker *BleveIndexerWorker) BulkIndexChannels(channels []*model.Channel, progress IndexingProgress) (int64, *model_helper.AppError) {
 // 	lastCreateAt := int64(0)
 // 	batch := worker.engine.ChannelIndex.NewBatch()
 
@@ -524,7 +524,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 // 	defer worker.engine.Mutex.RUnlock()
 
 // 	if err := worker.engine.ChannelIndex.Batch(batch); err != nil {
-// 		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexChannels", "bleveengine.indexer.do_job.bulk_index_channels.batch_error", nil, err.Error(), http.StatusInternalServerError)
+// 		return 0, model_helper.NewAppError("BleveIndexerWorker.BulkIndexChannels", "bleveengine.indexer.do_job.bulk_index_channels.batch_error", nil, err.Error(), http.StatusInternalServerError)
 // 	}
 // 	return lastCreateAt, nil
 // }

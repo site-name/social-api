@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -24,7 +25,7 @@ func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category
 	return res
 }
 
-func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError) {
+func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model_helper.AppError) {
 	if allowFromCache {
 		var res model.Categories
 		notFoundCategoryIdMap := lo.SliceToMap(ids, func(id string) (string, struct{}) { return id, struct{}{} })
@@ -57,24 +58,24 @@ func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model
 }
 
 // CategoriesByOption returns all categories that satisfy given option
-func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) (model.Categories, *model.AppError) {
+func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) (model.Categories, *model_helper.AppError) {
 	categories, err := a.srv.Store.Category().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return categories, nil
 }
 
 // CategoryByOption returns 1 category that satisfies given option
-func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model.AppError) {
+func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model_helper.AppError) {
 	category, err := a.srv.Store.Category().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return category, nil
@@ -84,7 +85,7 @@ func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*
 // Counts number of products of each category.
 // Sets NumberOfProducts, NumberOfChildren, Children attributes of each category.
 // Stores classified categories in cache
-func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
+func (s *ServiceProduct) DoAnalyticCategories() *model_helper.AppError {
 	slog.Info("Analyzing categories")
 
 	var allCategories model.Categories
@@ -114,7 +115,7 @@ func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
 
 	countObjs, err := s.srv.Store.Product().CountByCategoryIDs(allCategories.IDs(false))
 	if err != nil {
-		return model.NewAppError("DoAnalyticCategories", "app.product.counting_products_by_category_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("DoAnalyticCategories", "app.product.counting_products_by_category_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	categoryMap := lo.SliceToMap(allCategories, func(c *model.Category) (string, *model.Category) { return c.Id, c })
 	for _, count := range countObjs {
@@ -167,7 +168,7 @@ func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.C
 // UpsertCategory first checks if given category need a Level number.
 // Performs upsert given category into database.
 // asynchronously does category anayltic to update category cache.
-func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, *model.AppError) {
+func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, *model_helper.AppError) {
 	if !model.IsValidId(cate.Id) && cate.ParentID != nil { // meaning saving category
 		parentCate, ok := s.categoryMap.Load(*cate.ParentID)
 		if ok && parentCate != nil {
@@ -177,14 +178,14 @@ func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, 
 
 	cate, err := s.srv.Store.Category().Upsert(cate)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return nil, model.NewAppError("UpsertCategory", "app.product.upsert_category.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertCategory", "app.product.upsert_category.app_error", nil, err.Error(), statusCode)
 	}
 
 	s.srv.Go(func() {

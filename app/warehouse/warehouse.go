@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -22,45 +23,45 @@ func init() {
 }
 
 // WarehouseByOption returns a list of warehouses based on given option
-func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) ([]*model.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) ([]*model.WareHouse, *model_helper.AppError) {
 	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
 	if err != nil {
-		return nil, model.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return warehouses, nil
 }
 
 // WarehouseByOption returns a warehouse filtered using given option
-func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.WareHouse, *model.AppError) {
+func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.WareHouse, *model_helper.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("WarehouseByOption", "app.warehouse.error_finding_warehouse_by_option.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("WarehouseByOption", "app.warehouse.error_finding_warehouse_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return warehouse, nil
 }
 
 // WarehouseByStockID returns a warehouse that owns the given stock
-func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.WareHouse, *model_helper.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("WarehouseByStockID", "app.warehouse.error_finding_warehouse_by_stock_id", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("WarehouseByStockID", "app.warehouse.error_finding_warehouse_by_stock_id", nil, err.Error(), statusCode)
 	}
 
 	return warehouse, nil
 }
 
 // WarehouseCountries returns countries of given warehouse
-func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
+func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model_helper.AppError) {
 	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
 		WarehouseID: squirrel.Eq{model.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
@@ -88,7 +89,7 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 }
 
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
-func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model_helper.AppError) {
 	return a.WarehousesByOption(&model.WarehouseFilterOption{
 		ShippingZonesCountries: squirrel.Like{model.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,
@@ -96,10 +97,10 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCod
 	})
 }
 
-func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError) {
+func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model_helper.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().Save(warehouse)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		statusCode := http.StatusInternalServerError
@@ -107,7 +108,7 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("UpsertWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, err.Error(), statusCode)
 	}
 
 	return warehouse, nil
@@ -117,7 +118,7 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 // Note this method does not check stocks quantity for given `CheckoutLine`s.
 // This method should be used only if stocks quantity will be checked in further
 // validation steps, for instance in checkout completion.
-func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model.AppError) {
+func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model_helper.AppError) {
 	// stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
 	// 	SelectRelatedProductVariant: true,
 	// 	ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},

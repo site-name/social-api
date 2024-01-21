@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -20,16 +21,16 @@ func (a *App) DoAdvancedPermissionsMigration() {
 
 func (s *Server) doAdvancedPermissionsMigration() {
 	// If the migration is already marked as completed, don't do it again.
-	if _, err := s.Store.System().GetByName(model.AdvancedPermissionsMigrationKey); err == nil {
+	if _, err := s.Store.System().GetByName(model_helper.AdvancedPermissionsMigrationKey); err == nil {
 		return
 	}
 
 	slog.Info("Migrating roles to database.")
-	roles := model.MakeDefaultRoles()
+	roles := model_helper.MakeDefaultRoles()
 
 	allSucceeded := true
-	for _, role := range roles {
-		_, err := s.Store.Role().Save(role)
+	for _, rawRole := range roles {
+		role, err := s.Store.Role().Upsert(*rawRole)
 		if err == nil {
 			continue
 		}
@@ -47,8 +48,8 @@ func (s *Server) doAdvancedPermissionsMigration() {
 			fetchedRole.DisplayName != role.DisplayName ||
 			fetchedRole.Description != role.Description ||
 			fetchedRole.SchemeManaged != role.SchemeManaged {
-			role.Id = fetchedRole.Id
-			if _, err = s.Store.Role().Save(role); err != nil {
+			role.ID = fetchedRole.ID
+			if _, err = s.Store.Role().Upsert(*role); err != nil {
 				// Role is not the same, but failed to update.
 				slog.Critical("Failed to migrate role to database.", slog.Err(err))
 				allSucceeded = false
@@ -68,18 +69,18 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 	// create a evidence to prove that all roles have been saved to database.
 	system := model.System{
-		Name:  model.AdvancedPermissionsMigrationKey,
+		Name:  model_helper.AdvancedPermissionsMigrationKey,
 		Value: "true",
 	}
 
-	if err := s.Store.System().Save(&system); err != nil {
+	if err := s.Store.System().Save(system); err != nil {
 		slog.Critical("Failed to mark advanced permissions migration as completed.", slog.Err(err))
 	}
 }
 
 func (a *App) SetPhase2PermissionsMigrationStatus(isComplete bool) error {
 	if !isComplete {
-		if _, err := a.Srv().Store.System().PermanentDeleteByName(model.MigrationKeyAdvancedPermissionsPhase2); err != nil {
+		if _, err := a.Srv().Store.System().PermanentDeleteByName(model_helper.MigrationKeyAdvancedPermissionsPhase2); err != nil {
 			return err
 		}
 	}
@@ -97,24 +98,24 @@ func (s *Server) doSystemConsoleRolesCreationMigration() {
 		return
 	}
 
-	roles := model.MakeDefaultRoles()
+	roles := model_helper.MakeDefaultRoles()
 
 	allSucceeded := true
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemManagerRoleId); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SystemManagerRoleId]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemManagerRoleId))
+	if _, err := s.Store.Role().GetByName(context.Background(), model_helper.SystemManagerRoleId); err != nil {
+		if _, err := s.Store.Role().Upsert(*roles[model_helper.SystemManagerRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model_helper.SystemManagerRoleId))
 			allSucceeded = false
 		}
 	}
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemReadOnlyAdminRoleId); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SystemReadOnlyAdminRoleId]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemReadOnlyAdminRoleId))
+	if _, err := s.Store.Role().GetByName(context.Background(), model_helper.SystemReadOnlyAdminRoleId); err != nil {
+		if _, err := s.Store.Role().Upsert(*roles[model_helper.SystemReadOnlyAdminRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model_helper.SystemReadOnlyAdminRoleId))
 			allSucceeded = false
 		}
 	}
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemUserManagerRoleId); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SystemUserManagerRoleId]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemUserManagerRoleId))
+	if _, err := s.Store.Role().GetByName(context.Background(), model_helper.SystemUserManagerRoleId); err != nil {
+		if _, err := s.Store.Role().Upsert(*roles[model_helper.SystemUserManagerRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model_helper.SystemUserManagerRoleId))
 			allSucceeded = false
 		}
 	}
@@ -128,7 +129,7 @@ func (s *Server) doSystemConsoleRolesCreationMigration() {
 		Value: "true",
 	}
 
-	if err := s.Store.System().Save(&system); err != nil {
+	if err := s.Store.System().Save(system); err != nil {
 		slog.Critical("Failed to mark system console roles creation migration as completed.", slog.Err(err))
 	}
 }
@@ -139,8 +140,8 @@ func (s *Server) doContentExtractionConfigDefaultTrueMigration() {
 		return
 	}
 
-	s.UpdateConfig(func(config *model.Config) {
-		config.FileSettings.ExtractContent = model.GetPointerOfValue(true)
+	s.UpdateConfig(func(config *model_helper.Config) {
+		config.FileSettings.ExtractContent = model_helper.GetPointerOfValue(true)
 	})
 
 	system := model.System{
@@ -148,7 +149,7 @@ func (s *Server) doContentExtractionConfigDefaultTrueMigration() {
 		Value: "true",
 	}
 
-	if err := s.Store.System().Save(&system); err != nil {
+	if err := s.Store.System().Save(system); err != nil {
 		slog.Critical("Failed to mark content extraction config migration as completed.", slog.Err(err))
 	}
 }

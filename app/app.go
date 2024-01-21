@@ -8,6 +8,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
@@ -45,21 +46,21 @@ func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RenderWebAppError(a.Config(), w, r, model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
+	api.RenderWebAppError(a.Config(), w, r, model_helper.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
 }
 
-func (a *App) GetSystemInstallDate() (int64, *model.AppError) {
+func (a *App) GetSystemInstallDate() (int64, *model_helper.AppError) {
 	return a.Srv().getSystemInstallDate()
 }
 
-func (s *Server) getSystemInstallDate() (int64, *model.AppError) {
-	systemData, err := s.Store.System().GetByName(model.SystemInstallationDateKey)
+func (s *Server) getSystemInstallDate() (int64, *model_helper.AppError) {
+	systemData, err := s.Store.System().GetByName(model_helper.SystemInstallationDateKey)
 	if err != nil {
-		return 0, model.NewAppError("getSystemInstallDate", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("getSystemInstallDate", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	value, err := strconv.ParseInt(systemData.Value, 10, 64)
 	if err != nil {
-		return 0, model.NewAppError("getSystemInstallDate", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("getSystemInstallDate", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return value, nil
 }
@@ -116,9 +117,9 @@ func (a *App) Metrics() einterfaces.MetricsInterface {
 // 	return a.srv.Notification
 // }
 
-// func (a *App) Cloud() einterfaces.CloudInterface {
-// 	return a.srv.Cloud
-// }
+//	func (a *App) Cloud() einterfaces.CloudInterface {
+//		return a.srv.Cloud
+//	}
 func (a *App) HTTPService() httpservice.HTTPService {
 	return a.srv.HTTPService
 }

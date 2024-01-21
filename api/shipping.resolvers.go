@@ -15,6 +15,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -26,18 +27,18 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 }) (*ShippingMethodChannelListingUpdate, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method channel listing id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method channel listing id", http.StatusBadRequest)
 	}
 
 	if !lo.EveryBy(args.Input.RemoveChannels, model.IsValidId) {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid remove channel ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid remove channel ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	channelIdsRequesterWantToAdd := lo.Map(args.Input.AddChannels, func(item *ShippingMethodChannelListingAddInput, _ int) string { return item.ChannelID })
 	if !lo.EveryBy(channelIdsRequesterWantToAdd, model.IsValidId) {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid add channel ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid add channel ids", http.StatusBadRequest)
 	}
 
 	// find channels that requester want to add
@@ -64,7 +65,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	channelIDsNotAssignedToShippingMethod, _ := lo.Difference(channelIdsRequesterWantToAdd, channelsOfShippingMethod.IDs())
 	if len(channelIDsNotAssignedToShippingMethod) > 0 {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide channels that are assigned to the shipping method", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide channels that are assigned to the shipping method", http.StatusBadRequest)
 	}
 
 	// keep only add channels that have ShippingMethodChannelListing relations with shipping method
@@ -94,21 +95,21 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	for _, channelInput := range args.Input.AddChannels {
 		if channelInput.Price == nil && !actualChannelIdsCanAddMap[channelInput.ChannelID] {
-			return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channel"}, "price field is required", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channel"}, "price field is required", http.StatusBadRequest)
 		}
 
 		// validate given max order price > min order price
 		if channelInput.MinimumOrderPrice != nil &&
 			channelInput.MaximumOrderPrice != nil &&
 			channelInput.MaximumOrderPrice.ToDecimal().LessThanOrEqual(channelInput.MinimumOrderPrice.ToDecimal()) {
-			return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "max prices must be greater than min prices", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "max prices must be greater than min prices", http.StatusBadRequest)
 		}
 	}
 
 	// update
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -160,7 +161,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingMethodChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingMethodChannelListingUpdate{
@@ -183,7 +184,7 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	// start transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("ShippingPriceCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -202,7 +203,7 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceCreate", model.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceCreate", model.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceCreate{
@@ -215,7 +216,7 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id string }) (*ShippingPriceDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingPriceDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -229,7 +230,7 @@ func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id stri
 
 	err := embedCtx.App.Srv().Store.ShippingMethod().Delete(nil, args.Id)
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceDelete", "app.shipping.delete_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceDelete", "app.shipping.delete_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceDelete{
@@ -242,13 +243,13 @@ func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id stri
 func (r *Resolver) ShippingPriceBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ShippingPriceBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model.NewAppError("ShippingPriceBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	err := embedCtx.App.Srv().Store.ShippingMethod().Delete(nil, args.Ids...)
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceDelete", "app.shipping.delete_shipping_methods.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceDelete", "app.shipping.delete_shipping_methods.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceBulkDelete{
@@ -263,7 +264,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 }) (*ShippingPriceUpdate, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingPriceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	appErr := args.Input.Validate("ShippingPriceUpdate")
@@ -276,7 +277,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	// start transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("ShippingPriceUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -297,7 +298,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	if len(args.Input.DeletePostalCodeRules) > 0 {
 		err := embedCtx.App.Srv().Store.ShippingMethodPostalCodeRule().Delete(transaction, args.Input.DeletePostalCodeRules...)
 		if err != nil {
-			return nil, model.NewAppError("ShippingPriceUpdate", "app.shipping.error_delete_shipping_method_postal_code_rules.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ShippingPriceUpdate", "app.shipping.error_delete_shipping_method_postal_code_rules.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -326,7 +327,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceUpdate", model.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceUpdate", model.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// NOTE: The returning shipping zone below is old version of parent shipping zone of shipping method
@@ -352,11 +353,11 @@ func (r *Resolver) ShippingPriceExcludeProducts(ctx context.Context, args struct
 }) (*ShippingPriceExcludeProducts, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingPriceExcludeProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceExcludeProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method id", http.StatusBadRequest)
 	}
 
 	if !lo.EveryBy(args.Input.Products, model.IsValidId) {
-		return nil, model.NewAppError("ShippingPriceExcludeProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceExcludeProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -367,7 +368,7 @@ func (r *Resolver) ShippingPriceExcludeProducts(ctx context.Context, args struct
 		Association("ExcludedProducts").
 		Append(productsToExclude)
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceExcludeProducts{
@@ -382,11 +383,11 @@ func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, ar
 }) (*ShippingPriceRemoveProductFromExclude, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingPriceRemoveProductFromExclude", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceRemoveProductFromExclude", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method id", http.StatusBadRequest)
 	}
 
 	if !lo.EveryBy(args.Products, model.IsValidId) {
-		return nil, model.NewAppError("ShippingPriceRemoveProductFromExclude", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingPriceRemoveProductFromExclude", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -396,7 +397,7 @@ func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, ar
 		Association("ExcludedProducts").
 		Delete(productsToRemove)
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceRemoveProductFromExclude{
@@ -410,10 +411,10 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 }) (*ShippingZoneCreate, error) {
 	// validate params
 	if !lo.EveryBy(args.Input.AddWarehouses, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add warehouses"}, "please provide valid warehouse ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add warehouses"}, "please provide valid warehouse ids", http.StatusBadRequest)
 	}
 	if !lo.EveryBy(args.Input.AddChannels, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -421,7 +422,7 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("ShippingZoneCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingZoneCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -446,7 +447,7 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
 		err := transaction.Model(shippingZone).Association("Warehouses").Append(warehousesToAdd)
 		if err != nil {
-			return nil, model.NewAppError("ShippingZoneCreate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ShippingZoneCreate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -455,14 +456,14 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 		channelsToAdd := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
 		err := transaction.Model(shippingZone).Association("Channels").Append(channelsToAdd)
 		if err != nil {
-			return nil, model.NewAppError("ShippingZoneCreate", "app.shipping.add_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ShippingZoneCreate", "app.shipping.add_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("ShippingZoneCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingZoneCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingZoneCreate{
@@ -474,7 +475,7 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 func (r *Resolver) ShippingZoneDelete(ctx context.Context, args struct{ Id string }) (*ShippingZoneDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingZoneDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -496,7 +497,7 @@ func (r *Resolver) ShippingZoneDelete(ctx context.Context, args struct{ Id strin
 func (r *Resolver) ShippingZoneBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ShippingZoneBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -521,7 +522,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 }) (*ShippingZoneUpdate, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
 
 	for argsName, ids := range map[string][]string{
@@ -531,15 +532,15 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 		"removeChannels":   args.Input.RemoveChannels,
 	} {
 		if !lo.EveryBy(ids, model.IsValidId) {
-			return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argsName}, "please provide valid "+argsName, http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argsName}, "please provide valid "+argsName, http.StatusBadRequest)
 		}
 	}
 
 	if len(lo.Intersect(args.Input.AddWarehouses, args.Input.RemoveWarehouses)) > 0 {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddWarehouses / RemoveWarehouses"}, "add warehouses must differ from remove warehouses", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddWarehouses / RemoveWarehouses"}, "add warehouses must differ from remove warehouses", http.StatusBadRequest)
 	}
 	if len(lo.Intersect(args.Input.AddChannels, args.Input.RemoveChannels)) > 0 {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddChannels / RemoveChannels"}, "add channels must differ from remove channels", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddChannels / RemoveChannels"}, "add channels must differ from remove channels", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -547,7 +548,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -557,11 +558,11 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(allShippingZones) == 0 {
-		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.no_shipping_zone.app_error", nil, "system has no shipping zone", http.StatusNotImplemented)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", "app.shipping.no_shipping_zone.app_error", nil, "system has no shipping zone", http.StatusNotImplemented)
 	}
 	shippingZoneToUpdate, found := lo.Find(allShippingZones, func(sp *model.ShippingZone) bool { return sp.Id == args.Id })
 	if !found {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
 
 	// clean default:
@@ -571,7 +572,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	// If 2 conditions are met, return error
 	if val := args.Input.Default; val != nil && *val {
 		if lo.SomeBy(allShippingZones, func(sp *model.ShippingZone) bool { return sp.Id != args.Id && sp.Default != nil && *sp.Default }) {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.default_shipping_zone_exists.app_error", nil, "default shipping zone exists", http.StatusNotModified)
+			return nil, model_helper.NewAppError("ShippingZoneUpdate", "app.shipping.default_shipping_zone_exists.app_error", nil, "default shipping zone exists", http.StatusNotModified)
 		}
 		// find all countries code that are not used by any shipping zones
 		usedCountriesByShippingZones := map[string]struct{}{}
@@ -645,7 +646,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingZoneUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingZoneUpdate{
@@ -660,7 +661,7 @@ func (r *Resolver) ShippingZone(ctx context.Context, args struct {
 }) (*ShippingZone, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
 
 	zone, err := ShippingZoneByIdLoader.Load(ctx, args.Id)()
@@ -685,7 +686,7 @@ func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 
 	if args.ChannelID != nil {
 		if !model.IsValidId(*args.ChannelID) {
-			return nil, model.NewAppError("ShippingZones", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShippingZones", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 		}
 		channelIDs = append(channelIDs, *args.ChannelID)
 	}
@@ -697,7 +698,7 @@ func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 
 	if args.Filter != nil {
 		if !lo.EveryBy(args.Filter.Channels, model.IsValidId) {
-			return nil, model.NewAppError("ShippingZones", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channels"}, "please provide valid channel id", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShippingZones", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channels"}, "please provide valid channel id", http.StatusBadRequest)
 		}
 		channelIDs = append(channelIDs, args.Filter.Channels...)
 

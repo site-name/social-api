@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -20,7 +21,7 @@ func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop model.ShopSettin
 //
 // It takes default settings or digital product's settings
 // to check if url is still valid.
-func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model.AppError) {
+func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model_helper.AppError) {
 	digitalContent, appErr := a.DigitalContentbyOption(&model.DigitalContentFilterOption{
 		Conditions: squirrel.Eq{model.DigitalContentTableName + ".Id": contentURL.ContentID},
 	})
@@ -56,7 +57,7 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalConte
 	return true, nil
 }
 
-func (a *ServiceProduct) IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError) {
+func (a *ServiceProduct) IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model_helper.AppError) {
 	contentURL.DownloadNum++
 	updatedContentUrl, appErr := a.UpsertDigitalContentURL(&contentURL)
 	if appErr != nil {

@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS order_discounts (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid,
-  type OrderDiscountType NOT NULL,
-  value_type DiscountValueType NOT NULL,
+  type order_discount_type NOT NULL,
+  value_type discount_value_type NOT NULL,
   value decimal(12,3) NOT NULL DEFAULT 0.00,
   amount_value decimal(12,3) NOT NULL DEFAULT 0.00,
   currency Currency NOT NULL,

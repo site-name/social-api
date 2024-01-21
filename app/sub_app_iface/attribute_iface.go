@@ -11,14 +11,14 @@ import (
 // AttributeService contains methods for working with attributes
 type AttributeService interface {
 	// AssignedPageAttributeByOption returns 1 assigned page attribute
-	AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError)
-	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model.AppError)
+	AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError)
+	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model_helper.AppError)
 	// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model.AppError)
+	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError)
 	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
-	AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model.AppError)
+	AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model_helper.AppError)
 	// AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
-	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, *model.AppError)
+	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, *model_helper.AppError)
 	// AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
 	// Note: be award this function invokes the “set“ method on the instance's
 	// attribute association. Meaning any values already assigned or concurrently
@@ -28,31 +28,31 @@ type AttributeService interface {
 	// `attributeID` must be ID of processing `Attribute`
 	//
 	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model.AppError)
+	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model_helper.AppError)
 	// AttributePageByOption returns an attribute page filtered using given option
-	AttributePageByOption(option *model.AttributePageFilterOption) (*model.AttributePage, *model.AppError)
+	AttributePageByOption(option *model.AttributePageFilterOption) (*model.AttributePage, *model_helper.AppError)
 	// AttributeProductByOption returns an attribute product filtered using given option
-	AttributeProductByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, *model.AppError)
+	AttributeProductByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, *model_helper.AppError)
 	// AttributeVariantByOption returns an attribute variant filtered using given option
-	AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model.AppError)
+	AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model_helper.AppError)
 	// AttributesByOption returns a list of attributes filtered using given options
-	AttributesByOption(option *model.AttributeFilterOption) ([]*model.Attribute, *model.AppError)
+	AttributesByOption(option *model.AttributeFilterOption) ([]*model.Attribute, *model_helper.AppError)
 	// GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-	GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError)
+	GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError)
 	// GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-	GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model.AppError)
+	GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model_helper.AppError)
 	// GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
-	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model.AppError)
+	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model_helper.AppError)
 	// UpsertAttribute inserts or updates given attribute and returns it
-	UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model.AppError)
+	UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model_helper.AppError)
 	// UpsertAttributeValue insderts or updates given attribute value then returns it
-	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError)
-	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
-	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
-	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError)
-	BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model.AppError)
-	DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model.AppError)
-	DeleteAttributes(ids ...string) (int64, *model.AppError)
-	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
-	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError
+	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model_helper.AppError)
+	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model_helper.AppError)
+	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model_helper.AppError)
+	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model_helper.AppError)
+	BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model_helper.AppError)
+	DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model_helper.AppError)
+	DeleteAttributes(ids ...string) (int64, *model_helper.AppError)
+	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model_helper.AppError)
+	PerformReordering(values model.AttributeValues, operations map[string]*int) *model_helper.AppError
 }

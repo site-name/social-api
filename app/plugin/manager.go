@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -25,7 +26,7 @@ type PluginManager struct {
 }
 
 // NewPluginManager returns a new plugin manager
-func (s *ServicePlugin) newPluginManager() (interfaces.PluginManagerInterface, *model.AppError) {
+func (s *ServicePlugin) newPluginManager() (interfaces.PluginManagerInterface, *model_helper.AppError) {
 	manager := &PluginManager{
 		Srv: s.srv,
 	}
@@ -88,9 +89,9 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User) (*model.Address, *model.AppError) {
+func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError) {
 	var (
-		appErr        *model.AppError
+		appErr        *model_helper.AppError
 		previousValue model.Address = address
 		anAddress     *model.Address
 	)
@@ -110,7 +111,7 @@ func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *mo
 	return anAddress, nil
 }
 
-func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	subTotal, appErr := m.CalculateCheckoutSubTotal(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -142,13 +143,13 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, 
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	lineTotalSum, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
 	var err error
 
@@ -160,7 +161,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 
 		lineTotalSum, err = lineTotalSum.Add(taxedMoney)
 		if err != nil {
-			return nil, model.NewAppError("CalculateCheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("CalculateCheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -168,7 +169,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutShippingPrice(&checkoutInfo, lines)
 	if appErr != nil {
 		return nil, appErr
@@ -190,13 +191,13 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInf
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutLineTotal(&checkoutLineInfo, &checkoutInfo.Channel, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -218,13 +219,13 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutIn
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if orDer.ShippingMethodID == nil {
 		zero, _ := util.ZeroTaxedMoney(orDer.Currency)
 		return zero, nil
@@ -265,13 +266,13 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&shippingPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -294,7 +295,7 @@ func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutIn
 	return model.GetPointerOfValue(deci.Round(4)), nil
 }
 
-func (m *PluginManager) GetOrderShippingTaxRate(orDer model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+func (m *PluginManager) GetOrderShippingTaxRate(orDer model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&shippingPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -317,7 +318,7 @@ func (m *PluginManager) GetOrderShippingTaxRate(orDer model.Order, shippingPrice
 	return model.GetPointerOfValue(deci.Round(4)), nil
 }
 
-func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseOrderLineTotal(&orderLine)
 	if appErr != nil {
 		return nil, appErr
@@ -339,13 +340,13 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderlineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderlineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
 
 	var taxedMoney *goprices.TaxedMoney
@@ -364,22 +365,22 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutLineUnitPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutLineUnitPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError) {
 	orderLine.PopulateNonDbFields() // this is needed
 	defaultValue, err := orderLine.UnitPrice.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		appErr     *model.AppError
+		appErr     *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		taxedMoney, appErr = plg.CalculateOrderLineUnit(orDer, orderLine, variant, product, *defaultValue)
@@ -395,13 +396,13 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&unitPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -424,7 +425,7 @@ func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, 
 	return model.GetPointerOfValue(deci.RoundUp(4)), nil
 }
 
-func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&unitPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -447,12 +448,12 @@ func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Pro
 	return model.GetPointerOfValue(deci.RoundUp(4)), nil
 }
 
-func (m *PluginManager) GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppError) {
+func (m *PluginManager) GetTaxRateTypeChoices() ([]*model.TaxType, *model_helper.AppError) {
 	defaultValue := []*model.TaxType{}
 
 	var (
 		taxTypes []*model.TaxType
-		appErr   *model.AppError
+		appErr   *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		taxTypes, appErr = plg.GetTaxRateTypeChoices(defaultValue)
@@ -469,12 +470,12 @@ func (m *PluginManager) GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppErr
 	return taxTypes, nil
 }
 
-func (m *PluginManager) ShowTaxesOnStoreFront() (bool, *model.AppError) {
+func (m *PluginManager) ShowTaxesOnStoreFront() (bool, *model_helper.AppError) {
 	defaultValue := false
 
 	var (
 		showTax bool
-		appErr  *model.AppError
+		appErr  *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		showTax, appErr = plg.ShowTaxesOnStorefront(defaultValue)
@@ -491,7 +492,7 @@ func (m *PluginManager) ShowTaxesOnStoreFront() (bool, *model.AppError) {
 	return showTax, nil
 }
 
-func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, channelID string) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, channelID string) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, _ := (&goprices.TaxedMoney{
 		Net:      &price,
 		Gross:    &price,
@@ -500,7 +501,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		appErr     *model.AppError
+		appErr     *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		taxedMoney, appErr = plg.ApplyTaxesToProduct(product, price, country, *defaultValue)
@@ -516,12 +517,12 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("ApplyTaxesToProduct", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ApplyTaxesToProduct", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddress model.Address, channelID string) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddress model.Address, channelID string) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, _ := (&goprices.TaxedMoney{
 		Net:      &price,
 		Gross:    &price,
@@ -530,7 +531,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		appErr     *model.AppError
+		appErr     *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		taxedMoney, appErr = plg.ApplyTaxesToShipping(price, shippingAddress, *defaultValue)
@@ -546,18 +547,18 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("ApplyTaxesToShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ApplyTaxesToShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos) (interface{}, *model.AppError) {
+func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{} = nil
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		value, appErr = plg.PreprocessOrderCreation(checkoutInfo, discounts, lines, defaultValue)
@@ -574,12 +575,12 @@ func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo,
 	return value, nil
 }
 
-func (m *PluginManager) CustomerCreated(customer model.User) (interface{}, *model.AppError) {
+func (m *PluginManager) CustomerCreated(customer model.User) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.CustomerCreated(customer, defaultValue)
@@ -596,12 +597,12 @@ func (m *PluginManager) CustomerCreated(customer model.User) (interface{}, *mode
 	return value, appErr
 }
 
-func (m *PluginManager) CustomerUpdated(customer model.User) (interface{}, *model.AppError) {
+func (m *PluginManager) CustomerUpdated(customer model.User) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.CustomerUpdated(customer, defaultValue)
@@ -618,12 +619,12 @@ func (m *PluginManager) CustomerUpdated(customer model.User) (interface{}, *mode
 	return value, nil
 }
 
-func (m *PluginManager) ProductCreated(product model.Product) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductCreated(product model.Product) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductCreated(product, defaultValue)
@@ -640,12 +641,12 @@ func (m *PluginManager) ProductCreated(product model.Product) (interface{}, *mod
 	return value, nil
 }
 
-func (m *PluginManager) ProductUpdated(product model.Product) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductUpdated(product model.Product) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductUpdated(product, defaultValue)
@@ -662,12 +663,12 @@ func (m *PluginManager) ProductUpdated(product model.Product) (interface{}, *mod
 	return value, nil
 }
 
-func (m *PluginManager) ProductDeleted(product model.Product, variants []int) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductDeleted(product model.Product, variants []int) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductDeleted(product, variants, defaultValue)
@@ -684,12 +685,12 @@ func (m *PluginManager) ProductDeleted(product model.Product, variants []int) (i
 	return value, appErr
 }
 
-func (m *PluginManager) ProductVariantCreated(variant model.ProductVariant) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductVariantCreated(variant model.ProductVariant) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductVariantCreated(variant, defaultValue)
@@ -706,12 +707,12 @@ func (m *PluginManager) ProductVariantCreated(variant model.ProductVariant) (int
 	return value, nil
 }
 
-func (m *PluginManager) ProductVariantUpdated(variant model.ProductVariant) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductVariantUpdated(variant model.ProductVariant) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductVariantUpdated(variant, defaultValue)
@@ -728,12 +729,12 @@ func (m *PluginManager) ProductVariantUpdated(variant model.ProductVariant) (int
 	return value, nil
 }
 
-func (m *PluginManager) ProductVariantDeleted(variant model.ProductVariant) (interface{}, *model.AppError) {
+func (m *PluginManager) ProductVariantDeleted(variant model.ProductVariant) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.ProductVariantDeleted(variant, defaultValue)
@@ -750,10 +751,10 @@ func (m *PluginManager) ProductVariantDeleted(variant model.ProductVariant) (int
 	return value, nil
 }
 
-func (m *PluginManager) ProductVariantOutOfStock(stock model.Stock) *model.AppError {
+func (m *PluginManager) ProductVariantOutOfStock(stock model.Stock) *model_helper.AppError {
 	var defaultValue interface{}
 
-	var appErr *model.AppError
+	var appErr *model_helper.AppError
 
 	for _, plg := range m.getPlugins("", true) {
 		appErr = plg.ProductVariantOutOfStock(stock, defaultValue)
@@ -768,10 +769,10 @@ func (m *PluginManager) ProductVariantOutOfStock(stock model.Stock) *model.AppEr
 	return nil
 }
 
-func (m *PluginManager) ProductVariantBackInStock(stock model.Stock) *model.AppError {
+func (m *PluginManager) ProductVariantBackInStock(stock model.Stock) *model_helper.AppError {
 	var defaultValue interface{}
 
-	var appErr *model.AppError
+	var appErr *model_helper.AppError
 
 	for _, plg := range m.getPlugins("", true) {
 		appErr = plg.ProductVariantBackInStock(stock, defaultValue)
@@ -786,12 +787,12 @@ func (m *PluginManager) ProductVariantBackInStock(stock model.Stock) *model.AppE
 	return nil
 }
 
-func (m *PluginManager) OrderCreated(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderCreated(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderCreated(orDer, defaultValue)
@@ -808,12 +809,12 @@ func (m *PluginManager) OrderCreated(orDer model.Order) (interface{}, *model.App
 	return value, nil
 }
 
-func (m *PluginManager) OrderConfirmed(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderConfirmed(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderConfirmed(orDer, defaultValue)
@@ -830,12 +831,12 @@ func (m *PluginManager) OrderConfirmed(orDer model.Order) (interface{}, *model.A
 	return value, nil
 }
 
-func (m *PluginManager) DraftOrderCreated(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) DraftOrderCreated(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.DraftOrderCreated(orDer, defaultValue)
@@ -852,12 +853,12 @@ func (m *PluginManager) DraftOrderCreated(orDer model.Order) (interface{}, *mode
 	return value, appErr
 }
 
-func (m *PluginManager) DraftOrderDeleted(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) DraftOrderDeleted(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.DraftOrderDeleted(orDer, defaultValue)
@@ -874,12 +875,12 @@ func (m *PluginManager) DraftOrderDeleted(orDer model.Order) (interface{}, *mode
 	return value, nil
 }
 
-func (m *PluginManager) DraftOrderUpdated(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) DraftOrderUpdated(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.DraftOrderUpdated(orDer, defaultValue)
@@ -896,12 +897,12 @@ func (m *PluginManager) DraftOrderUpdated(orDer model.Order) (interface{}, *mode
 	return value, nil
 }
 
-func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo) (interface{}, *model.AppError) {
+func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.SaleCreated(sale, currentCatalogue, defaultValue)
@@ -918,12 +919,12 @@ func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model.Node
 	return value, nil
 }
 
-func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo) (interface{}, *model.AppError) {
+func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.SaleDeleted(sale, previousCatalogue, defaultValue)
@@ -940,12 +941,12 @@ func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model.Nod
 	return value, nil
 }
 
-func (m *PluginManager) SaleUpdated(sale model.Sale, previousCatalogue, currentCatalogue model.NodeCatalogueInfo) (interface{}, *model.AppError) {
+func (m *PluginManager) SaleUpdated(sale model.Sale, previousCatalogue, currentCatalogue model.NodeCatalogueInfo) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.SaleUpdated(sale, previousCatalogue, currentCatalogue, defaultValue)
@@ -962,12 +963,12 @@ func (m *PluginManager) SaleUpdated(sale model.Sale, previousCatalogue, currentC
 	return value, nil
 }
 
-func (m *PluginManager) InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string) (interface{}, *model.AppError) {
+func (m *PluginManager) InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.InvoiceRequest(orDer, inVoice, number, defaultValue)
@@ -984,7 +985,7 @@ func (m *PluginManager) InvoiceRequest(orDer model.Order, inVoice model.Invoice,
 	return value, nil
 }
 
-func (m *PluginManager) InvoiceDelete(inVoice model.Invoice) (interface{}, *model.AppError) {
+func (m *PluginManager) InvoiceDelete(inVoice model.Invoice) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var channelID string
@@ -998,7 +999,7 @@ func (m *PluginManager) InvoiceDelete(inVoice model.Invoice) (interface{}, *mode
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		value, appErr = plg.InvoiceDelete(inVoice, defaultValue)
@@ -1015,7 +1016,7 @@ func (m *PluginManager) InvoiceDelete(inVoice model.Invoice) (interface{}, *mode
 	return value, nil
 }
 
-func (m *PluginManager) InvoiceSent(inVoice model.Invoice, email string) (interface{}, *model.AppError) {
+func (m *PluginManager) InvoiceSent(inVoice model.Invoice, email string) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var channelID string
@@ -1029,7 +1030,7 @@ func (m *PluginManager) InvoiceSent(inVoice model.Invoice, email string) (interf
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		value, appErr = plg.InvoiceSent(inVoice, email, defaultValue)
@@ -1046,12 +1047,12 @@ func (m *PluginManager) InvoiceSent(inVoice model.Invoice, email string) (interf
 	return value, nil
 }
 
-func (m *PluginManager) OrderFullyPaid(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderFullyPaid(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderFullyPaid(orDer, defaultValue)
@@ -1068,12 +1069,12 @@ func (m *PluginManager) OrderFullyPaid(orDer model.Order) (interface{}, *model.A
 	return value, nil
 }
 
-func (m *PluginManager) OrderUpdated(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderUpdated(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderUpdated(orDer, defaultValue)
@@ -1090,12 +1091,12 @@ func (m *PluginManager) OrderUpdated(orDer model.Order) (interface{}, *model.App
 	return value, nil
 }
 
-func (m *PluginManager) OrderCancelled(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderCancelled(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderCancelled(orDer, defaultValue)
@@ -1112,12 +1113,12 @@ func (m *PluginManager) OrderCancelled(orDer model.Order) (interface{}, *model.A
 	return value, nil
 }
 
-func (m *PluginManager) OrderFulfilled(orDer model.Order) (interface{}, *model.AppError) {
+func (m *PluginManager) OrderFulfilled(orDer model.Order) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, appErr = plg.OrderFulfilled(orDer, defaultValue)
@@ -1134,7 +1135,7 @@ func (m *PluginManager) OrderFulfilled(orDer model.Order) (interface{}, *model.A
 	return value, nil
 }
 
-func (m *PluginManager) FulfillmentCreated(fulfillment model.Fulfillment) (interface{}, *model.AppError) {
+func (m *PluginManager) FulfillmentCreated(fulfillment model.Fulfillment) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	orDer, appErr := m.Srv.OrderService().OrderById(fulfillment.OrderID)
@@ -1159,7 +1160,7 @@ func (m *PluginManager) FulfillmentCreated(fulfillment model.Fulfillment) (inter
 	return value, nil
 }
 
-func (m *PluginManager) FulfillmentCanceled(fulfillment model.Fulfillment) (interface{}, *model.AppError) {
+func (m *PluginManager) FulfillmentCanceled(fulfillment model.Fulfillment) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	orDer, appErr := m.Srv.OrderService().OrderById(fulfillment.OrderID)
@@ -1184,12 +1185,12 @@ func (m *PluginManager) FulfillmentCanceled(fulfillment model.Fulfillment) (inte
 	return value, nil
 }
 
-func (m *PluginManager) CheckoutCreated(checkOut model.Checkout) (interface{}, *model.AppError) {
+func (m *PluginManager) CheckoutCreated(checkOut model.Checkout) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(checkOut.ChannelID, true) {
 		value, appErr = plg.CheckoutCreated(checkOut, defaultValue)
@@ -1206,12 +1207,12 @@ func (m *PluginManager) CheckoutCreated(checkOut model.Checkout) (interface{}, *
 	return value, nil
 }
 
-func (m *PluginManager) CheckoutUpdated(checkOut model.Checkout) (interface{}, *model.AppError) {
+func (m *PluginManager) CheckoutUpdated(checkOut model.Checkout) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins(checkOut.ChannelID, true) {
 		value, appErr = plg.CheckoutUpdated(checkOut, defaultValue)
@@ -1228,12 +1229,12 @@ func (m *PluginManager) CheckoutUpdated(checkOut model.Checkout) (interface{}, *
 	return value, nil
 }
 
-func (m *PluginManager) PageCreated(paGe model.Page) (interface{}, *model.AppError) {
+func (m *PluginManager) PageCreated(paGe model.Page) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.PageCreated(paGe, defaultValue)
@@ -1250,12 +1251,12 @@ func (m *PluginManager) PageCreated(paGe model.Page) (interface{}, *model.AppErr
 	return value, nil
 }
 
-func (m *PluginManager) PageUpdated(paGe model.Page) (interface{}, *model.AppError) {
+func (m *PluginManager) PageUpdated(paGe model.Page) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.PageUpdated(paGe, defaultValue)
@@ -1272,12 +1273,12 @@ func (m *PluginManager) PageUpdated(paGe model.Page) (interface{}, *model.AppErr
 	return value, nil
 }
 
-func (m *PluginManager) PageDeleted(paGe model.Page) (interface{}, *model.AppError) {
+func (m *PluginManager) PageDeleted(paGe model.Page) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	var (
 		value  interface{}
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.PageDeleted(paGe, defaultValue)
@@ -1320,7 +1321,7 @@ func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInfo
 	if plg != nil {
 		var (
 			value  *model.GatewayResponse
-			appErr *model.AppError
+			appErr *model_helper.AppError
 		)
 
 		switch methodName {
@@ -1375,7 +1376,7 @@ func (m *PluginManager) ProcessPayment(gateway string, paymentInformation model.
 	return m.runPaymentMethod(gateway, "process_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) TokenIsRequiredAsPaymentInput(gateway, channelID string) (bool, *model.AppError) {
+func (m *PluginManager) TokenIsRequiredAsPaymentInput(gateway, channelID string) (bool, *model_helper.AppError) {
 	plg := m.getPlugin(gateway, channelID)
 	defaultValue := true
 
@@ -1390,7 +1391,7 @@ func (m *PluginManager) TokenIsRequiredAsPaymentInput(gateway, channelID string)
 	return defaultValue, nil
 }
 
-func (m *PluginManager) GetClientToken(gateway string, tokenConfig model.TokenConfig, channelID string) (string, *model.AppError) {
+func (m *PluginManager) GetClientToken(gateway string, tokenConfig model.TokenConfig, channelID string) (string, *model_helper.AppError) {
 	plg := m.getPlugin(gateway, channelID)
 	if plg != nil {
 		value, appErr := plg.GetClientToken(tokenConfig, nil)
@@ -1441,7 +1442,7 @@ func (m *PluginManager) ListPaymentGateways(currency string, checkOut *model.Che
 	return gateways
 }
 
-func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model.AppError) {
+func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model_helper.AppError) {
 	filteredPlugins := m.getPlugins("", activeOnly)
 
 	res := []model.StringInterface{}
@@ -1465,7 +1466,7 @@ func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model.St
 }
 
 // AssignTaxCodeToObjectMeta requires obj must be Product or ProductType
-func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode string) (*model.TaxType, *model.AppError) {
+func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode string) (*model.TaxType, *model_helper.AppError) {
 	// validate obj
 	switch obj.(type) {
 	case model.Product,
@@ -1473,13 +1474,13 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode strin
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("AssignTaxCodeToObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AssignTaxCodeToObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
 		defaultValue = new(model.TaxType)
 		value        *model.TaxType
-		appErr       *model.AppError
+		appErr       *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.AssignTaxCodeToObjectMeta(obj, taxCode, *defaultValue)
@@ -1499,7 +1500,7 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode strin
 // GetTaxCodeFromObjectMeta
 //
 // NOTE: obj must be either Product or ProductType
-func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxType, *model.AppError) {
+func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxType, *model_helper.AppError) {
 	// validate obj
 	switch obj.(type) {
 	case model.Product,
@@ -1507,13 +1508,13 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxTyp
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("GetTaxCodeFromObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetTaxCodeFromObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
 		defaultValue = new(model.TaxType)
 		value        *model.TaxType
-		appErr       *model.AppError
+		appErr       *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.GetTaxCodeFromObjectMeta(obj, *defaultValue)
@@ -1533,21 +1534,21 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxTyp
 // GetTaxRatePercentageValue
 //
 // obj must be either Product or ProductType
-func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country string) (*decimal.Decimal, *model.AppError) {
+func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country string) (*decimal.Decimal, *model_helper.AppError) {
 	switch obj.(type) {
 	case model.Product,
 		model.ProductType,
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("GetTaxRatePercentageValue", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetTaxRatePercentageValue", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	defaultValue := decimal.Zero.Round(0)
 
 	var (
 		deci   *decimal.Decimal
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		deci, appErr = plg.GetTaxRatePercentageValue(obj, country, defaultValue)
@@ -1564,9 +1565,9 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 	return model.GetPointerOfValue(deci.Round(0)), nil
 }
 
-func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*model.PluginConfiguration, *model.AppError) {
+func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*model.PluginConfiguration, *model_helper.AppError) {
 	if !model.IsValidId(channelID) {
-		return nil, model.NewAppError("SavePluginConfiguration", model.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SavePluginConfiguration", model.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
 	}
 
 	var pluginList []interfaces.BasePluginInterface
@@ -1622,12 +1623,12 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 	return nil, nil
 }
 
-func (m *PluginManager) FetchTaxesData() (bool, *model.AppError) {
+func (m *PluginManager) FetchTaxesData() (bool, *model_helper.AppError) {
 	defaultValue := false
 
 	var (
 		value  bool
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, appErr = plg.FetchTaxesData(defaultValue)
@@ -1644,7 +1645,7 @@ func (m *PluginManager) FetchTaxesData() (bool, *model.AppError) {
 	return value, nil
 }
 
-func (m *PluginManager) WebhookEndpointWithoutChannel(req *http.Request, pluginID string) (*http.Response, *model.AppError) {
+func (m *PluginManager) WebhookEndpointWithoutChannel(req *http.Request, pluginID string) (*http.Response, *model_helper.AppError) {
 	splitPath := strings.SplitN(req.URL.Path, pluginID, 1)
 
 	var path string
@@ -1671,7 +1672,7 @@ func (m *PluginManager) WebhookEndpointWithoutChannel(req *http.Request, pluginI
 	return value, nil
 }
 
-func (m *PluginManager) Webhook(req *http.Request, pluginID, channelID string) (*http.Response, *model.AppError) {
+func (m *PluginManager) Webhook(req *http.Request, pluginID, channelID string) (*http.Response, *model_helper.AppError) {
 	splitPath := strings.SplitN(req.URL.Path, pluginID, 1)
 
 	var path string
@@ -1708,7 +1709,7 @@ func (m *PluginManager) Webhook(req *http.Request, pluginID, channelID string) (
 	return res, nil
 }
 
-func (m *PluginManager) Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError) {
+func (m *PluginManager) Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model_helper.AppError) {
 	var defaultValue interface{}
 
 	if pluginID != "" {
@@ -1738,7 +1739,7 @@ func (m *PluginManager) Notify(event string, payload model.StringInterface, chan
 	return defaultValue, nil
 }
 
-func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*model.ExternalAccessTokens, *model.AppError) {
+func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*model.ExternalAccessTokens, *model_helper.AppError) {
 	var defaultValue model.ExternalAccessTokens
 	plg := m.getPlugin(pluginID, "")
 
@@ -1756,7 +1757,7 @@ func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.S
 	return &defaultValue, nil
 }
 
-func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model.AppError) {
+func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model_helper.AppError) {
 	defaultValue := model.StringInterface{}
 
 	plg := m.getPlugin(pluginID, "")
@@ -1774,7 +1775,7 @@ func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model.St
 	return defaultValue, nil
 }
 
-func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) (*model.ExternalAccessTokens, *model.AppError) {
+func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) (*model.ExternalAccessTokens, *model_helper.AppError) {
 	var defaultValue model.ExternalAccessTokens
 
 	plg := m.getPlugin(pluginID, "")
@@ -1792,11 +1793,11 @@ func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterf
 	return &defaultValue, nil
 }
 
-func (m *PluginManager) AuthenticateUser(req *http.Request) (*model.User, *model.AppError) {
+func (m *PluginManager) AuthenticateUser(req *http.Request) (*model.User, *model_helper.AppError) {
 	var (
 		defaultValue *model.User = nil
 		value        *model.User
-		appErr       *model.AppError
+		appErr       *model_helper.AppError
 	)
 
 	for _, plg := range m.getPlugins("", true) {
@@ -1814,7 +1815,7 @@ func (m *PluginManager) AuthenticateUser(req *http.Request) (*model.User, *model
 	return value, nil
 }
 
-func (m *PluginManager) ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model.AppError) {
+func (m *PluginManager) ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model_helper.AppError) {
 	defaultValue := model.StringInterface{}
 
 	plg := m.getPlugin(pluginID, "")
@@ -1831,7 +1832,7 @@ func (m *PluginManager) ExternalLogout(pluginID string, data model.StringInterfa
 	return defaultValue, nil
 }
 
-func (m *PluginManager) ExternalVerify(pluginID string, data model.StringInterface, req *http.Request) (*model.User, model.StringInterface, *model.AppError) {
+func (m *PluginManager) ExternalVerify(pluginID string, data model.StringInterface, req *http.Request) (*model.User, model.StringInterface, *model_helper.AppError) {
 	var (
 		defaultData = model.StringInterface{}
 		defaultUser *model.User

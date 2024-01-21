@@ -16,6 +16,7 @@ import (
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
@@ -79,7 +80,7 @@ func CheckEmailDomain(email string, domains string) bool {
 }
 
 // CheckUserDomain checks that a user's email domain matches a list of space-delimited domains as a string.
-func CheckUserDomain(user *model.User, domains string) bool {
+func CheckUserDomain(user model.User, domains string) bool {
 	return CheckEmailDomain(user.Email, domains)
 }
 
@@ -111,7 +112,7 @@ func getFont(initialFont string) (*truetype.Font, error) {
 	return parsed, nil
 }
 
-func CreateProfileImage(username string, userID string, initialFont string) ([]byte, *model.AppError) {
+func CreateProfileImage(username string, userID string, initialFont string) ([]byte, *model_helper.AppError) {
 	h := fnv.New32a()
 	h.Write([]byte(userID))
 	seed := h.Sum32()
@@ -120,7 +121,7 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 
 	font, err := getFont(initialFont)
 	if err != nil {
-		return nil, model.NewAppError("CreateProfileImage", "api.user.create_profile_image.default_font.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateProfileImage", "api.user.create_profile_image.default_font.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	color := colors[int64(seed)%int64(len(colors))]
@@ -139,13 +140,13 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 	pt := freetype.Pt(ImageProfilePixelDimension/5, ImageProfilePixelDimension*2/3)
 	_, err = c.DrawString(initial, pt)
 	if err != nil {
-		return nil, model.NewAppError("CreateProfileImage", "api.user.create_profile_image.initial.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateProfileImage", "api.user.create_profile_image.initial.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	buf := new(bytes.Buffer)
 
 	if imgErr := png.Encode(buf, dstImg); err != nil {
-		return nil, model.NewAppError("CreateProfileImage", "api.user.create_profile_image.encode.app_error", nil, imgErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateProfileImage", "api.user.create_profile_image.encode.app_error", nil, imgErr.Error(), http.StatusInternalServerError)
 	}
 
 	return buf.Bytes(), nil

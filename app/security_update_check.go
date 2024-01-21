@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
@@ -41,8 +42,8 @@ func (s *Server) DoSecurityUpdateCheck() {
 		return
 	}
 
-	lastSecurityTime, _ := strconv.ParseInt(props[model.SystemLastSecurityTime], 10, 0)
-	currentTime := model.GetMillis()
+	lastSecurityTime, _ := strconv.ParseInt(props[model_helper.SystemLastSecurityTime], 10, 0)
+	currentTime := model_helper.GetMillis()
 
 	if (currentTime - lastSecurityTime) > SecurityUpdatePeriod {
 		slog.Debug("Checking for security update from Mattermost")
@@ -50,25 +51,25 @@ func (s *Server) DoSecurityUpdateCheck() {
 		v := url.Values{}
 
 		// v.Set(PropSecurityID, s.TelemetryId())
-		v.Set(PropSecurityBuild, model.CurrentVersion+"."+model.BuildNumber)
-		v.Set(PropSecurityEnterpriseReady, model.BuildEnterpriseReady)
+		v.Set(PropSecurityBuild, model_helper.CurrentVersion+"."+model_helper.BuildNumber)
+		v.Set(PropSecurityEnterpriseReady, model_helper.BuildEnterpriseReady)
 		v.Set(PropSecurityDatabase, *s.Config().SqlSettings.DriverName)
 		v.Set(PropSecurityOS, runtime.GOOS)
 
-		if props[model.SystemRanUnitTests] != "" {
+		if props[model_helper.SystemRanUnitTests] != "" {
 			v.Set(PropSecurityUnitTests, "1")
 		} else {
 			v.Set(PropSecurityUnitTests, "0")
 		}
 
-		systemSecurityLastTime := &model.System{Name: model.SystemLastSecurityTime, Value: strconv.FormatInt(currentTime, 10)}
+		systemSecurityLastTime := model.System{Name: model_helper.SystemLastSecurityTime, Value: strconv.FormatInt(currentTime, 10)}
 		if lastSecurityTime == 0 {
 			s.Store.System().Save(systemSecurityLastTime)
 		} else {
 			s.Store.System().Update(systemSecurityLastTime)
 		}
 
-		if count, err := s.Store.User().Count(model.UserCountOptions{IncludeDeleted: true}); err == nil {
+		if count, err := s.Store.User().Count(model_helper.UserCountOptions{IncludeDeleted: true}); err == nil {
 			v.Set(PropSecurityUserCount, strconv.FormatInt(count, 10))
 		}
 
@@ -84,14 +85,14 @@ func (s *Server) DoSecurityUpdateCheck() {
 
 		defer res.Body.Close()
 
-		var bulletins model.SecurityBulletins
+		var bulletins model_helper.SecurityBulletins
 		if jsonErr := json.NewDecoder(res.Body).Decode(&bulletins); jsonErr != nil {
 			slog.Error("failed to decode JSON", slog.Err(jsonErr))
 			return
 		}
 
 		for _, bulletin := range bulletins {
-			if bulletin.AppliesToVersion == model.CurrentVersion {
+			if bulletin.AppliesToVersion == model_helper.CurrentVersion {
 				if props["SecurityBulletin_"+bulletin.Id] == "" {
 					users, userErr := s.Store.User().GetSystemAdminProfiles()
 					if userErr != nil {
@@ -118,7 +119,7 @@ func (s *Server) DoSecurityUpdateCheck() {
 						mail.SendMailUsingConfig(user.Email, i18n.T("mattermost.bulletin.subject"), string(body), mailConfig, true, "")
 					}
 
-					bulletinSeen := &model.System{Name: "SecurityBulletin_" + bulletin.Id, Value: bulletin.Id}
+					bulletinSeen := model.System{Name: "SecurityBulletin_" + bulletin.Id, Value: bulletin.Id}
 					s.Store.System().Save(bulletinSeen)
 				}
 			}

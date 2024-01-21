@@ -4,46 +4,47 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // ShippingZonesByOption returns all shipping zones that satisfy given options
-func (a *ServiceShipping) ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError) {
+func (a *ServiceShipping) ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model_helper.AppError) {
 	shippingZones, err := a.srv.Store.ShippingZone().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("ShippingZonesByOption", "app.shipping.shipping_zones_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ShippingZonesByOption", "app.shipping.shipping_zones_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return shippingZones, nil
 }
 
-func (s *ServiceShipping) UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model_helper.AppError) {
 	zone, err := s.srv.Store.ShippingZone().Upsert(transaction, zone)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model.NewAppError("UpsertShippingZone", "app.shipping.upsert_shipping_zone.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UpsertShippingZone", "app.shipping.upsert_shipping_zone.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return zone, nil
 }
 
-func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError) {
+func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError) {
 	numDeleted, err := s.srv.Store.ShippingZone().Delete(transaction, conditions)
 	if err != nil {
-		return 0, model.NewAppError("DeleteShippingZones", "app.shipping.delete_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteShippingZones", "app.shipping.delete_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return numDeleted, nil
 }
 
-func (s *ServiceShipping) ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model.AppError {
+func (s *ServiceShipping) ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError {
 	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 	if err != nil {
 		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return model.NewAppError("ToggleShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
+			return model_helper.NewAppError("ToggleShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
 		}
-		return model.NewAppError("ToggleShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

@@ -4,33 +4,41 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"gorm.io/gorm"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
+	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceAccount) CommonCustomerCreateEvent(tx *gorm.DB, userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
-	event := &model.CustomerEvent{
+func (a *ServiceAccount) CommonCustomerCreateEvent(
+	tx store.ContextRunner,
+	userID *string,
+	orderID *string,
+	eventType model.CustomerEventType,
+	params model_types.JsonMap,
+) (*model.CustomerEvent, *model_helper.AppError) {
+	event := model.CustomerEvent{
 		Type:       eventType,
 		Parameters: params,
-		OrderID:    orderID,
-		UserID:     userID,
+		OrderID:    model_types.NullString{String: orderID},
+		UserID:     model_types.NullString{String: userID},
 	}
 
-	event, err := a.srv.Store.CustomerEvent().Save(tx, event)
+	savedEvent, err := a.srv.Store.CustomerEvent().Upsert(tx, event)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model.NewAppError("CommonCustomerCreateEvent", "app.account.customer_event_save_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CommonCustomerCreateEvent", "app.account.customer_event_save_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return event, nil
+	return savedEvent, nil
 }
 
 // CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
-func (s *ServiceAccount) CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model.AppError) {
-	if user == nil || !model.IsValidId(user.Id) {
+func (s *ServiceAccount) CustomerPlacedOrderEvent(tx store.ContextRunner, user *model.User, order model.Order) (*model.CustomerEvent, *model_helper.AppError) {
+	if user == nil || !model_helper.IsValidId(user.ID) {
 		return nil, nil
 	}
 
-	return s.CommonCustomerCreateEvent(nil, &user.Id, &orDer.Id, model.CUSTOMER_EVENT_TYPE_PLACED_ORDER, nil)
+	return s.CommonCustomerCreateEvent(tx, &user.ID, &order.ID, model.CustomerEventTypePLACED_ORDER, nil)
 }

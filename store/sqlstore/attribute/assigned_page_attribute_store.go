@@ -1,10 +1,13 @@
 package attribute
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAssignedPageAttributeStore struct {
@@ -17,45 +20,40 @@ func NewSqlAssignedPageAttributeStore(s store.Store) store.AssignedPageAttribute
 	}
 }
 
-func (as *SqlAssignedPageAttributeStore) Save(pageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
-	err := as.GetMaster().Create(pageAttr).Error
-	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", "assignedpageattributes_pageid_assignmentid_key"}) {
-			return nil, store.NewErrInvalidInput(model.AssignedPageAttributeTableName, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
-		}
-		return nil, errors.Wrap(err, "failed to save assigned page attribute with")
-	}
-
-	return pageAttr, nil
-}
-
-func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
-	var res model.AssignedPageAttribute
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find assigned page attribute with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
-	args, err := store.BuildSqlizer(option.Conditions, "GetByOption")
-	if err != nil {
+func (as *SqlAssignedPageAttributeStore) Upsert(pageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
+	if err := model_helper.AssignedPageAttributeIsValid(pageAttr); err != nil {
 		return nil, err
 	}
 
-	var res model.AssignedPageAttribute
-	err = as.GetReplica().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, "option")
-		}
-		return nil, errors.Wrapf(err, "failed to find assigned page attribute with given option")
+	var err error
+	if pageAttr.ID == "" {
+		err = pageAttr.Insert(as.GetMaster(), boil.Infer())
+	} else {
+		_, err = pageAttr.Update(as.GetMaster(), boil.Infer())
 	}
 
-	return &res, nil
+	if err != nil {
+		if as.IsUniqueConstraintError(err, []string{"assigned_page_attributes_page_id_assignment_id_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.AssignedPageAttributes, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
+		}
+		return nil, err
+	}
+
+	return &pageAttr, nil
+}
+
+func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
+	attr, err := model.FindAssignedPageAttribute(as.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AssignedPageAttributes, id)
+		}
+		return nil, err
+	}
+
+	return attr, nil
+}
+
+func (as *SqlAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
+	return model.AssignedPageAttributes(mods...).All(as.GetReplica())
 }

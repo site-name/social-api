@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -31,7 +32,7 @@ func init() {
 	})
 }
 
-func (s *ServiceProduct) UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model.AppError) {
+func (s *ServiceProduct) UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model_helper.AppError) {
 	product, err := s.srv.Store.Product().Save(tx, product)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -39,45 +40,45 @@ func (s *ServiceProduct) UpsertProduct(tx *gorm.DB, product *model.Product) (*mo
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("UpsertProduct", "app.product.upsert_product.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertProduct", "app.product.upsert_product.app_error", nil, err.Error(), statusCode)
 	}
 
 	return product, nil
 }
 
 // ProductById returns 1 product by given id
-func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.AppError) {
+func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model_helper.AppError) {
 	return a.ProductByOption(&model.ProductFilterOption{
 		Conditions: squirrel.Expr(model.ProductTableName+".Id = ?", productID),
 	})
 }
 
 // ProductsByOption returns a list of products that satisfy given option
-func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) (model.Products, *model.AppError) {
+func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) (model.Products, *model_helper.AppError) {
 	products, err := a.srv.Store.Product().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return products, nil
 }
 
 // ProductByOption returns 1 product that satisfy given option
-func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*model.Product, *model.AppError) {
+func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*model.Product, *model_helper.AppError) {
 	product, err := a.srv.Store.Product().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ProductByOption", "app.error_finding_product_by_option.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ProductByOption", "app.error_finding_product_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return product, nil
 }
 
 // ProductsByVoucherID finds all products that have relationships with given voucher
-func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product, *model.AppError) {
+func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product, *model_helper.AppError) {
 	products, appErr := a.ProductsByOption(&model.ProductFilterOption{
 		VoucherID: squirrel.Expr(model.VoucherProductTableName+".voucher_id = ?", voucherID),
 	})
@@ -89,7 +90,7 @@ func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product
 }
 
 // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
-func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *model.AppError) {
+func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *model_helper.AppError) {
 	productTypes, appErr := a.ProductTypesByProductIDs(productIDs)
 	if appErr != nil { // this error caused by system
 		return false, appErr
@@ -103,7 +104,7 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 }
 
 // ProductGetFirstImage returns first media of given product
-func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductMedia, *model.AppError) {
+func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductMedia, *model_helper.AppError) {
 	productMedias, appErr := a.ProductMediasByOption(&model.ProductMediaFilterOption{
 		Conditions: squirrel.Expr(model.ProductMediaTableName+".ProductID = ? AND ProductMedias.Type = ?", productID, model.IMAGE),
 	})
@@ -114,16 +115,16 @@ func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductM
 	return productMedias[0], nil
 }
 
-func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.Products, *model.AppError) {
+func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.Products, *model_helper.AppError) {
 	productQuery := a.srv.Store.Product().VisibleToUserProductsQuery(channelIdOrSlug, userIsShopStaff)
 	products, err := a.srv.Store.Product().FilterByQuery(productQuery)
 	if err != nil {
-		return nil, model.NewAppError("GetVisibleToUserProducts", "app.product.get_visible_products_for_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetVisibleToUserProducts", "app.product.get_visible_products_for_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return products, nil
 }
 
-func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError) {
+func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model_helper.AppError) {
 	productsQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(options)
 
 	if channelIdOrSlug != "" {
@@ -148,12 +149,12 @@ func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFil
 
 	products, err := s.srv.Store.Product().FilterByQuery(productsQuery)
 	if err != nil {
-		return nil, model.NewAppError("FilterProductsAdvanced", "app.product.filter_advanced_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FilterProductsAdvanced", "app.product.filter_advanced_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return products, nil
 }
 
-func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model.AppError) {
+func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model_helper.AppError) {
 	// validate if given variant belongs to given product
 	variant, appErr := s.ProductVariantById(variantID)
 	if appErr != nil {
@@ -161,13 +162,13 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 	}
 
 	if variant.ProductID != productID {
-		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
 	}
 
 	// begin tx
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	product, appErr := s.UpsertProduct(tx, &model.Product{
@@ -180,7 +181,7 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	s.srv.Store.FinalizeTransaction(tx)
 

@@ -29,7 +29,7 @@ var (
 
 const (
 	OpenTracingParamsMarker = "@openTracingParams"
-	AppErrorType            = "*model.AppError"
+	AppErrorType            = "*model_helper.AppError"
 	ErrorType               = "error"
 )
 

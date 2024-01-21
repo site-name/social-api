@@ -8,23 +8,24 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
-func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model.AppError) {
+func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model_helper.AppError) {
 	sale, err := a.srv.Store.DiscountSale().Upsert(transaction, sale)
 	if err != nil {
-		return nil, model.NewAppError("UpsertSale", "app.discount.error_upsert_sale.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UpsertSale", "app.discount.error_upsert_sale.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return sale, nil
 }
 
-func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
 	if saleChannelListing == nil {
-		return nil, model.NewAppError("GetSaleDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetSaleDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == model.DISCOUNT_VALUE_TYPE_FIXED {
@@ -39,14 +40,14 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *
 
 // FilterSalesByOption should be used to filter active or expired sales
 // refer: saleor/discount/models.SaleQueryset for details
-func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, *model.AppError) {
+func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, *model_helper.AppError) {
 	totalCount, sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return 0, nil, model.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
+		return 0, nil, model_helper.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return totalCount, sales, nil
@@ -55,7 +56,7 @@ func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) (i
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 //
 //	(end_date == NULL || end_date >= date) && start_date <= date
-func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppError) {
+func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model_helper.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
 	}
@@ -75,7 +76,7 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ServiceDiscount.ActiveSales", "app.discount.active_sales_by_date.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ServiceDiscount.ActiveSales", "app.discount.active_sales_by_date.app_error", nil, err.Error(), statusCode)
 	}
 
 	return activeSalesByDate, nil
@@ -84,7 +85,7 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 // ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
 //
 //	end_date <= date && start_date <= date
-func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.AppError) {
+func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_helper.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
 	}
@@ -102,87 +103,87 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ServiceDiscount.ExpiredSales", "app.discount.expired_sales_by_date.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ServiceDiscount.ExpiredSales", "app.discount.expired_sales_by_date.app_error", nil, err.Error(), statusCode)
 	}
 
 	return expiredSalesByDate, nil
 }
 
-func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError {
+func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
 	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.Sales{{Id: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
-		return model.NewAppError("ToggleSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale relations", http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale relations", http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
 // SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
-func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model.AppError) {
+func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleCollectionsByOptions")
 	if err != nil {
-		return nil, model.NewAppError("SaleCollectionsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCollectionsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 
 	var res []*model.SaleCollection
 	err = s.srv.Store.GetReplica().Table(model.SaleCollectionTableName).Find(&res, args...).Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCollectionsByOptions", "app.discount.sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return res, nil
 }
 
 // SaleCategoriesByOption returns sale-category relations with an app error
-func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model.AppError) {
+func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(option, "SaleCategoriesByOption")
 	if err != nil {
-		return nil, model.NewAppError("SaleCategoriesByOption", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCategoriesByOption", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 
 	var res []*model.SaleCategory
 	err = s.srv.Store.GetReplica().Table(model.SaleCategoryTableName).Find(&res, args...).Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCategoriesByOption", "app.discount.sale_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCategoriesByOption", "app.discount.sale_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return res, nil
 }
 
 // SaleProductsByOptions returns a slice of sale-product relations filtered using given options
-func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model.AppError) {
+func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleProductsByOptions")
 	if err != nil {
-		return nil, model.NewAppError("SaleProductsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleProductsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 	var res []*model.SaleProduct
 	err = s.srv.Store.GetReplica().Table(model.SaleProductTableName).Find(&res, args...).Error
 	if err != nil {
-		return nil, model.NewAppError("SaleProductsByOptions", "app.discount.sale_product_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleProductsByOptions", "app.discount.sale_product_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return res, nil
 }
 
 // SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
-func (s *ServiceDiscount) SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model.AppError) {
+func (s *ServiceDiscount) SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleProductVariantsByOptions")
 	if err != nil {
-		return nil, model.NewAppError("SaleProductVariantsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleProductVariantsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 	var res []*model.SaleProductVariant
 	err = s.srv.Store.GetReplica().Table(model.SaleProductVariantTableName).Find(&res, args...).Error
 	if err != nil {
-		return nil, model.NewAppError("SaleProductVariantsByOptions", "app.discount.error_finding_sale_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleProductVariantsByOptions", "app.discount.error_finding_sale_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return res, nil
 }
 
-func (s *ServiceDiscount) SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError) {
+func (s *ServiceDiscount) SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model_helper.AppError) {
 	listings, err := s.srv.Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(options)
 	if err != nil {
-		return nil, model.NewAppError("SaleChannelListingsByOptions", "app.discount.error_finding_sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleChannelListingsByOptions", "app.discount.error_finding_sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return listings, nil
 }

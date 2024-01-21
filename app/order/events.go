@@ -6,11 +6,12 @@ import (
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"gorm.io/gorm"
 )
 
 // CommonCreateOrderEvent is common method for creating desired order event instance
-func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model_helper.AppError) {
 	newOrderEvent := &model.OrderEvent{
 		OrderID:    option.OrderID,
 		Type:       option.Type,
@@ -20,10 +21,10 @@ func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *mode
 
 	orderEvent, err := a.srv.Store.OrderEvent().Save(transaction, newOrderEvent)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model.NewAppError("CommonCreateOrderEvent", "app.order.error_creating_order_event.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CommonCreateOrderEvent", "app.order.error_creating_order_event.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orderEvent, nil
@@ -72,7 +73,7 @@ func (s *ServiceOrder) PrepareDiscountObject(orderDiscount *model.OrderDiscount,
 	return discountParameters
 }
 
-func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model.AppError {
+func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model_helper.AppError {
 	for _, tuple := range changedOrderDiscounts {
 		_, appErr := a.OrderDiscountAutomaticallyUpdatedEvent(
 			transaction,
@@ -88,7 +89,7 @@ func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm
 	return nil
 }
 
-func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
 	return a.OrderDiscountEvent(
 		transaction,
 		model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
@@ -99,7 +100,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.
 	)
 }
 
-func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -125,7 +126,7 @@ func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]i
 	}
 }
 
-func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil || model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -158,7 +159,7 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, or
 	})
 }
 
-func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -177,7 +178,7 @@ func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *mod
 	})
 }
 
-func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -193,7 +194,7 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDe
 	})
 }
 
-func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model_helper.AppError) {
 	var (
 		eventType = model.ORDER_EVENT_TYPE_PLACED_FROM_DRAFT
 		userID    *string
@@ -216,7 +217,7 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ 
 	})
 }
 
-func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -229,7 +230,7 @@ func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user 
 	})
 }
 
-func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -245,7 +246,7 @@ func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDe
 	})
 }
 
-func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -262,7 +263,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user 
 	})
 }
 
-func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model_helper.AppError) {
 	var (
 		userID     *string
 		parameters = model.StringInterface{}
@@ -282,7 +283,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDe
 	})
 }
 
-func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -299,7 +300,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, d
 	})
 }
 
-func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {
@@ -316,7 +317,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer mode
 	})
 }
 
-func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {
@@ -333,16 +334,16 @@ func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrd
 	})
 }
 
-func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model_helper.AppError) {
 	events, err := s.srv.Store.OrderEvent().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("FilterOrderEventsByOptions", "app.order.order_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FilterOrderEventsByOptions", "app.order.order_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return events, nil
 }
 
-func (s *ServiceOrder) OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model_helper.AppError) {
 	if user != nil && model.IsValidId(user.Id) {
 		if order.UserID != nil && *order.UserID == user.Id {
 			_, appErr := s.srv.AccountService().CommonCustomerCreateEvent(tx, &user.Id, &order.Id, model.CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER, model.StringInterface{"message": message})

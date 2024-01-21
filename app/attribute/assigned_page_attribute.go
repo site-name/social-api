@@ -5,25 +5,26 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
 // AssignedPageAttributeByOption returns 1 assigned page attribute
-func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError) {
+func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError) {
 	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return assignedPageAttr, nil
 }
 
 // GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError) {
+func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError) {
 	eqConds := squirrel.Eq{}
 	if assignedPageAttribute.PageID != "" {
 		eqConds[model.AssignedPageAttributeTableName+".PageID"] = assignedPageAttribute.PageID
@@ -40,7 +41,7 @@ func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribut
 		// create new
 		assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().Save(assignedPageAttribute)
 		if err != nil {
-			if appErr, ok := err.(*model.AppError); ok {
+			if appErr, ok := err.(*model_helper.AppError); ok {
 				return nil, appErr
 			}
 			statusCode := http.StatusInternalServerError
@@ -48,7 +49,7 @@ func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribut
 				statusCode = http.StatusBadRequest
 			}
 
-			return nil, model.NewAppError("GetOrCreateAssignedPageAttribute", "app.attribute.error_creating_assigned_page_attribute.app_error", nil, err.Error(), statusCode)
+			return nil, model_helper.NewAppError("GetOrCreateAssignedPageAttribute", "app.attribute.error_creating_assigned_page_attribute.app_error", nil, err.Error(), statusCode)
 		}
 
 		return assignedPageAttr, nil

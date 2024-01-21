@@ -10,6 +10,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
@@ -17,7 +18,7 @@ import (
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
 // Careful! It should be called inside a transaction.
 // :raises NotApplicable: When the voucher is not applicable in the current checkout.
-func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model.CheckoutInfo) (map[string]*model.Voucher, *model.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model.CheckoutInfo) (map[string]*model.Voucher, *model.NotApplicable, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, nil, true)
 	if appErr != nil {
@@ -50,12 +51,12 @@ func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model.CheckoutInfo
 }
 
 // processShippingDataForOrder Fetch, process and return shipping data from checkout.
-func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model.CheckoutInfo, shippingPrice *goprices.TaxedMoney, manager interfaces.PluginManagerInterface, lines []*model.CheckoutLineInfo) (map[string]interface{}, *model.AppError) {
+func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model.CheckoutInfo, shippingPrice *goprices.TaxedMoney, manager interfaces.PluginManagerInterface, lines []*model.CheckoutLineInfo) (map[string]interface{}, *model_helper.AppError) {
 	var (
 		deliveryMethodInfo  = checkoutInfo.DeliveryMethodInfo
 		shippingAddress     = deliveryMethodInfo.GetShippingAddress()
 		copyShippingAddress *model.Address
-		appErr              *model.AppError
+		appErr              *model_helper.AppError
 	)
 
 	if checkoutInfo.User != nil && shippingAddress != nil {
@@ -108,11 +109,11 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model.Checkou
 }
 
 // processUserDataForOrder Fetch, process and return shipping data from checkout.
-func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInfo, manager interfaces.PluginManagerInterface) (map[string]interface{}, *model.AppError) {
+func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInfo, manager interfaces.PluginManagerInterface) (map[string]interface{}, *model_helper.AppError) {
 	var (
 		billingAddress     = checkoutInfo.BillingAddress
 		copyBillingAddress *model.Address
-		appErr             *model.AppError
+		appErr             *model_helper.AppError
 	)
 
 	if checkoutInfo.User != nil && billingAddress != nil {
@@ -150,7 +151,7 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInf
 }
 
 // validateGiftcards Check if all gift cards assigned to checkout are available.
-func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.NotApplicable, *model_helper.AppError) {
 	var (
 		totalGiftcardsOfCheckout       int
 		totalActiveGiftcardsOfCheckout int
@@ -195,7 +196,7 @@ func (s *ServiceCheckout) createLineForOrder(
 	productsTranslation map[string]string,
 	variantsTranslation map[string]string,
 
-) (*model.OrderLineData, *model.AppError) {
+) (*model.OrderLineData, *model_helper.AppError) {
 
 	var (
 		checkoutLine          = checkoutLineInfo.Line
@@ -262,7 +263,7 @@ func (s *ServiceCheckout) createLineForOrder(
 
 // createLinesForOrder Create a lines for the given order.
 // :raises InsufficientStock: when there is not enough items in stock for this variant.
-func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model_helper.AppError) {
 	var (
 		translationLanguageCode = checkoutInfo.Checkout.LanguageCode
 		countryCode             = checkoutInfo.GetCountry()
@@ -333,7 +334,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 
 	var (
 		orderLineDatas []*model.OrderLineData
-		appErrorChan   = make(chan *model.AppError)
+		appErrorChan   = make(chan *model_helper.AppError)
 		dataChan       = make(chan *model.OrderLineData)
 		atomicValue    atomic.Int32
 	)
@@ -373,7 +374,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model.DiscountInfo) (map[string]interface{}, *model.InsufficientStock, *model.NotApplicable, *model.TaxError, *model.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model.DiscountInfo) (map[string]interface{}, *model.InsufficientStock, *model.NotApplicable, *model.TaxError, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 	checkout.PopulateNonDbFields() // this call is important
 
@@ -403,7 +404,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 		} else {
 			errMsg = err2.Error()
 		}
-		return nil, nil, nil, nil, model.NewAppError("prepareOrderData", model.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
+		return nil, nil, nil, nil, model_helper.NewAppError("prepareOrderData", model.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
 	}
 
 	taxedTotal.Gross = newTaxedTotalGross
@@ -498,7 +499,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 // which language to use when sending email.
 //
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
-func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orderData model.StringInterface, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings model.ShopSettings) (*model.Order, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orderData model.StringInterface, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings model.ShopSettings) (*model.Order, *model.InsufficientStock, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 
 	_, orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
@@ -524,14 +525,14 @@ func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.C
 
 	serializedOrderData, err := json.Marshal(orderData)
 	if err != nil {
-		return nil, nil, model.NewAppError("createOrder", model.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model_helper.NewAppError("createOrder", model.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// define new order to create
 	var newOrder model.Order
 	err = json.Unmarshal(serializedOrderData, &newOrder)
 	if err != nil {
-		return nil, nil, model.NewAppError("createOrder", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model_helper.NewAppError("createOrder", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	newOrder.Id = ""
@@ -644,7 +645,7 @@ func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.C
 }
 
 // prepareCheckout Prepare checkout object to complete the checkout process.
-func (s *ServiceCheckout) prepareCheckout(transaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discoutns []*model.DiscountInfo, trackingCode string, redirectURL string, payMent *model.Payment) (*model.PaymentError, *model.AppError) {
+func (s *ServiceCheckout) prepareCheckout(transaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discoutns []*model.DiscountInfo, trackingCode string, redirectURL string, payMent *model.Payment) (*model.PaymentError, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 
 	appErr := s.CleanCheckoutShipping(checkoutInfo, lines)
@@ -658,7 +659,7 @@ func (s *ServiceCheckout) prepareCheckout(transaction *gorm.DB, manager interfac
 	}
 
 	if !checkoutInfo.Channel.IsActive {
-		return nil, model.NewAppError("prepareCheckout", "app.checkout.channel_inactive.app_error", nil, "", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("prepareCheckout", "app.checkout.channel_inactive.app_error", nil, "", http.StatusNotAcceptable)
 	}
 	if redirectURL != "" {
 		appErr = model.ValidateStoreFrontUrl(s.srv.Config(), redirectURL)
@@ -688,7 +689,7 @@ func (s *ServiceCheckout) prepareCheckout(transaction *gorm.DB, manager interfac
 }
 
 // ReleaseVoucherUsage
-func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) *model.AppError {
+func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) *model_helper.AppError {
 	if iface, ok := orderData["voucher"]; ok && iface != nil {
 		voucher := iface.(*model.Voucher)
 
@@ -710,7 +711,7 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 	return nil
 }
 
-func (s *ServiceCheckout) getOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discoutns []*model.DiscountInfo) (map[string]interface{}, *model.AppError) {
+func (s *ServiceCheckout) getOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discoutns []*model.DiscountInfo) (map[string]interface{}, *model_helper.AppError) {
 	orderData, insufficientStockErr, notApplicableErr, taxError, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
 	if appErr != nil {
 		return nil, appErr
@@ -720,20 +721,20 @@ func (s *ServiceCheckout) getOrderData(manager interfaces.PluginManagerInterface
 		return nil, s.PrepareInsufficientStockCheckoutValidationAppError("getOrderData", insufficientStockErr)
 	}
 	if notApplicableErr != nil {
-		return nil, model.NewAppError("getOrderData", "app.checkout.voucher_not_applicable.app_error", map[string]interface{}{"code": model.VOUCHER_NOT_APPLICABLE}, notApplicableErr.Error(), 0)
+		return nil, model_helper.NewAppError("getOrderData", "app.checkout.voucher_not_applicable.app_error", map[string]interface{}{"code": model.VOUCHER_NOT_APPLICABLE}, notApplicableErr.Error(), 0)
 	}
 	if taxError != nil {
-		return nil, model.NewAppError("getOrderData", "app.checkout.unable_to_calculate_taxes", map[string]interface{}{"code": model.TAX_ERROR}, taxError.Message, 0)
+		return nil, model_helper.NewAppError("getOrderData", "app.checkout.unable_to_calculate_taxes", map[string]interface{}{"code": model.TAX_ERROR}, taxError.Message, 0)
 	}
 	return orderData, nil
 }
 
 // processPayment Process the payment assigned to checkout
-func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.Payment, customerID *string, storeSource bool, paymentData map[string]interface{}, orderData map[string]interface{}, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.Payment, customerID *string, storeSource bool, paymentData map[string]interface{}, orderData map[string]interface{}, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 	var (
 		transaction *model.PaymentTransaction
 		paymentErr  *model.PaymentError
-		appErr      *model.AppError
+		appErr      *model_helper.AppError
 		paymentID   = payMent.Id
 	)
 
@@ -766,7 +767,7 @@ func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.
 		if appErr != nil {
 			return nil, nil, appErr
 		}
-		return nil, nil, model.NewAppError("processPayment", "app.checkout.payment_error.app_error", nil, paymentErr.Error(), 0)
+		return nil, nil, model_helper.NewAppError("processPayment", "app.checkout.payment_error.app_error", nil, paymentErr.Error(), 0)
 	}
 
 	_, appErr = s.srv.PaymentService().PaymentByID(nil, paymentID, false)
@@ -807,7 +808,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 	siteSettings model.ShopSettings,
 	trackingCode string,
 	redirectURL string,
-) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model.AppError) {
+) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model_helper.AppError) {
 
 	var (
 		checkout    = checkoutInfo.Checkout

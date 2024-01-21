@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS attribute_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   attribute_id uuid NOT NULL,
-  language_code LanguageCode NOT NULL,
+  language_code language_code NOT NULL,
   name varchar(100) NOT NULL
 );
 

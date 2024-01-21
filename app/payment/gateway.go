@@ -13,6 +13,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"gorm.io/gorm"
 )
 
@@ -51,7 +52,7 @@ func (a *ServicePayment) raisePaymentError(where string, transaction model.Payme
 }
 
 // paymentPostProcess must be called right before function returns
-func (a *ServicePayment) paymentPostProcess(transaction model.PaymentTransaction) *model.AppError {
+func (a *ServicePayment) paymentPostProcess(transaction model.PaymentTransaction) *model_helper.AppError {
 	payMent, appErr := a.PaymentByID(nil, transaction.PaymentID, false)
 	if appErr != nil {
 		return appErr
@@ -68,7 +69,7 @@ func (a *ServicePayment) requireActivePayment(where string, payMent model.Paymen
 }
 
 // withLockedPayment Lock payment to protect from asynchronous modification.
-func (a *ServicePayment) withLockedPayment(dbTransaction *gorm.DB, where string, payMent model.Payment) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) withLockedPayment(dbTransaction *gorm.DB, where string, payMent model.Payment) (*model.Payment, *model_helper.AppError) {
 	paymentToOperateOn, appErr := a.PaymentByID(dbTransaction, payMent.Id, true)
 	if appErr != nil {
 		return nil, appErr
@@ -93,7 +94,7 @@ func (a *ServicePayment) ProcessPayment(
 	customerID *string,
 	storeSource bool,
 	additionalData map[string]interface{},
-) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("ProcessPayment", payMent)
 	if paymentErr != nil {
@@ -154,7 +155,7 @@ func (a *ServicePayment) Authorize(
 	customerID *string,
 	storeSource bool,
 
-) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("Authorize", payMent)
 	if paymentErr != nil {
@@ -218,7 +219,7 @@ func (a *ServicePayment) Capture(
 	customerID *string, // can be nil
 	storeSource bool, // default false
 
-) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("Capture", payMent)
 	if paymentErr != nil {
@@ -284,7 +285,7 @@ func (a *ServicePayment) Refund(
 	channelID string,
 	amount *decimal.Decimal, // can be nil
 
-) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("Refund", payMent)
 	if paymentErr != nil {
@@ -364,7 +365,7 @@ func (a *ServicePayment) Refund(
 // @raisePaymentError
 //
 // @paymentPostProcess
-func (a *ServicePayment) Void(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+func (a *ServicePayment) Void(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 	paymentErr := a.requireActivePayment("Refund", payMent)
 	if paymentErr != nil {
 		return nil, paymentErr, nil
@@ -423,7 +424,7 @@ func (a *ServicePayment) Confirm(
 	channelID string,
 	additionalData map[string]interface{}, // can be none
 
-) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("Confirm", payMent)
 	if paymentErr != nil {
@@ -491,10 +492,10 @@ func (a *ServicePayment) ListPaymentSources(
 	customerID string,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
-) ([]*model.CustomerSource, *model.AppError) {
+) ([]*model.CustomerSource, *model_helper.AppError) {
 	source, err := manager.ListPaymentSources(gateway, customerID, channelID)
 	if err != nil {
-		return nil, model.NewAppError("ListPaymentSources", "app.payment.error_listing_payment_sources.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ListPaymentSources", "app.payment.error_listing_payment_sources.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return source, nil
 }
@@ -518,7 +519,7 @@ func (a *ServicePayment) fetchGatewayResponse(paymentFunc PaymentMethod, gateway
 	return res, errMsg
 }
 
-func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind model.TransactionKind) (string, *model.PaymentError, *model.AppError) {
+func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind model.TransactionKind) (string, *model.PaymentError, *model_helper.AppError) {
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{
 			model.TransactionTableName + ".PaymentID": payMent.Id,
@@ -552,7 +553,7 @@ func (a *ServicePayment) validateRefundAmount(payMent *model.Payment, amount *de
 }
 
 // PaymentRefundOrVoid
-func (a *ServicePayment) PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError) {
+func (a *ServicePayment) PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model_helper.AppError) {
 	if payMent == nil {
 		return nil, nil
 	}

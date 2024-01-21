@@ -2,9 +2,9 @@ CREATE TABLE IF NOT EXISTS attributes (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   slug varchar(255) NOT NULL,
   name varchar(250) NOT NULL,
-  type AttributeType NOT NULL, -- enum
-  input_type AttributeInputType NOT NULL, -- enum
-  entity_type AttributeEntityType, -- enum
+  type attribute_type NOT NULL, -- enum
+  input_type attribute_input_type NOT NULL, -- enum
+  entity_type attribute_entity_type, -- enum
   unit varchar(100),
   value_required boolean NOT NULL,
   is_variant_only boolean NOT NULL,

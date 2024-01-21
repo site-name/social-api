@@ -8,7 +8,7 @@ import (
 	"github.com/avct/uasurfer"
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/api"
@@ -58,7 +58,7 @@ func CheckClientCompatibility(agentString string) bool {
 }
 
 func Handle404(config configservice.ConfigService, w http.ResponseWriter, r *http.Request) {
-	err := model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound)
+	err := model_helper.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound)
 	ipAddress := util.GetIPAddress(r, config.Config().ServiceSettings.TrustedProxyIPHeader)
 	slog.Debug("not found handler triggered", slog.String("path", r.URL.Path), slog.Int("code", 404), slog.String("ip", ipAddress))
 
@@ -75,7 +75,7 @@ func Handle404(config configservice.ConfigService, w http.ResponseWriter, r *htt
 
 // IsApiCall checks if given request's url's path is prefixed with "api"
 func IsApiCall(config configservice.ConfigService, r *http.Request) bool {
-	subpath, _ := model.GetSubpathFromConfig(config.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(config.Config())
 
 	return strings.HasPrefix(r.URL.Path, path.Join(subpath, "api")+"/")
 }
@@ -83,6 +83,6 @@ func IsApiCall(config configservice.ConfigService, r *http.Request) bool {
 // ReturnStatusOK is for returning a json formatted message indicates that the request was success
 func ReturnStatusOK(w http.ResponseWriter) {
 	m := make(map[string]string)
-	m[model.STATUS] = model.STATUS_OK
-	w.Write([]byte(model.MapToJson(m)))
+	m[model_helper.STATUS] = model_helper.STATUS_OK
+	w.Write([]byte(model_helper.MapToJson(m)))
 }

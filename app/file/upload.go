@@ -8,6 +8,7 @@ import (
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -15,7 +16,7 @@ import (
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
-func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError) {
+func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model_helper.AppError) {
 	uss, err := a.srv.Store.UploadSession().GetForUser(userID)
 	var (
 		statusCode int
@@ -29,13 +30,13 @@ func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*model.UploadSe
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("GetUploadSessionsForUser", "app.file_error_finding_upload_sessions_for_user.app_error", nil, errMsg, statusCode)
+		return nil, model_helper.NewAppError("GetUploadSessionsForUser", "app.file_error_finding_upload_sessions_for_user.app_error", nil, errMsg, statusCode)
 	}
 
 	return uss, nil
 }
 
-func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError) {
+func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *model_helper.AppError) {
 	us, err := a.srv.Store.UploadSession().Get(uploadId)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -43,15 +44,15 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("GetUploadSession", "app.file.error_finding_upload_session_by_id.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("GetUploadSession", "app.file.error_finding_upload_session_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return us, nil
 }
 
-// func (a *ServiceFile) CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError) {
+// func (a *ServiceFile) CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model_helper.AppError) {
 // 	if us.FileSize > *a.srv.Config().FileSettings.MaxFileSize {
-// 		return nil, model.NewAppError(
+// 		return nil, model_helper.NewAppError(
 // 			"CreateUploadSession",
 // 			"app.upload.create.upload_too_large.app_error",
 // 			nil, "", http.StatusRequestEntityTooLarge,
@@ -73,24 +74,24 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *
 // 	if us.Type == model.UploadTypeAttachment {
 // 		channel, err := a.GetChannel(us.ChannelId)
 // 		if err != nil {
-// 			return nil, model.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
+// 			return nil, model_helper.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
 // 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
 // 		}
 // 		if channel.DeleteAt != 0 {
-// 			return nil, model.NewAppError("CreateUploadSession", "app.upload.create.cannot_upload_to_deleted_channel.app_error",
+// 			return nil, model_helper.NewAppError("CreateUploadSession", "app.upload.create.cannot_upload_to_deleted_channel.app_error",
 // 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
 // 		}
 // 	}
 
 // 	us, storeErr := a.srv.Store.UploadSession().Save(us)
 // 	if storeErr != nil {
-// 		return nil, model.NewAppError("CreateUploadSession", "app.upload.create.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+// 		return nil, model_helper.NewAppError("CreateUploadSession", "app.upload.create.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 // 	}
 
 // 	return us, nil
 // }
 
-func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError) {
+func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model_helper.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
 	a.uploadLockMapMut.Lock()
@@ -98,7 +99,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	if locked {
 		// session lock is already taken, return error.
 		a.uploadLockMapMut.Unlock()
-		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "", http.StatusBadRequest)
 	}
 	// grab the session lock.
 	a.uploadLockMap[us.Id] = true
@@ -115,7 +116,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	if storedSession, err := a.GetUploadSession(us.Id); err != nil {
 		return nil, err
 	} else if us.FileOffset != storedSession.FileOffset {
-		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "FileOffset mismatch", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "FileOffset mismatch", http.StatusBadRequest)
 	}
 
 	uploadPath := us.Path
@@ -128,7 +129,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 		R: rd,
 		N: us.FileSize - us.FileOffset,
 	}
-	var err *model.AppError
+	var err *model_helper.AppError
 	var written int64
 	if us.FileOffset == 0 {
 		// new upload
@@ -142,7 +143,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 			if err != nil {
 				errStr = err.Error()
 			}
-			return nil, model.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error", map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error", map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
 		}
 	} else if us.FileOffset < us.FileSize {
 		// resume upload
@@ -151,7 +152,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	if written > 0 {
 		us.FileOffset += written
 		if storeErr := a.srv.Store.UploadSession().Update(us); storeErr != nil {
-			return nil, model.NewAppError("UploadData", "app.upload.upload_data.update.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.update.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 		}
 	}
 	if err != nil {
@@ -166,7 +167,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	// upload is done, create FileInfo
 	f, err := a.FileReader(uploadPath)
 	if err != nil {
-		return nil, model.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	info, err := model.GetInfoForBytes(us.FileName, f, int(us.FileSize))
@@ -191,7 +192,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	// image post-processing
 	if info.IsImage() {
 		if limitErr := checkImageResolutionLimit(info.Width, info.Height, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
-			return nil, model.NewAppError(
+			return nil, model_helper.NewAppError(
 				"uploadData",
 				"app.upload.upload_data.large_image.app_error",
 				map[string]interface{}{
@@ -213,16 +214,16 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 
 	if us.Type == model.UploadTypeImport {
 		if err := a.MoveFile(uploadPath, us.Path); err != nil {
-			return nil, model.NewAppError("UploadData", "app.upload.upload_data.move_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.move_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
 	var storeErr error
 	if info, storeErr = a.srv.Store.FileInfo().Upsert(info); storeErr != nil {
-		if appErr, ok := storeErr.(*model.AppError); ok {
+		if appErr, ok := storeErr.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model.NewAppError("uploadData", "app.upload.upload_data.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("uploadData", "app.upload.upload_data.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 	}
 
 	if *a.srv.Config().FileSettings.ExtractContent {

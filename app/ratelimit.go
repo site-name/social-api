@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/throttled/throttled"
@@ -23,7 +23,7 @@ type RateLimiter struct {
 }
 
 // NewRateLimiter creates new RateLimiter
-func NewRateLimiter(settings *model.RateLimitSettings, trustedProxyIPHeader []string) (*RateLimiter, error) {
+func NewRateLimiter(settings *model_helper.RateLimitSettings, trustedProxyIPHeader []string) (*RateLimiter, error) {
 	store, err := memstore.New(*settings.MemoryStoreSize)
 	if err != nil {
 		return nil, errors.Wrap(err, "api.server.start_server.rate_limiting_memory_store")

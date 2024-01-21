@@ -5,10 +5,11 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
-func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError) {
+func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model_helper.AppError) {
 	return a.ShippingZonesByOption(&model.ShippingZoneFilterOption{
 		Conditions: squirrel.And{
 			squirrel.NotEq{model.ShippingZoneTableName + ".Id": shippingZoneID},
@@ -18,7 +19,7 @@ func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*m
 }
 
 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
-func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError) {
+func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]model.CountryCode, *model_helper.AppError) {
 	zones, err := a.ShippingZonesByOption(&model.ShippingZoneFilterOption{})
 	if err != nil {
 		return nil, err

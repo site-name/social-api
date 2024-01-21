@@ -27,7 +27,7 @@ func (s *SqlUserAccessTokenStore) Save(token model.UserAccessToken) (*model.User
 		return nil, err
 	}
 
-	err := token.Insert(s.Context(), s.GetMaster(), boil.Infer())
+	err := token.Insert(s.GetMaster(), boil.Infer())
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (s *SqlUserAccessTokenStore) Delete(tokenId string) error {
 	}
 
 	// delete user access token
-	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).DeleteAll(s.Context(), tx)
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).DeleteAll(tx)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
 		userId)
 
 	// delete user access token
-	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.UserID.EQ(userId)).DeleteAll(s.Context(), tx)
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.UserID.EQ(userId)).DeleteAll(tx)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
 }
 
 func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, error) {
-	token, err := model.FindUserAccessToken(s.Context(), s.GetReplica(), tokenId)
+	token, err := model.FindUserAccessToken(s.GetReplica(), tokenId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.UserAccessTokens, tokenId)
@@ -115,11 +115,11 @@ func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, e
 }
 
 func (s *SqlUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
-	return model.UserAccessTokens(conds...).All(s.Context(), s.GetReplica())
+	return model.UserAccessTokens(conds...).All(s.GetReplica())
 }
 
 func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
-	token, err := model.UserAccessTokens(model.UserAccessTokenWhere.Token.EQ(tokenString)).One(s.Context(), s.GetReplica())
+	token, err := model.UserAccessTokens(model.UserAccessTokenWhere.Token.EQ(tokenString)).One(s.GetReplica())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.UserAccessTokens, "token")
@@ -145,13 +145,14 @@ func (s *SqlUserAccessTokenStore) Search(term string) (model.UserAccessTokenSlic
 			qm.Or(model.UserAccessTokenTableColumns.UserID+" LIKE ?", term),
 			qm.Or(model.UserTableColumns.Username+" LIKE ?", term),
 		).
-		All(s.Context(), s.GetReplica())
+		All(s.GetReplica())
 }
 
 func (s *SqlUserAccessTokenStore) UpdateTokenEnable(tokenId string) error {
-	_, err := model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).UpdateAll(s.Context(), s.GetMaster(), model.M{
-		model.UserAccessTokenColumns.IsActive: true,
-	})
+	_, err := model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).
+		UpdateAll(s.GetMaster(), model.M{
+			model.UserAccessTokenColumns.IsActive: true,
+		})
 	return err
 }
 
@@ -178,9 +179,10 @@ func (s *SqlUserAccessTokenStore) UpdateTokenDisable(tokenId string) error {
 		return errors.Wrap(err, "failed to delete related session of given user access token")
 	}
 
-	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).UpdateAll(s.Context(), s.GetMaster(), model.M{
-		model.UserAccessTokenColumns.IsActive: false,
-	})
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).
+		UpdateAll(s.GetMaster(), model.M{
+			model.UserAccessTokenColumns.IsActive: false,
+		})
 	if err != nil {
 		return err
 	}

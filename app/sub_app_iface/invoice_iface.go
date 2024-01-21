@@ -11,10 +11,10 @@ import (
 // InvoiceService contains methods for working with invoices
 type InvoiceService interface {
 	// SendInvoice Send an invoice to user of related order with URL to download it
-	SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
+	SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// UpsertInvoiceEvent is shortcut for creating invoice events
-	UpsertInvoiceEvent(option *model.InvoiceEventCreationOptions) (*model.InvoiceEvent, *model.AppError)
-	FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model.AppError)
-	GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model.AppError)
-	UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model.AppError)
+	UpsertInvoiceEvent(option *model.InvoiceEventCreationOptions) (*model.InvoiceEvent, *model_helper.AppError)
+	FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model_helper.AppError)
+	GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model_helper.AppError)
+	UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model_helper.AppError)
 }

@@ -7,7 +7,7 @@ import "github.com/sitename/sitename/model"
 
 // ShopService contains methods for working with shops
 type ShopService interface {
-	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError)
-	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError)
+	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError)
+	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError)
 	UserIsStaffOfShop(userID string) bool
 }

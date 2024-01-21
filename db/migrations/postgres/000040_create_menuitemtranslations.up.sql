@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS menu_item_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  language_code LanguageCode NOT NULL,
+  language_code language_code NOT NULL,
   menu_item_id uuid NOT NULL,
   name varchar(128) NOT NULL
 );

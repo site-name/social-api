@@ -16,6 +16,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
@@ -23,12 +24,12 @@ import (
 )
 
 // Configs return system's configurations
-func (s *Server) Config() *model.Config {
+func (s *Server) Config() *model_helper.Config {
 	return s.ConfigStore.Get()
 }
 
 // Configs return system's configurations
-func (a *App) Config() *model.Config {
+func (a *App) Config() *model_helper.Config {
 	return a.Srv().Config()
 }
 
@@ -41,7 +42,7 @@ func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[strin
 }
 
 // UpdateConfig updates config
-func (s *Server) UpdateConfig(f func(*model.Config)) {
+func (s *Server) UpdateConfig(f func(*model_helper.Config)) {
 	if s.ConfigStore.IsReadOnly() {
 		return
 	}
@@ -54,7 +55,7 @@ func (s *Server) UpdateConfig(f func(*model.Config)) {
 }
 
 // UpdateConfig updates config
-func (a *App) UpdateConfig(f func(*model.Config)) {
+func (a *App) UpdateConfig(f func(*model_helper.Config)) {
 	a.Srv().UpdateConfig(f)
 }
 
@@ -84,11 +85,11 @@ func (a *App) LimitedClientConfig() map[string]string {
 // Registers a function with a given listener to be called when the config is reloaded and may have changed. The function
 // will be called with two arguments: the old config and the new config. AddConfigListener returns a unique ID
 // for the listener that can later be used to remove it.
-func (s *Server) AddConfigListener(listener func(*model.Config, *model.Config)) string {
+func (s *Server) AddConfigListener(listener func(*model_helper.Config, *model_helper.Config)) string {
 	return s.ConfigStore.AddListener(listener)
 }
 
-func (a *App) AddConfigListener(listener func(*model.Config, *model.Config)) string {
+func (a *App) AddConfigListener(listener func(*model_helper.Config, *model_helper.Config)) string {
 	return a.Srv().AddConfigListener(listener)
 }
 
@@ -109,9 +110,9 @@ func (s *Server) ensurePostActionCookieSecret() error {
 		return nil
 	}
 
-	var secret *model.SystemPostActionCookieSecret
+	var secret *model_helper.SystemPostActionCookieSecret
 
-	value, err := s.Store.System().GetByName(model.SystemPostActionCookieSecretKey)
+	value, err := s.Store.System().GetByName(model_helper.SystemPostActionCookieSecretKey)
 	if err == nil {
 		if err := json.Unmarshal([]byte(value.Value), &secret); err != nil {
 			return err
@@ -120,7 +121,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 
 	// If we don't already have a key, try to generate one.
 	if secret == nil {
-		newSecret := &model.SystemPostActionCookieSecret{
+		newSecret := &model_helper.SystemPostActionCookieSecret{
 			Secret: make([]byte, 32),
 		}
 		_, err := rand.Reader.Read(newSecret.Secret)
@@ -128,8 +129,8 @@ func (s *Server) ensurePostActionCookieSecret() error {
 			return err
 		}
 
-		system := &model.System{
-			Name: model.SystemPostActionCookieSecretKey,
+		system := model.System{
+			Name: model_helper.SystemPostActionCookieSecretKey,
 		}
 		v, err := json.Marshal(newSecret)
 		if err != nil {
@@ -147,7 +148,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 	// If we weren't able to save a new key above, another server must have beat us to it. Get the
 	// key from the database, and if that fails, error out.
 	if secret == nil {
-		value, err := s.Store.System().GetByName(model.SystemPostActionCookieSecretKey)
+		value, err := s.Store.System().GetByName(model_helper.SystemPostActionCookieSecretKey)
 		if err != nil {
 			return err
 		}
@@ -163,12 +164,12 @@ func (s *Server) ensurePostActionCookieSecret() error {
 
 // SaveConfig replaces the active configuration, optionally notifying cluster peers.
 // It returns both the previous and current configs.
-func (s *Server) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError) {
+func (s *Server) SaveConfig(newCfg *model_helper.Config, sendConfigChangeClusterMessage bool) (*model_helper.Config, *model_helper.Config, *model_helper.AppError) {
 	oldCfg, newCfg, err := s.ConfigStore.Set(newCfg)
 	if errors.Cause(err) == config.ErrReadOnlyConfiguration {
-		return nil, nil, model.NewAppError("saveConfig", "ent.cluster.save_config.error", nil, err.Error(), http.StatusForbidden)
+		return nil, nil, model_helper.NewAppError("saveConfig", "ent.cluster.save_config.error", nil, err.Error(), http.StatusForbidden)
 	} else if err != nil {
-		return nil, nil, model.NewAppError("saveConfig", "app.save_config.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model_helper.NewAppError("saveConfig", "app.save_config.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	if s.startMetrics && *s.Config().MetricsSettings.Enable {
@@ -192,7 +193,7 @@ func (s *Server) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage
 }
 
 // SaveConfig replaces the active configuration, optionally notifying cluster peers.
-func (a *App) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError) {
+func (a *App) SaveConfig(newCfg *model_helper.Config, sendConfigChangeClusterMessage bool) (*model_helper.Config, *model_helper.Config, *model_helper.AppError) {
 	return a.Srv().SaveConfig(newCfg, sendConfigChangeClusterMessage)
 }
 
@@ -203,9 +204,9 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 		return nil
 	}
 
-	var key *model.SystemAsymmetricSigningKey
+	var key *model_helper.SystemAsymmetricSigningKey
 
-	value, err := s.Store.System().GetByName(model.SystemAsymmetricSigningKeyKey)
+	value, err := s.Store.System().GetByName(model_helper.SystemAsymmetricSigningKeyKey)
 	if err == nil {
 		if err := json.Unmarshal([]byte(value.Value), &key); err != nil {
 			return err
@@ -218,16 +219,16 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 		if err != nil {
 			return err
 		}
-		newKey := &model.SystemAsymmetricSigningKey{
-			ECDSAKey: &model.SystemECDSAKey{
+		newKey := &model_helper.SystemAsymmetricSigningKey{
+			ECDSAKey: &model_helper.SystemECDSAKey{
 				Curve: "P-256",
 				X:     newECDSAKey.X,
 				Y:     newECDSAKey.Y,
 				D:     newECDSAKey.D,
 			},
 		}
-		system := &model.System{
-			Name: model.SystemAsymmetricSigningKeyKey,
+		system := model.System{
+			Name: model_helper.SystemAsymmetricSigningKeyKey,
 		}
 		v, err := json.Marshal(newKey)
 		if err != nil {
@@ -245,7 +246,7 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 	// If we weren't able to save a new key above, another server must have beat us to it. Get the
 	// key from the database, and if that fails, error out.
 	if key == nil {
-		value, err := s.Store.System().GetByName(model.SystemAsymmetricSigningKeyKey)
+		value, err := s.Store.System().GetByName(model_helper.SystemAsymmetricSigningKeyKey)
 		if err != nil {
 			return err
 		}
@@ -288,8 +289,8 @@ func (s *Server) ensureInstallationDate() error {
 		installationDate = util.MillisFromTime(time.Now())
 	}
 
-	if err := s.Store.System().SaveOrUpdate(&model.System{
-		Name:  model.SystemInstallationDateKey,
+	if err := s.Store.System().SaveOrUpdate(model.System{
+		Name:  model_helper.SystemInstallationDateKey,
 		Value: strconv.FormatInt(installationDate, 10),
 	}); err != nil {
 		return err
@@ -303,8 +304,8 @@ func (s *Server) ensureFirstServerRunTimestamp() error {
 		return nil
 	}
 
-	if err := s.Store.System().SaveOrUpdate(&model.System{
-		Name:  model.SystemFirstServerRunTimestampKey,
+	if err := s.Store.System().SaveOrUpdate(model.System{
+		Name:  model_helper.SystemFirstServerRunTimestampKey,
 		Value: strconv.FormatInt(util.MillisFromTime(time.Now()), 10),
 	}); err != nil {
 		return err
@@ -383,7 +384,7 @@ func (a *App) GetConfigFile(name string) ([]byte, error) {
 }
 
 // GetSanitizedConfig gets the configuration for a system admin without any secrets.
-func (a *App) GetSanitizedConfig() *model.Config {
+func (a *App) GetSanitizedConfig() *model_helper.Config {
 	cfg := a.Config().Clone()
 	cfg.Sanitize()
 
@@ -396,18 +397,18 @@ func (a *App) GetEnvironmentConfig(filter func(reflect.StructField) bool) map[st
 	return a.EnvironmentConfig(filter)
 }
 
-func (a *App) HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config) {
+func (a *App) HandleMessageExportConfig(cfg *model_helper.Config, appCfg *model_helper.Config) {
 	// If the Message Export feature has been toggled in the System Console, rewrite the ExportFromTimestamp field to an
 	// appropriate value. The rewriting occurs here to ensure it doesn't affect values written to the config file
 	// directly and not through the System Console UI.
 	if *cfg.MessageExportSettings.EnableExport != *appCfg.MessageExportSettings.EnableExport {
 		if *cfg.MessageExportSettings.EnableExport && *cfg.MessageExportSettings.ExportFromTimestamp == int64(0) {
 			// When the feature is toggled on, use the current timestamp as the start time for future exports.
-			cfg.MessageExportSettings.ExportFromTimestamp = model.GetPointerOfValue(model.GetMillis())
+			cfg.MessageExportSettings.ExportFromTimestamp = model_helper.GetPointerOfValue(model_helper.GetMillis())
 		} else if !*cfg.MessageExportSettings.EnableExport {
 			// When the feature is disabled, reset the timestamp so that the timestamp will be set if
 			// the feature is re-enabled from the System Console in future.
-			cfg.MessageExportSettings.ExportFromTimestamp = model.GetPointerOfValue[int64](0)
+			cfg.MessageExportSettings.ExportFromTimestamp = model_helper.GetPointerOfValue[int64](0)
 		}
 	}
 }
@@ -444,8 +445,8 @@ func (s *Server) regenerateClientConfig() {
 		if err != nil {
 			slog.Err(err)
 		} else {
-			clientConfig["CustomTermsOfServiceId"] = termsOfService.Id
-			limitedClientConfig["CustomTermsOfServiceId"] = termsOfService.Id
+			clientConfig["CustomTermsOfServiceId"] = termsOfService.ID
+			limitedClientConfig["CustomTermsOfServiceId"] = termsOfService.ID
 		}
 	}
 

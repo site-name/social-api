@@ -17,7 +17,7 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 
 func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	return []interface{}{
-		&ch.Id,
+		&ch.ID,
 		&ch.Name,
 		&ch.IsActive,
 		&ch.Slug,
@@ -26,7 +26,7 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	}
 }
 
-func (s *SqlChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
+func (s *SqlChannelStore) Upsert(tx store.ContextRunner, channel *model.Channel) (*model.Channel, error) {
 	err := transaction.Save(channel).Error
 	if err != nil {
 		if s.IsUniqueConstraintError(err, []string{"slug", "slug_unique_key", "idx_channels_slug_unique"}) {
@@ -115,7 +115,7 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	return res, nil
 }
 
-func (s *SqlChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
+func (s *SqlChannelStore) DeleteChannels(tx store.ContextRunner, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}

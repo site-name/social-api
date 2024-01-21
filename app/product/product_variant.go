@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -14,14 +15,14 @@ import (
 )
 
 // ProductVariantById finds product variant by given id
-func (a *ServiceProduct) ProductVariantById(id string) (*model.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantById(id string) (*model.ProductVariant, *model_helper.AppError) {
 	variant, err := a.srv.Store.ProductVariant().Get(id)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ProductVariantById", "app.product.product_variant_missing.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ProductVariantById", "app.product.product_variant_missing.app_error", nil, err.Error(), statusCode)
 	}
 
 	return variant, nil
@@ -35,57 +36,57 @@ func (a *ServiceProduct) ProductVariantGetPrice(
 	channel model.Channel,
 	channelListing *model.ProductVariantChannelListing,
 	discounts []*model.DiscountInfo, // optional
-) (*goprices.Money, *model.AppError) {
+) (*goprices.Money, *model_helper.AppError) {
 	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
 
 // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
-func (a *ServiceProduct) ProductVariantIsDigital(productVariantID string) (bool, *model.AppError) {
+func (a *ServiceProduct) ProductVariantIsDigital(productVariantID string) (bool, *model_helper.AppError) {
 	productType, err := a.srv.Store.ProductType().ProductTypeByProductVariantID(productVariantID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return false, model.NewAppError("ProductVariantIsDigital", "app.product.product_type_by_product_variant_id.app_error", nil, err.Error(), statusCode)
+		return false, model_helper.NewAppError("ProductVariantIsDigital", "app.product.product_type_by_product_variant_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return *productType.IsDigital && !*productType.IsShippingRequired, nil
 }
 
 // ProductVariantByOrderLineID returns a product variant by given order line id
-func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model_helper.AppError) {
 	productVariant, err := a.srv.Store.ProductVariant().GetByOrderLineID(orderLineID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return productVariant, nil
 }
 
 // ProductVariantsByOption returns a list of product variants satisfy given option
-func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariants, *model.AppError) {
+func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariants, *model_helper.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return productVariants, nil
 }
 
 // ProductVariantGetWeight returns weight of given product variant
-func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError) {
+func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model_helper.AppError) {
 	weight, err := a.srv.Store.ProductVariant().GetWeight(productVariantID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("ProductVariantGetWeight", "app.product.error_getting_product_variant_weight.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ProductVariantGetWeight", "app.product.error_getting_product_variant_weight.app_error", nil, err.Error(), statusCode)
 	}
 
 	return weight, nil
@@ -94,12 +95,12 @@ func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*meas
 // DisplayProduct return display text for given product variant
 //
 // `translated` default to false
-func (a *ServiceProduct) DisplayProduct(productVariant *model.ProductVariant, translated bool) (stringm *model.AppError) {
+func (a *ServiceProduct) DisplayProduct(productVariant *model.ProductVariant, translated bool) (stringm *model_helper.AppError) {
 	panic("not implt")
 }
 
 // ProductVariantsAvailableInChannel returns product variants based on given channel slug
-func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model_helper.AppError) {
 	productVariants, appErr := a.ProductVariantsByOption(&model.ProductVariantFilterOption{
 		RelatedProductVariantChannelListingConditions: squirrel.NotEq{model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnPriceAmount: nil},
 		ProductVariantChannelListingChannelSlug:       squirrel.Eq{model.ChannelTableName + "." + model.ChannelColumnSlug: channelSlug},
@@ -113,10 +114,10 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model_helper.AppError) {
 	upsertedVariant, err := s.srv.Store.ProductVariant().Save(transaction, variant)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		var statusCode = http.StatusInternalServerError
@@ -126,13 +127,13 @@ func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *mod
 		} else if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return nil, model.NewAppError("UpsertProductVariant", "app.product.error_upserting_product_variant.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertProductVariant", "app.product.error_upserting_product_variant.app_error", nil, err.Error(), statusCode)
 	}
 
 	return upsertedVariant, nil
 }
 
-func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID string) (int64, *model.AppError) {
+func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID string) (int64, *model_helper.AppError) {
 	// find all draft order lines related to given variants
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions:             squirrel.Eq{model.OrderLineTableName + "." + model.OrderLineColumnVariantID: variantIds},
@@ -146,7 +147,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	// begin tx
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return 0, model.NewAppError("DeleteProductVariants", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteProductVariants", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	// create order events on order lines
@@ -181,15 +182,15 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	// actually delete variants, related draft order lines and related attribute values
 	numDeleted, err := s.srv.Store.ProductVariant().Delete(tx, variantIds)
 	if err != nil {
-		return 0, model.NewAppError("DeleteProductVariants", "app.product.error_deleting_variants.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteProductVariants", "app.product.error_deleting_variants.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	var finishTransaction = func() *model.AppError {
+	var finishTransaction = func() *model_helper.AppError {
 		// commit
 		defer s.srv.Store.FinalizeTransaction(tx)
 		err = tx.Commit().Error
 		if err != nil {
-			return model.NewAppError("DeleteProductVariants", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("DeleteProductVariants", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		return nil
 	}
@@ -227,11 +228,11 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	return numDeleted, nil
 }
 
-func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model.AppError {
+func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError {
 	// create tx:
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return model.NewAppError("ToggleVariantRelations", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVariantRelations", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(tx)
 
@@ -247,13 +248,13 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 			isDelete,
 		)
 	if err != nil {
-		return model.NewAppError("ToggleVariantRelations", "app.product.toggle_variant_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVariantRelations", "app.product.toggle_variant_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// commit tx
 	err = tx.Commit().Error
 	if err != nil {
-		return model.NewAppError("ToggleVariantRelations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVariantRelations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	pluginMng := s.srv.PluginService().GetPluginManager()
@@ -267,6 +268,6 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	return nil
 }
 
-// func (s *ServiceProduct) GetProductVariantsForRequester(id, sku, channelIdOrSlug string, requesterIsShopStaff bool) (model.ProductVariants, *model.AppError) {
+// func (s *ServiceProduct) GetProductVariantsForRequester(id, sku, channelIdOrSlug string, requesterIsShopStaff bool) (model.ProductVariants, *model_helper.AppError) {
 // 	s.srv.AccountService().Per
 // }

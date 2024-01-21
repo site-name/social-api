@@ -3,10 +3,11 @@ package giftcard
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ interface{}, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError {
+func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ interface{}, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model_helper.AppError {
 	var (
 		userPayload interface{}
 		userID      *string

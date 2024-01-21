@@ -16,15 +16,15 @@ type AddressStore struct {
 }
 
 // DeleteAddresses provides a mock function with given fields: transaction, addressIDs
-func (_m *AddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
+func (_m *AddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model_helper.AppError {
 	ret := _m.Called(transaction, addressIDs)
 
-	var r0 *model.AppError
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) *model.AppError); ok {
+	var r0 *model_helper.AppError
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) *model_helper.AppError); ok {
 		r0 = rf(transaction, addressIDs)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.AppError)
+			r0 = ret.Get(0).(*model_helper.AppError)
 		}
 	}
 

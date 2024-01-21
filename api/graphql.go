@@ -8,7 +8,7 @@ import (
 	graphql "github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/web"
 )
@@ -41,7 +41,7 @@ func (api *API) InitGraphql() error {
 			&HasPermissionAnyDirective{},
 		),
 		graphql.RestrictIntrospection(func(_ context.Context) bool {
-			return model.BuildNumber != "dev"
+			return model_helper.BuildNumber != "dev"
 		}),
 	}
 
@@ -87,7 +87,7 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 	c.GraphQLOperationName = params.OperationName
 
 	c.CurrentChannelID = r.URL.Query().Get("channel_id")
-	if c.CurrentChannelID != "" && !model.IsValidId(c.CurrentChannelID) {
+	if c.CurrentChannelID != "" && !model_helper.IsValidId(c.CurrentChannelID) {
 		err2 := gqlerrors.Errorf("invalid request query param channel_id")
 		response = &graphql.Response{Errors: []*gqlerrors.QueryError{err2}}
 		return
@@ -103,7 +103,7 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 		for _, err := range response.Errors {
 			if err.Err != nil {
-				if appErr, ok := err.Err.(*model.AppError); ok && appErr.StatusCode < http.StatusInternalServerError {
+				if appErr, ok := err.Err.(*model_helper.AppError); ok && appErr.StatusCode < http.StatusInternalServerError {
 					logFunc = slog.Debug
 					break
 				}

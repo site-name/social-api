@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS channels (
   is_active boolean NOT NULL,
   slug varchar(255) NOT NULL,
   currency text NOT NULL,
-  default_country CountryCode NOT NULL
+  default_country country_code NOT NULL
 );
 
 ALTER TABLE ONLY channels

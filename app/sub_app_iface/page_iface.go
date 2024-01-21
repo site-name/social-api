@@ -7,5 +7,5 @@ import "github.com/sitename/sitename/model"
 
 // PageService contains methods for working with pages
 type PageService interface {
-	FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model.AppError)
+	FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model_helper.AppError)
 }

@@ -3,7 +3,7 @@ package app
 import (
 	"time"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 const (
@@ -25,7 +25,7 @@ func (a *App) InvalidateCacheForUser(userID string) {
 }
 
 // Publish push websocket event to all subscribers
-func (s *Server) Publish(message *model.WebSocketEvent) {
+func (s *Server) Publish(message *model_helper.WebSocketEvent) {
 	if s.Metrics != nil {
 		s.Metrics.IncrementWebsocketEvent(message.EventType())
 	}
@@ -33,15 +33,15 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 	s.PublishSkipClusterSend(message)
 
 	if s.Cluster != nil {
-		cm := &model.ClusterMessage{
-			Event:    model.ClusterEventPublish,
-			SendType: model.ClusterSendBestEffort,
+		cm := &model_helper.ClusterMessage{
+			Event:    model_helper.ClusterEventPublish,
+			SendType: model_helper.ClusterSendBestEffort,
 			Data:     message.ToJSON(),
 		}
 
 		switch message.EventType() {
-		case model.WebsocketEventPosted, model.WebsocketEventPostEdited, model.WebsocketEventDirectAdded, model.WebsocketEventGroupAdded, model.WebsocketEventAddedToTeam:
-			cm.SendType = model.ClusterSendReliable
+		case model_helper.WebsocketEventPosted, model_helper.WebsocketEventPostEdited, model_helper.WebsocketEventDirectAdded, model_helper.WebsocketEventGroupAdded, model_helper.WebsocketEventAddedToTeam:
+			cm.SendType = model_helper.ClusterSendReliable
 		default:
 		}
 
@@ -50,11 +50,11 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 }
 
 // Publish puplish websocket events
-func (a *App) Publish(message *model.WebSocketEvent) {
+func (a *App) Publish(message *model_helper.WebSocketEvent) {
 	a.Srv().Publish(message)
 }
 
-func (s *Server) PublishSkipClusterSend(event *model.WebSocketEvent) {
+func (s *Server) PublishSkipClusterSend(event *model_helper.WebSocketEvent) {
 	// if event.GetBroadcast().UserId != "" {
 
 	// }

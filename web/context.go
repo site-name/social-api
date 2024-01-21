@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -18,7 +18,7 @@ type Context struct {
 	App        app.AppIface
 	AppContext *request.Context // AppContext holds information of an http request. It is created when an http request is made
 	Logger     *slog.Logger
-	Err        *model.AppError
+	Err        *model_helper.AppError
 	// This is used to track the graphQL query that's being executed,
 	// so that we can monitor the timings in Grafana.
 	GraphQLOperationName string
@@ -30,20 +30,20 @@ type Context struct {
 // set session missing error for c
 func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens &&
-		c.AppContext.Session().Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN {
+		c.AppContext.Session().Props[model_helper.SESSION_PROP_TYPE] == model_helper.SESSION_TYPE_USER_ACCESS_TOKEN {
 
-		c.Err = model.NewAppError("", "api.context.session_expired.app_error", nil, "UserAccessToken", http.StatusUnauthorized)
+		c.Err = model_helper.NewAppError("", "api.context.session_expired.app_error", nil, "UserAccessToken", http.StatusUnauthorized)
 		return
 	}
 
-	if c.AppContext.Session().UserId == "" {
-		c.Err = model.NewAppError("", "api.context.session_expired.app_error", nil, "UserRequired", http.StatusUnauthorized)
+	if c.AppContext.Session().UserID == "" {
+		c.Err = model_helper.NewAppError("", "api.context.session_expired.app_error", nil, "UserRequired", http.StatusUnauthorized)
 		return
 	}
 }
 
 // CheckAuthenticatedAndHasPermissionToAll checks if user is authenticated, then check if user has all given permission(s)
-func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms ...*model.Permission) {
+func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms ...*model_helper.Permission) {
 	c.SessionRequired()
 	if c.Err != nil {
 		return
@@ -54,7 +54,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms ...*model.Permis
 }
 
 // CheckAuthenticatedAndHasPermissionToAny check user authenticated, then check if user has any of given permission(s)
-func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model.Permission) {
+func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model_helper.Permission) {
 	c.SessionRequired()
 	if c.Err != nil {
 		return
@@ -71,9 +71,9 @@ func (c *Context) CheckAuthenticatedAndHasRoles(apiName string, roleIDs ...strin
 	}
 
 	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
-	for _, role := range c.AppContext.Session().GetUserRoles() {
+	for _, role := range model_helper.SessionGetUserRoles(*c.AppContext.Session()) {
 		if !roleIdsMap[role] {
-			c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+			c.Err = model_helper.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 			return
 		}
 	}
@@ -86,25 +86,25 @@ func (c *Context) CheckAuthenticatedAndHasRoleAny(apiName string, roleIDs ...str
 	}
 
 	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
-	for _, role := range c.AppContext.Session().GetUserRoles() {
+	for _, role := range model_helper.SessionGetUserRoles(*c.AppContext.Session()) {
 		if roleIdsMap[role] {
 			return
 		}
 	}
 
-	c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	c.Err = model_helper.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
 // MfaRequired must be placed after c's SessionRequired() method
 func (c *Context) MfaRequired() {
 	// OAuth integrations are excepted
-	if c.AppContext.Session().IsOAuth {
+	if c.AppContext.Session().IsOauth {
 		return
 	}
 
-	user, err := c.App.Srv().AccountService().UserById(context.Background(), c.AppContext.Session().UserId)
+	user, err := c.App.Srv().AccountService().UserById(context.Background(), c.AppContext.Session().UserID)
 	if err != nil {
-		c.Err = model.NewAppError("MfaRequired", "api.context.get_user.app_error", nil, err.Error(), http.StatusUnauthorized)
+		c.Err = model_helper.NewAppError("MfaRequired", "api.context.get_user.app_error", nil, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -113,24 +113,24 @@ func (c *Context) MfaRequired() {
 	}
 	// Only required for email and ldap accounts
 	if user.AuthService != "" &&
-		user.AuthService != model.USER_AUTH_SERVICE_EMAIL &&
-		user.AuthService != model.USER_AUTH_SERVICE_LDAP {
+		user.AuthService != model_helper.USER_AUTH_SERVICE_EMAIL &&
+		user.AuthService != model_helper.USER_AUTH_SERVICE_LDAP {
 		return
 	}
 
 	// Special case to let user get themself
-	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(c.App.Config())
 	if c.AppContext.Path() == path.Join(subpath, "/api/v4/users/me") {
 		return
 	}
 
 	if !user.MfaActive {
-		c.Err = model.NewAppError("MfaRequired", "api.context.mfa_required.app_error", nil, "", http.StatusForbidden)
+		c.Err = model_helper.NewAppError("MfaRequired", "api.context.mfa_required.app_error", nil, "", http.StatusForbidden)
 		return
 	}
 }
 
-func (c *Context) LogErrorByCode(err *model.AppError) {
+func (c *Context) LogErrorByCode(err *model_helper.AppError) {
 	code := err.StatusCode
 	msg := err.SystemMessage(i18n.TDefault)
 	fields := []slog.Field{
@@ -159,10 +159,10 @@ func (c *Context) ExtendSessionExpiryIfNeeded(w http.ResponseWriter, r *http.Req
 
 // RemoveSessionCookie deletes cookie from subpath route
 func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
-	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(c.App.Config())
 
 	cookie := &http.Cookie{
-		Name:     model.SESSION_COOKIE_TOKEN,
+		Name:     model_helper.SESSION_COOKIE_TOKEN,
 		Value:    "",
 		Path:     subpath,
 		MaxAge:   -1,
@@ -198,14 +198,14 @@ func (c *Context) SetJSONEncodingError() {
 }
 
 // func (c *Context) SetCommandNotFoundError() {
-// 	c.Err = model.NewAppError("GetCommand", "store.sql_command.save.get.app_error", nil, "", http.StatusNotFound)
+// 	c.Err = model_helper.NewAppError("GetCommand", "store.sql_command.save.get.app_error", nil, "", http.StatusNotFound)
 // }
 
 func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWriter, r *http.Request) bool {
 	metrics := c.App.Metrics()
-	if et := r.Header.Get(model.HeaderEtagClient); etag != "" {
+	if et := r.Header.Get(model_helper.HeaderEtagClient); etag != "" {
 		if et == etag {
-			w.Header().Set(model.HeaderEtagServer, etag)
+			w.Header().Set(model_helper.HeaderEtagServer, etag)
 			w.WriteHeader(http.StatusNotModified)
 			if metrics != nil {
 				metrics.IncrementEtagHitCounter(routeName)
@@ -224,38 +224,38 @@ func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWrite
 // IsSystemAdmin checks if given session contains info of system's administrator.
 func (c *Context) IsSystemAdmin() bool {
 	c.SessionRequired()
-	return c.Err == nil && c.AppContext.Session().GetUserRoles().Contains(model.SystemAdminRoleId)
+	return c.Err == nil && c.AppContext.Session().GetUserRoles().Contains(model_helper.SystemAdminRoleId)
 }
 
-//	func NewInvalidParamError(parameter string) *model.AppError {
-//		err := model.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
+//	func NewInvalidParamError(parameter string) *model_helper.AppError {
+//		err := model_helper.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
 //		return err
 //	}
-func NewInvalidUrlParamError(parameter string) *model.AppError {
-	err := model.NewAppError("Context", "api.context.invalid_url_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
+func NewInvalidUrlParamError(parameter string) *model_helper.AppError {
+	err := model_helper.NewAppError("Context", "api.context.invalid_url_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
 	return err
 }
-func NewServerBusyError() *model.AppError {
-	err := model.NewAppError("Context", "api.context.server_busy.app_error", nil, "", http.StatusServiceUnavailable)
+func NewServerBusyError() *model_helper.AppError {
+	err := model_helper.NewAppError("Context", "api.context.server_busy.app_error", nil, "", http.StatusServiceUnavailable)
 	return err
 }
 
-// func NewInvalidRemoteIdError(parameter string) *model.AppError {
-// 	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]interface{}{"RemoteId": parameter}, "", http.StatusBadRequest)
+// func NewInvalidRemoteIdError(parameter string) *model_helper.AppError {
+// 	err := model_helper.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]interface{}{"RemoteId": parameter}, "", http.StatusBadRequest)
 // 	return err
 // }
 
-// func NewInvalidRemoteClusterTokenError() *model.AppError {
-// 	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", nil, "", http.StatusUnauthorized)
+// func NewInvalidRemoteClusterTokenError() *model_helper.AppError {
+// 	err := model_helper.NewAppError("Context", "api.context.remote_id_invalid.app_error", nil, "", http.StatusUnauthorized)
 // 	return err
 // }
 
-func NewJSONEncodingError() *model.AppError {
-	err := model.NewAppError("Context", "api.context.json_encoding.app_error", nil, "", http.StatusInternalServerError)
+func NewJSONEncodingError() *model_helper.AppError {
+	err := model_helper.NewAppError("Context", "api.context.json_encoding.app_error", nil, "", http.StatusInternalServerError)
 	return err
 }
 
-func (c *Context) SetPermissionError(permissions ...*model.Permission) {
+func (c *Context) SetPermissionError(permissions ...*model_helper.Permission) {
 	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions...)
 }
 
@@ -268,5 +268,5 @@ func (c *Context) GetSiteURLHeader() string {
 }
 
 func (c *Context) GetRemoteID(r *http.Request) string {
-	return r.Header.Get(model.HeaderRemoteClusterId)
+	return r.Header.Get(model_helper.HeaderRemoteClusterId)
 }

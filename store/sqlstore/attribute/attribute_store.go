@@ -7,8 +7,10 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlAttributeStore struct {
@@ -19,9 +21,9 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return &SqlAttributeStore{s}
 }
 
-func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
-	return []interface{}{
-		&v.Id,
+func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []any {
+	return []any{
+		&v.ID,
 		&v.Slug,
 		&v.Name,
 		&v.Type,
@@ -30,7 +32,7 @@ func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 		&v.Unit,
 		&v.ValueRequired,
 		&v.IsVariantOnly,
-		&v.VisibleInStoreFront,
+		&v.VisibleInStorefront,
 		&v.FilterableInStorefront,
 		&v.FilterableInDashboard,
 		&v.StorefrontSearchPosition,
@@ -41,17 +43,33 @@ func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 }
 
 // Upsert inserts or updates given attribute then returns it
-func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
-	err := as.GetMaster().Save(attr).Error
-
-	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique", "slug_unique_key"}) {
-			return nil, store.NewErrInvalidInput(model.AttributeTableName, "Slug", attr.Slug)
-		}
-		return nil, errors.Wrap(err, "failed to upsert attribute")
+func (as *SqlAttributeStore) Upsert(attr model.Attribute) (*model.Attribute, error) {
+	isSaving := attr.ID == ""
+	if isSaving {
+		model_helper.AttributePreSave(&attr)
+	} else {
+		model_helper.AttributePreUpdate(&attr)
 	}
 
-	return attr, nil
+	if err := model_helper.AttributeIsValid(attr); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = attr.Insert(as.GetMaster(), boil.Infer())
+	} else {
+		_, err = attr.Update(as.GetMaster(), boil.Infer())
+	}
+
+	if err != nil {
+		if as.IsUniqueConstraintError(err, []string{"attributes_slug_key", "idx_attributes_slug_unique", "slug_unique_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Attributes, model.AttributeColumns.Slug, attr.Slug)
+		}
+		return nil, err
+	}
+
+	return &attr, nil
 }
 
 func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {

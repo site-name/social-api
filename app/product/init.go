@@ -7,6 +7,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -20,11 +21,11 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 	ordersDict map[string]*model.Order,
 	currencyCode string,
 
-) (*goprices.TaxedMoney, *model.AppError) {
+) (*goprices.TaxedMoney, *model_helper.AppError) {
 	// validate given currencyCode is valid:
 	revenue, err := util.ZeroTaxedMoney(currencyCode)
 	if err != nil {
-		return nil, model.NewAppError("CalculateRevenueForVariant", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CalculateRevenueForVariant", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, orderLine := range orderLines {
@@ -34,7 +35,7 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 		if orderValue != nil && orderValue.CreateAt >= util.MillisFromTime(*startDate) {
 			revenue, err = revenue.Add(orderLine.TotalPrice)
 			if err != nil {
-				return nil, model.NewAppError("CalculateRevenueForVariant", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("CalculateRevenueForVariant", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	}
@@ -46,11 +47,11 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 //
 // Set products of deleted categories as unpublished, delete categories
 // and update products minimal variant prices.
-func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 
 // CollectCategoriesTreeProducts Collect products from all levels in category tree.
-func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category) (model.Products, *model.AppError) {
+func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category) (model.Products, *model_helper.AppError) {
 	panic("not implemented")
 }

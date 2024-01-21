@@ -13,6 +13,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -25,7 +26,7 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 
 	// validate parent
 	if pr := args.Parent; pr != nil && !model.IsValidId(*pr) {
-		return nil, model.NewAppError("CategoryCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "parent"}, fmt.Sprintf("%s is not a valid category id", *pr), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CategoryCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "parent"}, fmt.Sprintf("%s is not a valid category id", *pr), http.StatusBadRequest)
 	}
 	if appErr := args.Input.Validate("CategoryCreate"); appErr != nil {
 		return nil, appErr
@@ -65,7 +66,7 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 
 	// validate given id
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("CategoryUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CategoryUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
 	if appErr := args.Input.Validate("CategoryCreate"); appErr != nil {
 		return nil, appErr
@@ -76,7 +77,7 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if categories.Len() == 0 {
-		return nil, model.NewAppError("CategoryUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("category with id=%s not found", args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CategoryUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("category with id=%s not found", args.Id), http.StatusBadRequest)
 	}
 
 	category := categories[0]
@@ -124,7 +125,7 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 		// parse ids
 		if ids := args.Filter.Ids; len(ids) > 0 {
 			if !lo.EveryBy(ids, model.IsValidId) {
-				return nil, model.NewAppError("Categories", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter.Ids"}, "please provide valid uuids", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("Categories", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter.Ids"}, "please provide valid uuids", http.StatusBadRequest)
 			}
 			idMap := map[string]bool{}
 			for _, id := range ids {
@@ -161,7 +162,7 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 	// parse level
 	if lv := args.Level; lv != nil {
 		if *lv < model.CATEGORY_MIN_LEVEL {
-			return nil, model.NewAppError("Categories", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Level"}, fmt.Sprintf("Level must be >= %d", model.CATEGORY_MIN_LEVEL), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("Categories", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Level"}, fmt.Sprintf("Level must be >= %d", model.CATEGORY_MIN_LEVEL), http.StatusBadRequest)
 		}
 		levelFilter = func(c *model.Category) bool {
 			return c.Level == uint8(*lv)
@@ -187,7 +188,7 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 
 	// default to sort by english name
 	var res *CountableConnection[*Category]
-	var appErr *model.AppError
+	var appErr *model_helper.AppError
 
 	switch args.SortBy.Field {
 	case CategorySortFieldSubcategoryCount:
@@ -220,13 +221,13 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 	Slug *string
 }) (*Category, error) {
 	if args.Id == nil && args.Slug == nil {
-		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id and slug"}, "id or slug must be provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id and slug"}, "id or slug must be provided", http.StatusBadRequest)
 	}
 	if args.Id != nil && model.IsValidId(*args.Id) {
-		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", *args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", *args.Id), http.StatusBadRequest)
 	}
 	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
-		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is invalid slug", *args.Slug), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is invalid slug", *args.Slug), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

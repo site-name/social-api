@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/docextractor"
@@ -120,37 +121,37 @@ func parseOldFilenames(filenames []string, channelID, userID string) [][]string 
 }
 
 // FileBackend returns filebackend of the system
-func (a *ServiceFile) FileBackend() (filestore.FileBackend, *model.AppError) {
+func (a *ServiceFile) FileBackend() (filestore.FileBackend, *model_helper.AppError) {
 	backend, err := filestore.NewFileBackend(a.srv.Config().FileSettings.ToFileBackendSettings(true))
 	if err != nil {
-		return nil, model.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return backend, nil
 }
 
-func (a *ServiceFile) CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError {
+func (a *ServiceFile) CheckMandatoryS3Fields(settings *model.FileSettings) *model_helper.AppError {
 	fileBackendSettings := settings.ToFileBackendSettings(false)
 	err := fileBackendSettings.CheckMandatoryS3Fields()
 	if err != nil {
-		return model.NewAppError("CheckMandatoryS3Fields", "api.admin.test_s3.missing_s3_bucket", nil, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("CheckMandatoryS3Fields", "api.admin.test_s3.missing_s3_bucket", nil, err.Error(), http.StatusBadRequest)
 	}
 	return nil
 }
 
 // convert filebackend connection error to system's standard app error
-func connectionTestErrorToAppError(connTestErr error) *model.AppError {
+func connectionTestErrorToAppError(connTestErr error) *model_helper.AppError {
 	switch err := connTestErr.(type) {
 	case *filestore.S3FileBackendAuthError:
-		return model.NewAppError("TestConnection", "api.file.test_connection_s3_auth.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("TestConnection", "api.file.test_connection_s3_auth.app_error", nil, err.Error(), http.StatusInternalServerError)
 	case *filestore.S3FileBackendNoBucketError:
-		return model.NewAppError("TestConnection", "api.file.test_connection_s3_bucket_does_not_exist.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("TestConnection", "api.file.test_connection_s3_bucket_does_not_exist.app_error", nil, err.Error(), http.StatusInternalServerError)
 	default:
-		return model.NewAppError("TestConnection", "api.file.test_connection.app_error", nil, connTestErr.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("TestConnection", "api.file.test_connection.app_error", nil, connTestErr.Error(), http.StatusInternalServerError)
 	}
 }
 
 // TestFileStoreConnection test if connection to file backend server is good
-func (a *ServiceFile) TestFileStoreConnection() *model.AppError {
+func (a *ServiceFile) TestFileStoreConnection() *model_helper.AppError {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return err
@@ -163,10 +164,10 @@ func (a *ServiceFile) TestFileStoreConnection() *model.AppError {
 }
 
 // TestFileStoreConnectionWithConfig test file backend connection with config
-func (a *ServiceFile) TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError {
+func (a *ServiceFile) TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model_helper.AppError {
 	backend, err := filestore.NewFileBackend(settings.ToFileBackendSettings(true))
 	if err != nil {
-		return model.NewAppError("FileBackend", "api.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("FileBackend", "api.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	nErr := backend.TestConnection()
 	if nErr != nil {
@@ -176,85 +177,85 @@ func (a *ServiceFile) TestFileStoreConnectionWithConfig(settings *model.FileSett
 }
 
 // ReadFile read file content from given path
-func (a *ServiceFile) ReadFile(path string) ([]byte, *model.AppError) {
+func (a *ServiceFile) ReadFile(path string) ([]byte, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return nil, err
 	}
 	result, nErr := backend.ReadFile(path)
 	if nErr != nil {
-		return nil, model.NewAppError("ReadFile", "api.file.read_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ReadFile", "api.file.read_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return result, nil
 }
 
 // Caller must close the first return value
-func (a *ServiceFile) FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError) {
+func (a *ServiceFile) FileReader(path string) (filestore.ReadCloseSeeker, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return nil, err
 	}
 	result, nErr := backend.Reader(path)
 	if nErr != nil {
-		return nil, model.NewAppError("FileReader", "api.file.file_reader.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FileReader", "api.file.file_reader.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return result, nil
 }
 
 // FileExists checks if given path exists
-func (a *ServiceFile) FileExists(path string) (bool, *model.AppError) {
+func (a *ServiceFile) FileExists(path string) (bool, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return false, err
 	}
 	result, nErr := backend.FileExists(path)
 	if nErr != nil {
-		return false, model.NewAppError("FileExists", "api.file.file_exists.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return false, model_helper.NewAppError("FileExists", "api.file.file_exists.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return result, nil
 }
 
 // FileSize checks size of given path
-func (a *ServiceFile) FileSize(path string) (int64, *model.AppError) {
+func (a *ServiceFile) FileSize(path string) (int64, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return 0, err
 	}
 	size, nErr := backend.FileSize(path)
 	if nErr != nil {
-		return 0, model.NewAppError("FileSize", "api.file.file_size.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("FileSize", "api.file.file_size.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return size, nil
 }
 
 // FileModTime get last modification time of given path
-func (a *ServiceFile) FileModTime(path string) (time.Time, *model.AppError) {
+func (a *ServiceFile) FileModTime(path string) (time.Time, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return time.Time{}, err
 	}
 	modTime, nErr := backend.FileModTime(path)
 	if nErr != nil {
-		return time.Time{}, model.NewAppError("FileModTime", "api.file.file_mod_time.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return time.Time{}, model_helper.NewAppError("FileModTime", "api.file.file_mod_time.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
 	return modTime, nil
 }
 
 // MoveFile moves file from given oldPath to newPath
-func (a *ServiceFile) MoveFile(oldPath, newPath string) *model.AppError {
+func (a *ServiceFile) MoveFile(oldPath, newPath string) *model_helper.AppError {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return err
 	}
 	nErr := backend.MoveFile(oldPath, newPath)
 	if nErr != nil {
-		return model.NewAppError("MoveFile", "api.file.move_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("MoveFile", "api.file.move_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }
 
-func (a *ServiceFile) WriteFile(fr io.Reader, path string) (int64, *model.AppError) {
+func (a *ServiceFile) WriteFile(fr io.Reader, path string) (int64, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return 0, err
@@ -262,12 +263,12 @@ func (a *ServiceFile) WriteFile(fr io.Reader, path string) (int64, *model.AppErr
 
 	result, nErr := backend.WriteFile(fr, path)
 	if nErr != nil {
-		return result, model.NewAppError("WriteFile", "api.file.write_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return result, model_helper.NewAppError("WriteFile", "api.file.write_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return result, nil
 }
 
-func (a *ServiceFile) AppendFile(fr io.Reader, path string) (int64, *model.AppError) {
+func (a *ServiceFile) AppendFile(fr io.Reader, path string) (int64, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return 0, err
@@ -275,44 +276,44 @@ func (a *ServiceFile) AppendFile(fr io.Reader, path string) (int64, *model.AppEr
 
 	result, nErr := backend.AppendFile(fr, path)
 	if nErr != nil {
-		return result, model.NewAppError("AppendFile", "api.file.append_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return result, model_helper.NewAppError("AppendFile", "api.file.append_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return result, nil
 }
 
-func (a *ServiceFile) RemoveFile(path string) *model.AppError {
+func (a *ServiceFile) RemoveFile(path string) *model_helper.AppError {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return err
 	}
 	nErr := backend.RemoveFile(path)
 	if nErr != nil {
-		return model.NewAppError("RemoveFile", "api.file.remove_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("RemoveFile", "api.file.remove_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }
 
-func (a *ServiceFile) ListDirectory(path string) ([]string, *model.AppError) {
+func (a *ServiceFile) ListDirectory(path string) ([]string, *model_helper.AppError) {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return nil, err
 	}
 	paths, nErr := backend.ListDirectory(path)
 	if nErr != nil {
-		return nil, model.NewAppError("ListDirectory", "api.file.list_directory.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ListDirectory", "api.file.list_directory.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
 	return paths, nil
 }
 
-func (a *ServiceFile) RemoveDirectory(path string) *model.AppError {
+func (a *ServiceFile) RemoveDirectory(path string) *model_helper.AppError {
 	backend, err := a.FileBackend()
 	if err != nil {
 		return err
 	}
 	nErr := backend.RemoveDirectory(path)
 	if nErr != nil {
-		return model.NewAppError("RemoveDirectory", "api.file.remove_directory.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("RemoveDirectory", "api.file.remove_directory.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

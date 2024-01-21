@@ -9,6 +9,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 	"gorm.io/gorm"
 )
@@ -80,9 +81,9 @@ func (o *OrderReturnLineInput) getReplace() bool {
 	return *o.Replace
 }
 
-func cleanOrderUpdateShipping(where string, ap app.AppIface, order *model.Order, method *model.ShippingMethod) *model.AppError {
+func cleanOrderUpdateShipping(where string, ap app.AppIface, order *model.Order, method *model.ShippingMethod) *model_helper.AppError {
 	if order.ShippingAddressID == nil {
-		return model.NewAppError(where, "app.order.shipping_address_not_set.app_error", nil, "cannot choose a shipping method for an order without shipping address", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.order.shipping_address_not_set.app_error", nil, "cannot choose a shipping method for an order without shipping address", http.StatusNotAcceptable)
 	}
 
 	validMethods, appErr := ap.Srv().OrderService().GetValidShippingMethodsForOrder(order)
@@ -93,13 +94,13 @@ func cleanOrderUpdateShipping(where string, ap app.AppIface, order *model.Order,
 	if len(validMethods) == 0 || !lo.SomeBy(validMethods, func(item *model.ShippingMethod) bool {
 		return item != nil && method != nil && item.Id == method.Id
 	}) {
-		return model.NewAppError(where, "app.order.shipping_method_not_usable_for_order.app_error", nil, "shipping method cannot be used with this order.", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.order.shipping_method_not_usable_for_order.app_error", nil, "shipping method cannot be used with this order.", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model.AppError {
+func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model_helper.AppError {
 	if order != nil {
 		orderCanCancel, appErr := app.Srv().OrderService().OrderCanCancel(order)
 		if appErr != nil {
@@ -107,7 +108,7 @@ func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model
 		}
 
 		if !orderCanCancel {
-			return model.NewAppError(where, "app.order.order_cannot_cancel.app_error", map[string]interface{}{"OrderID": order.Id}, fmt.Sprintf("order with id=%s cannot be canceled", order.Id), http.StatusNotAcceptable)
+			return model_helper.NewAppError(where, "app.order.order_cannot_cancel.app_error", map[string]interface{}{"OrderID": order.Id}, fmt.Sprintf("order with id=%s cannot be canceled", order.Id), http.StatusNotAcceptable)
 		}
 	}
 
@@ -116,67 +117,67 @@ func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model
 
 // cleanPayment simply checks if payment is nil, return non-nil error.
 // return nil otherwise
-func cleanPayment(where string, orderPayment *model.Payment) *model.AppError {
+func cleanPayment(where string, orderPayment *model.Payment) *model_helper.AppError {
 	if orderPayment == nil {
-		return model.NewAppError(where, "app.order.order_has_no_payment.app_error", nil, "there is no payment for order", http.StatusNotFound)
+		return model_helper.NewAppError(where, "app.order.order_has_no_payment.app_error", nil, "there is no payment for order", http.StatusNotFound)
 	}
 
 	return nil
 }
 
-func cleanOrderCapture(where string, payment *model.Payment) *model.AppError {
+func cleanOrderCapture(where string, payment *model.Payment) *model_helper.AppError {
 	appErr := cleanPayment(where, payment)
 	if appErr != nil {
 		return appErr
 	}
 
 	if payment.IsActive != nil && !*payment.IsActive {
-		return model.NewAppError(where, "app.payment.payment_cannot_capture.app_error", nil, "only pre-authorized payments can be captured", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.payment.payment_cannot_capture.app_error", nil, "only pre-authorized payments can be captured", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func cleanVoidPayment(where string, payment *model.Payment) *model.AppError {
+func cleanVoidPayment(where string, payment *model.Payment) *model_helper.AppError {
 	appErr := cleanPayment(where, payment)
 	if appErr != nil {
 		return appErr
 	}
 
 	if payment.IsActive != nil && !*payment.IsActive {
-		return model.NewAppError(where, "app.payment.payment_cannot_void.app_error", nil, "only pre-authorized payments can be voided", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.payment.payment_cannot_void.app_error", nil, "only pre-authorized payments can be voided", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func cleanRefundPayment(where string, payment *model.Payment) *model.AppError {
+func cleanRefundPayment(where string, payment *model.Payment) *model_helper.AppError {
 	appErr := cleanPayment(where, payment)
 	if appErr != nil {
 		return appErr
 	}
 
 	if !payment.CanRefund() {
-		return model.NewAppError(where, "app.payment.payment_cannot_refund.app_error", nil, "payment cannot be refunded", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.payment.payment_cannot_refund.app_error", nil, "payment cannot be refunded", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func cleanOrderRefund(where string, app app.AppIface, order *model.Order) *model.AppError {
+func cleanOrderRefund(where string, app app.AppIface, order *model.Order) *model_helper.AppError {
 	orderHasGiftcardLines, appErr := app.Srv().GiftcardService().OrderHasGiftcardLines(order)
 	if appErr != nil {
 		return appErr
 	}
 
 	if orderHasGiftcardLines {
-		return model.NewAppError(where, "app.order.order_with_giftcard_refund.app_error", nil, "cannot refund order with giftcard lines", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.order.order_with_giftcard_refund.app_error", nil, "cannot refund order with giftcard lines", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.DB, paymentErr *model.PaymentError, order *model.Order, payment *model.Payment) *model.AppError {
+func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.DB, paymentErr *model.PaymentError, order *model.Order, payment *model.Payment) *model_helper.AppError {
 	// create payment failed event
 	params := model.StringInterface{
 		"message": paymentErr.Error(),
@@ -197,17 +198,17 @@ func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.
 	}
 
 	// raise payment failed error
-	return model.NewAppError(where, model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	return model_helper.NewAppError(where, model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 }
 
-func cleanOrderPayment(where string, payment *model.Payment) *model.AppError {
+func cleanOrderPayment(where string, payment *model.Payment) *model_helper.AppError {
 	if payment == nil || !payment.CanRefund() {
-		return model.NewAppError(where, ErrCannotBeRefunded, nil, "order cannot be refunded", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, ErrCannotBeRefunded, nil, "order cannot be refunded", http.StatusNotAcceptable)
 	}
 	return nil
 }
 
-func cleanAmountToRefund(embedCtx *web.Context, where string, order *model.Order, payment *model.Payment, amountToRefund *decimal.Decimal) *model.AppError {
+func cleanAmountToRefund(embedCtx *web.Context, where string, order *model.Order, payment *model.Payment, amountToRefund *decimal.Decimal) *model_helper.AppError {
 	if amountToRefund != nil {
 		orderHasGiftCardLines, appErr := embedCtx.App.Srv().GiftcardService().OrderHasGiftcardLines(order)
 		if appErr != nil {
@@ -215,11 +216,11 @@ func cleanAmountToRefund(embedCtx *web.Context, where string, order *model.Order
 		}
 
 		if orderHasGiftCardLines {
-			return model.NewAppError(where, ErrCannotDeclareRefundAmountWhenOrerHasGiftCardLines, nil, "cannot specify refund amount when orer has giftcard lines", http.StatusNotAcceptable)
+			return model_helper.NewAppError(where, ErrCannotDeclareRefundAmountWhenOrerHasGiftCardLines, nil, "cannot specify refund amount when orer has giftcard lines", http.StatusNotAcceptable)
 		}
 
 		if payment.CapturedAmount != nil && amountToRefund.GreaterThan(*payment.CapturedAmount) {
-			return model.NewAppError(where, ErrRefundAmountGreaterThanPossible, nil, "the required refund amount greater than possible amount to refund", http.StatusNotAcceptable)
+			return model_helper.NewAppError(where, ErrRefundAmountGreaterThanPossible, nil, "the required refund amount greater than possible amount to refund", http.StatusNotAcceptable)
 		}
 
 		return nil
@@ -228,7 +229,7 @@ func cleanAmountToRefund(embedCtx *web.Context, where string, order *model.Order
 	return nil
 }
 
-func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturnRefundLineCommon) (model.OrderLineDatas, *model.AppError) {
+func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturnRefundLineCommon) (model.OrderLineDatas, *model_helper.AppError) {
 	orderLineIds := lo.Map(linesData, func(item orderLineReturnRefundLineCommon, _ int) string { return item.getOrderLineID().String() })
 
 	orderLines, appErr := embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
@@ -250,19 +251,19 @@ func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturn
 		quantity := int(lineData.getQuantity())
 
 		if orderLine.IsGiftcard {
-			return nil, model.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)
 		}
 
 		if orderLine.Quantity < quantity {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
 		}
 
 		if unfulfilledQuantity := orderLine.QuantityUnFulfilled(); unfulfilledQuantity < quantity {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
 		}
 
 		if lineData.getReplace() && orderLine.VariantID == nil {
-			return nil, model.NewAppError(where, "app.order.replace_order_line_with_no_attached_product.app_error", nil, "cannot replace order line with no assigned product", http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, "app.order.replace_order_line_with_no_attached_product.app_error", nil, "cannot replace order line with no assigned product", http.StatusBadRequest)
 		}
 
 		res = append(res, &model.OrderLineData{
@@ -274,7 +275,7 @@ func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturn
 	return res, nil
 }
 
-func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLinesData []orderRefundReturnFulfillmentLineCommon, whitelistedStatuses []model.FulfillmentStatus) ([]*model.FulfillmentLineData, *model.AppError) {
+func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLinesData []orderRefundReturnFulfillmentLineCommon, whitelistedStatuses []model.FulfillmentStatus) ([]*model.FulfillmentLineData, *model_helper.AppError) {
 	fulfillmentLineIds := lo.Map(fulfillmentLinesData, func(item orderRefundReturnFulfillmentLineCommon, _ int) string {
 		return item.getFulfillmentLineID().String()
 	})
@@ -303,11 +304,11 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 		quantity := int(lineData.getQuantity())
 
 		if fulfillmentLine.OrderLine.IsGiftcard {
-			return nil, model.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)
 		}
 
 		if fulfillmentLine.Quantity < quantity {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
 		}
 
 		if !lo.Contains(whitelistedStatuses, fulfillmentLine.Fulfillment.Status) {
@@ -315,7 +316,7 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 			for _, status := range whitelistedStatuses {
 				statusString += string(status) + ","
 			}
-			return nil, model.NewAppError(where, "app.order.fulfillment_status_not_acceptable.app_error", nil, statusString[:len(statusString)-1], http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, "app.order.fulfillment_status_not_acceptable.app_error", nil, statusString[:len(statusString)-1], http.StatusNotAcceptable)
 		}
 
 		res = append(res, &model.FulfillmentLineData{

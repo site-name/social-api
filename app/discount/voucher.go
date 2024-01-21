@@ -13,43 +13,44 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // UpsertVoucher update or insert given voucher
-func (a *ServiceDiscount) UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model.AppError) {
+func (a *ServiceDiscount) UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model_helper.AppError) {
 	voucher, err := a.srv.Store.DiscountVoucher().Upsert(voucher)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("UpsertVoucher", "app.discount.upsert_voucher_error.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertVoucher", "app.discount.upsert_voucher_error.app_error", nil, err.Error(), statusCode)
 	}
 
 	return voucher, nil
 }
 
 // VoucherById finds and returns a voucher with given id
-func (a *ServiceDiscount) VoucherById(voucherID string) (*model.Voucher, *model.AppError) {
+func (a *ServiceDiscount) VoucherById(voucherID string) (*model.Voucher, *model_helper.AppError) {
 	voucher, err := a.srv.Store.DiscountVoucher().Get(voucherID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("VoucherById", "app.discount.voucher_missing.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("VoucherById", "app.discount.voucher_missing.app_error", nil, err.Error(), statusCode)
 	}
 	return voucher, nil
 }
 
 // GetVoucherDiscount
-func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID string) (types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID string) (types.DiscountCalculator, *model_helper.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
 		Conditions: squirrel.Eq{
 			model.VoucherChannelListingTableName + ".VoucherID": voucher.Id,
@@ -79,7 +80,7 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID s
 //	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 //
 // NOTE: the returning interface's type should be identical to given price's type
-func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price interface{}, channelID string) (interface{}, *model.AppError) {
+func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price interface{}, channelID string) (interface{}, *model_helper.AppError) {
 	// validate given price has valid type
 	switch priceType := price.(type) {
 	case *goprices.Money,
@@ -88,7 +89,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 		*goprices.TaxedMoneyRange:
 
 	default:
-		return nil, model.NewAppError("GetDiscountAmountFor", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetDiscountAmountFor", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
 	}
 
 	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)
@@ -99,7 +100,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 	afterDiscount, err := discountCalculator(price, nil) // pass in 1 argument here mean calling fixed discount calculator
 	if err != nil {
 		// this error maybe caused by user. But we tomporarily set status code to 500
-		return nil, model.NewAppError("GetDiscountAmountFor", "app.discount.error_calculating_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetDiscountAmountFor", "app.discount.error_calculating_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	switch priceType := price.(type) {
@@ -143,7 +144,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 }
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
-func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
 	money := value.Net
 	if *a.srv.Config().ShopSettings.DisplayGrossPrices {
 		money = value.Gross
@@ -179,7 +180,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *gopric
 }
 
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
-func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
 	voucherCustomers, appErr := a.VoucherCustomersByOption(&model.VoucherCustomerFilterOption{
 		Conditions: squirrel.Expr(model.VoucherCustomerTableName+".VoucherID = ? AND VoucherCustomers.CustomerEmail = ?", voucher.Id, customerEmail),
 	})
@@ -196,7 +197,7 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, custom
 }
 
 // ValidateOnlyForStaff validate if voucher is only for staff
-func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError) {
+func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model_helper.AppError) {
 	if !*voucher.OnlyForStaff {
 		return nil, nil
 	}
@@ -215,21 +216,21 @@ func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerI
 }
 
 // VouchersByOption finds all vouchers with given option then returns them
-func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model.AppError) {
+func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model_helper.AppError) {
 	totalCount, vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
 	if err != nil {
 		var statusCode = http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return 0, nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, err.Error(), statusCode)
+		return 0, nil, model_helper.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, err.Error(), statusCode)
 	}
 
 	return totalCount, vouchers, nil
 }
 
 // VoucherByOption returns 1 voucher filtered using given options
-func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*model.Voucher, *model.AppError) {
+func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*model.Voucher, *model_helper.AppError) {
 	_, vouchers, appErr := s.VouchersByOption(options)
 	if appErr != nil {
 		return nil, appErr
@@ -238,7 +239,7 @@ func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*
 }
 
 // PromoCodeIsVoucher checks if given code is belong to a voucher
-func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
+func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model_helper.AppError) {
 	_, vouchers, appErr := a.VouchersByOption(&model.VoucherFilterOption{
 		Conditions: squirrel.Expr(model.VoucherTableName+".Code = ?", code),
 	})
@@ -252,7 +253,7 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError
 // FilterActiveVouchers returns a list of vouchers that are active.
 //
 // `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
-func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug string) ([]*model.Voucher, *model.AppError) {
+func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug string) ([]*model.Voucher, *model_helper.AppError) {
 	startOfDay := util.StartOfDay(date)
 	filterOptions := &model.VoucherFilterOption{
 		Conditions: squirrel.And{
@@ -272,29 +273,29 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 }
 
 // ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
-func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*model.Voucher, *model.AppError) {
+func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*model.Voucher, *model_helper.AppError) {
 	expiredVouchers, err := s.srv.Store.DiscountVoucher().ExpiredVouchers(date)
 	if err != nil {
-		return nil, model.NewAppError("ExpiredVouchers", "app.discount.error_finding_expired_vouchers.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ExpiredVouchers", "app.discount.error_finding_expired_vouchers.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return expiredVouchers, nil
 }
 
-func (s *ServiceDiscount) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError {
+func (s *ServiceDiscount) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
 	err := s.srv.Store.DiscountVoucher().ToggleVoucherRelations(transaction, vouchers, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
-		return model.NewAppError("ToggleVoucherRelations", "app.discount.insert_voucher_relations.app_error", nil, "failed to insert voucher relations", http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVoucherRelations", "app.discount.insert_voucher_relations.app_error", nil, "failed to insert voucher relations", http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
 // VoucherChannelListingsByOption finds voucher channel listings based on given options
-func (a *ServiceDiscount) VoucherChannelListingsByOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, *model.AppError) {
+func (a *ServiceDiscount) VoucherChannelListingsByOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, *model_helper.AppError) {
 	listings, err := a.srv.Store.VoucherChannelListing().FilterbyOption(option)
 	if err != nil {
-		return nil, model.NewAppError("VoucherChannelListingsByOption", "app.discount.error_finding_voucher_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("VoucherChannelListingsByOption", "app.discount.error_finding_voucher_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return listings, nil

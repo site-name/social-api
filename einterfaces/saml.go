@@ -11,5 +11,5 @@ type SamlInterface interface {
 	BuildRequest(relayState string) (*model_helper.SamlAuthRequest, *model_helper.AppError)
 	DoLogin(c *request.Context, encodedXML string, relayState map[string]string) (*model.User, *model_helper.AppError)
 	GetMetadata() (string, *model_helper.AppError)
-	CheckProviderAttributes(SS *model_helper.SamlSettings, ouser *model.User, patch *model_helper.UserPatch) string
+	CheckProviderAttributes(SS model_helper.SamlSettings, ouser model.User, patch model_helper.UserPatch) string
 }

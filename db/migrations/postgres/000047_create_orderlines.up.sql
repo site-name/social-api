@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS order_lines (
   quantity_fulfilled integer NOT NULL,
   currency Currency NOT NULL,
   unit_discount_amount decimal(12,3) NOT NULL DEFAULT 0.00,
-  unit_discount_type DiscountValueType NOT NULL,
+  unit_discount_type discount_value_type NOT NULL,
   unit_discount_reason text,
   unit_price_net_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   unit_discount_value decimal(12,3) NOT NULL DEFAULT 0.00,

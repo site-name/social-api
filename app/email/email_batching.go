@@ -47,14 +47,14 @@ func truncateUserNames(name string, i int) string {
 	return name
 }
 
-// func (es *Service) AddNotificationEmailToBatch(user *account.User, post *model.Post, team *model.Team) *model.AppError {
+// func (es *Service) AddNotificationEmailToBatch(user *account.User, post *model.Post, team *model.Team) *model_helper.AppError {
 // 	if !*es.config().EmailSettings.EnableEmailBatching {
-// 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
+// 		return model_helper.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
 // 	}
 
 // 	if !es.EmailBatching.Add(user, post, team) {
 // 		slog.Error("Email batching job's receiving channel was full. Please increase the EmailBatchingBufferSize.")
-// 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.channel_full.app_error", nil, "", http.StatusInternalServerError)
+// 		return model_helper.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.channel_full.app_error", nil, "", http.StatusInternalServerError)
 // 	}
 
 // 	return nil

@@ -3,6 +3,7 @@ package invoice
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 func GetInvoicePayload(inVoice model.Invoice) model.StringInterface {
@@ -15,10 +16,10 @@ func GetInvoicePayload(inVoice model.Invoice) model.StringInterface {
 }
 
 // SendInvoice Send an invoice to user of related order with URL to download it
-func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	var (
 		orDer  *model.Order
-		appErr *model.AppError
+		appErr *model_helper.AppError
 	)
 
 	if inVoice.OrderID != nil {

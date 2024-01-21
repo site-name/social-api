@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -75,7 +76,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 	// validate given address id
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("AccountAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AccountAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
 	}
 
 	appErr := args.Input.validate("AccountAddressUpdate")
@@ -124,7 +125,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	currentSession := embedContext.AppContext.Session()
 
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("AccountAddressDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AccountAddressDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	// check if current user has this address
@@ -170,10 +171,10 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 
 	// validate arguments
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("api.AccountSetDefaultAddress", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
-		return nil, model.NewAppError("api.AccountSetDefaultAddress", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
 	// check if current user own this address
@@ -296,7 +297,7 @@ func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string 
 
 	// system admin and system manager cannot deactivate himself
 	if user.IsSystemAdmin() || user.IsInRole(model.SystemManagerRoleId) {
-		return nil, model.NewAppError("AccountDelete", "app.account.administrator_cannot_self_deactivate.app_error", nil, "administration members cannot deactivate themself", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("AccountDelete", "app.account.administrator_cannot_self_deactivate.app_error", nil, "administration members cannot deactivate themself", http.StatusNotAcceptable)
 	}
 
 	user.IsActive = false

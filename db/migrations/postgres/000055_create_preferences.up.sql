@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS preferences (
   user_id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   category varchar(32) NOT NULL,
   name varchar(32) NOT NULL,
-  value varchar(2000)
+  value varchar(2000) NOT NULL
 );
 
 CREATE INDEX idx_preferences_category ON preferences USING btree (category);

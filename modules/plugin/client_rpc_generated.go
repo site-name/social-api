@@ -222,10 +222,10 @@ type Z_GetSessionArgs struct {
 
 type Z_GetSessionReturns struct {
 	A *model.Session
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetSession(sessionID string) (*model.Session, *model.AppError) {
+func (g *apiRPCClient) GetSession(sessionID string) (*model.Session, *model_helper.AppError) {
 	_args := &Z_GetSessionArgs{sessionID}
 	_returns := &Z_GetSessionReturns{}
 	if err := g.client.Call("Plugin.GetSession", _args, _returns); err != nil {
@@ -236,7 +236,7 @@ func (g *apiRPCClient) GetSession(sessionID string) (*model.Session, *model.AppE
 
 func (s *apiRPCServer) GetSession(args *Z_GetSessionArgs, returns *Z_GetSessionReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetSession(sessionID string) (*model.Session, *model.AppError)
+		GetSession(sessionID string) (*model.Session, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetSession(args.A)
 	} else {
@@ -304,10 +304,10 @@ type Z_SaveConfigArgs struct {
 }
 
 type Z_SaveConfigReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) SaveConfig(config *model.Config) *model.AppError {
+func (g *apiRPCClient) SaveConfig(config *model.Config) *model_helper.AppError {
 	_args := &Z_SaveConfigArgs{config}
 	_returns := &Z_SaveConfigReturns{}
 	if err := g.client.Call("Plugin.SaveConfig", _args, _returns); err != nil {
@@ -318,7 +318,7 @@ func (g *apiRPCClient) SaveConfig(config *model.Config) *model.AppError {
 
 func (s *apiRPCServer) SaveConfig(args *Z_SaveConfigArgs, returns *Z_SaveConfigReturns) error {
 	if hook, ok := s.impl.(interface {
-		SaveConfig(config *model.Config) *model.AppError
+		SaveConfig(config *model.Config) *model_helper.AppError
 	}); ok {
 		returns.A = hook.SaveConfig(args.A)
 	} else {
@@ -359,10 +359,10 @@ type Z_SavePluginConfigArgs struct {
 }
 
 type Z_SavePluginConfigReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) SavePluginConfig(config map[string]interface{}) *model.AppError {
+func (g *apiRPCClient) SavePluginConfig(config map[string]interface{}) *model_helper.AppError {
 	_args := &Z_SavePluginConfigArgs{config}
 	_returns := &Z_SavePluginConfigReturns{}
 	if err := g.client.Call("Plugin.SavePluginConfig", _args, _returns); err != nil {
@@ -373,7 +373,7 @@ func (g *apiRPCClient) SavePluginConfig(config map[string]interface{}) *model.Ap
 
 func (s *apiRPCServer) SavePluginConfig(args *Z_SavePluginConfigArgs, returns *Z_SavePluginConfigReturns) error {
 	if hook, ok := s.impl.(interface {
-		SavePluginConfig(config map[string]interface{}) *model.AppError
+		SavePluginConfig(config map[string]interface{}) *model_helper.AppError
 	}); ok {
 		returns.A = hook.SavePluginConfig(args.A)
 	} else {
@@ -443,10 +443,10 @@ type Z_GetSystemInstallDateArgs struct {
 
 type Z_GetSystemInstallDateReturns struct {
 	A int64
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetSystemInstallDate() (int64, *model.AppError) {
+func (g *apiRPCClient) GetSystemInstallDate() (int64, *model_helper.AppError) {
 	_args := &Z_GetSystemInstallDateArgs{}
 	_returns := &Z_GetSystemInstallDateReturns{}
 	if err := g.client.Call("Plugin.GetSystemInstallDate", _args, _returns); err != nil {
@@ -457,7 +457,7 @@ func (g *apiRPCClient) GetSystemInstallDate() (int64, *model.AppError) {
 
 func (s *apiRPCServer) GetSystemInstallDate(args *Z_GetSystemInstallDateArgs, returns *Z_GetSystemInstallDateReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetSystemInstallDate() (int64, *model.AppError)
+		GetSystemInstallDate() (int64, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetSystemInstallDate()
 	} else {
@@ -472,10 +472,10 @@ type Z_CreateUserArgs struct {
 
 type Z_CreateUserReturns struct {
 	A *model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (g *apiRPCClient) CreateUser(user *model.User) (*model.User, *model_helper.AppError) {
 	_args := &Z_CreateUserArgs{user}
 	_returns := &Z_CreateUserReturns{}
 	if err := g.client.Call("Plugin.CreateUser", _args, _returns); err != nil {
@@ -486,7 +486,7 @@ func (g *apiRPCClient) CreateUser(user *model.User) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) CreateUser(args *Z_CreateUserArgs, returns *Z_CreateUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		CreateUser(user *model.User) (*model.User, *model.AppError)
+		CreateUser(user *model.User) (*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.CreateUser(args.A)
 	} else {
@@ -500,10 +500,10 @@ type Z_DeleteUserArgs struct {
 }
 
 type Z_DeleteUserReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) DeleteUser(userID string) *model.AppError {
+func (g *apiRPCClient) DeleteUser(userID string) *model_helper.AppError {
 	_args := &Z_DeleteUserArgs{userID}
 	_returns := &Z_DeleteUserReturns{}
 	if err := g.client.Call("Plugin.DeleteUser", _args, _returns); err != nil {
@@ -514,7 +514,7 @@ func (g *apiRPCClient) DeleteUser(userID string) *model.AppError {
 
 func (s *apiRPCServer) DeleteUser(args *Z_DeleteUserArgs, returns *Z_DeleteUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		DeleteUser(userID string) *model.AppError
+		DeleteUser(userID string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.DeleteUser(args.A)
 	} else {
@@ -529,10 +529,10 @@ type Z_GetUsersArgs struct {
 
 type Z_GetUsersReturns struct {
 	A []*model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.User, *model_helper.AppError) {
 	_args := &Z_GetUsersArgs{options}
 	_returns := &Z_GetUsersReturns{}
 	if err := g.client.Call("Plugin.GetUsers", _args, _returns); err != nil {
@@ -543,7 +543,7 @@ func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.User, *
 
 func (s *apiRPCServer) GetUsers(args *Z_GetUsersArgs, returns *Z_GetUsersReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
+		GetUsers(options *model.UserGetOptions) ([]*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsers(args.A)
 	} else {
@@ -558,10 +558,10 @@ type Z_GetUserArgs struct {
 
 type Z_GetUserReturns struct {
 	A *model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUser(userID string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUser(userID string) (*model.User, *model_helper.AppError) {
 	_args := &Z_GetUserArgs{userID}
 	_returns := &Z_GetUserReturns{}
 	if err := g.client.Call("Plugin.GetUser", _args, _returns); err != nil {
@@ -572,7 +572,7 @@ func (g *apiRPCClient) GetUser(userID string) (*model.User, *model.AppError) {
 
 func (s *apiRPCServer) GetUser(args *Z_GetUserArgs, returns *Z_GetUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUser(userID string) (*model.User, *model.AppError)
+		GetUser(userID string) (*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUser(args.A)
 	} else {
@@ -587,10 +587,10 @@ type Z_GetUserByEmailArgs struct {
 
 type Z_GetUserByEmailReturns struct {
 	A *model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUserByEmail(email string) (*model.User, *model_helper.AppError) {
 	_args := &Z_GetUserByEmailArgs{email}
 	_returns := &Z_GetUserByEmailReturns{}
 	if err := g.client.Call("Plugin.GetUserByEmail", _args, _returns); err != nil {
@@ -601,7 +601,7 @@ func (g *apiRPCClient) GetUserByEmail(email string) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) GetUserByEmail(args *Z_GetUserByEmailArgs, returns *Z_GetUserByEmailReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserByEmail(email string) (*model.User, *model.AppError)
+		GetUserByEmail(email string) (*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserByEmail(args.A)
 	} else {
@@ -616,10 +616,10 @@ type Z_GetUserByUsernameArgs struct {
 
 type Z_GetUserByUsernameReturns struct {
 	A *model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUserByUsername(name string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUserByUsername(name string) (*model.User, *model_helper.AppError) {
 	_args := &Z_GetUserByUsernameArgs{name}
 	_returns := &Z_GetUserByUsernameReturns{}
 	if err := g.client.Call("Plugin.GetUserByUsername", _args, _returns); err != nil {
@@ -630,7 +630,7 @@ func (g *apiRPCClient) GetUserByUsername(name string) (*model.User, *model.AppEr
 
 func (s *apiRPCServer) GetUserByUsername(args *Z_GetUserByUsernameArgs, returns *Z_GetUserByUsernameReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserByUsername(name string) (*model.User, *model.AppError)
+		GetUserByUsername(name string) (*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserByUsername(args.A)
 	} else {
@@ -645,10 +645,10 @@ type Z_GetUsersByUsernamesArgs struct {
 
 type Z_GetUsersByUsernamesReturns struct {
 	A []*model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.User, *model_helper.AppError) {
 	_args := &Z_GetUsersByUsernamesArgs{usernames}
 	_returns := &Z_GetUsersByUsernamesReturns{}
 	if err := g.client.Call("Plugin.GetUsersByUsernames", _args, _returns); err != nil {
@@ -659,7 +659,7 @@ func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.User, *
 
 func (s *apiRPCServer) GetUsersByUsernames(args *Z_GetUsersByUsernamesArgs, returns *Z_GetUsersByUsernamesReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError)
+		GetUsersByUsernames(usernames []string) ([]*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsersByUsernames(args.A)
 	} else {
@@ -674,10 +674,10 @@ type Z_GetPreferencesForUserArgs struct {
 
 type Z_GetPreferencesForUserReturns struct {
 	A []model.Preference
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetPreferencesForUser(userID string) ([]model.Preference, *model.AppError) {
+func (g *apiRPCClient) GetPreferencesForUser(userID string) ([]model.Preference, *model_helper.AppError) {
 	_args := &Z_GetPreferencesForUserArgs{userID}
 	_returns := &Z_GetPreferencesForUserReturns{}
 	if err := g.client.Call("Plugin.GetPreferencesForUser", _args, _returns); err != nil {
@@ -688,7 +688,7 @@ func (g *apiRPCClient) GetPreferencesForUser(userID string) ([]model.Preference,
 
 func (s *apiRPCServer) GetPreferencesForUser(args *Z_GetPreferencesForUserArgs, returns *Z_GetPreferencesForUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetPreferencesForUser(userID string) ([]model.Preference, *model.AppError)
+		GetPreferencesForUser(userID string) ([]model.Preference, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetPreferencesForUser(args.A)
 	} else {
@@ -703,10 +703,10 @@ type Z_UpdatePreferencesForUserArgs struct {
 }
 
 type Z_UpdatePreferencesForUserReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) UpdatePreferencesForUser(userID string, preferences []model.Preference) *model.AppError {
+func (g *apiRPCClient) UpdatePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError {
 	_args := &Z_UpdatePreferencesForUserArgs{userID, preferences}
 	_returns := &Z_UpdatePreferencesForUserReturns{}
 	if err := g.client.Call("Plugin.UpdatePreferencesForUser", _args, _returns); err != nil {
@@ -717,7 +717,7 @@ func (g *apiRPCClient) UpdatePreferencesForUser(userID string, preferences []mod
 
 func (s *apiRPCServer) UpdatePreferencesForUser(args *Z_UpdatePreferencesForUserArgs, returns *Z_UpdatePreferencesForUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		UpdatePreferencesForUser(userID string, preferences []model.Preference) *model.AppError
+		UpdatePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError
 	}); ok {
 		returns.A = hook.UpdatePreferencesForUser(args.A, args.B)
 	} else {
@@ -732,10 +732,10 @@ type Z_DeletePreferencesForUserArgs struct {
 }
 
 type Z_DeletePreferencesForUserReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) DeletePreferencesForUser(userID string, preferences []model.Preference) *model.AppError {
+func (g *apiRPCClient) DeletePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError {
 	_args := &Z_DeletePreferencesForUserArgs{userID, preferences}
 	_returns := &Z_DeletePreferencesForUserReturns{}
 	if err := g.client.Call("Plugin.DeletePreferencesForUser", _args, _returns); err != nil {
@@ -746,7 +746,7 @@ func (g *apiRPCClient) DeletePreferencesForUser(userID string, preferences []mod
 
 func (s *apiRPCServer) DeletePreferencesForUser(args *Z_DeletePreferencesForUserArgs, returns *Z_DeletePreferencesForUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		DeletePreferencesForUser(userID string, preferences []model.Preference) *model.AppError
+		DeletePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError
 	}); ok {
 		returns.A = hook.DeletePreferencesForUser(args.A, args.B)
 	} else {
@@ -761,10 +761,10 @@ type Z_CreateUserAccessTokenArgs struct {
 
 type Z_CreateUserAccessTokenReturns struct {
 	A *model.UserAccessToken
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
+func (g *apiRPCClient) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError) {
 	_args := &Z_CreateUserAccessTokenArgs{token}
 	_returns := &Z_CreateUserAccessTokenReturns{}
 	if err := g.client.Call("Plugin.CreateUserAccessToken", _args, _returns); err != nil {
@@ -775,7 +775,7 @@ func (g *apiRPCClient) CreateUserAccessToken(token *model.UserAccessToken) (*mod
 
 func (s *apiRPCServer) CreateUserAccessToken(args *Z_CreateUserAccessTokenArgs, returns *Z_CreateUserAccessTokenReturns) error {
 	if hook, ok := s.impl.(interface {
-		CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)
+		CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.CreateUserAccessToken(args.A)
 	} else {
@@ -789,10 +789,10 @@ type Z_RevokeUserAccessTokenArgs struct {
 }
 
 type Z_RevokeUserAccessTokenReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) RevokeUserAccessToken(tokenID string) *model.AppError {
+func (g *apiRPCClient) RevokeUserAccessToken(tokenID string) *model_helper.AppError {
 	_args := &Z_RevokeUserAccessTokenArgs{tokenID}
 	_returns := &Z_RevokeUserAccessTokenReturns{}
 	if err := g.client.Call("Plugin.RevokeUserAccessToken", _args, _returns); err != nil {
@@ -803,7 +803,7 @@ func (g *apiRPCClient) RevokeUserAccessToken(tokenID string) *model.AppError {
 
 func (s *apiRPCServer) RevokeUserAccessToken(args *Z_RevokeUserAccessTokenArgs, returns *Z_RevokeUserAccessTokenReturns) error {
 	if hook, ok := s.impl.(interface {
-		RevokeUserAccessToken(tokenID string) *model.AppError
+		RevokeUserAccessToken(tokenID string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.RevokeUserAccessToken(args.A)
 	} else {
@@ -818,10 +818,10 @@ type Z_UpdateUserArgs struct {
 
 type Z_UpdateUserReturns struct {
 	A *model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) UpdateUser(user *model.User) (*model.User, *model.AppError) {
+func (g *apiRPCClient) UpdateUser(user *model.User) (*model.User, *model_helper.AppError) {
 	_args := &Z_UpdateUserArgs{user}
 	_returns := &Z_UpdateUserReturns{}
 	if err := g.client.Call("Plugin.UpdateUser", _args, _returns); err != nil {
@@ -832,7 +832,7 @@ func (g *apiRPCClient) UpdateUser(user *model.User) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) UpdateUser(args *Z_UpdateUserArgs, returns *Z_UpdateUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		UpdateUser(user *model.User) (*model.User, *model.AppError)
+		UpdateUser(user *model.User) (*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.UpdateUser(args.A)
 	} else {
@@ -847,10 +847,10 @@ type Z_GetUserStatusArgs struct {
 
 type Z_GetUserStatusReturns struct {
 	A *model.Status
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUserStatus(userID string) (*model.Status, *model.AppError) {
+func (g *apiRPCClient) GetUserStatus(userID string) (*model.Status, *model_helper.AppError) {
 	_args := &Z_GetUserStatusArgs{userID}
 	_returns := &Z_GetUserStatusReturns{}
 	if err := g.client.Call("Plugin.GetUserStatus", _args, _returns); err != nil {
@@ -861,7 +861,7 @@ func (g *apiRPCClient) GetUserStatus(userID string) (*model.Status, *model.AppEr
 
 func (s *apiRPCServer) GetUserStatus(args *Z_GetUserStatusArgs, returns *Z_GetUserStatusReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserStatus(userID string) (*model.Status, *model.AppError)
+		GetUserStatus(userID string) (*model.Status, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserStatus(args.A)
 	} else {
@@ -876,10 +876,10 @@ type Z_GetUserStatusesByIdsArgs struct {
 
 type Z_GetUserStatusesByIdsReturns struct {
 	A []*model.Status
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError) {
+func (g *apiRPCClient) GetUserStatusesByIds(userIds []string) ([]*model.Status, *model_helper.AppError) {
 	_args := &Z_GetUserStatusesByIdsArgs{userIds}
 	_returns := &Z_GetUserStatusesByIdsReturns{}
 	if err := g.client.Call("Plugin.GetUserStatusesByIds", _args, _returns); err != nil {
@@ -890,7 +890,7 @@ func (g *apiRPCClient) GetUserStatusesByIds(userIds []string) ([]*model.Status, 
 
 func (s *apiRPCServer) GetUserStatusesByIds(args *Z_GetUserStatusesByIdsArgs, returns *Z_GetUserStatusesByIdsReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError)
+		GetUserStatusesByIds(userIds []string) ([]*model.Status, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserStatusesByIds(args.A)
 	} else {
@@ -906,10 +906,10 @@ type Z_UpdateUserStatusArgs struct {
 
 type Z_UpdateUserStatusReturns struct {
 	A *model.Status
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) UpdateUserStatus(userID, status string) (*model.Status, *model.AppError) {
+func (g *apiRPCClient) UpdateUserStatus(userID, status string) (*model.Status, *model_helper.AppError) {
 	_args := &Z_UpdateUserStatusArgs{userID, status}
 	_returns := &Z_UpdateUserStatusReturns{}
 	if err := g.client.Call("Plugin.UpdateUserStatus", _args, _returns); err != nil {
@@ -920,7 +920,7 @@ func (g *apiRPCClient) UpdateUserStatus(userID, status string) (*model.Status, *
 
 func (s *apiRPCServer) UpdateUserStatus(args *Z_UpdateUserStatusArgs, returns *Z_UpdateUserStatusReturns) error {
 	if hook, ok := s.impl.(interface {
-		UpdateUserStatus(userID, status string) (*model.Status, *model.AppError)
+		UpdateUserStatus(userID, status string) (*model.Status, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.UpdateUserStatus(args.A, args.B)
 	} else {
@@ -935,10 +935,10 @@ type Z_UpdateUserActiveArgs struct {
 }
 
 type Z_UpdateUserActiveReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) UpdateUserActive(userID string, active bool) *model.AppError {
+func (g *apiRPCClient) UpdateUserActive(userID string, active bool) *model_helper.AppError {
 	_args := &Z_UpdateUserActiveArgs{userID, active}
 	_returns := &Z_UpdateUserActiveReturns{}
 	if err := g.client.Call("Plugin.UpdateUserActive", _args, _returns); err != nil {
@@ -949,7 +949,7 @@ func (g *apiRPCClient) UpdateUserActive(userID string, active bool) *model.AppEr
 
 func (s *apiRPCServer) UpdateUserActive(args *Z_UpdateUserActiveArgs, returns *Z_UpdateUserActiveReturns) error {
 	if hook, ok := s.impl.(interface {
-		UpdateUserActive(userID string, active bool) *model.AppError
+		UpdateUserActive(userID string, active bool) *model_helper.AppError
 	}); ok {
 		returns.A = hook.UpdateUserActive(args.A, args.B)
 	} else {
@@ -965,10 +965,10 @@ type Z_GetLDAPUserAttributesArgs struct {
 
 type Z_GetLDAPUserAttributesReturns struct {
 	A map[string]string
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model.AppError) {
+func (g *apiRPCClient) GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model_helper.AppError) {
 	_args := &Z_GetLDAPUserAttributesArgs{userID, attributes}
 	_returns := &Z_GetLDAPUserAttributesReturns{}
 	if err := g.client.Call("Plugin.GetLDAPUserAttributes", _args, _returns); err != nil {
@@ -979,7 +979,7 @@ func (g *apiRPCClient) GetLDAPUserAttributes(userID string, attributes []string)
 
 func (s *apiRPCServer) GetLDAPUserAttributes(args *Z_GetLDAPUserAttributesArgs, returns *Z_GetLDAPUserAttributesReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model.AppError)
+		GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetLDAPUserAttributes(args.A, args.B)
 	} else {
@@ -994,10 +994,10 @@ type Z_SearchUsersArgs struct {
 
 type Z_SearchUsersReturns struct {
 	A []*model.User
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.User, *model_helper.AppError) {
 	_args := &Z_SearchUsersArgs{search}
 	_returns := &Z_SearchUsersReturns{}
 	if err := g.client.Call("Plugin.SearchUsers", _args, _returns); err != nil {
@@ -1008,7 +1008,7 @@ func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.User, *mo
 
 func (s *apiRPCServer) SearchUsers(args *Z_SearchUsersArgs, returns *Z_SearchUsersReturns) error {
 	if hook, ok := s.impl.(interface {
-		SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError)
+		SearchUsers(search *model.UserSearch) ([]*model.User, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.SearchUsers(args.A)
 	} else {
@@ -1023,10 +1023,10 @@ type Z_GetProfileImageArgs struct {
 
 type Z_GetProfileImageReturns struct {
 	A []byte
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetProfileImage(userID string) ([]byte, *model.AppError) {
+func (g *apiRPCClient) GetProfileImage(userID string) ([]byte, *model_helper.AppError) {
 	_args := &Z_GetProfileImageArgs{userID}
 	_returns := &Z_GetProfileImageReturns{}
 	if err := g.client.Call("Plugin.GetProfileImage", _args, _returns); err != nil {
@@ -1037,7 +1037,7 @@ func (g *apiRPCClient) GetProfileImage(userID string) ([]byte, *model.AppError) 
 
 func (s *apiRPCServer) GetProfileImage(args *Z_GetProfileImageArgs, returns *Z_GetProfileImageReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetProfileImage(userID string) ([]byte, *model.AppError)
+		GetProfileImage(userID string) ([]byte, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetProfileImage(args.A)
 	} else {
@@ -1052,10 +1052,10 @@ type Z_SetProfileImageArgs struct {
 }
 
 type Z_SetProfileImageReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) SetProfileImage(userID string, data []byte) *model.AppError {
+func (g *apiRPCClient) SetProfileImage(userID string, data []byte) *model_helper.AppError {
 	_args := &Z_SetProfileImageArgs{userID, data}
 	_returns := &Z_SetProfileImageReturns{}
 	if err := g.client.Call("Plugin.SetProfileImage", _args, _returns); err != nil {
@@ -1066,7 +1066,7 @@ func (g *apiRPCClient) SetProfileImage(userID string, data []byte) *model.AppErr
 
 func (s *apiRPCServer) SetProfileImage(args *Z_SetProfileImageArgs, returns *Z_SetProfileImageReturns) error {
 	if hook, ok := s.impl.(interface {
-		SetProfileImage(userID string, data []byte) *model.AppError
+		SetProfileImage(userID string, data []byte) *model_helper.AppError
 	}); ok {
 		returns.A = hook.SetProfileImage(args.A, args.B)
 	} else {
@@ -1082,10 +1082,10 @@ type Z_CopyFileInfosArgs struct {
 
 type Z_CopyFileInfosReturns struct {
 	A []string
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) CopyFileInfos(userID string, fileIds []string) ([]string, *model.AppError) {
+func (g *apiRPCClient) CopyFileInfos(userID string, fileIds []string) ([]string, *model_helper.AppError) {
 	_args := &Z_CopyFileInfosArgs{userID, fileIds}
 	_returns := &Z_CopyFileInfosReturns{}
 	if err := g.client.Call("Plugin.CopyFileInfos", _args, _returns); err != nil {
@@ -1096,7 +1096,7 @@ func (g *apiRPCClient) CopyFileInfos(userID string, fileIds []string) ([]string,
 
 func (s *apiRPCServer) CopyFileInfos(args *Z_CopyFileInfosArgs, returns *Z_CopyFileInfosReturns) error {
 	if hook, ok := s.impl.(interface {
-		CopyFileInfos(userID string, fileIds []string) ([]string, *model.AppError)
+		CopyFileInfos(userID string, fileIds []string) ([]string, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.CopyFileInfos(args.A, args.B)
 	} else {
@@ -1111,10 +1111,10 @@ type Z_GetFileInfoArgs struct {
 
 type Z_GetFileInfoReturns struct {
 	A *model.FileInfo
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetFileInfo(fileId string) (*model.FileInfo, *model.AppError) {
+func (g *apiRPCClient) GetFileInfo(fileId string) (*model.FileInfo, *model_helper.AppError) {
 	_args := &Z_GetFileInfoArgs{fileId}
 	_returns := &Z_GetFileInfoReturns{}
 	if err := g.client.Call("Plugin.GetFileInfo", _args, _returns); err != nil {
@@ -1125,7 +1125,7 @@ func (g *apiRPCClient) GetFileInfo(fileId string) (*model.FileInfo, *model.AppEr
 
 func (s *apiRPCServer) GetFileInfo(args *Z_GetFileInfoArgs, returns *Z_GetFileInfoReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetFileInfo(fileId string) (*model.FileInfo, *model.AppError)
+		GetFileInfo(fileId string) (*model.FileInfo, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetFileInfo(args.A)
 	} else {
@@ -1142,10 +1142,10 @@ type Z_GetFileInfosArgs struct {
 
 type Z_GetFileInfosReturns struct {
 	A []*model.FileInfo
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
+func (g *apiRPCClient) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError) {
 	_args := &Z_GetFileInfosArgs{page, perPage, opt}
 	_returns := &Z_GetFileInfosReturns{}
 	if err := g.client.Call("Plugin.GetFileInfos", _args, _returns); err != nil {
@@ -1156,7 +1156,7 @@ func (g *apiRPCClient) GetFileInfos(page, perPage int, opt *model.GetFileInfosOp
 
 func (s *apiRPCServer) GetFileInfos(args *Z_GetFileInfosArgs, returns *Z_GetFileInfosReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
+		GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetFileInfos(args.A, args.B, args.C)
 	} else {
@@ -1171,10 +1171,10 @@ type Z_GetFileArgs struct {
 
 type Z_GetFileReturns struct {
 	A []byte
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetFile(fileId string) ([]byte, *model.AppError) {
+func (g *apiRPCClient) GetFile(fileId string) ([]byte, *model_helper.AppError) {
 	_args := &Z_GetFileArgs{fileId}
 	_returns := &Z_GetFileReturns{}
 	if err := g.client.Call("Plugin.GetFile", _args, _returns); err != nil {
@@ -1185,7 +1185,7 @@ func (g *apiRPCClient) GetFile(fileId string) ([]byte, *model.AppError) {
 
 func (s *apiRPCServer) GetFile(args *Z_GetFileArgs, returns *Z_GetFileReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetFile(fileId string) ([]byte, *model.AppError)
+		GetFile(fileId string) ([]byte, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetFile(args.A)
 	} else {
@@ -1200,10 +1200,10 @@ type Z_GetFileLinkArgs struct {
 
 type Z_GetFileLinkReturns struct {
 	A string
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetFileLink(fileId string) (string, *model.AppError) {
+func (g *apiRPCClient) GetFileLink(fileId string) (string, *model_helper.AppError) {
 	_args := &Z_GetFileLinkArgs{fileId}
 	_returns := &Z_GetFileLinkReturns{}
 	if err := g.client.Call("Plugin.GetFileLink", _args, _returns); err != nil {
@@ -1214,7 +1214,7 @@ func (g *apiRPCClient) GetFileLink(fileId string) (string, *model.AppError) {
 
 func (s *apiRPCServer) GetFileLink(args *Z_GetFileLinkArgs, returns *Z_GetFileLinkReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetFileLink(fileId string) (string, *model.AppError)
+		GetFileLink(fileId string) (string, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetFileLink(args.A)
 	} else {
@@ -1229,10 +1229,10 @@ type Z_ReadFileArgs struct {
 
 type Z_ReadFileReturns struct {
 	A []byte
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) ReadFile(path string) ([]byte, *model.AppError) {
+func (g *apiRPCClient) ReadFile(path string) ([]byte, *model_helper.AppError) {
 	_args := &Z_ReadFileArgs{path}
 	_returns := &Z_ReadFileReturns{}
 	if err := g.client.Call("Plugin.ReadFile", _args, _returns); err != nil {
@@ -1243,7 +1243,7 @@ func (g *apiRPCClient) ReadFile(path string) ([]byte, *model.AppError) {
 
 func (s *apiRPCServer) ReadFile(args *Z_ReadFileArgs, returns *Z_ReadFileReturns) error {
 	if hook, ok := s.impl.(interface {
-		ReadFile(path string) ([]byte, *model.AppError)
+		ReadFile(path string) ([]byte, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.ReadFile(args.A)
 	} else {
@@ -1257,10 +1257,10 @@ type Z_GetPluginsArgs struct {
 
 type Z_GetPluginsReturns struct {
 	A []*model.Manifest
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetPlugins() ([]*model.Manifest, *model.AppError) {
+func (g *apiRPCClient) GetPlugins() ([]*model.Manifest, *model_helper.AppError) {
 	_args := &Z_GetPluginsArgs{}
 	_returns := &Z_GetPluginsReturns{}
 	if err := g.client.Call("Plugin.GetPlugins", _args, _returns); err != nil {
@@ -1271,7 +1271,7 @@ func (g *apiRPCClient) GetPlugins() ([]*model.Manifest, *model.AppError) {
 
 func (s *apiRPCServer) GetPlugins(args *Z_GetPluginsArgs, returns *Z_GetPluginsReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetPlugins() ([]*model.Manifest, *model.AppError)
+		GetPlugins() ([]*model.Manifest, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetPlugins()
 	} else {
@@ -1285,10 +1285,10 @@ type Z_EnablePluginArgs struct {
 }
 
 type Z_EnablePluginReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) EnablePlugin(id string) *model.AppError {
+func (g *apiRPCClient) EnablePlugin(id string) *model_helper.AppError {
 	_args := &Z_EnablePluginArgs{id}
 	_returns := &Z_EnablePluginReturns{}
 	if err := g.client.Call("Plugin.EnablePlugin", _args, _returns); err != nil {
@@ -1299,7 +1299,7 @@ func (g *apiRPCClient) EnablePlugin(id string) *model.AppError {
 
 func (s *apiRPCServer) EnablePlugin(args *Z_EnablePluginArgs, returns *Z_EnablePluginReturns) error {
 	if hook, ok := s.impl.(interface {
-		EnablePlugin(id string) *model.AppError
+		EnablePlugin(id string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.EnablePlugin(args.A)
 	} else {
@@ -1313,10 +1313,10 @@ type Z_DisablePluginArgs struct {
 }
 
 type Z_DisablePluginReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) DisablePlugin(id string) *model.AppError {
+func (g *apiRPCClient) DisablePlugin(id string) *model_helper.AppError {
 	_args := &Z_DisablePluginArgs{id}
 	_returns := &Z_DisablePluginReturns{}
 	if err := g.client.Call("Plugin.DisablePlugin", _args, _returns); err != nil {
@@ -1327,7 +1327,7 @@ func (g *apiRPCClient) DisablePlugin(id string) *model.AppError {
 
 func (s *apiRPCServer) DisablePlugin(args *Z_DisablePluginArgs, returns *Z_DisablePluginReturns) error {
 	if hook, ok := s.impl.(interface {
-		DisablePlugin(id string) *model.AppError
+		DisablePlugin(id string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.DisablePlugin(args.A)
 	} else {
@@ -1341,10 +1341,10 @@ type Z_RemovePluginArgs struct {
 }
 
 type Z_RemovePluginReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) RemovePlugin(id string) *model.AppError {
+func (g *apiRPCClient) RemovePlugin(id string) *model_helper.AppError {
 	_args := &Z_RemovePluginArgs{id}
 	_returns := &Z_RemovePluginReturns{}
 	if err := g.client.Call("Plugin.RemovePlugin", _args, _returns); err != nil {
@@ -1355,7 +1355,7 @@ func (g *apiRPCClient) RemovePlugin(id string) *model.AppError {
 
 func (s *apiRPCServer) RemovePlugin(args *Z_RemovePluginArgs, returns *Z_RemovePluginReturns) error {
 	if hook, ok := s.impl.(interface {
-		RemovePlugin(id string) *model.AppError
+		RemovePlugin(id string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.RemovePlugin(args.A)
 	} else {
@@ -1370,10 +1370,10 @@ type Z_GetPluginStatusArgs struct {
 
 type Z_GetPluginStatusReturns struct {
 	A *model.PluginStatus
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) GetPluginStatus(id string) (*model.PluginStatus, *model.AppError) {
+func (g *apiRPCClient) GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError) {
 	_args := &Z_GetPluginStatusArgs{id}
 	_returns := &Z_GetPluginStatusReturns{}
 	if err := g.client.Call("Plugin.GetPluginStatus", _args, _returns); err != nil {
@@ -1384,7 +1384,7 @@ func (g *apiRPCClient) GetPluginStatus(id string) (*model.PluginStatus, *model.A
 
 func (s *apiRPCServer) GetPluginStatus(args *Z_GetPluginStatusArgs, returns *Z_GetPluginStatusReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
+		GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetPluginStatus(args.A)
 	} else {
@@ -1399,10 +1399,10 @@ type Z_KVSetArgs struct {
 }
 
 type Z_KVSetReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVSet(key string, value []byte) *model.AppError {
+func (g *apiRPCClient) KVSet(key string, value []byte) *model_helper.AppError {
 	_args := &Z_KVSetArgs{key, value}
 	_returns := &Z_KVSetReturns{}
 	if err := g.client.Call("Plugin.KVSet", _args, _returns); err != nil {
@@ -1413,7 +1413,7 @@ func (g *apiRPCClient) KVSet(key string, value []byte) *model.AppError {
 
 func (s *apiRPCServer) KVSet(args *Z_KVSetArgs, returns *Z_KVSetReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVSet(key string, value []byte) *model.AppError
+		KVSet(key string, value []byte) *model_helper.AppError
 	}); ok {
 		returns.A = hook.KVSet(args.A, args.B)
 	} else {
@@ -1430,10 +1430,10 @@ type Z_KVCompareAndSetArgs struct {
 
 type Z_KVCompareAndSetReturns struct {
 	A bool
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model.AppError) {
+func (g *apiRPCClient) KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model_helper.AppError) {
 	_args := &Z_KVCompareAndSetArgs{key, oldValue, newValue}
 	_returns := &Z_KVCompareAndSetReturns{}
 	if err := g.client.Call("Plugin.KVCompareAndSet", _args, _returns); err != nil {
@@ -1444,7 +1444,7 @@ func (g *apiRPCClient) KVCompareAndSet(key string, oldValue, newValue []byte) (b
 
 func (s *apiRPCServer) KVCompareAndSet(args *Z_KVCompareAndSetArgs, returns *Z_KVCompareAndSetReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model.AppError)
+		KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.KVCompareAndSet(args.A, args.B, args.C)
 	} else {
@@ -1460,10 +1460,10 @@ type Z_KVCompareAndDeleteArgs struct {
 
 type Z_KVCompareAndDeleteReturns struct {
 	A bool
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVCompareAndDelete(key string, oldValue []byte) (bool, *model.AppError) {
+func (g *apiRPCClient) KVCompareAndDelete(key string, oldValue []byte) (bool, *model_helper.AppError) {
 	_args := &Z_KVCompareAndDeleteArgs{key, oldValue}
 	_returns := &Z_KVCompareAndDeleteReturns{}
 	if err := g.client.Call("Plugin.KVCompareAndDelete", _args, _returns); err != nil {
@@ -1474,7 +1474,7 @@ func (g *apiRPCClient) KVCompareAndDelete(key string, oldValue []byte) (bool, *m
 
 func (s *apiRPCServer) KVCompareAndDelete(args *Z_KVCompareAndDeleteArgs, returns *Z_KVCompareAndDeleteReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVCompareAndDelete(key string, oldValue []byte) (bool, *model.AppError)
+		KVCompareAndDelete(key string, oldValue []byte) (bool, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.KVCompareAndDelete(args.A, args.B)
 	} else {
@@ -1491,10 +1491,10 @@ type Z_KVSetWithOptionsArgs struct {
 
 type Z_KVSetWithOptionsReturns struct {
 	A bool
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError) {
+func (g *apiRPCClient) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError) {
 	_args := &Z_KVSetWithOptionsArgs{key, value, options}
 	_returns := &Z_KVSetWithOptionsReturns{}
 	if err := g.client.Call("Plugin.KVSetWithOptions", _args, _returns); err != nil {
@@ -1505,7 +1505,7 @@ func (g *apiRPCClient) KVSetWithOptions(key string, value []byte, options model.
 
 func (s *apiRPCServer) KVSetWithOptions(args *Z_KVSetWithOptionsArgs, returns *Z_KVSetWithOptionsReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError)
+		KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.KVSetWithOptions(args.A, args.B, args.C)
 	} else {
@@ -1521,10 +1521,10 @@ type Z_KVSetWithExpiryArgs struct {
 }
 
 type Z_KVSetWithExpiryReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model.AppError {
+func (g *apiRPCClient) KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model_helper.AppError {
 	_args := &Z_KVSetWithExpiryArgs{key, value, expireInSeconds}
 	_returns := &Z_KVSetWithExpiryReturns{}
 	if err := g.client.Call("Plugin.KVSetWithExpiry", _args, _returns); err != nil {
@@ -1535,7 +1535,7 @@ func (g *apiRPCClient) KVSetWithExpiry(key string, value []byte, expireInSeconds
 
 func (s *apiRPCServer) KVSetWithExpiry(args *Z_KVSetWithExpiryArgs, returns *Z_KVSetWithExpiryReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model.AppError
+		KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model_helper.AppError
 	}); ok {
 		returns.A = hook.KVSetWithExpiry(args.A, args.B, args.C)
 	} else {
@@ -1550,10 +1550,10 @@ type Z_KVGetArgs struct {
 
 type Z_KVGetReturns struct {
 	A []byte
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVGet(key string) ([]byte, *model.AppError) {
+func (g *apiRPCClient) KVGet(key string) ([]byte, *model_helper.AppError) {
 	_args := &Z_KVGetArgs{key}
 	_returns := &Z_KVGetReturns{}
 	if err := g.client.Call("Plugin.KVGet", _args, _returns); err != nil {
@@ -1564,7 +1564,7 @@ func (g *apiRPCClient) KVGet(key string) ([]byte, *model.AppError) {
 
 func (s *apiRPCServer) KVGet(args *Z_KVGetArgs, returns *Z_KVGetReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVGet(key string) ([]byte, *model.AppError)
+		KVGet(key string) ([]byte, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.KVGet(args.A)
 	} else {
@@ -1578,10 +1578,10 @@ type Z_KVDeleteArgs struct {
 }
 
 type Z_KVDeleteReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVDelete(key string) *model.AppError {
+func (g *apiRPCClient) KVDelete(key string) *model_helper.AppError {
 	_args := &Z_KVDeleteArgs{key}
 	_returns := &Z_KVDeleteReturns{}
 	if err := g.client.Call("Plugin.KVDelete", _args, _returns); err != nil {
@@ -1592,7 +1592,7 @@ func (g *apiRPCClient) KVDelete(key string) *model.AppError {
 
 func (s *apiRPCServer) KVDelete(args *Z_KVDeleteArgs, returns *Z_KVDeleteReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVDelete(key string) *model.AppError
+		KVDelete(key string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.KVDelete(args.A)
 	} else {
@@ -1605,10 +1605,10 @@ type Z_KVDeleteAllArgs struct {
 }
 
 type Z_KVDeleteAllReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVDeleteAll() *model.AppError {
+func (g *apiRPCClient) KVDeleteAll() *model_helper.AppError {
 	_args := &Z_KVDeleteAllArgs{}
 	_returns := &Z_KVDeleteAllReturns{}
 	if err := g.client.Call("Plugin.KVDeleteAll", _args, _returns); err != nil {
@@ -1619,7 +1619,7 @@ func (g *apiRPCClient) KVDeleteAll() *model.AppError {
 
 func (s *apiRPCServer) KVDeleteAll(args *Z_KVDeleteAllArgs, returns *Z_KVDeleteAllReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVDeleteAll() *model.AppError
+		KVDeleteAll() *model_helper.AppError
 	}); ok {
 		returns.A = hook.KVDeleteAll()
 	} else {
@@ -1635,10 +1635,10 @@ type Z_KVListArgs struct {
 
 type Z_KVListReturns struct {
 	A []string
-	B *model.AppError
+	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVList(page, perPage int) ([]string, *model.AppError) {
+func (g *apiRPCClient) KVList(page, perPage int) ([]string, *model_helper.AppError) {
 	_args := &Z_KVListArgs{page, perPage}
 	_returns := &Z_KVListReturns{}
 	if err := g.client.Call("Plugin.KVList", _args, _returns); err != nil {
@@ -1649,7 +1649,7 @@ func (g *apiRPCClient) KVList(page, perPage int) ([]string, *model.AppError) {
 
 func (s *apiRPCServer) KVList(args *Z_KVListArgs, returns *Z_KVListReturns) error {
 	if hook, ok := s.impl.(interface {
-		KVList(page, perPage int) ([]string, *model.AppError)
+		KVList(page, perPage int) ([]string, *model_helper.AppError)
 	}); ok {
 		returns.A, returns.B = hook.KVList(args.A, args.B)
 	} else {
@@ -1723,10 +1723,10 @@ type Z_SendMailArgs struct {
 }
 
 type Z_SendMailReturns struct {
-	A *model.AppError
+	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) SendMail(to, subject, htmlBody string) *model.AppError {
+func (g *apiRPCClient) SendMail(to, subject, htmlBody string) *model_helper.AppError {
 	_args := &Z_SendMailArgs{to, subject, htmlBody}
 	_returns := &Z_SendMailReturns{}
 	if err := g.client.Call("Plugin.SendMail", _args, _returns); err != nil {
@@ -1737,7 +1737,7 @@ func (g *apiRPCClient) SendMail(to, subject, htmlBody string) *model.AppError {
 
 func (s *apiRPCServer) SendMail(args *Z_SendMailArgs, returns *Z_SendMailReturns) error {
 	if hook, ok := s.impl.(interface {
-		SendMail(to, subject, htmlBody string) *model.AppError
+		SendMail(to, subject, htmlBody string) *model_helper.AppError
 	}); ok {
 		returns.A = hook.SendMail(args.A, args.B, args.C)
 	} else {

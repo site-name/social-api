@@ -6,26 +6,27 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError) {
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model_helper.AppError) {
 	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(options)
 	if err != nil {
-		return nil, model.NewAppError("ProductVariantChannelListingsByOption", "app.product_error_finding_product_variant_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductVariantChannelListingsByOption", "app.product_error_finding_product_variant_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return listings, nil
 }
 
 // BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
-func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *gorm.DB, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model.AppError) {
+func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *gorm.DB, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model_helper.AppError) {
 	variantChannelListings, err := s.srv.Store.ProductVariantChannelListing().BulkUpsert(transaction, listings)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
 		statusCode := http.StatusInternalServerError
@@ -35,13 +36,13 @@ func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *go
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model.NewAppError("BulkUpsertProductVariantChannelListings", "app.product.error_bulk_upserting_product_variant_channel_listings.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("BulkUpsertProductVariantChannelListings", "app.product.error_bulk_upserting_product_variant_channel_listings.app_error", nil, err.Error(), statusCode)
 	}
 
 	return variantChannelListings, nil
 }
 
-func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model.AppError {
+func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model_helper.AppError {
 	variantChannelListings, appErr := s.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Eq{
@@ -57,16 +58,16 @@ func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string,
 
 	variantsNotAvailable, _ := lo.Difference(variantIds, variantChannelListings.VariantIDs())
 	if len(variantsNotAvailable) > 0 {
-		return model.NewAppError("ValidateVariantsAvailableInChannel", "app.product.add_not_available_variants_in_channel_to_lines.app_error", nil, "cannot add lines with unavailable variants", http.StatusNotAcceptable)
+		return model_helper.NewAppError("ValidateVariantsAvailableInChannel", "app.product.add_not_available_variants_in_channel_to_lines.app_error", nil, "cannot add lines with unavailable variants", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
-func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model.AppError {
+func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model_helper.AppError {
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return model.NewAppError("UpdateOrCreateProductVariantChannelListings", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdateOrCreateProductVariantChannelListings", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	relationsToUpsert := make(model.ProductVariantChannelListings, len(inputList))

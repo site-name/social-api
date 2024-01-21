@@ -3,18 +3,18 @@ package testutils
 import (
 	"crypto/ecdsa"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type StaticConfigService struct {
-	Cfg *model.Config
+	Cfg *model_helper.Config
 }
 
-func (s StaticConfigService) Config() *model.Config {
+func (s StaticConfigService) Config() *model_helper.Config {
 	return s.Cfg
 }
 
-func (StaticConfigService) AddConfigListener(func(old, current *model.Config)) string {
+func (StaticConfigService) AddConfigListener(func(old, current *model_helper.Config)) string {
 	return ""
 }
 

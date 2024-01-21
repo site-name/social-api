@@ -5,19 +5,20 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceShop) StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError) {
+func (a *ServiceShop) StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError) {
 	staffs, err := a.srv.Store.ShopStaff().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("StaffsByOptions", "app.shop.staffs_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("StaffsByOptions", "app.shop.staffs_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return staffs, nil
 }
 
-func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError) {
+func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError) {
 	relation, err := a.srv.Store.ShopStaff().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -25,7 +26,7 @@ func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) 
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("ShopStaffByOptions", "app.shop.shop_staff_by_options.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ShopStaffByOptions", "app.shop.shop_staff_by_options.app_error", nil, err.Error(), statusCode)
 	}
 	return relation, nil
 }

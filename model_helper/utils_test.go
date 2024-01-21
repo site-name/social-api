@@ -88,8 +88,8 @@ func checkNowhereNil(t *testing.T, name string, value interface{}) bool {
 }
 
 func TestDraftJSContentToRawText(t *testing.T) {
-	data := StringInterface{
-		"blocks": []StringInterface{
+	data := map[string]any{
+		"blocks": []map[string]any{
 			{
 				"data": Map[string, string]{
 					"text": "Hello World",

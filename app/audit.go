@@ -7,6 +7,7 @@ import (
 	"os/user"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -27,29 +28,29 @@ var (
 	LevelCLI     = slog.LvlAuditCLI
 )
 
-func (a *App) GetAudits(userID string, limit int) (model.Audits, *model.AppError) {
+func (a *App) GetAudits(userID string, limit int) (model.AuditSlice, *model_helper.AppError) {
 	audits, err := a.Srv().Store.Audit().Get(userID, 0, limit)
 	if err != nil {
 		var outErr *store.ErrOutOfBounds
 		switch {
 		case errors.As(err, &outErr):
-			return nil, model.NewAppError("GetAudits", "app.audit.get.limit.app_error", nil, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("GetAudits", "app.audit.get.limit.app_error", nil, err.Error(), http.StatusBadRequest)
 		default:
-			return nil, model.NewAppError("GetAudits", "app.audit.get.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("GetAudits", "app.audit.get.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 	return audits, nil
 }
 
-func (a *App) GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model.AppError) {
+func (a *App) GetAuditsPage(userID string, page int, perPage int) (model.AuditSlice, *model_helper.AppError) {
 	audits, err := a.Srv().Store.Audit().Get(userID, page*perPage, perPage)
 	if err != nil {
 		var outErr *store.ErrOutOfBounds
 		switch {
 		case errors.As(err, &outErr):
-			return nil, model.NewAppError("GetAuditsPage", "app.audit.get.limit.app_error", nil, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("GetAuditsPage", "app.audit.get.limit.app_error", nil, err.Error(), http.StatusBadRequest)
 		default:
-			return nil, model.NewAppError("GetAuditsPage", "app.audit.get.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("GetAuditsPage", "app.audit.get.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 	return audits, nil
@@ -66,7 +67,7 @@ func (a *App) LogAuditRecWithLevel(rec *audit.Record, level slog.Level, err erro
 		return
 	}
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model_helper.AppError); ok {
 			rec.AddMeta("err", appErr.Error())
 			rec.AddMeta("code", appErr.StatusCode)
 		} else {
@@ -91,11 +92,11 @@ func (a *App) MakeAuditRecord(event string, initialStatus string) *audit.Record 
 		Status:    initialStatus,
 		UserID:    userID,
 		SessionID: "",
-		Client:    fmt.Sprintf("server %s-%s", model.BuildNumber, model.BuildHash),
+		Client:    fmt.Sprintf("server %s-%s", model_helper.BuildNumber, model_helper.BuildHash),
 		IPAddress: "",
 		Meta:      audit.Meta{audit.KeyClusterID: a.GetClusterId()},
 	}
-	rec.AddMetaTypeConverter(model.AuditModelTypeConv)
+	rec.AddMetaTypeConverter(model_helper.AuditModelTypeConv)
 
 	return rec
 }

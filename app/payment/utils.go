@@ -11,6 +11,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,7 @@ import (
 //
 // Returns information required to process payment and additional
 // billing/shipping addresses for optional fraud-prevention mechanisms.
-func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model.AppError) {
+func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model_helper.AppError) {
 
 	var (
 		billingAddressID  string
@@ -171,10 +172,10 @@ func (a *ServicePayment) CreatePayment(
 	storePaymentMethod model.StorePaymentMethod,
 	metadata model.StringMap, // can be nil
 
-) (*model.Payment, *model.PaymentError, *model.AppError) {
+) (*model.Payment, *model.PaymentError, *model_helper.AppError) {
 	// must at least provide either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
-		return nil, nil, model.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
 	}
 
 	if extraData == nil {
@@ -194,7 +195,7 @@ func (a *ServicePayment) CreatePayment(
 	var billingAddress *model.Address
 
 	if billingAddressID != "" {
-		var appErr *model.AppError
+		var appErr *model_helper.AppError
 		billingAddress, appErr = a.srv.AccountService().AddressById(billingAddressID)
 		if appErr != nil {
 			return nil, nil, appErr // this error can be either system error/not found error
@@ -241,7 +242,7 @@ func (a *ServicePayment) CreatePayment(
 	return payment, nil, appErr
 }
 
-func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError) {
 	// get all transactions that belong to given payment
 	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
@@ -270,7 +271,7 @@ func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewa
 }
 
 // CreateTransaction reate a transaction based on transaction kind and gateway response.
-func (a *ServicePayment) CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError) {
 	// Default values for token, amount, currency are only used in cases where
 	// response from gateway was invalid or an exception occured
 	if gatewayResponse == nil {
@@ -307,7 +308,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind model.Transact
 	return a.SaveTransaction(nil, tran)
 }
 
-func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
 		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
 		if appErr != nil {
@@ -383,17 +384,17 @@ func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse
 }
 
 // GatewayPostProcess
-func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model.AppError {
+func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model_helper.AppError {
 	// create transaction
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return model.NewAppError("GatewayPostProcess", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("GatewayPostProcess", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
 		changedFields util.AnyArray[string]
-		appErr        *model.AppError
+		appErr        *model_helper.AppError
 	)
 
 	if !paymentTransaction.IsSuccess || paymentTransaction.AlreadyProcessed {
@@ -491,7 +492,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return model.NewAppError("GatewayPostProcess", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("GatewayPostProcess", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -499,13 +500,13 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 // FetchCustomerId Retrieve users customer_id stored for desired gateway.
 // returning string could be "" or long string
-func (a *ServicePayment) FetchCustomerId(user *model.User, gateway string) (string, *model.AppError) {
+func (a *ServicePayment) FetchCustomerId(user *model.User, gateway string) (string, *model_helper.AppError) {
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
 	return user.PrivateMetadata.Get(metaKey, ""), nil
 }
 
 // StoreCustomerId stores new value into given user's PrivateMetadata
-func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customerID string) *model.AppError {
+func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customerID string) *model_helper.AppError {
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
 	user, appErr := a.srv.AccountService().UserById(context.Background(), userID)
 	if appErr != nil {
@@ -524,7 +525,7 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 }
 
 // UpdatePayment
-func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model.AppError {
+func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model_helper.AppError {
 	var firstChange, secondChange bool
 
 	if gatewayResponse.PspReference != "" {
@@ -573,7 +574,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 	return
 }
 
-func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {
+func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model_helper.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{
 			model.TransactionTableName + ".Kind":      model.TRANSACTION_KIND_AUTH,
@@ -636,6 +637,6 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 // PaymentOwnedByUser checks if given user is authenticated and owns given payment
 //
 // NOTE: if the `user` is unauthenticated, don't call me, just returns false
-// func (s *ServicePayment) PaymentOwnedByUser(paymentID string, userID string) (bool, *model.AppError) {
+// func (s *ServicePayment) PaymentOwnedByUser(paymentID string, userID string) (bool, *model_helper.AppError) {
 // 	s.srv.Store.Payment().FilterByOption(&model.PaymentFilterOption{})
 // }

@@ -172,7 +172,7 @@ type ComplianceExportCursor struct {
 
 func ComplianceCommonPre(c *model.Compliance) {
 	if c.Status.IsValid() != nil {
-		c.Status = model.CompliancestatusCreated
+		c.Status = model.ComplianceStatusCreated
 	}
 	c.Emails = NormalizeEmail(c.Emails)
 	c.Keywords = strings.ToLower(c.Keywords)
@@ -180,7 +180,7 @@ func ComplianceCommonPre(c *model.Compliance) {
 
 func ComplianceJobNName(c *model.Compliance) string {
 	jobName := c.Type.String()
-	if c.Type == model.CompliancetypeDaily {
+	if c.Type == model.ComplianceTypeDaily {
 		jobName += "-" + c.Desc
 	}
 	jobName += "-" + c.ID

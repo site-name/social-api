@@ -8,6 +8,7 @@ import (
 
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
 )
 
@@ -29,7 +30,7 @@ type UploadFileTask struct {
 	decoded            image.Image     // Cached image data that (may) get initialized in preprocessImage and is used in postprocessImage
 	imageType          string
 	imageOrientation   int
-	writeFile          func(io.Reader, string) (int64, *model.AppError)
+	writeFile          func(io.Reader, string) (int64, *model_helper.AppError)
 	saveToDatabase     func(*model.FileInfo) (*model.FileInfo, error)
 	imgDecoder         *imaging.Decoder
 	imgEncoder         *imaging.Encoder

@@ -9,6 +9,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -199,7 +200,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
 	if !model.IsValidId(args.ChannelID) {
-		return nil, model.NewAppError("User.StoredPaymentSources", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("User.StoredPaymentSources", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -273,7 +274,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
 			if !model.IsValidId(*args.ChannelID) {
-				return nil, model.NewAppError("User.CheckoutTokens", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("User.CheckoutTokens", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 			}
 			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.ChannelID)()
 		}

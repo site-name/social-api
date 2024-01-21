@@ -6,6 +6,7 @@ import (
 
 	plugin "github.com/hashicorp/go-plugin"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type PluginIface interface {
@@ -50,25 +51,25 @@ type API interface {
 	// GetSession returns the session object for the Session ID
 	//
 	// Minimum server version: 5.2
-	GetSession(sessionID string) (*model.Session, *model.AppError)
+	GetSession(sessionID string) (*model.Session, *model_helper.AppError)
 
 	// GetConfig fetches the currently persisted config
 	//
 	// @tag Configuration
 	// Minimum server version: 5.2
-	GetConfig() *model.Config
+	GetConfig() *model_helper.Config
 
 	// GetUnsanitizedConfig fetches the currently persisted config without removing secrets.
 	//
 	// @tag Configuration
 	// Minimum server version: 5.16
-	GetUnsanitizedConfig() *model.Config
+	GetUnsanitizedConfig() *model_helper.Config
 
 	// SaveConfig sets the given config and persists the changes
 	//
 	// @tag Configuration
 	// Minimum server version: 5.2
-	SaveConfig(config *model.Config) *model.AppError
+	SaveConfig(config *model_helper.Config) *model_helper.AppError
 
 	// GetPluginConfig fetches the currently persisted config of plugin
 	//
@@ -80,7 +81,7 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	SavePluginConfig(config map[string]interface{}) *model.AppError
+	SavePluginConfig(config map[string]interface{}) *model_helper.AppError
 
 	// GetBundlePath returns the absolute path where the plugin's bundle was unpacked.
 	//
@@ -105,7 +106,7 @@ type API interface {
 	//
 	// @tag Server
 	// Minimum server version: 5.10
-	GetSystemInstallDate() (int64, *model.AppError)
+	GetSystemInstallDate() (int64, *model_helper.AppError)
 
 	// GetDiagnosticId returns a unique identifier used by the server for diagnostic reports.
 	//
@@ -123,158 +124,158 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	CreateUser(user *model.User) (*model.User, *model.AppError)
+	CreateUser(user *model.User) (*model.User, *model_helper.AppError)
 
 	// DeleteUser deletes a user.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	DeleteUser(userID string) *model.AppError
+	DeleteUser(userID string) *model_helper.AppError
 
 	// GetUsers a list of users based on search options.
 	//
 	// @tag User
 	// Minimum server version: 5.10
-	GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
+	GetUsers(options *model_helper.UserGetOptions) ([]*model.User, *model_helper.AppError)
 
 	// GetUser gets a user.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUser(userID string) (*model.User, *model.AppError)
+	GetUser(userID string) (*model.User, *model_helper.AppError)
 
 	// GetUserByEmail gets a user by their email address.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserByEmail(email string) (*model.User, *model.AppError)
+	GetUserByEmail(email string) (*model.User, *model_helper.AppError)
 
 	// GetUserByUsername gets a user by their username.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserByUsername(name string) (*model.User, *model.AppError)
+	GetUserByUsername(name string) (*model.User, *model_helper.AppError)
 
 	// GetUsersByUsernames gets users by their usernames.
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError)
+	GetUsersByUsernames(usernames []string) ([]*model.User, *model_helper.AppError)
 
 	// GetUsersInTeam gets users in team.
 	//
 	// @tag User
 	// @tag Team
 	// Minimum server version: 5.6
-	// GetUsersInTeam(teamID string, page int, perPage int) ([]*model.User, *model.AppError)
+	// GetUsersInTeam(teamID string, page int, perPage int) ([]*model.User, *model_helper.AppError)
 
 	// GetPreferencesForUser gets a user's preferences.
 	//
 	// @tag User
 	// @tag Preference
 	// Minimum server version: 5.26
-	GetPreferencesForUser(userID string) ([]model.Preference, *model.AppError)
+	GetPreferencesForUser(userID string) ([]model.Preference, *model_helper.AppError)
 
 	// UpdatePreferencesForUser updates a user's preferences.
 	//
 	// @tag User
 	// @tag Preference
 	// Minimum server version: 5.26
-	UpdatePreferencesForUser(userID string, preferences []model.Preference) *model.AppError
+	UpdatePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError
 
 	// DeletePreferencesForUser deletes a user's preferences.
 	//
 	// @tag User
 	// @tag Preference
 	// Minimum server version: 5.26
-	DeletePreferencesForUser(userID string, preferences []model.Preference) *model.AppError
+	DeletePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError
 
 	// CreateUserAccessToken creates a new access token.
 	// @tag User
-	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)
+	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError)
 
 	// RevokeUserAccessToken revokes an existing access token.
 	// @tag User
-	RevokeUserAccessToken(tokenID string) *model.AppError
+	RevokeUserAccessToken(tokenID string) *model_helper.AppError
 
 	// CreateOAuthApp creates a new OAuth App.
 	//
 	// @tag OAuth
 	// Minimum server version: 5.38
-	// CreateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError)
+	// CreateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model_helper.AppError)
 
 	// // GetOAuthApp gets an existing OAuth App by id.
 	// //
 	// // @tag OAuth
 	// // Minimum server version: 5.38
-	// GetOAuthApp(appID string) (*model.OAuthApp, *model.AppError)
+	// GetOAuthApp(appID string) (*model.OAuthApp, *model_helper.AppError)
 
 	// // UpdateOAuthApp updates an existing OAuth App.
 	// //
 	// // @tag OAuth
 	// // Minimum server version: 5.38
-	// UpdateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError)
+	// UpdateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model_helper.AppError)
 
 	// // DeleteOAuthApp deletes an existing OAuth App by id.
 	// //
 	// // @tag OAuth
 	// // Minimum server version: 5.38
-	// DeleteOAuthApp(appID string) *model.AppError
+	// DeleteOAuthApp(appID string) *model_helper.AppError
 
 	// GetTeamIcon gets the team icon.
 	//
 	// @tag Team
 	// Minimum server version: 5.6
-	// GetTeamIcon(teamID string) ([]byte, *model.AppError)
+	// GetTeamIcon(teamID string) ([]byte, *model_helper.AppError)
 
 	// SetTeamIcon sets the team icon.
 	//
 	// @tag Team
 	// Minimum server version: 5.6
-	// SetTeamIcon(teamID string, data []byte) *model.AppError
+	// SetTeamIcon(teamID string, data []byte) *model_helper.AppError
 
 	// RemoveTeamIcon removes the team icon.
 	//
 	// @tag Team
 	// Minimum server version: 5.6
-	// RemoveTeamIcon(teamID string) *model.AppError
+	// RemoveTeamIcon(teamID string) *model_helper.AppError
 
 	// UpdateUser updates a user.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	UpdateUser(user *model.User) (*model.User, *model.AppError)
+	UpdateUser(user *model.User) (*model.User, *model_helper.AppError)
 
 	// GetUserStatus will get a user's status.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatus(userID string) (*model.Status, *model.AppError)
+	GetUserStatus(userID string) (*model.Status, *model_helper.AppError)
 
 	// GetUserStatusesByIds will return a list of user statuses based on the provided slice of user IDs.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError)
+	GetUserStatusesByIds(userIds []string) ([]*model.Status, *model_helper.AppError)
 
 	// UpdateUserStatus will set a user's status until the user, or another integration/plugin, sets it back to online.
 	// The status parameter can be: "online", "away", "dnd", or "offline".
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	UpdateUserStatus(userID, status string) (*model.Status, *model.AppError)
+	UpdateUserStatus(userID, status string) (*model.Status, *model_helper.AppError)
 
 	// SetUserStatusTimedDND will set a user's status to dnd for given time until the user,
 	// or another integration/plugin, sets it back to online.
 	// @tag User
 	// Minimum server version: 5.35
-	// SetUserStatusTimedDND(userId string, endtime int64) (*model.Status, *model.AppError)
+	// SetUserStatusTimedDND(userId string, endtime int64) (*model.Status, *model_helper.AppError)
 
 	// UpdateUserActive deactivates or reactivates an user.
 	//
 	// @tag User
 	// Minimum server version: 5.8
-	UpdateUserActive(userID string, active bool) *model.AppError
+	UpdateUserActive(userID string, active bool) *model_helper.AppError
 
 	// GetUsersInChannel returns a page of users in a channel. Page counting starts at 0.
 	// The sortBy parameter can be: "username" or "status".
@@ -282,7 +283,7 @@ type API interface {
 	// @tag User
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, *model.AppError)
+	// GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, *model_helper.AppError)
 
 	// GetLDAPUserAttributes will return LDAP attributes for a user.
 	// The attributes parameter should be a list of attributes to pull.
@@ -291,157 +292,157 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.3
-	GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model.AppError)
+	GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model_helper.AppError)
 
 	// CreateTeam creates a team.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// CreateTeam(team *model.Team) (*model.Team, *model.AppError)
+	// CreateTeam(team *model.Team) (*model.Team, *model_helper.AppError)
 
 	// DeleteTeam deletes a team.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// DeleteTeam(teamID string) *model.AppError
+	// DeleteTeam(teamID string) *model_helper.AppError
 
 	// GetTeam gets all teams.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// GetTeams() ([]*model.Team, *model.AppError)
+	// GetTeams() ([]*model.Team, *model_helper.AppError)
 
 	// GetTeam gets a team.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// GetTeam(teamID string) (*model.Team, *model.AppError)
+	// GetTeam(teamID string) (*model.Team, *model_helper.AppError)
 
 	// GetTeamByName gets a team by its name.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// GetTeamByName(name string) (*model.Team, *model.AppError)
+	// GetTeamByName(name string) (*model.Team, *model_helper.AppError)
 
 	// GetTeamsUnreadForUser gets the unread message and mention counts for each team to which the given user belongs.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.6
-	// GetTeamsUnreadForUser(userID string) ([]*model.TeamUnread, *model.AppError)
+	// GetTeamsUnreadForUser(userID string) ([]*model.TeamUnread, *model_helper.AppError)
 
 	// UpdateTeam updates a team.
 	//
 	// @tag Team
 	// Minimum server version: 5.2
-	// UpdateTeam(team *model.Team) (*model.Team, *model.AppError)
+	// UpdateTeam(team *model.Team) (*model.Team, *model_helper.AppError)
 
 	// SearchTeams search a team.
 	//
 	// @tag Team
 	// Minimum server version: 5.8
-	// SearchTeams(term string) ([]*model.Team, *model.AppError)
+	// SearchTeams(term string) ([]*model.Team, *model_helper.AppError)
 
 	// GetTeamsForUser returns list of teams of given user ID.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.6
-	// GetTeamsForUser(userID string) ([]*model.Team, *model.AppError)
+	// GetTeamsForUser(userID string) ([]*model.Team, *model_helper.AppError)
 
 	// CreateTeamMember creates a team membership.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// CreateTeamMember(teamID, userID string) (*model.TeamMember, *model.AppError)
+	// CreateTeamMember(teamID, userID string) (*model.TeamMember, *model_helper.AppError)
 
 	// CreateTeamMembers creates a team membership for all provided user ids.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// CreateTeamMembers(teamID string, userIds []string, requestorId string) ([]*model.TeamMember, *model.AppError)
+	// CreateTeamMembers(teamID string, userIds []string, requestorId string) ([]*model.TeamMember, *model_helper.AppError)
 
 	// CreateTeamMembersGracefully creates a team membership for all provided user ids and reports the users that were not added.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.20
-	// CreateTeamMembersGracefully(teamID string, userIds []string, requestorId string) ([]*model.TeamMemberWithError, *model.AppError)
+	// CreateTeamMembersGracefully(teamID string, userIds []string, requestorId string) ([]*model.TeamMemberWithError, *model_helper.AppError)
 
 	// DeleteTeamMember deletes a team membership.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// DeleteTeamMember(teamID, userID, requestorId string) *model.AppError
+	// DeleteTeamMember(teamID, userID, requestorId string) *model_helper.AppError
 
 	// GetTeamMembers returns the memberships of a specific team.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// GetTeamMembers(teamID string, page, perPage int) ([]*model.TeamMember, *model.AppError)
+	// GetTeamMembers(teamID string, page, perPage int) ([]*model.TeamMember, *model_helper.AppError)
 
 	// GetTeamMember returns a specific membership.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// GetTeamMember(teamID, userID string) (*model.TeamMember, *model.AppError)
+	// GetTeamMember(teamID, userID string) (*model.TeamMember, *model_helper.AppError)
 
 	// GetTeamMembersForUser returns all team memberships for a user.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.10
-	// GetTeamMembersForUser(userID string, page int, perPage int) ([]*model.TeamMember, *model.AppError)
+	// GetTeamMembersForUser(userID string, page int, perPage int) ([]*model.TeamMember, *model_helper.AppError)
 
 	// UpdateTeamMemberRoles updates the role for a team membership.
 	//
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.2
-	// UpdateTeamMemberRoles(teamID, userID, newRoles string) (*model.TeamMember, *model.AppError)
+	// UpdateTeamMemberRoles(teamID, userID, newRoles string) (*model.TeamMember, *model_helper.AppError)
 
 	// CreateChannel creates a channel.
 	//
 	// @tag Channel
 	// Minimum server version: 5.2
-	// CreateChannel(channel *model.Channel) (*model.Channel, *model.AppError)
+	// CreateChannel(channel *model.Channel) (*model.Channel, *model_helper.AppError)
 
 	// DeleteChannel deletes a channel.
 	//
 	// @tag Channel
 	// Minimum server version: 5.2
-	// DeleteChannel(channelId string) *model.AppError
+	// DeleteChannel(channelId string) *model_helper.AppError
 
 	// GetPublicChannelsForTeam gets a list of all channels.
 	//
 	// @tag Channel
 	// @tag Team
 	// Minimum server version: 5.2
-	// GetPublicChannelsForTeam(teamID string, page, perPage int) ([]*model.Channel, *model.AppError)
+	// GetPublicChannelsForTeam(teamID string, page, perPage int) ([]*model.Channel, *model_helper.AppError)
 
 	// GetChannel gets a channel.
 	//
 	// @tag Channel
 	// Minimum server version: 5.2
-	// GetChannel(channelId string) (*model.Channel, *model.AppError)
+	// GetChannel(channelId string) (*model.Channel, *model_helper.AppError)
 
 	// GetChannelByName gets a channel by its name, given a team id.
 	//
 	// @tag Channel
 	// Minimum server version: 5.2
-	// GetChannelByName(teamID, name string, includeDeleted bool) (*model.Channel, *model.AppError)
+	// GetChannelByName(teamID, name string, includeDeleted bool) (*model.Channel, *model_helper.AppError)
 
 	// GetChannelByNameForTeamName gets a channel by its name, given a team name.
 	//
 	// @tag Channel
 	// @tag Team
 	// Minimum server version: 5.2
-	// GetChannelByNameForTeamName(teamName, channelName string, includeDeleted bool) (*model.Channel, *model.AppError)
+	// GetChannelByNameForTeamName(teamName, channelName string, includeDeleted bool) (*model.Channel, *model_helper.AppError)
 
 	// GetChannelsForTeamForUser gets a list of channels for given user ID in given team ID.
 	//
@@ -449,13 +450,13 @@ type API interface {
 	// @tag Team
 	// @tag User
 	// Minimum server version: 5.6
-	// GetChannelsForTeamForUser(teamID, userID string, includeDeleted bool) ([]*model.Channel, *model.AppError)
+	// GetChannelsForTeamForUser(teamID, userID string, includeDeleted bool) ([]*model.Channel, *model_helper.AppError)
 
 	// GetChannelStats gets statistics for a channel.
 	//
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetChannelStats(channelId string) (*model.ChannelStats, *model.AppError)
+	// GetChannelStats(channelId string) (*model.ChannelStats, *model_helper.AppError)
 
 	// GetDirectChannel gets a direct message channel.
 	// If the channel does not exist it will create it.
@@ -463,7 +464,7 @@ type API interface {
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// GetDirectChannel(userId1, userId2 string) (*model.Channel, *model.AppError)
+	// GetDirectChannel(userId1, userId2 string) (*model.Channel, *model_helper.AppError)
 
 	// GetGroupChannel gets a group message channel.
 	// If the channel does not exist it will create it.
@@ -471,56 +472,56 @@ type API interface {
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// GetGroupChannel(userIds []string) (*model.Channel, *model.AppError)
+	// GetGroupChannel(userIds []string) (*model.Channel, *model_helper.AppError)
 
 	// UpdateChannel updates a channel.
 	//
 	// @tag Channel
 	// Minimum server version: 5.2
-	// UpdateChannel(channel *model.Channel) (*model.Channel, *model.AppError)
+	// UpdateChannel(channel *model.Channel) (*model.Channel, *model_helper.AppError)
 
 	// SearchChannels returns the channels on a team matching the provided search term.
 	//
 	// @tag Channel
 	// Minimum server version: 5.6
-	// SearchChannels(teamID string, term string) ([]*model.Channel, *model.AppError)
+	// SearchChannels(teamID string, term string) ([]*model.Channel, *model_helper.AppError)
 
 	// CreateChannelSidebarCategory creates a new sidebar category for a set of channels.
 	//
 	// @tag ChannelSidebar
 	// Minimum server version: 5.37
-	// CreateChannelSidebarCategory(userID, teamID string, newCategory *model.SidebarCategoryWithChannels) (*model.SidebarCategoryWithChannels, *model.AppError)
+	// CreateChannelSidebarCategory(userID, teamID string, newCategory *model.SidebarCategoryWithChannels) (*model.SidebarCategoryWithChannels, *model_helper.AppError)
 
 	// GetChannelSidebarCategories returns sidebar categories.
 	//
 	// @tag ChannelSidebar
 	// Minimum server version: 5.37
-	// GetChannelSidebarCategories(userID, teamID string) (*model.OrderedSidebarCategories, *model.AppError)
+	// GetChannelSidebarCategories(userID, teamID string) (*model.OrderedSidebarCategories, *model_helper.AppError)
 
 	// UpdateChannelSidebarCategories updates the channel sidebar categories.
 	//
 	// @tag ChannelSidebar
 	// Minimum server version: 5.37
-	// UpdateChannelSidebarCategories(userID, teamID string, categories []*model.SidebarCategoryWithChannels) ([]*model.SidebarCategoryWithChannels, *model.AppError)
+	// UpdateChannelSidebarCategories(userID, teamID string, categories []*model.SidebarCategoryWithChannels) ([]*model.SidebarCategoryWithChannels, *model_helper.AppError)
 
 	// SearchUsers returns a list of users based on some search criteria.
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError)
+	SearchUsers(search *model_helper.UserSearch) ([]*model.User, *model_helper.AppError)
 
 	// SearchPostsInTeam returns a list of posts in a specific team that match the given params.
 	//
 	// @tag Post
 	// @tag Team
 	// Minimum server version: 5.10
-	// SearchPostsInTeam(teamID string, paramsList []*model.SearchParams) ([]*model.Post, *model.AppError)
+	// SearchPostsInTeam(teamID string, paramsList []*model.SearchParams) ([]*model.Post, *model_helper.AppError)
 
 	// SearchPostsInTeamForUser returns a list of posts by team and user that match the given
 	// search parameters.
 	// @tag Post
 	// Minimum server version: 5.26
-	// SearchPostsInTeamForUser(teamID string, userID string, searchParams model.SearchParameter) (*model.PostSearchResults, *model.AppError)
+	// SearchPostsInTeamForUser(teamID string, userID string, searchParams model.SearchParameter) (*model.PostSearchResults, *model_helper.AppError)
 
 	// AddChannelMember joins a user to a channel (as if they joined themselves)
 	// This means the user will not receive notifications for joining the channel.
@@ -528,7 +529,7 @@ type API interface {
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// AddChannelMember(channelId, userID string) (*model.ChannelMember, *model.AppError)
+	// AddChannelMember(channelId, userID string) (*model.ChannelMember, *model_helper.AppError)
 
 	// AddUserToChannel adds a user to a channel as if the specified user had invited them.
 	// This means the user will receive the regular notifications for being added to the channel.
@@ -536,111 +537,111 @@ type API interface {
 	// @tag User
 	// @tag Channel
 	// Minimum server version: 5.18
-	// AddUserToChannel(channelId, userID, asUserId string) (*model.ChannelMember, *model.AppError)
+	// AddUserToChannel(channelId, userID, asUserId string) (*model.ChannelMember, *model_helper.AppError)
 
 	// GetChannelMember gets a channel membership for a user.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// GetChannelMember(channelId, userID string) (*model.ChannelMember, *model.AppError)
+	// GetChannelMember(channelId, userID string) (*model.ChannelMember, *model_helper.AppError)
 
 	// GetChannelMembers gets a channel membership for all users.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.6
-	// GetChannelMembers(channelId string, page, perPage int) (*model.ChannelMembers, *model.AppError)
+	// GetChannelMembers(channelId string, page, perPage int) (*model.ChannelMembers, *model_helper.AppError)
 
 	// GetChannelMembersByIds gets a channel membership for a particular User
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.6
-	// GetChannelMembersByIds(channelId string, userIds []string) (*model.ChannelMembers, *model.AppError)
+	// GetChannelMembersByIds(channelId string, userIds []string) (*model.ChannelMembers, *model_helper.AppError)
 
 	// GetChannelMembersForUser returns all channel memberships on a team for a user.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.10
-	// GetChannelMembersForUser(teamID, userID string, page, perPage int) ([]*model.ChannelMember, *model.AppError)
+	// GetChannelMembersForUser(teamID, userID string, page, perPage int) ([]*model.ChannelMember, *model_helper.AppError)
 
 	// UpdateChannelMemberRoles updates a user's roles for a channel.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// UpdateChannelMemberRoles(channelId, userID, newRoles string) (*model.ChannelMember, *model.AppError)
+	// UpdateChannelMemberRoles(channelId, userID, newRoles string) (*model.ChannelMember, *model_helper.AppError)
 
 	// UpdateChannelMemberNotifications updates a user's notification properties for a channel.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// UpdateChannelMemberNotifications(channelId, userID string, notifications map[string]string) (*model.ChannelMember, *model.AppError)
+	// UpdateChannelMemberNotifications(channelId, userID string, notifications map[string]string) (*model.ChannelMember, *model_helper.AppError)
 
 	// GetGroup gets a group by ID.
 	//
 	// @tag Group
 	// Minimum server version: 5.18
-	// GetGroup(groupId string) (*model.Group, *model.AppError)
+	// GetGroup(groupId string) (*model.Group, *model_helper.AppError)
 
 	// GetGroupByName gets a group by name.
 	//
 	// @tag Group
 	// Minimum server version: 5.18
-	// GetGroupByName(name string) (*model.Group, *model.AppError)
+	// GetGroupByName(name string) (*model.Group, *model_helper.AppError)
 
 	// GetGroupMemberUsers gets a page of users belonging to the given group.
 	//
 	// @tag Group
 	// Minimum server version: 5.35
-	// GetGroupMemberUsers(groupID string, page, perPage int) ([]*model.User, *model.AppError)
+	// GetGroupMemberUsers(groupID string, page, perPage int) ([]*model.User, *model_helper.AppError)
 
 	// GetGroupsBySource gets a list of all groups for the given source.
 	//
 	// @tag Group
 	// Minimum server version: 5.35
-	// GetGroupsBySource(groupSource model.GroupSource) ([]*model.Group, *model.AppError)
+	// GetGroupsBySource(groupSource model.GroupSource) ([]*model.Group, *model_helper.AppError)
 
 	// GetGroupsForUser gets the groups a user is in.
 	//
 	// @tag Group
 	// @tag User
 	// Minimum server version: 5.18
-	// GetGroupsForUser(userID string) ([]*model.Group, *model.AppError)
+	// GetGroupsForUser(userID string) ([]*model.Group, *model_helper.AppError)
 
 	// DeleteChannelMember deletes a channel membership for a user.
 	//
 	// @tag Channel
 	// @tag User
 	// Minimum server version: 5.2
-	// DeleteChannelMember(channelId, userID string) *model.AppError
+	// DeleteChannelMember(channelId, userID string) *model_helper.AppError
 
 	// CreatePost creates a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.2
-	// CreatePost(post *model.Post) (*model.Post, *model.AppError)
+	// CreatePost(post *model.Post) (*model.Post, *model_helper.AppError)
 
 	// AddReaction add a reaction to a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.3
-	// AddReaction(reaction *model.Reaction) (*model.Reaction, *model.AppError)
+	// AddReaction(reaction *model.Reaction) (*model.Reaction, *model_helper.AppError)
 
 	// RemoveReaction remove a reaction from a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.3
-	// RemoveReaction(reaction *model.Reaction) *model.AppError
+	// RemoveReaction(reaction *model.Reaction) *model_helper.AppError
 
 	// GetReaction get the reactions of a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.3
-	// GetReactions(postId string) ([]*model.Reaction, *model.AppError)
+	// GetReactions(postId string) ([]*model.Reaction, *model_helper.AppError)
 
 	// SendEphemeralPost creates an ephemeral post.
 	//
@@ -666,71 +667,71 @@ type API interface {
 	//
 	// @tag Post
 	// Minimum server version: 5.2
-	// DeletePost(postId string) *model.AppError
+	// DeletePost(postId string) *model_helper.AppError
 
 	// GetPostThread gets a post with all the other posts in the same thread.
 	//
 	// @tag Post
 	// Minimum server version: 5.6
-	// GetPostThread(postId string) (*model.PostList, *model.AppError)
+	// GetPostThread(postId string) (*model.PostList, *model_helper.AppError)
 
 	// GetPost gets a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.2
-	// GetPost(postId string) (*model.Post, *model.AppError)
+	// GetPost(postId string) (*model.Post, *model_helper.AppError)
 
 	// GetPostsSince gets posts created after a specified time as Unix time in milliseconds.
 	//
 	// @tag Post
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetPostsSince(channelId string, time int64) (*model.PostList, *model.AppError)
+	// GetPostsSince(channelId string, time int64) (*model.PostList, *model_helper.AppError)
 
 	// GetPostsAfter gets a page of posts that were posted after the post provided.
 	//
 	// @tag Post
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetPostsAfter(channelId, postId string, page, perPage int) (*model.PostList, *model.AppError)
+	// GetPostsAfter(channelId, postId string, page, perPage int) (*model.PostList, *model_helper.AppError)
 
 	// GetPostsBefore gets a page of posts that were posted before the post provided.
 	//
 	// @tag Post
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetPostsBefore(channelId, postId string, page, perPage int) (*model.PostList, *model.AppError)
+	// GetPostsBefore(channelId, postId string, page, perPage int) (*model.PostList, *model_helper.AppError)
 
 	// GetPostsForChannel gets a list of posts for a channel.
 	//
 	// @tag Post
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetPostsForChannel(channelId string, page, perPage int) (*model.PostList, *model.AppError)
+	// GetPostsForChannel(channelId string, page, perPage int) (*model.PostList, *model_helper.AppError)
 
 	// GetTeamStats gets a team's statistics
 	//
 	// @tag Team
 	// Minimum server version: 5.8
-	// GetTeamStats(teamID string) (*model.TeamStats, *model.AppError)
+	// GetTeamStats(teamID string) (*model.TeamStats, *model_helper.AppError)
 
 	// UpdatePost updates a post.
 	//
 	// @tag Post
 	// Minimum server version: 5.2
-	// UpdatePost(post *model.Post) (*model.Post, *model.AppError)
+	// UpdatePost(post *model.Post) (*model.Post, *model_helper.AppError)
 
 	// GetProfileImage gets user's profile image.
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	GetProfileImage(userID string) ([]byte, *model.AppError)
+	GetProfileImage(userID string) ([]byte, *model_helper.AppError)
 
 	// SetProfileImage sets a user's profile image.
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	SetProfileImage(userID string, data []byte) *model.AppError
+	SetProfileImage(userID string, data []byte) *model_helper.AppError
 
 	// GetEmojiList returns a page of custom emoji on the system.
 	//
@@ -738,19 +739,19 @@ type API interface {
 	//
 	// @tag Emoji
 	// Minimum server version: 5.6
-	// GetEmojiList(sortBy string, page, perPage int) ([]*model.Emoji, *model.AppError)
+	// GetEmojiList(sortBy string, page, perPage int) ([]*model.Emoji, *model_helper.AppError)
 
 	// GetEmojiByName gets an emoji by it's name.
 	//
 	// @tag Emoji
 	// Minimum server version: 5.6
-	// GetEmojiByName(name string) (*model.Emoji, *model.AppError)
+	// GetEmojiByName(name string) (*model.Emoji, *model_helper.AppError)
 
 	// GetEmoji returns a custom emoji based on the emojiId string.
 	//
 	// @tag Emoji
 	// Minimum server version: 5.6
-	// GetEmoji(emojiId string) (*model.Emoji, *model.AppError)
+	// GetEmoji(emojiId string) (*model.Emoji, *model_helper.AppError)
 
 	// CopyFileInfos duplicates the FileInfo objects referenced by the given file ids,
 	// recording the given user id as the new creator and returning the new set of file ids.
@@ -762,57 +763,57 @@ type API interface {
 	// @tag File
 	// @tag User
 	// Minimum server version: 5.2
-	CopyFileInfos(userID string, fileIds []string) ([]string, *model.AppError)
+	CopyFileInfos(userID string, fileIds []string) ([]string, *model_helper.AppError)
 
 	// GetFileInfo gets a File Info for a specific fileId
 	//
 	// @tag File
 	// Minimum server version: 5.3
-	GetFileInfo(fileId string) (*model.FileInfo, *model.AppError)
+	GetFileInfo(fileId string) (*model.FileInfo, *model_helper.AppError)
 
 	// GetFileInfos gets File Infos with options
 	//
 	// @tag File
 	// Minimum server version: 5.22
-	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model_he.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
 
 	// GetFile gets content of a file by it's ID
 	//
 	// @tag File
 	// Minimum server version: 5.8
-	GetFile(fileId string) ([]byte, *model.AppError)
+	GetFile(fileId string) ([]byte, *model_helper.AppError)
 
 	// GetFileLink gets the public link to a file by fileId.
 	//
 	// @tag File
 	// Minimum server version: 5.6
-	GetFileLink(fileId string) (string, *model.AppError)
+	GetFileLink(fileId string) (string, *model_helper.AppError)
 
 	// ReadFile reads the file from the backend for a specific path
 	//
 	// @tag File
 	// Minimum server version: 5.3
-	ReadFile(path string) ([]byte, *model.AppError)
+	ReadFile(path string) ([]byte, *model_helper.AppError)
 
 	// GetEmojiImage returns the emoji image.
 	//
 	// @tag Emoji
 	// Minimum server version: 5.6
-	// GetEmojiImage(emojiId string) ([]byte, string, *model.AppError)
+	// GetEmojiImage(emojiId string) ([]byte, string, *model_helper.AppError)
 
 	// UploadFile will upload a file to a channel using a multipart request, to be later attached to a post.
 	//
 	// @tag File
 	// @tag Channel
 	// Minimum server version: 5.6
-	// UploadFile(data []byte, channelId string, filename string) (*model.FileInfo, *model.AppError)
+	// UploadFile(data []byte, channelId string, filename string) (*model.FileInfo, *model_helper.AppError)
 
 	// OpenInteractiveDialog will open an interactive dialog on a user's client that
 	// generated the trigger ID. Used with interactive message buttons, menus
 	// and slash commands.
 	//
 	// Minimum server version: 5.6
-	// OpenInteractiveDialog(dialog model.OpenDialogRequest) *model.AppError
+	// OpenInteractiveDialog(dialog model.OpenDialogRequest) *model_helper.AppError
 
 	// Plugin Section
 
@@ -820,38 +821,38 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPlugins() ([]*model.Manifest, *model.AppError)
+	GetPlugins() ([]*model.Manifest, *model_helper.AppError)
 
 	// EnablePlugin will enable an plugin installed.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	EnablePlugin(id string) *model.AppError
+	EnablePlugin(id string) *model_helper.AppError
 
 	// DisablePlugin will disable an enabled plugin.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	DisablePlugin(id string) *model.AppError
+	DisablePlugin(id string) *model_helper.AppError
 
 	// RemovePlugin will disable and delete a plugin.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	RemovePlugin(id string) *model.AppError
+	RemovePlugin(id string) *model_helper.AppError
 
 	// GetPluginStatus will return the status of a plugin.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
+	GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError)
 
 	// InstallPlugin will upload another plugin with tar.gz model.
 	// Previous version will be replaced on replace true.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.18
-	InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
+	InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model_helper.AppError)
 
 	// KV Store Section
 
@@ -860,7 +861,7 @@ type API interface {
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.2
-	KVSet(key string, value []byte) *model.AppError
+	KVSet(key string, value []byte) *model_helper.AppError
 
 	// KVCompareAndSet updates a key-value pair, unique per plugin, but only if the current value matches the given oldValue.
 	// Inserts a new key if oldValue == nil.
@@ -870,7 +871,7 @@ type API interface {
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.12
-	KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model.AppError)
+	KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model_helper.AppError)
 
 	// KVCompareAndDelete deletes a key-value pair, unique per plugin, but only if the current value matches the given oldValue.
 	// Returns (false, err) if DB error occurred
@@ -879,7 +880,7 @@ type API interface {
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.16
-	KVCompareAndDelete(key string, oldValue []byte) (bool, *model.AppError)
+	KVCompareAndDelete(key string, oldValue []byte) (bool, *model_helper.AppError)
 
 	// KVSetWithOptions stores a key-value pair, unique per plugin, according to the given options.
 	// Returns (false, err) if DB error occurred
@@ -887,37 +888,37 @@ type API interface {
 	// Returns (true, nil) if the value was set
 	//
 	// Minimum server version: 5.20
-	KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError)
+	KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError)
 
 	// KVSet stores a key-value pair with an expiry time, unique per plugin.
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.6
-	KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model.AppError
+	KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model_helper.AppError
 
 	// KVGet retrieves a value based on the key, unique per plugin. Returns nil for non-existent keys.
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.2
-	KVGet(key string) ([]byte, *model.AppError)
+	KVGet(key string) ([]byte, *model_helper.AppError)
 
 	// KVDelete removes a key-value pair, unique per plugin. Returns nil for non-existent keys.
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.2
-	KVDelete(key string) *model.AppError
+	KVDelete(key string) *model_helper.AppError
 
 	// KVDeleteAll removes all key-value pairs for a plugin.
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.6
-	KVDeleteAll() *model.AppError
+	KVDeleteAll() *model_helper.AppError
 
 	// KVList lists all keys for a plugin.
 	//
 	// @tag KeyValueStore
 	// Minimum server version: 5.6
-	KVList(page, perPage int) ([]string, *model.AppError)
+	KVList(page, perPage int) ([]string, *model_helper.AppError)
 
 	// PublishWebSocketEvent sends an event to WebSocket connections.
 	// event is the type and will be prepended with "custom_<pluginid>_".
@@ -931,7 +932,7 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.3
-	HasPermissionTo(userID string, permission *model.Permission) bool
+	HasPermissionTo(userID string, permission *model_helper.Permission) bool
 
 	// HasPermissionToTeam check if the user has the permission at team scope.
 	//
@@ -982,62 +983,62 @@ type API interface {
 	// SendMail sends an email to a specific address
 	//
 	// Minimum server version: 5.7
-	SendMail(to, subject, htmlBody string) *model.AppError
+	SendMail(to, subject, htmlBody string) *model_helper.AppError
 
 	// CreateBot creates the given bot and corresponding user.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// CreateBot(bot *model.Bot) (*model.Bot, *model.AppError)
+	// CreateBot(bot *model.Bot) (*model.Bot, *model_helper.AppError)
 
 	// PatchBot applies the given patch to the bot and corresponding user.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// PatchBot(botUserId string, botPatch *model.BotPatch) (*model.Bot, *model.AppError)
+	// PatchBot(botUserId string, botPatch *model.BotPatch) (*model.Bot, *model_helper.AppError)
 
 	// GetBot returns the given bot.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// GetBot(botUserId string, includeDeleted bool) (*model.Bot, *model.AppError)
+	// GetBot(botUserId string, includeDeleted bool) (*model.Bot, *model_helper.AppError)
 
 	// GetBots returns the requested page of bots.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// GetBots(options *model.BotGetOptions) ([]*model.Bot, *model.AppError)
+	// GetBots(options *model.BotGetOptions) ([]*model.Bot, *model_helper.AppError)
 
 	// UpdateBotActive marks a bot as active or inactive, along with its corresponding user.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// UpdateBotActive(botUserId string, active bool) (*model.Bot, *model.AppError)
+	// UpdateBotActive(botUserId string, active bool) (*model.Bot, *model_helper.AppError)
 
 	// PermanentDeleteBot permanently deletes a bot and its corresponding user.
 	//
 	// @tag Bot
 	// Minimum server version: 5.10
-	// PermanentDeleteBot(botUserId string) *model.AppError
+	// PermanentDeleteBot(botUserId string) *model_helper.AppError
 
 	// GetBotIconImage gets LHS bot icon image.
 	//
 	// @tag Bot
 	// Minimum server version: 5.14
-	// GetBotIconImage(botUserId string) ([]byte, *model.AppError)
+	// GetBotIconImage(botUserId string) ([]byte, *model_helper.AppError)
 
 	// SetBotIconImage sets LHS bot icon image.
 	// Icon image must be SVG format, all other formats are rejected.
 	//
 	// @tag Bot
 	// Minimum server version: 5.14
-	// SetBotIconImage(botUserId string, data []byte) *model.AppError
+	// SetBotIconImage(botUserId string, data []byte) *model_helper.AppError
 
 	// DeleteBotIconImage deletes LHS bot icon image.
 	//
 	// @tag Bot
 	// Minimum server version: 5.14
-	// DeleteBotIconImage(botUserId string) *model.AppError
+	// DeleteBotIconImage(botUserId string) *model_helper.AppError
 
 	// PluginHTTP allows inter-plugin requests to plugin APIs.
 	//
@@ -1049,7 +1050,7 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.26
-	// PublishUserTyping(userID, channelId, parentId string) *model.AppError
+	// PublishUserTyping(userID, channelId, parentId string) *model_helper.AppError
 
 	// CreateCommand creates a server-owned slash command that is not handled by the plugin
 	// itself, and which will persist past the life of the plugin. The command will have its
@@ -1123,7 +1124,7 @@ type API interface {
 	// RequestTrialLicense requests a trial license and installs it in the server
 	//
 	// Minimum server version: 5.36
-	// RequestTrialLicense(requesterID string, users int, termsAccepted bool, receiveEmailsAccepted bool) *model.AppError
+	// RequestTrialLicense(requesterID string, users int, termsAccepted bool, receiveEmailsAccepted bool) *model_helper.AppError
 }
 
 var handshake = plugin.HandshakeConfig{

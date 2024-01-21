@@ -2,12 +2,13 @@ package scheduler
 
 import (
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 type AppIface interface {
-	DeleteAllExpiredPluginKeys() *model.AppError
+	DeleteAllExpiredPluginKeys() *model_helper.AppError
 }
 
 type Worker struct {
@@ -19,7 +20,7 @@ type Worker struct {
 	app       AppIface
 }
 
-func MakeWorker(jobServer *jobs.JobServer, app AppIface) model.Worker {
+func MakeWorker(jobServer *jobs.JobServer, app AppIface) model_helper.Worker {
 	worker := Worker{
 		name:      "Plugins",
 		stop:      make(chan bool, 1),
@@ -47,7 +48,7 @@ func (worker *Worker) Run() {
 			return
 		case job := <-worker.jobs:
 			slog.Debug("Worker received a new candidate job.", slog.String("worker", worker.name))
-			worker.DoJob(&job)
+			worker.DoJob(job)
 		}
 	}
 }
@@ -62,15 +63,15 @@ func (worker *Worker) JobChannel() chan<- model.Job {
 	return worker.jobs
 }
 
-func (worker *Worker) IsEnabled(cfg *model.Config) bool {
+func (worker *Worker) IsEnabled(cfg *model_helper.Config) bool {
 	return true
 }
 
-func (worker *Worker) DoJob(job *model.Job) {
+func (worker *Worker) DoJob(job model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Info("Worker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
-			slog.String("job_id", job.Id),
+			slog.String("job_id", job.ID),
 			slog.String("error", err.Error()))
 		return
 	} else if !claimed {
@@ -78,24 +79,24 @@ func (worker *Worker) DoJob(job *model.Job) {
 	}
 
 	if err := worker.app.DeleteAllExpiredPluginKeys(); err != nil {
-		slog.Error("Worker: Failed to delete expired keys", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to delete expired keys", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 		return
 	}
 
-	slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+	slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.ID))
 	worker.setJobSuccess(job)
 }
 
-func (worker *Worker) setJobSuccess(job *model.Job) {
+func (worker *Worker) setJobSuccess(job model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
-		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
-func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
+func (worker *Worker) setJobError(job model.Job, appError *model_helper.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
-		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 	}
 }

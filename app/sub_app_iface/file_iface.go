@@ -16,29 +16,29 @@ import (
 // FileService contains methods for working with files
 type FileService interface {
 	// Caller must close the first return value
-	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
+	FileReader(path string) (filestore.ReadCloseSeeker, *model_helper.AppError)
 	// FileBackend returns filebackend of the system
-	FileBackend() (filestore.FileBackend, *model.AppError)
+	FileBackend() (filestore.FileBackend, *model_helper.AppError)
 	// FileExists checks if given path exists
-	FileExists(path string) (bool, *model.AppError)
+	FileExists(path string) (bool, *model_helper.AppError)
 	// FileModTime get last modification time of given path
-	FileModTime(path string) (time.Time, *model.AppError)
+	FileModTime(path string) (time.Time, *model_helper.AppError)
 	// FileSize checks size of given path
-	FileSize(path string) (int64, *model.AppError)
+	FileSize(path string) (int64, *model_helper.AppError)
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
 	// ImageDecoder retutns image encoder
 	ImageDecoder() *imaging.Decoder
 	// ImageEncoder returns image encoder
 	ImageEncoder() *imaging.Encoder
 	// MoveFile moves file from given oldPath to newPath
-	MoveFile(oldPath, newPath string) *model.AppError
+	MoveFile(oldPath, newPath string) *model_helper.AppError
 	// ReadFile read file content from given path
-	ReadFile(path string) ([]byte, *model.AppError)
+	ReadFile(path string) ([]byte, *model_helper.AppError)
 	// TestFileStoreConnection test if connection to file backend server is good
-	TestFileStoreConnection() *model.AppError
+	TestFileStoreConnection() *model_helper.AppError
 	// TestFileStoreConnectionWithConfig test file backend connection with config
-	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
+	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model_helper.AppError
 	// This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
 	// Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
@@ -47,23 +47,23 @@ type FileService interface {
 	// returns a filled-out FileInfo and an optional error. A plugin may reject the
 	// upload, returning a rejection error. In this case FileInfo would have
 	// contained the last "good" FileInfo before the execution of that plugin.
-	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*model.FileInfo, *model.AppError)
-	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
-	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
-	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
-	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError)
-	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError)
+	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*model.FileInfo, *model_helper.AppError)
+	AppendFile(fr io.Reader, path string) (int64, *model_helper.AppError)
+	CheckMandatoryS3Fields(settings *model.FileSettings) *model_helper.AppError
+	CopyFileInfos(userID string, fileIDs []string) ([]string, *model_helper.AppError)
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model_helper.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model_helper.AppError)
 	DownloadFromURL(downloadURL string) ([]byte, error)
 	ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
 	GeneratePublicLink(siteURL string, info *model.FileInfo) string
-	GetFile(fileID string) ([]byte, *model.AppError)
-	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
-	GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError)
-	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError)
+	GetFile(fileID string) ([]byte, *model_helper.AppError)
+	GetFileInfo(fileID string) (*model.FileInfo, *model_helper.AppError)
+	GetUploadSession(uploadId string) (*model.UploadSession, *model_helper.AppError)
+	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model_helper.AppError)
 	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
-	ListDirectory(path string) ([]string, *model.AppError)
-	RemoveDirectory(path string) *model.AppError
-	RemoveFile(path string) *model.AppError
-	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
-	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
+	ListDirectory(path string) ([]string, *model_helper.AppError)
+	RemoveDirectory(path string) *model_helper.AppError
+	RemoveFile(path string) *model_helper.AppError
+	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model_helper.AppError)
+	WriteFile(fr io.Reader, path string) (int64, *model_helper.AppError)
 }

@@ -16,66 +16,66 @@ import (
 // PluginService contains methods for working with plugins
 type PluginService interface {
 	// AddPublicKey will add plugin public key to the config. Overwrites the previous file
-	AddPublicKey(name string, key io.Reader) *model.AppError
+	AddPublicKey(name string, key io.Reader) *model_helper.AppError
 	// DeletePublicKey will delete plugin public key from the config.
-	DeletePublicKey(name string) *model.AppError
+	DeletePublicKey(name string) *model_helper.AppError
 	// DisablePlugin will set the config for an installed plugin to disabled, triggering deactivation if active.
 	// Notifies cluster peers through config change.
-	DisablePlugin(id string) *model.AppError
+	DisablePlugin(id string) *model_helper.AppError
 	// EnablePlugin will set the config for an installed plugin to enabled, triggering asynchronous
 	// activation if inactive anywhere in the cluster.
 	// Notifies cluster peers through config change.
-	EnablePlugin(id string) *model.AppError
+	EnablePlugin(id string) *model_helper.AppError
 	// FilterPluginConfigurations returns a list of plugin configurations filtered using given options
-	FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model.AppError)
+	FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model_helper.AppError)
 	// GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
-	GetClusterPluginStatuses() (model.PluginStatuses, *model.AppError)
+	GetClusterPluginStatuses() (model.PluginStatuses, *model_helper.AppError)
 	// GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 	// and plugins that are installed locally.
-	GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model.AppError)
+	GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model_helper.AppError)
 	// GetPluginConfiguration finds and returns a plugin configuration based on given options
-	GetPluginConfiguration(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model.AppError)
+	GetPluginConfiguration(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model_helper.AppError)
 	// GetPluginStatuses returns the status for plugins installed on this server.
-	GetPluginStatuses() (model.PluginStatuses, *model.AppError)
+	GetPluginStatuses() (model.PluginStatuses, *model_helper.AppError)
 	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
 	// initialized.
 	//
 	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
 	// lock instead.
-	GetPluginsEnvironment() (*plugin.Environment, *model.AppError)
+	GetPluginsEnvironment() (*plugin.Environment, *model_helper.AppError)
 	// SyncPlugins synchronizes the plugins installed locally
 	// with the plugin bundles available in the file store.
-	SyncPlugins() *model.AppError
+	SyncPlugins() *model_helper.AppError
 	// SyncPluginsActiveState checks if Server's PluginsEnvironment property is set
 	// and plugin system are enabled in settings.
 	SyncPluginsActiveState()
 	// UpsertPluginConfiguration updates/inserts given configuration into database then returns it
-	UpsertPluginConfiguration(config *model.PluginConfiguration) (*model.PluginConfiguration, *model.AppError)
-	CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model.AppError)
-	CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model.AppError)
-	DeleteAllExpiredPluginKeys() *model.AppError
-	DeleteAllKeysForPlugin(pluginID string) *model.AppError
-	DeletePluginKey(pluginID string, key string) *model.AppError
-	GetActivePluginManifests() ([]*model.Manifest, *model.AppError)
-	GetPluginKey(pluginID string, key string) ([]byte, *model.AppError)
+	UpsertPluginConfiguration(config *model.PluginConfiguration) (*model.PluginConfiguration, *model_helper.AppError)
+	CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model_helper.AppError)
+	CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model_helper.AppError)
+	DeleteAllExpiredPluginKeys() *model_helper.AppError
+	DeleteAllKeysForPlugin(pluginID string) *model_helper.AppError
+	DeletePluginKey(pluginID string, key string) *model_helper.AppError
+	GetActivePluginManifests() ([]*model.Manifest, *model_helper.AppError)
+	GetPluginKey(pluginID string, key string) ([]byte, *model_helper.AppError)
 	GetPluginManager() interfaces.PluginManagerInterface
-	GetPluginPublicKeyFiles() ([]string, *model.AppError)
-	GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
-	GetPlugins() (*model.PluginsResponse, *model.AppError)
-	GetPublicKey(name string) ([]byte, *model.AppError)
+	GetPluginPublicKeyFiles() ([]string, *model_helper.AppError)
+	GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError)
+	GetPlugins() (*model.PluginsResponse, *model_helper.AppError)
+	GetPublicKey(name string) ([]byte, *model_helper.AppError)
 	InitPlugins(c *request.Context, pluginDir, webappPluginDir string)
-	InstallMarketplacePlugin(request *model.InstallMarketplacePluginRequest) (*model.Manifest, *model.AppError)
-	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model.Manifest, *model.AppError)
+	InstallMarketplacePlugin(request *model.InstallMarketplacePluginRequest) (*model.Manifest, *model_helper.AppError)
+	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model.Manifest, *model_helper.AppError)
 	InstallPluginFromData(data model.PluginEventData)
-	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model.Manifest, *model.AppError)
-	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model.AppError)
-	RemovePlugin(id string) *model.AppError
+	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model.Manifest, *model_helper.AppError)
+	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model_helper.AppError)
+	RemovePlugin(id string) *model_helper.AppError
 	RemovePluginFromData(data model.PluginEventData)
 	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)
-	SetPluginKey(pluginID string, key string, value []byte) *model.AppError
-	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model.AppError
-	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError)
+	SetPluginKey(pluginID string, key string, value []byte) *model_helper.AppError
+	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model_helper.AppError
+	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError)
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)
 	ShutDownPlugins()
-	VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError
+	VerifyPlugin(plugin, signature io.ReadSeeker) *model_helper.AppError
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/avct/uasurfer"
 	"github.com/mattermost/gziphandler"
 	"github.com/sitename/sitename/app/request"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -19,14 +19,14 @@ var robotsTxt = []byte("User-agent: *\nDisallow: /\n")
 
 func (w *Web) InitStatic() {
 	if *w.srv.Config().ServiceSettings.WebserverMode != "disabled" {
-		if err := model.UpdateAssetsSubpathFromConfig(w.srv.Config()); err != nil {
+		if err := model_helper.UpdateAssetsSubpathFromConfig(w.srv.Config()); err != nil {
 			slog.Error("Failed to update assets subpath from config", slog.Err(err))
 		}
 
-		staticDir, _ := fileutils.FindDir(model.CLIENT_DIR)
+		staticDir, _ := fileutils.FindDir(model_helper.CLIENT_DIR)
 		slog.Debug("Using client directory", slog.String("clientDir", staticDir))
 
-		subpath, _ := model.GetSubpathFromConfig(w.srv.Config())
+		subpath, _ := model_helper.GetSubpathFromConfig(w.srv.Config())
 
 		staticHandler := staticFilesHandler(
 			http.StripPrefix(
@@ -70,7 +70,7 @@ func root(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "no-cache, max-age=31556926, public")
 
-	staticDir, _ := fileutils.FindDir(model.CLIENT_DIR)
+	staticDir, _ := fileutils.FindDir(model_helper.CLIENT_DIR)
 	http.ServeFile(w, r, filepath.Join(staticDir, "root.html"))
 }
 

@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
 // AttributeVariantByOption returns an attribute variant filtered using given option
-func (a *ServiceAttribute) AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model.AppError) {
+func (a *ServiceAttribute) AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model_helper.AppError) {
 	attributeVariant, err := a.srv.Store.AttributeVariant().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -16,7 +17,7 @@ func (a *ServiceAttribute) AttributeVariantByOption(option *model.AttributeVaria
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("AttributeVariantByOption", "app.attribute.attribute_variant_by_options.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("AttributeVariantByOption", "app.attribute.attribute_variant_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return attributeVariant, nil

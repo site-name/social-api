@@ -15,6 +15,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -112,17 +113,17 @@ type AddressInput struct {
 
 // validate check given `phone` and `country` field are valid. If not returns according error.
 // TODO: in the future we should validate by specific country name.
-func (a *AddressInput) validate(where string) *model.AppError {
+func (a *AddressInput) validate(where string) *model_helper.AppError {
 	// validate input country
 	if country := a.Country; country == nil || !country.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
 
 	// validate input phone
 	if phone := a.Phone; phone != nil {
 		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
 		if !ok {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
 	}
 
@@ -461,12 +462,12 @@ type AttributeFilterInput struct {
 	// Channel                *string            `json:"channel"` //Deprecated. Dont use this
 }
 
-func (a *AttributeFilterInput) validate(where string) *model.AppError {
+func (a *AttributeFilterInput) validate(where string) *model_helper.AppError {
 	if a.Search != nil && (stringsContainSqlExpr.MatchString(*a.Search) || *a.Search == "") {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
 	}
-	if a.Type != nil && !a.Type.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid attribute type", http.StatusBadRequest)
+	if a.Type != nil && a.Type.IsValid() != nil {
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid attribute type", http.StatusBadRequest)
 	}
 
 	for name, value := range map[string]*string{
@@ -474,7 +475,7 @@ func (a *AttributeFilterInput) validate(where string) *model.AppError {
 		"inCategory":   a.InCategory,
 	} {
 		if value != nil && !model.IsValidId(*value) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
 		}
 	}
 
@@ -483,7 +484,7 @@ func (a *AttributeFilterInput) validate(where string) *model.AppError {
 
 // parse calls validate() first, if an validation error occured, return immediately.
 // If not, return *AttributeFilterOption and nil error
-func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
+func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption, *model_helper.AppError) {
 	appErr := a.validate(where)
 	if appErr != nil {
 		return nil, appErr
@@ -525,7 +526,7 @@ func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption
 	}
 
 	if len(a.Metadata) > 0 {
-		res.Metadata = model.StringMAP{}
+		res.Metadata = map[string]string{}
 		for _, meta := range a.Metadata {
 			if meta != nil && meta.Key != "" {
 				res.Metadata[meta.Key] = meta.Value
@@ -545,12 +546,12 @@ type AttributeInput struct {
 	Boolean     *bool               `json:"boolean"`
 }
 
-func (a *AttributeInput) validate(where string) *model.AppError {
+func (a *AttributeInput) validate(where string) *model_helper.AppError {
 	if a.Slug != "" && !slug.IsSlug(a.Slug) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 	if !lo.EveryBy(a.Values, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "values"}, "please provide valid value ids", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "values"}, "please provide valid value ids", http.StatusBadRequest)
 	}
 	if a.ValuesRange != nil {
 		appErr := a.ValuesRange.validate(where)
@@ -601,9 +602,9 @@ type AttributeTranslation struct {
 	Language *LanguageDisplay `json:"language"`
 }
 
-type AttributeEntityTypeEnum = model.AttributeEntityType
+type AttributeEntityTypeEnum = model.Attributeentitytype
 
-type AttributeTypeEnum = model.AttributeType
+type AttributeTypeEnum = model.Attributetype
 
 type AttributeUpdate struct {
 	Attribute *Attribute        `json:"attribute"`
@@ -716,14 +717,14 @@ type CatalogueInput struct {
 	Collections []string `json:"collections"`
 }
 
-func (c *CatalogueInput) Validate(api string) *model.AppError {
+func (c *CatalogueInput) Validate(api string) *model_helper.AppError {
 	for key, value := range map[string][]string{
 		"products":    c.Products,
 		"categories":  c.Categories,
 		"collections": c.Collections,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
 		}
 	}
 
@@ -771,9 +772,9 @@ type CategoryInput struct {
 	BackgroundImageAlt *string    `json:"backgroundImageAlt"`
 }
 
-func (c *CategoryInput) Validate(where string) *model.AppError {
+func (c *CategoryInput) Validate(where string) *model_helper.AppError {
 	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
 	}
 	return nil
 }
@@ -1069,13 +1070,13 @@ type CollectionCreateInput struct {
 	Products []string `json:"products"`
 }
 
-func (c *CollectionCreateInput) validate(api string) *model.AppError {
+func (c *CollectionCreateInput) validate(api string) *model_helper.AppError {
 	appErr := c.CollectionInput.validate(api)
 	if appErr != nil {
 		return appErr
 	}
 	if !lo.EveryBy(c.Products, model.IsValidId) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	return nil
@@ -1092,9 +1093,9 @@ type CollectionInput struct {
 	PublicationDate    *Date           `json:"publicationDate"`
 }
 
-func (c *CollectionInput) validate(api string) *model.AppError {
+func (c *CollectionInput) validate(api string) *model_helper.AppError {
 	if c.Slug != nil && slug.IsSlug(*c.Slug) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, *c.Slug+" is not a valid slug", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, *c.Slug+" is not a valid slug", http.StatusBadRequest)
 	}
 	if c.IsPublished != nil && *c.IsPublished && c.PublicationDate == nil {
 		c.PublicationDate = &Date{DateTime{util.StartOfDay(time.Now())}}
@@ -1133,20 +1134,20 @@ type CollectionFilterInput struct {
 	Ids       []string             `json:"ids"`
 }
 
-func (c *CollectionFilterInput) validate(where string) *model.AppError {
+func (c *CollectionFilterInput) validate(where string) *model_helper.AppError {
 	if c.Published != nil && !c.Published.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
 	}
 	if c.Search != nil {
 		if stringsContainSqlExpr.MatchString(*c.Search) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
 		}
 		if *c.Search == "" {
 			c.Search = nil
 		}
 	}
 	if !lo.EveryBy(c.Ids, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
 	}
 
 	return nil
@@ -1260,7 +1261,7 @@ type CustomerFilterInput struct {
 	Metadata       []*MetadataInput `json:"metadata"`
 }
 
-func (c *CustomerFilterInput) validate(api string) *model.AppError {
+func (c *CustomerFilterInput) validate(api string) *model_helper.AppError {
 	for _, item := range map[string]*DateRangeInput{
 		"DateJoined":   c.DateJoined,
 		"PlacedOrders": c.PlacedOrders,
@@ -1309,9 +1310,9 @@ type DateRangeInput struct {
 	Lte *Date `json:"lte"`
 }
 
-func (d *DateRangeInput) validate(api string) *model.AppError {
+func (d *DateRangeInput) validate(api string) *model_helper.AppError {
 	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -1321,9 +1322,9 @@ type DateTimeRangeInput struct {
 	Lte *DateTime `json:"lte"`
 }
 
-func (d *DateTimeRangeInput) validate(api string) *model.AppError {
+func (d *DateTimeRangeInput) validate(api string) *model_helper.AppError {
 	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -1433,7 +1434,7 @@ type DraftOrderCreateInput struct {
 	Lines []*OrderLineCreateInput `json:"lines"`
 }
 
-func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginMng interfaces.PluginManagerInterface) *model.AppError {
+func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginMng interfaces.PluginManagerInterface) *model_helper.AppError {
 	appErr := d.DraftOrderInput.patchOrder(embedCtx, order, transaction, pluginMng, false)
 	if appErr != nil {
 		return appErr
@@ -1504,7 +1505,7 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 	return nil
 }
 
-func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *model.AppError {
+func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *model_helper.AppError {
 	if appErr := d.DraftOrderInput.validate(embedCtx, where); appErr != nil {
 		return appErr
 	}
@@ -1523,7 +1524,7 @@ func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *m
 
 	// vaidate variants
 	if !lo.EveryBy(variantIds, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Lines"}, "please provide valid variant ids", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Lines"}, "please provide valid variant ids", http.StatusBadRequest)
 	}
 
 	if d.ChannelID != nil {
@@ -1547,7 +1548,7 @@ func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *m
 
 	// validate quantities
 	if lo.SomeBy(quantities, func(item int) bool { return item < 0 }) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantities"}, "quantities must be greater than 0", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantities"}, "quantities must be greater than 0", http.StatusBadRequest)
 	}
 
 	return nil
@@ -1569,7 +1570,7 @@ type DraftOrderInput struct {
 }
 
 // where is the api name,
-func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.AppError {
+func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model_helper.AppError {
 	// validate id fields
 	for name, idValue := range map[string]*string{
 		"UserID":         d.User,
@@ -1578,7 +1579,7 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.A
 		"ChannelID":      d.ChannelID,
 	} {
 		if idValue != nil && !model.IsValidId(*idValue) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
 		}
 	}
 
@@ -1589,7 +1590,7 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.A
 
 	// validate email
 	if d.UserEmail != nil && !model.IsValidEmail(*d.UserEmail) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
 	}
 
 	// if voucher id and channel id are provided.
@@ -1606,12 +1607,12 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.A
 		}
 		if len(voucherChannelListings) == 0 {
 			// meaning channel does not have voucher
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher, channel"}, "given channel does not have given voucher", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher, channel"}, "given channel does not have given voucher", http.StatusBadRequest)
 		}
 	}
 
 	if d.UserEmail != nil && !model.IsValidEmail(*d.UserEmail) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
 	}
 	if d.RedirectURL != nil {
 		appErr := model.ValidateStoreFrontUrl(embedCtx.App.Config(), *d.RedirectURL)
@@ -1637,7 +1638,7 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.A
 
 // patchOrder must be called after calling to validate()
 // `isUpdate` indicates whether the operation is updating given order or creating a new one.
-func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginManager interfaces.PluginManagerInterface, isUpdate bool) *model.AppError {
+func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginManager interfaces.PluginManagerInterface, isUpdate bool) *model_helper.AppError {
 	order.UserID = d.User
 	order.ShippingMethodID = d.ShippingMethod
 	order.RedirectUrl = d.RedirectURL
@@ -1962,7 +1963,7 @@ type GiftCardCreateInput struct {
 	// EndDate    *Date       `json:"endDate"`
 }
 
-func (g *GiftCardCreateInput) validate() *model.AppError {
+func (g *GiftCardCreateInput) validate() *model_helper.AppError {
 	if g.Code == nil || !model.PromoCodeRegex.MatchString(*g.Code) {
 		code := model.NewPromoCode()
 		g.Code = &code
@@ -1971,13 +1972,13 @@ func (g *GiftCardCreateInput) validate() *model.AppError {
 		*g.Note = model.SanitizeUnicode(*g.Note)
 	}
 	if g.ExpiryDate != nil && g.ExpiryDate.Before(time.Now()) {
-		return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date must be greater than now", http.StatusBadRequest)
+		return model_helper.NewAppError("GiftCardCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date must be greater than now", http.StatusBadRequest)
 	}
 
 	if g.Balance != nil {
 		precision, err := goprices.GetCurrencyPrecision(g.Balance.Currency)
 		if err != nil {
-			return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Balance.Currency"}, g.Balance.Currency+" is not a valid currency", http.StatusBadRequest)
+			return model_helper.NewAppError("GiftCardCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Balance.Currency"}, g.Balance.Currency+" is not a valid currency", http.StatusBadRequest)
 		}
 
 		roundedAmount := g.Balance.Amount.ToDecimal().Round((int32(precision)))
@@ -1986,11 +1987,11 @@ func (g *GiftCardCreateInput) validate() *model.AppError {
 
 	if g.UserEmail != nil {
 		if !model.IsValidEmail(*g.UserEmail) {
-			return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, *g.UserEmail+" is not a valid email", http.StatusBadRequest)
+			return model_helper.NewAppError("GiftCardCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, *g.UserEmail+" is not a valid email", http.StatusBadRequest)
 		}
 		// channel slug must be provided when user email is set
 		if g.Channel == nil || !slug.IsSlug(*g.Channel) {
-			return model.NewAppError("iftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Channel"}, "channel must be provided along with UserEmail", http.StatusBadRequest)
+			return model_helper.NewAppError("iftCardCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Channel"}, "channel must be provided along with UserEmail", http.StatusBadRequest)
 		}
 	}
 
@@ -2100,9 +2101,9 @@ type IntRangeInput struct {
 	Lte *int32 `json:"lte"`
 }
 
-func (i *IntRangeInput) validate(where string) *model.AppError {
+func (i *IntRangeInput) validate(where string) *model_helper.AppError {
 	if i.Gte != nil && i.Lte != nil && *i.Gte > *i.Lte {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lte, gte"}, "gte must less than or equal to lte", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lte, gte"}, "gte must less than or equal to lte", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -2235,13 +2236,13 @@ type MenuCreateInput struct {
 	Items []*MenuItemInput `json:"items"`
 }
 
-func (m *MenuCreateInput) validate(where string) *model.AppError {
+func (m *MenuCreateInput) validate(where string) *model_helper.AppError {
 	m.Name = strings.TrimSpace(m.Name)
 	if m.Name == "" {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide menu name", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide menu name", http.StatusBadRequest)
 	}
 	if m.Slug != nil && !slug.IsSlug(*m.Slug) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
 	for _, item := range m.Items {
@@ -2278,15 +2279,15 @@ type MenuInput struct {
 	Slug *string `json:"slug"`
 }
 
-func (m *MenuInput) validate(where string) *model.AppError {
+func (m *MenuInput) validate(where string) *model_helper.AppError {
 	if m.Name != nil {
 		name := strings.TrimSpace(*m.Name)
 		if name == "" {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu name", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu name", http.StatusBadRequest)
 		}
 	}
 	if m.Slug != nil && !slug.IsSlug(*m.Slug) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
 	return nil
@@ -2323,13 +2324,13 @@ type MenuItemCreateInput struct {
 	Parent     *string `json:"parent"`
 }
 
-func (m *MenuItemCreateInput) validate(where string) *model.AppError {
+func (m *MenuItemCreateInput) validate(where string) *model_helper.AppError {
 	m.Name = strings.TrimSpace(m.Name)
 	if m.Name == "" {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "Name"}, "please provide menu item name", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "Name"}, "please provide menu item name", http.StatusBadRequest)
 	}
 	if !model.IsValidId(m.Menu) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MenuId"}, "please provide valid menu id", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MenuId"}, "please provide valid menu id", http.StatusBadRequest)
 	}
 
 	for name, id := range map[string]*string{
@@ -2339,7 +2340,7 @@ func (m *MenuItemCreateInput) validate(where string) *model.AppError {
 		"ParentMenuId": m.Parent,
 	} {
 		if id != nil && !model.IsValidId(*id) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
 		}
 	}
 
@@ -2364,11 +2365,11 @@ type MenuItemInput struct {
 	Page       *string `json:"page"`
 }
 
-func (m *MenuItemInput) validate(where string) *model.AppError {
+func (m *MenuItemInput) validate(where string) *model_helper.AppError {
 	if m.Name != nil {
 		name := strings.TrimSpace(*m.Name)
 		if len(name) == 0 {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu item name", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu item name", http.StatusBadRequest)
 		}
 	}
 
@@ -2378,7 +2379,7 @@ func (m *MenuItemInput) validate(where string) *model.AppError {
 		"Page":       m.Page,
 	} {
 		if value != nil && !model.IsValidId(*value) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
 		}
 	}
 
@@ -2415,16 +2416,16 @@ type MenuItemMoveInput struct {
 	SortOrder *int32  `json:"sortOrder"`
 }
 
-func (m *MenuItemMoveInput) validate(where string) *model.AppError {
+func (m *MenuItemMoveInput) validate(where string) *model_helper.AppError {
 	if !model.IsValidId(m.ItemID) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ItemId"}, "please provide valid menu item id", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ItemId"}, "please provide valid menu item id", http.StatusBadRequest)
 	}
 	if m.ParentID != nil {
 		if !model.IsValidId(*m.ParentID) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "please provide valid parent menu item id", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "please provide valid parent menu item id", http.StatusBadRequest)
 		}
 		if *m.ParentID == m.ItemID {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "cannot assign a node to itself", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "cannot assign a node to itself", http.StatusBadRequest)
 		}
 	}
 
@@ -2576,7 +2577,7 @@ type OrderFilterInput struct {
 	OrderDraftFilterInput
 }
 
-func (ip *OrderFilterInput) parse(where string) (*model.OrderFilterOption, *model.AppError) {
+func (ip *OrderFilterInput) parse(where string) (*model.OrderFilterOption, *model_helper.AppError) {
 	filterOpts, appErr := ip.OrderDraftFilterInput.parse(where)
 	if appErr != nil {
 		return nil, appErr
@@ -2609,7 +2610,7 @@ type OrderDraftFilterInput struct {
 	Channels []UUID           `json:"channels"`
 }
 
-func (ip *OrderDraftFilterInput) parse(where string) (*model.OrderFilterOption, *model.AppError) {
+func (ip *OrderDraftFilterInput) parse(where string) (*model.OrderFilterOption, *model_helper.AppError) {
 	var conditions = squirrel.And{}
 	var res model.OrderFilterOption
 
@@ -2718,12 +2719,12 @@ type OrderLineCreateInput struct {
 	VariantID string `json:"variantId"`
 }
 
-func (o *OrderLineCreateInput) validate(where string) *model.AppError {
+func (o *OrderLineCreateInput) validate(where string) *model_helper.AppError {
 	if !model.IsValidId(o.VariantID) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantID"}, "please provide valid variant id", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 	if o.Quantity <= 0 {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, "quantity must be greater than 0", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, "quantity must be greater than 0", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -3302,9 +3303,9 @@ type PriceRangeInput struct {
 	Lte *float64 `json:"lte"`
 }
 
-func (p *PriceRangeInput) validate(where string) *model.AppError {
+func (p *PriceRangeInput) validate(where string) *model_helper.AppError {
 	if p.Gte != nil && p.Lte != nil && *p.Gte > *p.Lte {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -3425,7 +3426,7 @@ type ProductFilterInput struct {
 	// Channel               *string                  `json:"channel"`
 }
 
-func (p *ProductFilterInput) validate(where string) *model.AppError {
+func (p *ProductFilterInput) validate(where string) *model_helper.AppError {
 	for name, value := range map[string][]string{
 		"collections":   p.Collections,
 		"categories":    p.Categories,
@@ -3433,7 +3434,7 @@ func (p *ProductFilterInput) validate(where string) *model.AppError {
 		"ids":           p.Ids,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
 		}
 	}
 	for _, attributeInput := range p.Attributes {
@@ -3442,7 +3443,7 @@ func (p *ProductFilterInput) validate(where string) *model.AppError {
 		}
 	}
 	if p.StockAvailability != nil && !p.StockAvailability.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "stock availability"}, "please provide valid stock availability", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "stock availability"}, "please provide valid stock availability", http.StatusBadRequest)
 	}
 	if p.Stocks != nil {
 		if appErr := p.Stocks.validate(where); appErr != nil {
@@ -3450,7 +3451,7 @@ func (p *ProductFilterInput) validate(where string) *model.AppError {
 		}
 	}
 	if p.Search != nil && stringsContainSqlExpr.MatchString(*p.Search) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search string", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search string", http.StatusBadRequest)
 	}
 	for name, value := range map[string]*PriceRangeInput{
 		"price":         p.Price,
@@ -3668,9 +3669,9 @@ type ProductStockFilterInput struct {
 	Quantity     *IntRangeInput `json:"quantity"`
 }
 
-func (p *ProductStockFilterInput) validate(where string) *model.AppError {
+func (p *ProductStockFilterInput) validate(where string) *model_helper.AppError {
 	if !lo.EveryBy(p.WarehouseIds, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "warehouseIds"}, "please provide valid warehouse ids", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "warehouseIds"}, "please provide valid warehouse ids", http.StatusBadRequest)
 	}
 	if p.Quantity != nil {
 		appErr := p.Quantity.validate(where)
@@ -3811,15 +3812,15 @@ type ProductTypeInput struct {
 	VariantAttributes  []UUID               `json:"variantAttributes"`
 }
 
-func (p *ProductTypeInput) validate(where string) *model.AppError {
+func (p *ProductTypeInput) validate(where string) *model_helper.AppError {
 	if slugg := p.Slug; slugg != nil && !slug.IsSlug(*slugg) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 	if p.Kind != nil && !p.Kind.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Kind"}, "please provide valid kind", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Kind"}, "please provide valid kind", http.StatusBadRequest)
 	}
 	if p.Weight != nil && p.Weight.Value < 0 {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Weight"}, "weight value cannot be less than 0", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Weight"}, "weight value cannot be less than 0", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -3938,9 +3939,9 @@ type ProductVariantInput struct {
 	PreOrder       *PreorderSettingsInput `json:"preorder"`
 }
 
-func (p *ProductVariantInput) validate(where string, ctx *web.Context, instance *model.ProductVariant) *model.AppError {
+func (p *ProductVariantInput) validate(where string, ctx *web.Context, instance *model.ProductVariant) *model_helper.AppError {
 	// if p.Weight != nil && p.Weight.Value < 0 {
-	// 	return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "weight"}, "please provide positive weight value", http.StatusBadRequest)
+	// 	return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "weight"}, "please provide positive weight value", http.StatusBadRequest)
 	// }
 	// if p.Sku != nil {
 	// 	*p.Sku = strings.TrimSpace(*p.Sku)
@@ -3961,7 +3962,7 @@ func (p *ProductVariantInput) validate(where string, ctx *web.Context, instance 
 }
 
 // NOTE: instance can be nil
-func (p *ProductVariantCreateInput) validate(where string, ctx *web.Context) *model.AppError {
+func (p *ProductVariantCreateInput) validate(where string, ctx *web.Context) *model_helper.AppError {
 	// appErr := p.ProductVariantInput.validate(where, ctx, nil)
 	// if appErr != nil {
 	// 	return appErr
@@ -3972,7 +3973,7 @@ func (p *ProductVariantCreateInput) validate(where string, ctx *web.Context) *mo
 	// for _, stockInput := range p.Stocks {
 	// 	if stockInput != nil {
 	// 		if stockMeetMap[stockInput.Warehouse] {
-	// 			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique stocks", http.StatusBadRequest)
+	// 			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique stocks", http.StatusBadRequest)
 	// 		}
 	// 		stockMeetMap[stockInput.Warehouse] = true
 	// 	}
@@ -4089,22 +4090,22 @@ type SaleChannelListingInput struct {
 	RemoveChannels []string                      `json:"removeChannels"`
 }
 
-func (s *SaleChannelListingInput) Validate() *model.AppError {
+func (s *SaleChannelListingInput) Validate() *model_helper.AppError {
 	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
 	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *SaleChannelListingAddInput) string { return ac.ChannelID })
 	// checks if given channel ids are valid uuids
 	if !lo.EveryBy(s.RemoveChannels, model.IsValidId) {
-		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
+		return model_helper.NewAppError("SaleChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
 	}
 	addChannelIDs := lo.Map(s.AddChannels, func(ac *SaleChannelListingAddInput, _ int) string { return ac.ChannelID })
 	if !lo.EveryBy(addChannelIDs, model.IsValidId) {
-		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
+		return model_helper.NewAppError("SaleChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
 	}
 
 	// check if some channel(s) is/are designed to both add and remove
 	intersecChannelIds := lo.Intersect(s.RemoveChannels, addChannelIDs)
 	if len(intersecChannelIds) > 0 {
-		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
+		return model_helper.NewAppError("SaleChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
 	}
 
 	return nil
@@ -4145,14 +4146,14 @@ type SaleFilterInput struct {
 	Metadata []*MetadataFilter      `json:"metadata"`
 }
 
-func (s *SaleFilterInput) validate() *model.AppError {
+func (s *SaleFilterInput) validate() *model_helper.AppError {
 	// valiate status
 	if lo.SomeBy(s.Status, func(item *DiscountStatusEnum) bool { return item != nil && !item.IsValid() }) {
-		return model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
+		return model_helper.NewAppError("SaleFilterInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
 	}
 	// validate saleType
 	if s.SaleType != nil && !s.SaleType.IsValid() {
-		return model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sale type"}, "please provide valid sale type", http.StatusBadRequest)
+		return model_helper.NewAppError("SaleFilterInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sale type"}, "please provide valid sale type", http.StatusBadRequest)
 	}
 	// started
 	if s.Started != nil {
@@ -4168,7 +4169,7 @@ func (s *SaleFilterInput) validate() *model.AppError {
 	return nil
 }
 
-func (s *SaleFilterInput) parse() (squirrel.Sqlizer, *model.AppError) {
+func (s *SaleFilterInput) parse() (squirrel.Sqlizer, *model_helper.AppError) {
 	if appErr := s.validate(); appErr != nil {
 		return nil, appErr
 	}
@@ -4255,12 +4256,12 @@ type SaleInput struct {
 	EndDate     *DateTime              `json:"endDate"`
 }
 
-func (s *SaleInput) Validate(api string) *model.AppError {
+func (s *SaleInput) Validate(api string) *model_helper.AppError {
 	if s.Type != nil && !s.Type.IsValid() {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
 	}
 	if s.StartDate != nil && s.EndDate != nil && s.EndDate.Before(s.StartDate.Time) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
 	}
 	for key, value := range map[string][]string{
 		"Products":    s.Products,
@@ -4269,7 +4270,7 @@ func (s *SaleInput) Validate(api string) *model.AppError {
 		"Collections": s.Collections,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
 		}
 	}
 
@@ -4487,59 +4488,59 @@ func (s *ShippingPriceInput) Patch(method *model.ShippingMethod) (updated bool) 
 	return updated
 }
 
-func (s *ShippingPriceInput) Validate(api string) *model.AppError {
+func (s *ShippingPriceInput) Validate(api string) *model_helper.AppError {
 	// clean weights:
 	if s.MinimumOrderWeight != nil {
 		if s.MinimumOrderWeight.Value < 0 {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
 		}
 		if measurement.WEIGHT_UNIT_STRINGS[s.MinimumOrderWeight.Unit] == "" { // invalid unit
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
 		}
 	}
 	if s.MaximumOrderWeight != nil {
 		if s.MaximumOrderWeight.Value < 0 {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
 		}
 		if measurement.WEIGHT_UNIT_STRINGS[s.MaximumOrderWeight.Unit] == "" { // invalid unit
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
 		}
 	}
 
 	if s.MinimumOrderWeight != nil &&
 		s.MaximumOrderWeight != nil &&
 		(s.MinimumOrderWeight.Unit == s.MaximumOrderWeight.Unit || s.MinimumOrderWeight.Value >= s.MaximumOrderWeight.Value) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight / MinimumOrderWeight"}, "weight units must be the same and min weight must less than (<) max weight", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight / MinimumOrderWeight"}, "weight units must be the same and min weight must less than (<) max weight", http.StatusBadRequest)
 	}
 
 	// clean delivery time
 	// - check if minimum_delivery_days is not higher than maximum_delivery_days
 	// - check if minimum_delivery_days and maximum_delivery_days are positive values
 	if s.MinimumDeliveryDays != nil && *s.MinimumDeliveryDays < 0 {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
 	}
 	if s.MaximumDeliveryDays != nil && *s.MaximumDeliveryDays < 0 {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
 	}
 	if s.MinimumDeliveryDays != nil && s.MaximumDeliveryDays != nil && *s.MinimumDeliveryDays >= *s.MaximumDeliveryDays {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays, MaximumDeliveryDays"}, "min delivery day must less than max delivery days", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays, MaximumDeliveryDays"}, "min delivery day must less than max delivery days", http.StatusBadRequest)
 	}
 
 	// clean postal code rules
 	if !lo.EveryBy(s.DeletePostalCodeRules, model.IsValidId) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
 	}
 	if len(s.AddPostalCodeRules) > 0 && (s.InclusionType == nil || !s.InclusionType.IsValid()) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "inclusion type"}, "inclusion type is required when add postal code rules are provided", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "inclusion type"}, "inclusion type is required when add postal code rules are provided", http.StatusBadRequest)
 	}
 
 	if s.Type != nil && !s.Type.IsValid() {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+		return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
 	}
 
 	if s.ShippingZone != nil {
 		if !model.IsValidId(*s.ShippingZone) {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
+			return model_helper.NewAppError(api, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
 		}
 	}
 
@@ -4966,23 +4967,23 @@ type VoucherChannelListingInput struct {
 	RemoveChannels []string                         `json:"removeChannels"`
 }
 
-func (s *VoucherChannelListingInput) Validate() *model.AppError {
+func (s *VoucherChannelListingInput) Validate() *model_helper.AppError {
 	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
 	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *VoucherChannelListingAddInput) string { return ac.ChannelID })
 
 	// checks if given channel ids are valid uuids
 	if !lo.EveryBy(s.RemoveChannels, model.IsValidId) {
-		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
 	}
 	addChannelIDs := lo.Map(s.AddChannels, func(ac *VoucherChannelListingAddInput, _ int) string { return ac.ChannelID })
 	if !lo.EveryBy(addChannelIDs, model.IsValidId) {
-		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
 	}
 
 	// check if some channel(s) is/are designed to both add and remove
 	intersecChannelIds := lo.Intersect(s.RemoveChannels, addChannelIDs)
 	if len(intersecChannelIds) > 0 {
-		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherChannelListingInput.Validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
 	}
 
 	return nil
@@ -5023,21 +5024,21 @@ type VoucherFilterInput struct {
 	Metadata     []*MetadataFilter      `json:"metadata"`
 }
 
-func (v *VoucherFilterInput) validate() *model.AppError {
+func (v *VoucherFilterInput) validate() *model_helper.AppError {
 	if lo.SomeBy(v.Status, func(st *DiscountStatusEnum) bool { return st != nil && !st.IsValid() }) {
-		return model.NewAppError("VoucherFilterInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherFilterInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
 	}
 	if v.TimesUsed != nil && v.TimesUsed.Gte != nil && v.TimesUsed.Lte != nil && *v.TimesUsed.Gte >= *v.TimesUsed.Lte {
-		return model.NewAppError("VoucherFilterInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "timesUsed"}, "gte field must less than lte field", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherFilterInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "timesUsed"}, "gte field must less than lte field", http.StatusBadRequest)
 	}
 	if v.Started != nil && v.Started.Gte != nil && v.Started.Lte != nil && v.Started.Gte.After(v.Started.Lte.Time) {
-		return model.NewAppError("VoucherFilterInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte time must be after than lte time", http.StatusBadRequest)
+		return model_helper.NewAppError("VoucherFilterInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte time must be after than lte time", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (v *VoucherFilterInput) Parse() (squirrel.Sqlizer, *model.AppError) {
+func (v *VoucherFilterInput) Parse() (squirrel.Sqlizer, *model_helper.AppError) {
 	if appErr := v.validate(); appErr != nil {
 		return nil, appErr
 	}
@@ -5162,19 +5163,19 @@ type VoucherInput struct {
 	UsageLimit               *int32                 `json:"usageLimit"`
 }
 
-func (v *VoucherInput) Validate(where string) *model.AppError {
+func (v *VoucherInput) Validate(where string) *model_helper.AppError {
 	where += ".VoucherInput.Validate"
 	if v.Type != nil && !v.Type.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid voucher type", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid voucher type", http.StatusBadRequest)
 	}
 	if v.Code != nil && !model.PromoCodeRegex.MatchString(*v.Code) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "code"}, "code must look like UH78-GHUY-98RG", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "code"}, "code must look like UH78-GHUY-98RG", http.StatusBadRequest)
 	}
 	if v.StartDate != nil && v.EndDate != nil && v.StartDate.After(v.EndDate.Time) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "dates"}, "start date must less than end date", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "dates"}, "start date must less than end date", http.StatusBadRequest)
 	}
 	if v.MinCheckoutItemsQuantity != nil && *v.MinCheckoutItemsQuantity <= 0 {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "minCheckoutQuantity"}, "minimum checkout quantity must >= 1", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "minCheckoutQuantity"}, "minimum checkout quantity must >= 1", http.StatusBadRequest)
 	}
 
 	for name, value := range map[string][]string{
@@ -5184,17 +5185,17 @@ func (v *VoucherInput) Validate(where string) *model.AppError {
 		"categories":  v.Categories,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" ids", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" ids", http.StatusBadRequest)
 		}
 	}
 	if lo.SomeBy(v.Countries, func(c CountryCode) bool { return !c.IsValid() }) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countries"}, "please provide valid country codes", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countries"}, "please provide valid country codes", http.StatusBadRequest)
 	}
 	if v.UsageLimit != nil && *v.UsageLimit < 0 {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usageLimit"}, "please provide valid usage limit", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usageLimit"}, "please provide valid usage limit", http.StatusBadRequest)
 	}
 	if v.DiscountValueType != nil && !v.DiscountValueType.IsValid() {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValueType"}, "please provide valid discount value type", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValueType"}, "please provide valid discount value type", http.StatusBadRequest)
 	}
 
 	return nil
@@ -6888,7 +6889,7 @@ const (
 	StockErrorCodeUnique        StockErrorCode = "UNIQUE"
 )
 
-type StorePaymentMethodEnum = model.StorePaymentMethod
+type StorePaymentMethodEnum = model.Storepaymentmethod
 
 type TranslatableKinds string
 
@@ -6937,46 +6938,46 @@ type userSortfield struct {
 var userSortFieldMap = map[UserSortField]*userSortfield{
 	UserSortFieldFirstName: {
 		fields: []string{
-			model.UserTableName + ".FirstName",
-			model.UserTableName + ".LastName",
-			model.UserTableName + ".CreateAt",
+			model.UserTableColumns.FirstName,
+			model.UserTableColumns.LastName,
+			model.UserTableColumns.CreatedAt,
 		},
 		keyFunc: func(c *model.User) []any {
 			return []any{
-				model.UserTableName + ".FirstName", c.FirstName,
-				model.UserTableName + ".LastName", c.LastName,
-				model.UserTableName + ".CreateAt", c.CreateAt,
+				model.UserTableColumns.FirstName, c.FirstName,
+				model.UserTableColumns.LastName, c.LastName,
+				model.UserTableColumns.CreatedAt, c.CreatedAt,
 			}
 		},
 	},
 	UserSortFieldLastName: {
 		fields: []string{
-			model.UserTableName + ".LastName",
-			model.UserTableName + ".FirstName",
-			model.UserTableName + ".CreateAt",
+			model.UserTableColumns.LastName,
+			model.UserTableColumns.FirstName,
+			model.UserTableColumns.CreatedAt,
 		},
 		keyFunc: func(c *model.User) []any {
 			return []any{
-				model.UserTableName + ".LastName", c.LastName,
-				model.UserTableName + ".FirstName", c.FirstName,
-				model.UserTableName + ".CreateAt", c.CreateAt,
+				model.UserTableColumns.LastName, c.LastName,
+				model.UserTableColumns.FirstName, c.FirstName,
+				model.UserTableColumns.CreatedAt, c.CreatedAt,
 			}
 		},
 	},
 	UserSortFieldEmail: {
-		fields: []string{model.UserTableName + ".Email"},
+		fields: []string{model.UserTableColumns.Email},
 		keyFunc: func(c *model.User) []any {
 			return []any{
-				model.UserTableName + ".Email", c.Email,
+				model.UserTableColumns.Email, c.Email,
 			}
 		},
 	},
 	UserSortFieldOrderCount: {
-		fields: []string{model.UserTableName + ".OrderCount", model.UserTableName + ".Email"},
+		fields: []string{model.UserTableName + ".OrderCount", model.UserTableColumns.Email},
 		keyFunc: func(c *model.User) []any {
 			return []any{
 				model.UserTableName + ".OrderCount", c.OrderCount,
-				model.UserTableName + ".Email", c.Email,
+				model.UserTableColumns.Email, c.Email,
 			}
 		},
 	},
@@ -7046,50 +7047,50 @@ var voucherSortFieldsMap = map[VoucherSortField]*VoucherSortFieldAttributes{
 	VoucherSortFieldCode: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableColumns.Code},
 	},
 	VoucherSortFieldStartDate: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
-				model.VoucherTableName + ".StartDate", v.StartDate,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.StartDate, v.StartDate,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".StartDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableColumns.StartDate, model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 	VoucherSortFieldEndDate: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
-				model.VoucherTableName + ".EndDate", v.EndDate,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.EndDate, v.EndDate,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".EndDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableColumns.EndDate, model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 	VoucherSortFieldType: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
-				model.VoucherTableName + ".Type", v.Type,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.Type, v.Type,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".Type", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableColumns.Type, model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 	VoucherSortFieldUsageLimit: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
-				model.VoucherTableName + ".UsageLimit", v.UsageLimit,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.UsageLimit, v.UsageLimit,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".UsageLimit", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableColumns.UsageLimit, model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 
 	// below are special cases
@@ -7097,21 +7098,21 @@ var voucherSortFieldsMap = map[VoucherSortField]*VoucherSortFieldAttributes{
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
 				model.VoucherTableName + ".DiscountValue", v.DiscountValue,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".DiscountValue", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableName + ".DiscountValue", model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 	VoucherSortFieldMinimumSpentAmount: {
 		keyFunc: func(v *model.Voucher) []any {
 			return []any{
 				model.VoucherTableName + ".MinSpentAmount", v.MinSpentAmount,
-				model.VoucherTableName + ".Name", v.Name,
-				model.VoucherTableName + ".Code", v.Code,
+				model.VoucherTableColumns.Name, v.Name,
+				model.VoucherTableColumns.Code, v.Code,
 			}
 		},
-		fields: []string{model.VoucherTableName + ".MinSpentAmount", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+		fields: []string{model.VoucherTableName + ".MinSpentAmount", model.VoucherTableColumns.Name, model.VoucherTableColumns.Code},
 	},
 }
 

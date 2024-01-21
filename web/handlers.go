@@ -18,6 +18,7 @@ import (
 	app_opentracing "github.com/sitename/sitename/app/opentracing"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -54,7 +55,7 @@ func (w *Web) NewHandler(h func(*Context, http.ResponseWriter, *http.Request)) h
 func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	// Determine the CSP SHA directive needed for subpath support, if any. This value is fixed
 	// on server start and intentionally requires a restart to take effect.
-	subpath, _ := model.GetSubpathFromConfig(w.srv.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(w.srv.Config())
 
 	return &Handler{
 		Srv:             w.srv,
@@ -64,7 +65,7 @@ func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Reque
 		TrustRequester:  false,
 		RequireMfa:      false,
 		IsStatic:        true,
-		cspShaDirective: model.GetSubpathScriptHash(subpath),
+		cspShaDirective: model_helper.GetSubpathScriptHash(subpath),
 	}
 }
 
@@ -88,7 +89,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		now        = time.Now()
-		requestID  = model.NewId()
+		requestID  = model_helper.NewId()
 		statusCode string
 	)
 
@@ -156,11 +157,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// do not get cut off.
 	r.Body = http.MaxBytesReader(w, r.Body, *c.App.Config().FileSettings.MaxFileSize+bytes.MinRead)
 
-	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model_helper.GetSubpathFromConfig(c.App.Config())
 	c.SetSiteURLHeader(app.GetProtocol(r) + "://" + r.Host + subpath)
 
-	w.Header().Set(model.HeaderRequestId, c.AppContext.RequestId())
-	w.Header().Set(model.HeaderVersionId, fmt.Sprintf("%v.%v.%v", model.CurrentVersion, model.BuildNumber, c.App.ClientConfigHash()))
+	w.Header().Set(model_helper.HeaderRequestId, c.AppContext.RequestId())
+	w.Header().Set(model_helper.HeaderVersionId, fmt.Sprintf("%v.%v.%v", model_helper.CurrentVersion, model_helper.BuildNumber, c.App.ClientConfigHash()))
 
 	if *c.App.Config().ServiceSettings.TLSStrictTransport {
 		w.Header().Set("Strict-Transport-Security", fmt.Sprintf("max-age=%d", *c.App.Config().ServiceSettings.TLSStrictTransportMaxAge))
@@ -177,13 +178,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Add unsafe-eval to the content security policy for faster source maps in development mode
 		devCSP := ""
-		if model.BuildNumber == "dev" {
+		if model_helper.BuildNumber == "dev" {
 			devCSP += " 'unsafe-eval'"
 		}
 
 		// Add unsafe-inline to unlock extensions like React & Redux DevTools in Firefox
 		// see https://github.com/reduxjs/redux-devtools/issues/380
-		if model.BuildNumber == "dev" {
+		if model_helper.BuildNumber == "dev" {
 			devCSP += " 'unsafe-inline'"
 		}
 
@@ -215,14 +216,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				c.Err = err
 			} else if h.RequireSession {
 				c.RemoveSessionCookie(w, r)
-				c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token, http.StatusUnauthorized)
+				c.Err = model_helper.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token, http.StatusUnauthorized)
 			}
 		} else {
 			c.AppContext.SetSession(session)
 		}
 
 		// Rate limit by UserID
-		if c.App.Srv().RateLimiter != nil && c.App.Srv().RateLimiter.UserIdRateLimit(c.AppContext.Session().UserId, w) {
+		if c.App.Srv().RateLimiter != nil && c.App.Srv().RateLimiter.UserIdRateLimit(c.AppContext.Session().UserID, w) {
 			return
 		}
 
@@ -233,7 +234,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("path", c.AppContext.Path()),
 		slog.String("request_id", c.AppContext.RequestId()),
 		slog.String("ip_addr", c.AppContext.IpAddress()),
-		slog.String("user_id", c.AppContext.Session().UserId),
+		slog.String("user_id", c.AppContext.Session().UserID),
 		slog.String("method", r.Method),
 	)
 
@@ -308,11 +309,11 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 	csrfCheckPassed := false
 
 	if csrfCheckNeeded {
-		csrfHeader := r.Header.Get(model.HeaderCsrfToken)
+		csrfHeader := r.Header.Get(model_helper.HeaderCsrfToken)
 
-		if csrfHeader == session.GetCSRF() {
+		if csrfHeader == model_helper.SessionGetCSRF(*session) {
 			csrfCheckPassed = true
-		} else if r.Header.Get(model.HeaderRequestedWith) == model.HeaderRequestedWith_XML {
+		} else if r.Header.Get(model_helper.HeaderRequestedWith) == model_helper.HeaderRequestedWith_XML {
 			// ToDo(DSchalla) 2019/01/04: Remove after deprecation period and only allow CSRF Header (MM-13657)
 			csrfErrorMessage := "CSRF Header check failed for request - Please upgrade your web application or custom app to set a CSRF Header"
 
@@ -320,8 +321,8 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 			userId := ""
 
 			if session != nil {
-				sid = session.Id
-				userId = session.UserId
+				sid = session.ID
+				userId = session.UserID
 			}
 
 			fields := []slog.Field{
@@ -341,7 +342,7 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 
 		if !csrfCheckPassed {
 			c.AppContext.SetSession(&model.Session{})
-			c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token+" Appears to be a CSRF attempt", http.StatusUnauthorized)
+			c.Err = model_helper.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token+" Appears to be a CSRF attempt", http.StatusUnauthorized)
 		}
 	}
 

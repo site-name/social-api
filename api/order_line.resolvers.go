@@ -13,26 +13,27 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
 // validateOrderCanBeEdited checks if given order's status is not `draft` nor `unconfirmed`.
 // If yes, return non-nil error.
-func validateOrderCanBeEdited(order *model.Order, where string) *model.AppError {
+func validateOrderCanBeEdited(order *model.Order, where string) *model_helper.AppError {
 	if order.Status != model.ORDER_STATUS_DRAFT && order.Status != model.ORDER_STATUS_UNCONFIRMED {
-		return model.NewAppError(where, "app.order.order_cant_update.app_error", nil, "only draft and unconfirmed orders can be edited", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.order.order_cant_update.app_error", nil, "only draft and unconfirmed orders can be edited", http.StatusNotAcceptable)
 	}
 	return nil
 }
 
-func validateOrderDiscountInput(where string, maxTotal *goprices.Money, input OrderDiscountCommonInput) *model.AppError {
+func validateOrderDiscountInput(where string, maxTotal *goprices.Money, input OrderDiscountCommonInput) *model_helper.AppError {
 	if input.ValueType == model.DISCOUNT_VALUE_TYPE_FIXED {
 		if decimal.Decimal(input.Value).GreaterThan(maxTotal.Amount) {
-			return model.NewAppError(where, "app.order.value_greater_than_max_total.app_error", nil, "The value cannot be higher than max total amount", http.StatusNotAcceptable)
+			return model_helper.NewAppError(where, "app.order.value_greater_than_max_total.app_error", nil, "The value cannot be higher than max total amount", http.StatusNotAcceptable)
 		}
 	} else if decimal.Decimal(input.Value).GreaterThan(decimal.NewFromInt(100)) {
-		return model.NewAppError(where, "app.order.discount_greater_than_100.app_error", nil, "The value cannot be higher than 100", http.StatusNotAcceptable)
+		return model_helper.NewAppError(where, "app.order.discount_greater_than_100.app_error", nil, "The value cannot be higher than 100", http.StatusNotAcceptable)
 	}
 
 	return nil
@@ -45,11 +46,11 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 }) (*OrderLinesCreate, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
 	}
 	args.Input = lo.Filter(args.Input, func(item *OrderLineCreateInput, _ int) bool { return item != nil })
 	if len(args.Input) == 0 {
-		return nil, model.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide variants to add", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide variants to add", http.StatusBadRequest)
 	}
 
 	variantIds := make([]string, len(args.Input))
@@ -125,7 +126,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	// begin transaction
 	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tran.Error != nil {
-		return nil, model.NewAppError("OrderLinesCreate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLinesCreate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
@@ -148,7 +149,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 
 	// commit tran
 	if err := tran.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderLinesCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLinesCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 
 	return &OrderLinesCreate{
@@ -161,7 +162,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }) (*OrderLineDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("OrderLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -209,7 +210,7 @@ func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }
 	// begin transaction
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("OrderLineDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -262,7 +263,7 @@ func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderLineDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderLineDelete{
@@ -277,10 +278,10 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 	Input OrderLineInput
 }) (*OrderLineUpdate, error) {
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 	if args.Input.Quantity < 0 {
-		return nil, model.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, "quantity must be greater than or equal to 0", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, "quantity must be greater than or equal to 0", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -320,7 +321,7 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("OrderLineUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -355,7 +356,7 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderLineUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderLineUpdate{
@@ -367,7 +368,7 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 // NOTE: please refer to ./graphql/schemas/order_line.graphqls for details on directives used.
 func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ DiscountID string }) (*OrderDiscountDelete, error) {
 	if !model.IsValidId(args.DiscountID) {
-		return nil, model.NewAppError("OrderDiscountDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid discount id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderDiscountDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid discount id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -394,7 +395,7 @@ func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ Discoun
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("OrderDiscountDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -422,7 +423,7 @@ func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ Discoun
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderDiscountDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderDiscountDelete{
@@ -436,7 +437,7 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 	OrderLineID string
 }) (*OrderLineDiscountUpdate, error) {
 	if !model.IsValidId(args.OrderLineID) {
-		return nil, model.NewAppError("OrderLineDiscountUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineDiscountUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -478,7 +479,7 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("OrderLineDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -524,7 +525,7 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderLineDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderLineDiscountUpdate{
@@ -536,7 +537,7 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 // NOTE: please refer to ./graphql/schemas/order_line.graphqls for details on directives used.
 func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ OrderLineID string }) (*OrderLineDiscountRemove, error) {
 	if !model.IsValidId(args.OrderLineID) {
-		return nil, model.NewAppError("OrderLineDiscountRemove", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineDiscountRemove", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -562,7 +563,7 @@ func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ Ord
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("OrderLineDiscountRemove", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDiscountRemove", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -591,7 +592,7 @@ func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ Ord
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model.NewAppError("OrderLineDiscountRemove", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderLineDiscountRemove", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderLineDiscountRemove{

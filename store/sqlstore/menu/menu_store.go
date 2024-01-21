@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -64,10 +65,10 @@ func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*mo
 	return res, nil
 }
 
-func (s *SqlMenuStore) Delete(ids []string) (int64, *model.AppError) {
+func (s *SqlMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
 	result := s.GetMaster().Raw("DELETE FROM "+model.MenuTableName+" WHERE Id IN ?", ids)
 	if result.Error != nil {
-		return 0, model.NewAppError("DeleteMenu", "app.menu.delete_menus.app_error", nil, result.Error.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteMenu", "app.menu.delete_menus.app_error", nil, result.Error.Error(), http.StatusInternalServerError)
 	}
 	return result.RowsAffected, nil
 }

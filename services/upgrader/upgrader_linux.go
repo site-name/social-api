@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/openpgp"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -68,9 +68,9 @@ func (wc *writeCounter) Write(p []byte) (int, error) {
 }
 
 func getCurrentVersionTgzUrl() string {
-	version := model.CurrentVersion
-	if strings.HasPrefix(model.BuildNumber, version+"-rc") {
-		version = model.BuildNumber
+	version := model_helper.CurrentVersion
+	if strings.HasPrefix(model_helper.BuildNumber, version+"-rc") {
+		version = model_helper.BuildNumber
 	}
 
 	return "https://releases.mattermost.com/" + version + "/mattermost-" + version + "-linux-amd64.tar.gz"
@@ -157,7 +157,7 @@ func CanIUpgradeToE0() error {
 	if err := canIUpgrade(); err != nil {
 		return errors.Wrap(err, "unable to upgrade from TE to E0")
 	}
-	if model.BuildEnterpriseReady == "true" {
+	if model_helper.BuildEnterpriseReady == "true" {
 		slog.Warn("Unable to upgrade from TE to E0. The server is already running E0.")
 		return errors.New("you cannot upgrade your server from TE to E0 because you are already running Mattermost Enterprise Edition")
 	}

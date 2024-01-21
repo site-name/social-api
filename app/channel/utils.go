@@ -3,9 +3,10 @@ package channel
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
-func (a *ServiceChannel) GetDefaultChannel() (*model.Channel, *model.AppError) {
+func (a *ServiceChannel) GetDefaultChannel() (*model.Channel, *model_helper.AppError) {
 	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
 		Conditions: squirrel.Expr(model.ChannelTableName + ".IsActive"),
 		Limit:      1,
@@ -17,7 +18,7 @@ func (a *ServiceChannel) GetDefaultChannel() (*model.Channel, *model.AppError) {
 	return channel, nil
 }
 
-func (a *ServiceChannel) GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError) {
+func (a *ServiceChannel) GetDefaultChannelSlugOrGraphqlError() (string, *model_helper.AppError) {
 	channel, appErr := a.GetDefaultChannel()
 	if appErr != nil {
 		return "", appErr

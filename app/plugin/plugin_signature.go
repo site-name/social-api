@@ -8,35 +8,36 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 )
 
-func (a *ServicePlugin) GetPluginPublicKeyFiles() ([]string, *model.AppError) {
+func (a *ServicePlugin) GetPluginPublicKeyFiles() ([]string, *model_helper.AppError) {
 	return a.srv.Config().PluginSettings.SignaturePublicKeyFiles, nil
 }
 
-func (a *ServicePlugin) GetPublicKey(name string) ([]byte, *model.AppError) {
+func (a *ServicePlugin) GetPublicKey(name string) ([]byte, *model_helper.AppError) {
 	data, err := a.srv.ConfigStore.GetFile(name)
 	if err != nil {
-		return nil, model.NewAppError("GetPublicKey", "app.plugin.get_public_key.get_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetPublicKey", "app.plugin.get_public_key.get_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return data, nil
 }
 
 // AddPublicKey will add plugin public key to the config. Overwrites the previous file
-func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError {
+func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model_helper.AppError {
 	if model.IsSamlFile(&a.srv.Config().SamlSettings, name) {
-		return model.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
+		return model_helper.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
 	}
 	data, err := io.ReadAll(key)
 	if err != nil {
-		return model.NewAppError("AddPublicKey", "app.plugin.write_file.read.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("AddPublicKey", "app.plugin.write_file.read.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	err = a.srv.ConfigStore.SetFile(name, data)
 	if err != nil {
-		return model.NewAppError("AddPublicKey", "app.plugin.write_file.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("AddPublicKey", "app.plugin.write_file.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
@@ -49,13 +50,13 @@ func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError
 }
 
 // DeletePublicKey will delete plugin public key from the config.
-func (a *ServicePlugin) DeletePublicKey(name string) *model.AppError {
+func (a *ServicePlugin) DeletePublicKey(name string) *model_helper.AppError {
 	if model.IsSamlFile(&a.srv.Config().SamlSettings, name) {
-		return model.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
+		return model_helper.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
 	}
 	filename := filepath.Base(name)
 	if err := a.srv.ConfigStore.RemoveFile(filename); err != nil {
-		return model.NewAppError("DeletePublicKey", "app.plugin.delete_public_key.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("DeletePublicKey", "app.plugin.delete_public_key.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
@@ -65,7 +66,7 @@ func (a *ServicePlugin) DeletePublicKey(name string) *model.AppError {
 	return nil
 }
 
-func (a *ServicePlugin) VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError {
+func (a *ServicePlugin) VerifyPlugin(plugin, signature io.ReadSeeker) *model_helper.AppError {
 	if err := verifySignature(bytes.NewReader(sitenamePluginPublicKey), plugin, signature); err == nil {
 		return nil
 	}
@@ -86,7 +87,7 @@ func (a *ServicePlugin) VerifyPlugin(plugin, signature io.ReadSeeker) *model.App
 			return nil
 		}
 	}
-	return model.NewAppError("VerifyPlugin", "api.plugin.verify_plugin.app_error", nil, "", http.StatusInternalServerError)
+	return model_helper.NewAppError("VerifyPlugin", "api.plugin.verify_plugin.app_error", nil, "", http.StatusInternalServerError)
 }
 
 func verifySignature(publicKey, message, signatrue io.Reader) error {

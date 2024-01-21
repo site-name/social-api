@@ -4,28 +4,28 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (s *Server) clusterInstallPluginHandler(msg *model.ClusterMessage) {
-	var data model.PluginEventData
+func (s *Server) clusterInstallPluginHandler(msg *model_helper.ClusterMessage) {
+	var data model_helper.PluginEventData
 	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
 	s.PluginService().InstallPluginFromData(data)
 }
 
-func (s *Server) clusterRemovePluginHandler(msg *model.ClusterMessage) {
-	var data model.PluginEventData
+func (s *Server) clusterRemovePluginHandler(msg *model_helper.ClusterMessage) {
+	var data model_helper.PluginEventData
 	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
 	s.PluginService().RemovePluginFromData(data)
 }
 
-func (s *Server) clusterPluginEventHandler(msg *model.ClusterMessage) {
+func (s *Server) clusterPluginEventHandler(msg *model_helper.ClusterMessage) {
 	env, appErr := s.PluginService().GetPluginsEnvironment()
 	if env == nil || appErr != nil {
 		return
@@ -48,7 +48,7 @@ func (s *Server) clusterPluginEventHandler(msg *model.ClusterMessage) {
 		return
 	}
 
-	hooks.OnPluginClusterEvent(&plugin.Context{}, model.PluginClusterEvent{
+	hooks.OnPluginClusterEvent(&plugin.Context{}, model_helper.PluginClusterEvent{
 		Id:   eventID,
 		Data: msg.Data,
 	})
@@ -59,43 +59,43 @@ func (s *Server) clusterPluginEventHandler(msg *model.ClusterMessage) {
 // The cluster event handlers are spread across this function and NewLocalCacheLayer.
 // Be careful to not have duplicated handlers here and there.
 func (s *Server) registerClusterHandlers() {
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventPublish, s.clusterPublishHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventUpdateStatus, s.clusterUpdateStatusHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateAllCaches, s.clusterInvalidateAllCachesHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForUser, s.clusterInvalidateCacheForUserHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventBusyStateChanged, s.clusterBusyStateChgHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventClearSessionCacheForUser, s.clusterClearSessionCacheForUserHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventClearSessionCacheForAllUsers, s.clusterClearSessionCacheForAllUsersHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInstallPlugin, s.clusterInstallPluginHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventRemovePlugin, s.clusterRemovePluginHandler)
-	s.Cluster.RegisterClusterMessageHandler(model.ClusterEventPluginEvent, s.clusterPluginEventHandler)
-	// s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForChannelMembersNotifyProps, s.clusterInvalidateCacheForChannelMembersNotifyPropHandler)
-	// s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForChannelByName, s.clusterInvalidateCacheForChannelByNameHandler)
-	// s.Cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForUserTeams, s.clusterInvalidateCacheForUserTeamsHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventPublish, s.clusterPublishHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventUpdateStatus, s.clusterUpdateStatusHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateAllCaches, s.clusterInvalidateAllCachesHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForUser, s.clusterInvalidateCacheForUserHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventBusyStateChanged, s.clusterBusyStateChgHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventClearSessionCacheForUser, s.clusterClearSessionCacheForUserHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventClearSessionCacheForAllUsers, s.clusterClearSessionCacheForAllUsersHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInstallPlugin, s.clusterInstallPluginHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventRemovePlugin, s.clusterRemovePluginHandler)
+	s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventPluginEvent, s.clusterPluginEventHandler)
+	// s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForChannelMembersNotifyProps, s.clusterInvalidateCacheForChannelMembersNotifyPropHandler)
+	// s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForChannelByName, s.clusterInvalidateCacheForChannelByNameHandler)
+	// s.Cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForUserTeams, s.clusterInvalidateCacheForUserTeamsHandler)
 }
 
-func (s *Server) clusterBusyStateChgHandler(msg *model.ClusterMessage) {
-	var sbs model.ServerBusyState
+func (s *Server) clusterBusyStateChgHandler(msg *model_helper.ClusterMessage) {
+	var sbs model_helper.ServerBusyState
 	if jsonErr := json.Unmarshal(msg.Data, &sbs); jsonErr != nil {
 		slog.Warn("Failed to decode server busy state from JSON", slog.Err(jsonErr))
 	}
 	s.serverBusyStateChanged(&sbs)
 }
 
-func (s *Server) clusterPublishHandler(msg *model.ClusterMessage) {
-	event := model.WebSocketEventFromJson(bytes.NewReader(msg.Data))
+func (s *Server) clusterPublishHandler(msg *model_helper.ClusterMessage) {
+	event := model_helper.WebSocketEventFromJson(bytes.NewReader(msg.Data))
 	if event == nil {
 		return
 	}
 	s.PublishSkipClusterSend(event)
 }
 
-func (s *Server) clusterInvalidateCacheForUserHandler(msg *model.ClusterMessage) {
+func (s *Server) clusterInvalidateCacheForUserHandler(msg *model_helper.ClusterMessage) {
 	s.invalidateCacheForUserSkipClusterSend(string(msg.Data))
 }
 
-func (s *Server) clusterUpdateStatusHandler(msg *model.ClusterMessage) {
-	status := model.StatusFromJson(bytes.NewReader(msg.Data))
+func (s *Server) clusterUpdateStatusHandler(msg *model_helper.ClusterMessage) {
+	status := model_helper.StatusFromJson(bytes.NewReader(msg.Data))
 	s.StatusCache.Set(status.UserId, status)
 }
 
@@ -104,7 +104,7 @@ func (s *Server) clearSessionCacheForAllUsersSkipClusterSend() {
 	s.AccountService().ClearAllUsersSessionCacheLocal()
 }
 
-func (s *Server) clusterInvalidateAllCachesHandler(msg *model.ClusterMessage) {
+func (s *Server) clusterInvalidateAllCachesHandler(msg *model_helper.ClusterMessage) {
 	s.InvalidateAllCachesSkipSend()
 }
 
@@ -114,15 +114,15 @@ func (s *Server) invalidateCacheForUserSkipClusterSend(userID string) {
 	s.invalidateWebConnSessionCacheForUser(userID)
 }
 
-func (s *Server) clusterClearSessionCacheForUserHandler(msg *model.ClusterMessage) {
+func (s *Server) clusterClearSessionCacheForUserHandler(msg *model_helper.ClusterMessage) {
 	s.clearSessionCacheForUserSkipClusterSend(string(msg.Data))
 }
 
-func (s *Server) clusterClearSessionCacheForAllUsersHandler(msg *model.ClusterMessage) {
+func (s *Server) clusterClearSessionCacheForAllUsersHandler(msg *model_helper.ClusterMessage) {
 	s.clearSessionCacheForAllUsersSkipClusterSend()
 }
 
-// func (s *Server) clusterBusyStateChgHandler(msg *model.ClusterMessage) {
+// func (s *Server) clusterBusyStateChgHandler(msg *model_helper.ClusterMessage) {
 // 	s.serverBusyStateChanged(model.ServerBusyStateFromJson(bytes.NewReader(msg.Data)))
 // }
 

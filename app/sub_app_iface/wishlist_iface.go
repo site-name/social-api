@@ -11,31 +11,31 @@ import (
 // WishlistService contains methods for working with wishlists
 type WishlistService interface {
 	// AddProduct add or create a wishlist item that belongs to given wishlist and contains given product
-	AddProduct(wishlistID string, productID string) (*model.WishlistItem, *model.AppError)
+	AddProduct(wishlistID string, productID string) (*model.WishlistItem, *model_helper.AppError)
 	// AddProductVariant add given product variant into given wishlist
-	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model.AppError)
+	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model_helper.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-	BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError)
+	BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model_helper.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-	DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model.AppError)
+	DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model_helper.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist
-	GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model.AppError)
+	GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model_helper.AppError)
 	// GetOrCreateWishlistItem insert or get wishlist items
-	GetOrCreateWishlistItem(wishlistItem *model.WishlistItem) (*model.WishlistItem, *model.AppError)
+	GetOrCreateWishlistItem(wishlistItem *model.WishlistItem) (*model.WishlistItem, *model_helper.AppError)
 	// MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
-	MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model.AppError
+	MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model_helper.AppError
 	// RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
-	RemoveProduct(wishlistID string, productID string) *model.AppError
+	RemoveProduct(wishlistID string, productID string) *model_helper.AppError
 	// RemoveProductVariant remove a wishlist item from given wishlist
-	RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model.AppError
+	RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model_helper.AppError
 	// SetUser assigns given user to given wishlist
-	SetUserForWishlist(wishList *model.Wishlist, userID string) (*model.Wishlist, *model.AppError)
+	SetUserForWishlist(wishList *model.Wishlist, userID string) (*model.Wishlist, *model_helper.AppError)
 	// UpsertWishlist inserts a new wishlist instance into database with given userID
-	UpsertWishlist(wishList *model.Wishlist) (*model.Wishlist, *model.AppError)
+	UpsertWishlist(wishList *model.Wishlist) (*model.Wishlist, *model_helper.AppError)
 	// WishlistByOption returns 1 wishlist filtered by given option
-	WishlistByOption(option *model.WishlistFilterOption) (*model.Wishlist, *model.AppError)
+	WishlistByOption(option *model.WishlistFilterOption) (*model.Wishlist, *model_helper.AppError)
 	// WishlistItemByOption returns 1 wishlist item filtered using given option
-	WishlistItemByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, *model.AppError)
+	WishlistItemByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, *model_helper.AppError)
 	// WishlistItemsByOption returns a slice of wishlist items filtered using given option
-	WishlistItemsByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, *model.AppError)
+	WishlistItemsByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, *model_helper.AppError)
 }

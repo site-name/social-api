@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -39,7 +39,7 @@ func StoreOverride(override interface{}) Option {
 // or a database connection string. It receives as well a set of
 // custom defaults that will be applied for any unset property of the
 // config loaded from the dsn on top of the normal defaults
-func Config(dsn string, readOnly bool, configDefaults *model.Config) Option {
+func Config(dsn string, readOnly bool, configDefaults *model_helper.Config) Option {
 	return func(s *Server) error {
 		configStore, err := config.NewStoreFromDSN(dsn, readOnly, configDefaults, true)
 		if err != nil {
