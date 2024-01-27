@@ -11,19 +11,19 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (a *App) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model_helper.AppError) {
+func (a *App) GetWarnMetricsStatus() (map[string]*model_helper.WarnMetricStatus, *model_helper.AppError) {
 	systemDataList, nErr := a.Srv().Store.System().Get()
 	if nErr != nil {
 		return nil, model_helper.NewAppError("GetWarnMetricsStatus", "app.system.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
-	isE0Edition := model.BuildEnterpriseReady == "true" // license == nil was already validated upstream
+	isE0Edition := model_helper.BuildEnterpriseReady == "true" // license == nil was already validated upstream
 
-	result := map[string]*model.WarnMetricStatus{}
+	result := map[string]*model_helper.WarnMetricStatus{}
 	for key, value := range systemDataList {
-		if strings.HasPrefix(key, model.WarnMetricStatusStorePrefix) {
-			if warnMetric, ok := model.WarnMetricsTable[key]; ok {
-				if !warnMetric.IsBotOnly && (value == model.WarnMetricStatusRunonce || value == model.WarnMetricStatusLimitReached) {
+		if strings.HasPrefix(key, model_helper.WarnMetricStatusStorePrefix) {
+			if warnMetric, ok := model_helper.WarnMetricsTable[key]; ok {
+				if !warnMetric.IsBotOnly && (value == model_helper.WarnMetricStatusRunonce || value == model_helper.WarnMetricStatusLimitReached) {
 					result[key], _ = a.getWarnMetricStatusAndDisplayTextsForId(key, nil, isE0Edition)
 				}
 			}
@@ -33,12 +33,12 @@ func (a *App) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model
 	return result, nil
 }
 
-func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18n.TranslateFunc, isE0Edition bool) (*model.WarnMetricStatus, *model.WarnMetricDisplayTexts) {
-	var warnMetricStatus *model.WarnMetricStatus
-	var warnMetricDisplayTexts = &model.WarnMetricDisplayTexts{}
+func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18n.TranslateFunc, isE0Edition bool) (*model_helper.WarnMetricStatus, *model_helper.WarnMetricDisplayTexts) {
+	var warnMetricStatus *model_helper.WarnMetricStatus
+	var warnMetricDisplayTexts = &model_helper.WarnMetricDisplayTexts{}
 
-	if warnMetric, ok := model.WarnMetricsTable[warnMetricId]; ok {
-		warnMetricStatus = &model.WarnMetricStatus{
+	if warnMetric, ok := model_helper.WarnMetricsTable[warnMetricId]; ok {
+		warnMetricStatus = &model_helper.WarnMetricStatus{
 			Id:    warnMetric.Id,
 			Limit: warnMetric.Limit,
 			Acked: false,
@@ -52,7 +52,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 		warnMetricDisplayTexts.BotSuccessMessage = T("api.server.warn_metric.bot_response.notification_success.message")
 
 		switch warnMetricId {
-		case model.SystemWarnMetricNumberOfTeams5:
+		case model_helper.SystemWarnMetricNumberOfTeams5:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_teams_5.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_teams_5.start_trial.notification_body")
@@ -61,7 +61,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_teams_5.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_teams_5.notification_body")
 			}
-		case model.SystemWarnMetricMfa:
+		case model_helper.SystemWarnMetricMfa:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.mfa.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.mfa.start_trial.notification_body")
@@ -70,7 +70,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.mfa.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.mfa.notification_body")
 			}
-		case model.SystemWarnMetricEmailDomain:
+		case model_helper.SystemWarnMetricEmailDomain:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.email_domain.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.email_domain.start_trial.notification_body")
@@ -79,7 +79,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.email_domain.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.email_domain.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfChannels50:
+		case model_helper.SystemWarnMetricNumberOfChannels50:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_channels_50.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_channels_50.start_trial.notification_body")
@@ -88,7 +88,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_channels_50.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_channels_50.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfActiveUsers100:
+		case model_helper.SystemWarnMetricNumberOfActiveUsers100:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_active_users_100.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_100.start_trial.notification_body")
@@ -97,7 +97,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_active_users_100.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_100.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfActiveUsers200:
+		case model_helper.SystemWarnMetricNumberOfActiveUsers200:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_active_users_200.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_200.start_trial.notification_body")
@@ -106,7 +106,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_active_users_200.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_200.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfActiveUsers300:
+		case model_helper.SystemWarnMetricNumberOfActiveUsers300:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_active_users_300.start_trial.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_300.start_trial.notification_body")
@@ -115,7 +115,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_active_users_300.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_300.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfActiveUsers500:
+		case model_helper.SystemWarnMetricNumberOfActiveUsers500:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_active_users_500.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_500.start_trial.notification_body")
@@ -124,7 +124,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_active_users_500.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_active_users_500.notification_body")
 			}
-		case model.SystemWarnMetricNumberOfPosts2m:
+		case model_helper.SystemWarnMetricNumberOfPosts2m:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.number_of_posts_2M.notification_title")
 			if isE0Edition {
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_posts_2M.start_trial.notification_body")
@@ -133,7 +133,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 				warnMetricDisplayTexts.EmailBody = T("api.server.warn_metric.number_of_posts_2M.contact_us.email_body")
 				warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.number_of_posts_2M.notification_body")
 			}
-		case model.SystemMetricSupportEmailNotConfigured:
+		case model_helper.SystemMetricSupportEmailNotConfigured:
 			warnMetricDisplayTexts.BotTitle = T("api.server.warn_metric.support_email_not_configured.notification_title")
 			warnMetricDisplayTexts.BotMessageBody = T("api.server.warn_metric.support_email_not_configured.start_trial.notification_body")
 		default:
@@ -267,10 +267,10 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 // 	return nil
 // }
 
-func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model_helper.AppError {
-	if warnMetric, ok := model.WarnMetricsTable[warnMetricId]; ok {
+func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, forceAck bool, isBot bool) *model_helper.AppError {
+	if warnMetric, ok := model_helper.WarnMetricsTable[warnMetricId]; ok {
 		data, nErr := a.Srv().Store.System().GetByName(warnMetric.Id)
-		if nErr == nil && data != nil && data.Value == model.WarnMetricStatusAck {
+		if nErr == nil && data != nil && data.Value == model_helper.WarnMetricStatusAck {
 			slog.Debug("This metric warning has already been acknowledged", slog.String("id", warnMetric.Id))
 			return nil
 		}
@@ -282,12 +282,12 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 			T := i18n.GetUserTranslations(sender.Locale)
 			data := a.Srv().EmailService.NewEmailTemplateData(sender.Locale)
 			data.Props["ContactNameHeader"] = T("api.templates.warn_metric_ack.body.contact_name_header")
-			data.Props["ContactNameValue"] = sender.GetFullName()
+			data.Props["ContactNameValue"] = model_helper.UserGetFullName(sender)
 			data.Props["ContactEmailHeader"] = T("api.templates.warn_metric_ack.body.contact_email_header")
 			data.Props["ContactEmailValue"] = sender.Email
 
 			//same definition as the active users count metric displayed in the SystemConsole Analytics section
-			registeredUsersCount, cerr := a.Srv().Store.User().Count(model.UserCountOptions{})
+			registeredUsersCount, cerr := a.Srv().Store.User().Count(model_helper.UserCountOptions{})
 			if cerr != nil {
 				slog.Warn("Error retrieving the number of registered users", slog.Err(cerr))
 			} else {
@@ -315,7 +315,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 
-			if err := mail.SendMailUsingConfig(model.MM_SUPPORT_ADVISOR_ADDRESS, subject, body, mailConfig, false, sender.Email); err != nil {
+			if err := mail.SendMailUsingConfig(model_helper.MM_SUPPORT_ADVISOR_ADDRESS, subject, body, mailConfig, false, sender.Email); err != nil {
 				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 		}
@@ -329,12 +329,12 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User,
 
 func (a *App) setWarnMetricsStatusAndNotify(warnMetricId string) *model_helper.AppError {
 	// Ack all metric warnings on the server
-	if err := a.setWarnMetricsStatus(model.WarnMetricStatusAck); err != nil {
+	if err := a.setWarnMetricsStatus(model_helper.WarnMetricStatusAck); err != nil {
 		return err
 	}
 
 	// Inform client that this metric warning has been acked
-	message := model.NewWebSocketEvent(model.WebsocketWarnMetricStatusRemoved, "", nil)
+	message := model_helper.NewWebSocketEvent(model_helper.WebsocketWarnMetricStatusRemoved, "", nil)
 	message.Add("warnMetricId", warnMetricId)
 	a.Publish(message)
 
@@ -343,7 +343,7 @@ func (a *App) setWarnMetricsStatusAndNotify(warnMetricId string) *model_helper.A
 
 func (a *App) setWarnMetricsStatus(status string) *model_helper.AppError {
 	slog.Debug("Set monitoring status for all warn metrics", slog.String("status", status))
-	for _, warnMetric := range model.WarnMetricsTable {
+	for _, warnMetric := range model_helper.WarnMetricsTable {
 		if err := a.setWarnMetricsStatusForId(warnMetric.Id, status); err != nil {
 			return err
 		}

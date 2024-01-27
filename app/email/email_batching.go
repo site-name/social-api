@@ -71,7 +71,7 @@ type EmailBatchingJob struct {
 	service              *Service
 	newNotifications     chan *batchedNotification
 	pendingNotifications map[string][]*batchedNotification
-	task                 *model.ScheduledTask
+	task                 *model_helper.ScheduledTask
 	taskMutex            sync.Mutex
 }
 
@@ -86,7 +86,7 @@ func NewEmailBatchingJob(es *Service, bufferSize int) *EmailBatchingJob {
 
 func (job *EmailBatchingJob) Start() {
 	slog.Debug("Email batching job starting. Checking for pending emails periodically.", slog.Int("interval_in_seconds", *job.config().EmailSettings.EmailBatchingInterval))
-	newTask := model.CreateRecurringTask(EmailBatchingTaskName, job.CheckPendingEmails, time.Duration(*job.config().EmailSettings.EmailBatchingInterval)*time.Second)
+	newTask := model_helper.CreateRecurringTask(EmailBatchingTaskName, job.CheckPendingEmails, time.Duration(*job.config().EmailSettings.EmailBatchingInterval)*time.Second)
 
 	job.taskMutex.Lock()
 	oldTask := job.task

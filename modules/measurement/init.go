@@ -1,8 +1,7 @@
 package measurement
 
 var (
-	MeasurementUnitMap     map[string]string // MeasurementUnitMap contains all measurement unit notations supported by this aplication
-	MeasurementUnitChoices [][]string        // MeasurementUnitChoices contains all measurements supported by this application
+	MeasurementUnitMap map[string]string // MeasurementUnitMap contains all measurement unit notations supported by this aplication
 )
 
 func init() {
@@ -20,7 +19,4 @@ func init() {
 		MeasurementUnitMap[k] = k
 	}
 
-	for _, v := range MeasurementUnitMap {
-		MeasurementUnitChoices = append(MeasurementUnitChoices, []string{v, v})
-	}
 }

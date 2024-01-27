@@ -81,7 +81,6 @@ func (w *Weight) Mul(quantity float32) *Weight {
 
 // converts current weight to weight with given unit. Error could be ErrInvalidWeightUnit or nil
 func (w *Weight) ConvertTo(unit WeightUnit) (*Weight, error) {
-
 	// check if given unit is supported by system
 	if WEIGHT_UNIT_STRINGS[unit] == "" {
 		return nil, ErrInvalidWeightUnit

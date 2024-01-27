@@ -9,7 +9,7 @@ import (
 )
 
 // CreateExportFile inserts given export file into database then returns it
-func (s *ServiceCsv) CreateExportFile(file *model.ExportFile) (*model.ExportFile, *model_helper.AppError) {
+func (s *ServiceCsv) CreateExportFile(file model.ExportFile) (*model.ExportFile, *model_helper.AppError) {
 	createdFile, err := s.srv.Store.CsvExportFile().Save(file)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

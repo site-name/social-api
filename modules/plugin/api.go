@@ -775,7 +775,7 @@ type API interface {
 	//
 	// @tag File
 	// Minimum server version: 5.22
-	GetFileInfos(page, perPage int, opt *model_he.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
+	GetFileInfos(page, perPage int, opt *model_helper.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
 
 	// GetFile gets content of a file by it's ID
 	//
@@ -821,7 +821,7 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPlugins() ([]*model.Manifest, *model_helper.AppError)
+	GetPlugins() ([]*model_helper.Manifest, *model_helper.AppError)
 
 	// EnablePlugin will enable an plugin installed.
 	//
@@ -845,14 +845,14 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError)
+	GetPluginStatus(id string) (*model_helper.PluginStatus, *model_helper.AppError)
 
 	// InstallPlugin will upload another plugin with tar.gz model.
 	// Previous version will be replaced on replace true.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.18
-	InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model_helper.AppError)
+	InstallPlugin(file io.Reader, replace bool) (*model_helper.Manifest, *model_helper.AppError)
 
 	// KV Store Section
 
@@ -888,7 +888,7 @@ type API interface {
 	// Returns (true, nil) if the value was set
 	//
 	// Minimum server version: 5.20
-	KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError)
+	KVSetWithOptions(key string, value []byte, options model_helper.PluginKVSetOptions) (bool, *model_helper.AppError)
 
 	// KVSet stores a key-value pair with an expiry time, unique per plugin.
 	//
@@ -926,7 +926,7 @@ type API interface {
 	// broadcast determines to which users to send the event.
 	//
 	// Minimum server version: 5.2
-	PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast)
+	PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast)
 
 	// HasPermissionTo check if the user has the permission at system scope.
 	//

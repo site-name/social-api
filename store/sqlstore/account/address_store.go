@@ -39,7 +39,7 @@ func (as *SqlAddressStore) ScanFields(addr *model.Address) []any {
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction store.ContextRunner, address model.Address) (*model.Address, error) {
+func (as *SqlAddressStore) Upsert(transaction boil.ContextTransactor, address model.Address) (*model.Address, error) {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
@@ -96,7 +96,7 @@ func (as *SqlAddressStore) FilterByOption(option model_helper.AddressFilterOptio
 	return model.Addresses(queryMods...).All(as.GetReplica())
 }
 
-func (as *SqlAddressStore) DeleteAddresses(transaction store.ContextRunner, addressIDs []string) error {
+func (as *SqlAddressStore) DeleteAddresses(transaction boil.ContextTransactor, addressIDs []string) error {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}

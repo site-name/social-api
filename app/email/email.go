@@ -410,21 +410,22 @@ func (es *Service) CreateVerifyEmailToken(userID string, newEmail string) (*mode
 		return nil, errors.Wrap(CreateEmailTokenError, err.Error())
 	}
 
-	token := model.NewToken(model.TokenTypeVerifyEmail, string(jsonData))
+	token := model_helper.NewToken(model_helper.TokenTypeVerifyEmail, string(jsonData))
 
 	if err := es.InvalidateVerifyEmailTokensForUser(userID); err != nil {
 		return nil, err
 	}
 
-	if err = es.store.Token().Save(token); err != nil {
+	savedToken, err := es.store.Token().Save(*token)
+	if err != nil {
 		return nil, err
 	}
 
-	return token, nil
+	return savedToken, nil
 }
 
 func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model_helper.AppError {
-	tokens, err := es.store.Token().GetAllTokensByType(model.TokenTypeVerifyEmail)
+	tokens, err := es.store.Token().GetAllTokensByType(model_helper.TokenTypeVerifyEmail)
 	if err != nil {
 		return model_helper.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens.error", nil, err.Error(), http.StatusInternalServerError)
 	}

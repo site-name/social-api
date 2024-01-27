@@ -151,8 +151,8 @@ type (
 		GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error)
 	}
 	ShopTranslationStore interface {
-		Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
-		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
+		Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
+		Get(id string) (*model.ShopTranslation, error)                            // Get finds a shop translation with given id then return it with an error
 	}
 	VatStore interface {
 		Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error)
@@ -204,7 +204,6 @@ type FileInfoStore interface {
 type (
 	AttributeStore interface {
 		Delete(ids ...string) (int64, error)
-		ScanFields(attr *model.Attribute) []any
 		Upsert(attr model.Attribute) (*model.Attribute, error)                           // Upsert inserts or updates given model then returns it
 		FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) // FilterbyOption returns a list of attributes by given option
 		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error)
@@ -214,7 +213,6 @@ type (
 	AttributeTranslationStore interface {
 	}
 	AttributeValueStore interface {
-		ScanFields(attributeValue *model.AttributeValue) []any
 		Count(options model.AttributeValueFilterOptions) (int64, error)
 		Delete(tx boil.ContextTransactor, ids ...string) (int64, error)
 		Upsert(av model.AttributeValue) (*model.AttributeValue, error)
@@ -242,7 +240,6 @@ type (
 		GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error)
 	}
 	AssignedVariantAttributeValueStore interface {
-		ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []any
 		Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                                 // Save inserts new value into database then returns it with an error
 		Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                     // Get try finding a value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error)                                                    // SaveInBulk save multiple values into database then returns them
@@ -263,7 +260,6 @@ type (
 		FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
 	}
 	AssignedProductAttributeValueStore interface {
-		ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []any
 		Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                             // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error)    // SaveInBulk save multiple values into database
@@ -278,7 +274,6 @@ type (
 		FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error)
 	}
 	AttributeProductStore interface {
-		ScanFields(attrPrd *model.AttributeProduct) []any
 		Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
 		Get(attributeProductID string) (*model.AttributeProduct, error)                               // Get finds an attributeProduct relationship and returns it with an error
 		GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition
@@ -325,7 +320,6 @@ type (
 		WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
 		Delete(tx boil.ContextTransactor, ids ...string) error
 		Update(warehouse model.Warehouse) (*model.Warehouse, error)
-		ScanFields(wh *model.Warehouse) []any
 		Save(model model.Warehouse) (*model.Warehouse, error)                          // Save inserts given model into database then returns it.
 		FilterByOprion(option model.WarehouseFilterOption) ([]*model.Warehouse, error) // FilterByOprion returns a slice of warehouses with given option
 		GetByOption(option model.WarehouseFilterOption) (*model.Warehouse, error)      // GetByOption finds and returns a model filtered given option
@@ -335,7 +329,6 @@ type (
 		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
 	}
 	StockStore interface {
-		ScanFields(stock *model.Stock) []any
 		Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error)
 		Get(stockID string) (*model.Stock, error)                                                                               // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)              // FilterForCountryAndChannel finds and returns stocks with given options
@@ -355,9 +348,8 @@ type (
 	}
 	PreorderAllocationStore interface {
 		BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) // BulkCreate bulk inserts given preorderAllocations and returns them
-		ScanFields(preorderAllocation *model.PreorderAllocation) []any
-		FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
-		Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error                            // Delete deletes preorder-allocations by given ids
+		FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                             // FilterByOption finds and returns a list of preorder allocations filtered using given options
+		Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error                                                        // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -365,7 +357,6 @@ type (
 type (
 	ShippingZoneStore interface {
 		ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds, channelIds []string, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
-		ScanFields(shippingZone *model.ShippingZone) []any
 		Delete(tx boil.ContextTransactor, conditions model.ShippingZoneFilterOption) (int64, error)
 		Upsert(tx boil.ContextTransactor, shippingZone model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*model.ShippingZone, error)                                         // Get finds 1 model zone for given shippingZoneID
@@ -383,7 +374,6 @@ type (
 	ShippingMethodPostalCodeRuleStore interface {
 		Delete(tx boil.ContextTransactor, ids ...string) error
 		Save(tx boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error)
-		ScanFields(rule *model.ShippingMethodPostalCodeRule) []any
 		FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error)
 	}
 	ShippingMethodChannelListingStore interface {
@@ -409,7 +399,6 @@ type (
 		Upsert(collection *model.Collection) (*model.Collection, error)                          // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*model.Collection, error)                                      // Get finds and returns collection with given collectionID
 		FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
-		ScanFields(col *model.Collection) []any
 		Delete(ids ...string) error
 	}
 	CollectionProductStore interface {
@@ -430,13 +419,11 @@ type (
 	}
 	DigitalContentStore interface {
 		Delete(tx boil.ContextTransactor, options *model.DigitalContentFilterOption) error
-		ScanFields(content *model.DigitalContent) []any
 		Save(content *model.DigitalContent) (*model.DigitalContent, error)                               // Save inserts given digital content into database then returns it
 		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)             // GetByOption finds and returns 1 digital content filtered using given option
 		FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
-		ScanFields(listing *model.ProductVariantChannelListing) []any
 		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                       // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                   // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
 		FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                              // FilterbyOption finds and returns all product variant channel listings filterd using given option
@@ -450,7 +437,6 @@ type (
 	ProductVariantStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error)
-		ScanFields(variant *model.ProductVariant) []any
 		Save(tx boil.ContextTransactor, variant *model.ProductVariant) (*model.ProductVariant, error) // Save inserts product variant instance to database
 		Get(id string) (*model.ProductVariant, error)                                                 // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                               // GetWeight returns weight of given product variant
@@ -495,7 +481,6 @@ type (
 		FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error)             // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
-		ScanFields(product *model.Product) []any
 		Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error)
 		GetByOption(option *model.ProductFilterOption) (*model.Product, error)                                                                                          // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error)                                                                                   // FilterByOption finds and returns all products that satisfy given option
@@ -513,7 +498,6 @@ type (
 // model
 type (
 	PaymentStore interface {
-		ScanFields(payMent *model.Payment) []any
 		Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
 		Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                  // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
@@ -543,7 +527,6 @@ type (
 // order
 type (
 	OrderLineStore interface {
-		ScanFields(orderLine *model.OrderLine) []any
 		Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                         // Get returns a order line with id of given id
 		BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error                               // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
@@ -552,7 +535,6 @@ type (
 	}
 	OrderStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		ScanFields(holder *model.Order) []any
 		Get(id string) (*model.Order, error)                                                 // Get find order in database with given id
 		FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error)       // FilterByOption returns a list of orders, filtered by given option
 		BulkUpsert(tx boil.ContextTransactor, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
@@ -570,7 +552,6 @@ type (
 		DeleteFulfillmentLinesByOption(tx boil.ContextTransactor, option *model.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
-		ScanFields(holder *model.Fulfillment) []any
 		Upsert(tx boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) // Upsert depends on given fulfillment's Id to decide update or insert it
 		Get(id string) (*model.Fulfillment, error)                                                    // Get finds and return a fulfillment by given id
 		GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error)                // GetByOption returns 1 fulfillment, filtered by given option
@@ -669,7 +650,6 @@ type (
 		Delete(tx boil.ContextTransactor, option *model.VoucherChannelListingFilterOption) error
 	}
 	DiscountVoucherStore interface {
-		ScanFields(voucher *model.Voucher) []any
 		Upsert(voucher *model.Voucher) (*model.Voucher, error)                                     // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*model.Voucher, error)                                              // Get finds a voucher with given id, then returns it with an error
 		FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
@@ -701,7 +681,6 @@ type (
 // model
 type (
 	CheckoutLineStore interface {
-		ScanFields(line *model.CheckoutLine) []any
 		Upsert(checkoutLine model.CheckoutLine) (*model.CheckoutLine, error)               // Upsert checks whether to update or insert given model line then performs according operation
 		Get(id string) (*model.CheckoutLine, error)                                        // Get returns a model line with given id
 		DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error             // DeleteLines deletes all model lines with given uuids
@@ -728,7 +707,6 @@ type (
 
 // channel
 type ChannelStore interface {
-	// ScanFields(chanNel *model.Channel) []any
 	Get(id string) (*model.Channel, error)
 	GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error)
 	Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error)
@@ -811,7 +789,6 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ScanFields(addr *model.Address) []any
 		Upsert(tx boil.ContextTransactor, address model.Address) (*model.Address, error)
 		Get(addressID string) (*model.Address, error)                                        // Get returns an Address with given addressID is exist
 		DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error                // DeleteAddress deletes given address and returns an error
@@ -819,7 +796,6 @@ type (
 	}
 	UserStore interface {
 		ClearCaches()
-		ScanFields(user *model.User) []any
 		Save(user model.User) (*model.User, error)                                      // Save takes an user struct and save into database
 		Update(user model.User, allowRoleUpdate bool) (*model_helper.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string, updateMillis int64) error

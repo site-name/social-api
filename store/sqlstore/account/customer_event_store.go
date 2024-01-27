@@ -19,7 +19,7 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return &SqlCustomerEventStore{s}
 }
 
-func (cs *SqlCustomerEventStore) Upsert(tx store.ContextRunner, event model.CustomerEvent) (*model.CustomerEvent, error) {
+func (cs *SqlCustomerEventStore) Upsert(tx boil.ContextTransactor, event model.CustomerEvent) (*model.CustomerEvent, error) {
 	if err := model_helper.CustomerEventIsValid(event); err != nil {
 		return nil, err
 	}

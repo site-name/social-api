@@ -2,6 +2,8 @@ package audit
 
 import (
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -15,40 +17,23 @@ func NewSqlAuditStore(sqlStore store.Store) store.AuditStore {
 	return &SqlAuditStore{sqlStore}
 }
 
-func (s *SqlAuditStore) Save(audit *model.Audit) error {
-	err := s.GetMaster().Create(audit).Error
+func (s *SqlAuditStore) Save(audit model.Audit) error {
+	err := audit.Insert(s.GetMaster(), boil.Infer())
 	if err != nil {
-		return errors.Wrapf(err, "failed to save Audit with userId=%s and action=%s", audit.UserId, audit.Action)
+		return errors.Wrapf(err, "failed to save Audit with userId=%s and action=%s", audit.UserID, audit.Action)
 	}
 	return nil
 }
 
-func (s *SqlAuditStore) Get(userId string, offset int, limit int) (model.Audits, error) {
-	if limit > 1000 {
+func (s *SqlAuditStore) Get(userId string, offset int, limit int) (model.AuditSlice, error) {
+	if limit > 1000 || limit <= 0 {
 		return nil, store.NewErrOutOfBounds(limit)
 	}
 
-	query := s.GetQueryBuilder().Select("*").From(model.AuditTableName)
-	if offset > 0 {
-		query = query.Offset(uint64(offset))
-	}
-	if limit > 0 {
-		query = query.Limit(uint64(limit))
-	}
-
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "Get_ToSql")
-	}
-
-	var audits model.Audits
-	err = s.GetReplica().Raw(queryStr, args...).Scan(&audits).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get Audit list for userId=%s", userId)
-	}
-	return audits, nil
+	return model.Audits(model.AuditWhere.UserID.EQ(userId), qm.Limit(limit), qm.Offset(offset)).All(s.GetReplica())
 }
 
 func (s *SqlAuditStore) PermanentDeleteByUser(userId string) error {
-	return s.GetMaster().Raw("DELETE FROM "+model.AuditTableName+" WHERE UserId = ?", userId).Error
+	_, err := model.Audits(model.AuditWhere.UserID.EQ(userId)).DeleteAll(s.GetMaster())
+	return err
 }

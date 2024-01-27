@@ -135,7 +135,7 @@ func (a *App) Timezones() *timezones.Timezones {
 func (a *App) DBHealthCheckWrite() error {
 	currentTime := strconv.FormatInt(time.Now().Unix(), 10)
 
-	return a.Srv().Store.System().SaveOrUpdate(&model.System{
+	return a.Srv().Store.System().SaveOrUpdate(model.System{
 		Name:  a.dbHealthCheckKey(),
 		Value: currentTime,
 	})

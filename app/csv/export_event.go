@@ -8,7 +8,7 @@ import (
 )
 
 // CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
-func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model_helper.AppError) {
+func (s *ServiceCsv) CommonCreateExportEvent(exportEvent model.ExportEvent) (*model.ExportEvent, *model_helper.AppError) {
 	newExportEvent, err := s.srv.Store.CsvExportEvent().Save(exportEvent)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -21,7 +21,7 @@ func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *model.ExportEvent) (*m
 }
 
 // ExportEventsByOption returns a list of export events filtered using given options
-func (s *ServiceCsv) ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError) {
+func (s *ServiceCsv) ExportEventsByOption(options model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError) {
 	events, err := s.srv.Store.CsvExportEvent().FilterByOption(options)
 	var (
 		statusCode   int

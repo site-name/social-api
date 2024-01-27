@@ -16,7 +16,7 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 }
 
 // Save inserts given csv export file into database then returns it
-func (cs *SqlCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
+func (cs *SqlCsvExportFileStore) Save(file model.ExportFile) (*model.ExportFile, error) {
 	if err := cs.GetMaster().Create(file).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to save ExportFile with Id=%s", file.Id)
 	}

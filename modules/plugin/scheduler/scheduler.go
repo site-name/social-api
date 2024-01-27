@@ -14,5 +14,5 @@ func MakeScheduler(jobServer *jobs.JobServer) model_helper.Scheduler {
 	isEnabled := func(cfg *model_helper.Config) bool {
 		return true
 	}
-	return jobs.NewPeriodicScheduler(jobServer, model.JobtypePlugins, schedFreq, isEnabled)
+	return jobs.NewPeriodicScheduler(jobServer, model.JobTypePlugins, schedFreq, isEnabled)
 }

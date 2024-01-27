@@ -25,14 +25,14 @@ func (a *App) GetComplianceReports(page, perPage int) (model.ComplianceSlice, *m
 }
 
 // SaveComplianceReport
-func (a *App) SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model_helper.AppError) {
+func (a *App) SaveComplianceReport(job model.Compliance) (*model.Compliance, *model_helper.AppError) {
 	if !*a.Config().ComplianceSettings.Enable || a.Compliance() == nil {
 		return nil, model_helper.NewAppError("SaveComplianceReport", "ent.compliance.license_disable.app_error", nil, "", http.StatusNotImplemented)
 	}
 
 	job.Type = model.ComplianceTypeAdhoc
 
-	job, err := a.Srv().Store.Compliance().Save(job)
+	savedJob, err := a.Srv().Store.Compliance().Save(job)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -40,7 +40,7 @@ func (a *App) SaveComplianceReport(job *model.Compliance) (*model.Compliance, *m
 		return nil, model_helper.NewAppError("SaveComplianceReport", "app.compliance.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	jCopy := job.DeepCopy()
+	jCopy := savedJob.DeepCopy()
 	a.Srv().Go(func() {
 		err := a.Compliance().RunComplianceJob(jCopy)
 		if err != nil {
@@ -48,7 +48,7 @@ func (a *App) SaveComplianceReport(job *model.Compliance) (*model.Compliance, *m
 		}
 	})
 
-	return job, nil
+	return savedJob, nil
 }
 
 func (a *App) GetComplianceReport(reportID string) (*model.Compliance, *model_helper.AppError) {

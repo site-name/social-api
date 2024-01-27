@@ -16,7 +16,7 @@ func NewSqlVatStore(s store.Store) store.VatStore {
 	return &sqlVatStore{s}
 }
 
-func (s *sqlVatStore) Upsert(tx store.ContextRunner, vats model.VatSlice) (model.VatSlice, error) {
+func (s *sqlVatStore) Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error) {
 	if tx == nil {
 		tx = s.GetMaster()
 	}
@@ -24,9 +24,9 @@ func (s *sqlVatStore) Upsert(tx store.ContextRunner, vats model.VatSlice) (model
 	for _, vat := range vats {
 		var err error
 		if vat.ID == "" {
-			err = vat.Insert(s.Context(), tx, boil.Infer())
+			err = vat.Insert(tx, boil.Infer())
 		} else {
-			_, err = vat.Update(s.Context(), tx, boil.Infer())
+			_, err = vat.Update(tx, boil.Infer())
 		}
 
 		if err != nil {
@@ -38,5 +38,5 @@ func (s *sqlVatStore) Upsert(tx store.ContextRunner, vats model.VatSlice) (model
 }
 
 func (s *sqlVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
-	return model.Vats(options...).All(s.Context(), s.GetReplica())
+	return model.Vats(options...).All(s.GetReplica())
 }

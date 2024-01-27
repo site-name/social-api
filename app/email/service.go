@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/store"
 	"github.com/throttled/throttled"
@@ -28,7 +28,7 @@ func condenseSiteURL(siteURL string) string {
 }
 
 type Service struct {
-	config func() *model.Config
+	config func() *model_helper.Config
 	goFn   func(f func())
 
 	store                   store.Store
@@ -39,7 +39,7 @@ type Service struct {
 }
 
 type ServiceConfig struct {
-	ConfigFn          func() *model.Config
+	ConfigFn          func() *model_helper.Config
 	GoFn              func(f func())
 	TemplateContainer *templates.Container
 	Store             store.Store

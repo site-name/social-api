@@ -118,7 +118,7 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 		}
 
 		return a.GetOrCreateAssignedProductAttribute(&model.AssignedProductAttribute{
-			ProductID:    v.Id,
+			ProductID:    v.ID,
 			AssignmentID: attributeProduct.Id,
 		})
 
@@ -176,14 +176,14 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 	switch instance.(type) {
 	case *model.Product:
 		if assignmentValue, ok := assignment.(*model.AssignedProductAttribute); !ok {
-			assignedProductAttrValues, attrValues, err := a.srv.Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedProductAttrValues, attrValues, err := a.srv.Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.ID)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return model_helper.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_product_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedProductAttrValues) == len(attrValues)
 			sort.Slice(assignedProductAttrValues, func(i, j int) bool {
-				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
+				return sort.SearchStrings(valueIDs, attrValues[i].ID) <= sort.SearchStrings(valueIDs, attrValues[j].ID)
 			})
 			for i, value := range assignedProductAttrValues {
 				value.SortOrder = &i
@@ -198,14 +198,14 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 
 	case *model.ProductVariant:
 		if assignmentValue, ok := assignment.(*model.AssignedVariantAttribute); ok {
-			assignedVariantAttrValues, attrValues, err := a.srv.Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedVariantAttrValues, attrValues, err := a.srv.Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.ID)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return model_helper.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_variant_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedVariantAttrValues) == len(attrValues)
 			sort.Slice(assignedVariantAttrValues, func(i, j int) bool {
-				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
+				return sort.SearchStrings(valueIDs, attrValues[i].ID) <= sort.SearchStrings(valueIDs, attrValues[j].ID)
 			})
 			for i, value := range assignedVariantAttrValues {
 				value.SortOrder = &i
@@ -220,14 +220,14 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 
 	case *model.Page:
 		if assignmentValue, ok := assignment.(*model.AssignedPageAttribute); ok {
-			assignedPageAttrValues, attrValues, err := a.srv.Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedPageAttrValues, attrValues, err := a.srv.Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.ID)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return model_helper.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_page_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedPageAttrValues) == len(attrValues)
 			sort.Slice(assignedPageAttrValues, func(i, j int) bool {
-				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
+				return sort.SearchStrings(valueIDs, attrValues[i].ID) <= sort.SearchStrings(valueIDs, attrValues[j].ID)
 			})
 			for i, value := range assignedPageAttrValues {
 				value.SortOrder = &i

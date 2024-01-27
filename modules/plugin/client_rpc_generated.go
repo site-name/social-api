@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -1494,7 +1495,7 @@ type Z_KVSetWithOptionsReturns struct {
 	B *model_helper.AppError
 }
 
-func (g *apiRPCClient) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError) {
+func (g *apiRPCClient) KVSetWithOptions(key string, value []byte, options model_helper.PluginKVSetOptions) (bool, *model_helper.AppError) {
 	_args := &Z_KVSetWithOptionsArgs{key, value, options}
 	_returns := &Z_KVSetWithOptionsReturns{}
 	if err := g.client.Call("Plugin.KVSetWithOptions", _args, _returns); err != nil {
@@ -1661,13 +1662,13 @@ func (s *apiRPCServer) KVList(args *Z_KVListArgs, returns *Z_KVListReturns) erro
 type Z_PublishWebSocketEventArgs struct {
 	A string
 	B map[string]interface{}
-	C *model.WebsocketBroadcast
+	C *model_helper.WebsocketBroadcast
 }
 
 type Z_PublishWebSocketEventReturns struct {
 }
 
-func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
+func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast) {
 	_args := &Z_PublishWebSocketEventArgs{event, payload, broadcast}
 	_returns := &Z_PublishWebSocketEventReturns{}
 	if err := g.client.Call("Plugin.PublishWebSocketEvent", _args, _returns); err != nil {
@@ -1678,7 +1679,7 @@ func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]in
 
 func (s *apiRPCServer) PublishWebSocketEvent(args *Z_PublishWebSocketEventArgs, returns *Z_PublishWebSocketEventReturns) error {
 	if hook, ok := s.impl.(interface {
-		PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast)
+		PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast)
 	}); ok {
 		hook.PublishWebSocketEvent(args.A, args.B, args.C)
 	} else {
@@ -1689,14 +1690,14 @@ func (s *apiRPCServer) PublishWebSocketEvent(args *Z_PublishWebSocketEventArgs, 
 
 type Z_HasPermissionToArgs struct {
 	A string
-	B *model.Permission
+	B *model_helper.Permission
 }
 
 type Z_HasPermissionToReturns struct {
 	A bool
 }
 
-func (g *apiRPCClient) HasPermissionTo(userID string, permission *model.Permission) bool {
+func (g *apiRPCClient) HasPermissionTo(userID string, permission *model_helper.Permission) bool {
 	_args := &Z_HasPermissionToArgs{userID, permission}
 	_returns := &Z_HasPermissionToReturns{}
 	if err := g.client.Call("Plugin.HasPermissionTo", _args, _returns); err != nil {
@@ -1707,7 +1708,7 @@ func (g *apiRPCClient) HasPermissionTo(userID string, permission *model.Permissi
 
 func (s *apiRPCServer) HasPermissionTo(args *Z_HasPermissionToArgs, returns *Z_HasPermissionToReturns) error {
 	if hook, ok := s.impl.(interface {
-		HasPermissionTo(userID string, permission *model.Permission) bool
+		HasPermissionTo(userID string, permission *model_helper.Permission) bool
 	}); ok {
 		returns.A = hook.HasPermissionTo(args.A, args.B)
 	} else {

@@ -16,7 +16,7 @@ func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
 }
 
 // Upsert depends on translation's Id then decides to update or insert
-func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
+func (sts *SqlShopTranslationStore) Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) {
 	err := sts.GetMaster().Save(translation).Error
 	if err != nil {
 		if sts.IsUniqueConstraintError(err, []string{"LanguageCode", "shoptranslations_languagecode_shopid_key"}) {
