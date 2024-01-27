@@ -4500,422 +4500,6 @@ func (e NullAttributeEntityType) Value() (driver.Value, error) {
 	return string(e.Val), nil
 }
 
-type ComplianceStatus string
-
-// Enum values for ComplianceStatus
-const (
-	ComplianceStatusCreated  ComplianceStatus = "created"
-	ComplianceStatusRunning  ComplianceStatus = "running"
-	ComplianceStatusFinished ComplianceStatus = "finished"
-	ComplianceStatusFailed   ComplianceStatus = "failed"
-	ComplianceStatusRemoved  ComplianceStatus = "removed"
-)
-
-func AllComplianceStatus() []ComplianceStatus {
-	return []ComplianceStatus{
-		ComplianceStatusCreated,
-		ComplianceStatusRunning,
-		ComplianceStatusFinished,
-		ComplianceStatusFailed,
-		ComplianceStatusRemoved,
-	}
-}
-
-func (e ComplianceStatus) IsValid() error {
-	switch e {
-	case ComplianceStatusCreated, ComplianceStatusRunning, ComplianceStatusFinished, ComplianceStatusFailed, ComplianceStatusRemoved:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e ComplianceStatus) String() string {
-	return string(e)
-}
-
-func (e ComplianceStatus) Ordinal() int {
-	switch e {
-	case ComplianceStatusCreated:
-		return 0
-	case ComplianceStatusRunning:
-		return 1
-	case ComplianceStatusFinished:
-		return 2
-	case ComplianceStatusFailed:
-		return 3
-	case ComplianceStatusRemoved:
-		return 4
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type ComplianceType string
-
-// Enum values for ComplianceType
-const (
-	ComplianceTypeDaily ComplianceType = "daily"
-	ComplianceTypeAdhoc ComplianceType = "adhoc"
-)
-
-func AllComplianceType() []ComplianceType {
-	return []ComplianceType{
-		ComplianceTypeDaily,
-		ComplianceTypeAdhoc,
-	}
-}
-
-func (e ComplianceType) IsValid() error {
-	switch e {
-	case ComplianceTypeDaily, ComplianceTypeAdhoc:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e ComplianceType) String() string {
-	return string(e)
-}
-
-func (e ComplianceType) Ordinal() int {
-	switch e {
-	case ComplianceTypeDaily:
-		return 0
-	case ComplianceTypeAdhoc:
-		return 1
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type CustomerEventType string
-
-// Enum values for CustomerEventType
-const (
-	CustomerEventTypeACCOUNT_CREATED          CustomerEventType = "ACCOUNT_CREATED"
-	CustomerEventTypePASSWORD_RESET_LINK_SENT CustomerEventType = "PASSWORD_RESET_LINK_SENT"
-	CustomerEventTypePASSWORD_RESET           CustomerEventType = "PASSWORD_RESET"
-	CustomerEventTypePASSWORD_CHANGED         CustomerEventType = "PASSWORD_CHANGED"
-	CustomerEventTypeEMAIL_CHANGED_REQUEST    CustomerEventType = "EMAIL_CHANGED_REQUEST"
-	CustomerEventTypeEMAIL_CHANGED            CustomerEventType = "EMAIL_CHANGED"
-	CustomerEventTypePLACED_ORDER             CustomerEventType = "PLACED_ORDER"
-	CustomerEventTypeNOTE_ADDED_TO_ORDER      CustomerEventType = "NOTE_ADDED_TO_ORDER"
-	CustomerEventTypeDIGITAL_LINK_DOWNLOADED  CustomerEventType = "DIGITAL_LINK_DOWNLOADED"
-	CustomerEventTypeCUSTOMER_DELETED         CustomerEventType = "CUSTOMER_DELETED"
-	CustomerEventTypeEMAIL_ASSIGNED           CustomerEventType = "EMAIL_ASSIGNED"
-	CustomerEventTypeNAME_ASSIGNED            CustomerEventType = "NAME_ASSIGNED"
-	CustomerEventTypeNOTE_ADDED               CustomerEventType = "NOTE_ADDED"
-	CustomerEventTypeACCOUNT_ACTIVATED        CustomerEventType = "ACCOUNT_ACTIVATED"
-	CustomerEventTypeACCOUNT_DEACTIVATED      CustomerEventType = "ACCOUNT_DEACTIVATED"
-)
-
-func AllCustomerEventType() []CustomerEventType {
-	return []CustomerEventType{
-		CustomerEventTypeACCOUNT_CREATED,
-		CustomerEventTypePASSWORD_RESET_LINK_SENT,
-		CustomerEventTypePASSWORD_RESET,
-		CustomerEventTypePASSWORD_CHANGED,
-		CustomerEventTypeEMAIL_CHANGED_REQUEST,
-		CustomerEventTypeEMAIL_CHANGED,
-		CustomerEventTypePLACED_ORDER,
-		CustomerEventTypeNOTE_ADDED_TO_ORDER,
-		CustomerEventTypeDIGITAL_LINK_DOWNLOADED,
-		CustomerEventTypeCUSTOMER_DELETED,
-		CustomerEventTypeEMAIL_ASSIGNED,
-		CustomerEventTypeNAME_ASSIGNED,
-		CustomerEventTypeNOTE_ADDED,
-		CustomerEventTypeACCOUNT_ACTIVATED,
-		CustomerEventTypeACCOUNT_DEACTIVATED,
-	}
-}
-
-func (e CustomerEventType) IsValid() error {
-	switch e {
-	case CustomerEventTypeACCOUNT_CREATED, CustomerEventTypePASSWORD_RESET_LINK_SENT, CustomerEventTypePASSWORD_RESET, CustomerEventTypePASSWORD_CHANGED, CustomerEventTypeEMAIL_CHANGED_REQUEST, CustomerEventTypeEMAIL_CHANGED, CustomerEventTypePLACED_ORDER, CustomerEventTypeNOTE_ADDED_TO_ORDER, CustomerEventTypeDIGITAL_LINK_DOWNLOADED, CustomerEventTypeCUSTOMER_DELETED, CustomerEventTypeEMAIL_ASSIGNED, CustomerEventTypeNAME_ASSIGNED, CustomerEventTypeNOTE_ADDED, CustomerEventTypeACCOUNT_ACTIVATED, CustomerEventTypeACCOUNT_DEACTIVATED:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e CustomerEventType) String() string {
-	return string(e)
-}
-
-func (e CustomerEventType) Ordinal() int {
-	switch e {
-	case CustomerEventTypeACCOUNT_CREATED:
-		return 0
-	case CustomerEventTypePASSWORD_RESET_LINK_SENT:
-		return 1
-	case CustomerEventTypePASSWORD_RESET:
-		return 2
-	case CustomerEventTypePASSWORD_CHANGED:
-		return 3
-	case CustomerEventTypeEMAIL_CHANGED_REQUEST:
-		return 4
-	case CustomerEventTypeEMAIL_CHANGED:
-		return 5
-	case CustomerEventTypePLACED_ORDER:
-		return 6
-	case CustomerEventTypeNOTE_ADDED_TO_ORDER:
-		return 7
-	case CustomerEventTypeDIGITAL_LINK_DOWNLOADED:
-		return 8
-	case CustomerEventTypeCUSTOMER_DELETED:
-		return 9
-	case CustomerEventTypeEMAIL_ASSIGNED:
-		return 10
-	case CustomerEventTypeNAME_ASSIGNED:
-		return 11
-	case CustomerEventTypeNOTE_ADDED:
-		return 12
-	case CustomerEventTypeACCOUNT_ACTIVATED:
-		return 13
-	case CustomerEventTypeACCOUNT_DEACTIVATED:
-		return 14
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type ContentType string
-
-// Enum values for ContentType
-const (
-	ContentTypeFile ContentType = "file"
-)
-
-func AllContentType() []ContentType {
-	return []ContentType{
-		ContentTypeFile,
-	}
-}
-
-func (e ContentType) IsValid() error {
-	switch e {
-	case ContentTypeFile:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e ContentType) String() string {
-	return string(e)
-}
-
-func (e ContentType) Ordinal() int {
-	switch e {
-	case ContentTypeFile:
-		return 0
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type ExportEventType string
-
-// Enum values for ExportEventType
-const (
-	ExportEventTypeExportPending        ExportEventType = "export_pending"
-	ExportEventTypeExportSuccess        ExportEventType = "export_success"
-	ExportEventTypeExportFailed         ExportEventType = "export_failed"
-	ExportEventTypeExportDeleted        ExportEventType = "export_deleted"
-	ExportEventTypeExportedFileSent     ExportEventType = "exported_file_sent"
-	ExportEventTypeExportFailedInfoSent ExportEventType = "export_failed_info_sent"
-)
-
-func AllExportEventType() []ExportEventType {
-	return []ExportEventType{
-		ExportEventTypeExportPending,
-		ExportEventTypeExportSuccess,
-		ExportEventTypeExportFailed,
-		ExportEventTypeExportDeleted,
-		ExportEventTypeExportedFileSent,
-		ExportEventTypeExportFailedInfoSent,
-	}
-}
-
-func (e ExportEventType) IsValid() error {
-	switch e {
-	case ExportEventTypeExportPending, ExportEventTypeExportSuccess, ExportEventTypeExportFailed, ExportEventTypeExportDeleted, ExportEventTypeExportedFileSent, ExportEventTypeExportFailedInfoSent:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e ExportEventType) String() string {
-	return string(e)
-}
-
-func (e ExportEventType) Ordinal() int {
-	switch e {
-	case ExportEventTypeExportPending:
-		return 0
-	case ExportEventTypeExportSuccess:
-		return 1
-	case ExportEventTypeExportFailed:
-		return 2
-	case ExportEventTypeExportDeleted:
-		return 3
-	case ExportEventTypeExportedFileSent:
-		return 4
-	case ExportEventTypeExportFailedInfoSent:
-		return 5
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type FulfillmentStatus string
-
-// Enum values for FulfillmentStatus
-const (
-	FulfillmentStatusFulfilled           FulfillmentStatus = "fulfilled"
-	FulfillmentStatusRefunded            FulfillmentStatus = "refunded"
-	FulfillmentStatusReturned            FulfillmentStatus = "returned"
-	FulfillmentStatusRefundedAndReturned FulfillmentStatus = "refunded_and_returned"
-	FulfillmentStatusReplaced            FulfillmentStatus = "replaced"
-	FulfillmentStatusCanceled            FulfillmentStatus = "canceled"
-	FulfillmentStatusWaitingForApproval  FulfillmentStatus = "waiting_for_approval"
-)
-
-func AllFulfillmentStatus() []FulfillmentStatus {
-	return []FulfillmentStatus{
-		FulfillmentStatusFulfilled,
-		FulfillmentStatusRefunded,
-		FulfillmentStatusReturned,
-		FulfillmentStatusRefundedAndReturned,
-		FulfillmentStatusReplaced,
-		FulfillmentStatusCanceled,
-		FulfillmentStatusWaitingForApproval,
-	}
-}
-
-func (e FulfillmentStatus) IsValid() error {
-	switch e {
-	case FulfillmentStatusFulfilled, FulfillmentStatusRefunded, FulfillmentStatusReturned, FulfillmentStatusRefundedAndReturned, FulfillmentStatusReplaced, FulfillmentStatusCanceled, FulfillmentStatusWaitingForApproval:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e FulfillmentStatus) String() string {
-	return string(e)
-}
-
-func (e FulfillmentStatus) Ordinal() int {
-	switch e {
-	case FulfillmentStatusFulfilled:
-		return 0
-	case FulfillmentStatusRefunded:
-		return 1
-	case FulfillmentStatusReturned:
-		return 2
-	case FulfillmentStatusRefundedAndReturned:
-		return 3
-	case FulfillmentStatusReplaced:
-		return 4
-	case FulfillmentStatusCanceled:
-		return 5
-	case FulfillmentStatusWaitingForApproval:
-		return 6
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type GiftcardEventType string
-
-// Enum values for GiftcardEventType
-const (
-	GiftcardEventTypeIssued            GiftcardEventType = "issued"
-	GiftcardEventTypeBought            GiftcardEventType = "bought"
-	GiftcardEventTypeUpdated           GiftcardEventType = "updated"
-	GiftcardEventTypeActivated         GiftcardEventType = "activated"
-	GiftcardEventTypeDeactivated       GiftcardEventType = "deactivated"
-	GiftcardEventTypeBalanceReset      GiftcardEventType = "balance_reset"
-	GiftcardEventTypeExpiryDateUpdated GiftcardEventType = "expiry_date_updated"
-	GiftcardEventTypeTagUpdated        GiftcardEventType = "tag_updated"
-	GiftcardEventTypeSentToCustomer    GiftcardEventType = "sent_to_customer"
-	GiftcardEventTypeResent            GiftcardEventType = "resent"
-	GiftcardEventTypeNoteAdded         GiftcardEventType = "note_added"
-	GiftcardEventTypeUsedInOrder       GiftcardEventType = "used_in_order"
-)
-
-func AllGiftcardEventType() []GiftcardEventType {
-	return []GiftcardEventType{
-		GiftcardEventTypeIssued,
-		GiftcardEventTypeBought,
-		GiftcardEventTypeUpdated,
-		GiftcardEventTypeActivated,
-		GiftcardEventTypeDeactivated,
-		GiftcardEventTypeBalanceReset,
-		GiftcardEventTypeExpiryDateUpdated,
-		GiftcardEventTypeTagUpdated,
-		GiftcardEventTypeSentToCustomer,
-		GiftcardEventTypeResent,
-		GiftcardEventTypeNoteAdded,
-		GiftcardEventTypeUsedInOrder,
-	}
-}
-
-func (e GiftcardEventType) IsValid() error {
-	switch e {
-	case GiftcardEventTypeIssued, GiftcardEventTypeBought, GiftcardEventTypeUpdated, GiftcardEventTypeActivated, GiftcardEventTypeDeactivated, GiftcardEventTypeBalanceReset, GiftcardEventTypeExpiryDateUpdated, GiftcardEventTypeTagUpdated, GiftcardEventTypeSentToCustomer, GiftcardEventTypeResent, GiftcardEventTypeNoteAdded, GiftcardEventTypeUsedInOrder:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e GiftcardEventType) String() string {
-	return string(e)
-}
-
-func (e GiftcardEventType) Ordinal() int {
-	switch e {
-	case GiftcardEventTypeIssued:
-		return 0
-	case GiftcardEventTypeBought:
-		return 1
-	case GiftcardEventTypeUpdated:
-		return 2
-	case GiftcardEventTypeActivated:
-		return 3
-	case GiftcardEventTypeDeactivated:
-		return 4
-	case GiftcardEventTypeBalanceReset:
-		return 5
-	case GiftcardEventTypeExpiryDateUpdated:
-		return 6
-	case GiftcardEventTypeTagUpdated:
-		return 7
-	case GiftcardEventTypeSentToCustomer:
-		return 8
-	case GiftcardEventTypeResent:
-		return 9
-	case GiftcardEventTypeNoteAdded:
-		return 10
-	case GiftcardEventTypeUsedInOrder:
-		return 11
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
 type Currency string
 
 // Enum values for Currency
@@ -5634,6 +5218,422 @@ func (e Currency) Ordinal() int {
 		return 171
 	case CurrencyZWL:
 		return 172
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type ComplianceStatus string
+
+// Enum values for ComplianceStatus
+const (
+	ComplianceStatusCreated  ComplianceStatus = "created"
+	ComplianceStatusRunning  ComplianceStatus = "running"
+	ComplianceStatusFinished ComplianceStatus = "finished"
+	ComplianceStatusFailed   ComplianceStatus = "failed"
+	ComplianceStatusRemoved  ComplianceStatus = "removed"
+)
+
+func AllComplianceStatus() []ComplianceStatus {
+	return []ComplianceStatus{
+		ComplianceStatusCreated,
+		ComplianceStatusRunning,
+		ComplianceStatusFinished,
+		ComplianceStatusFailed,
+		ComplianceStatusRemoved,
+	}
+}
+
+func (e ComplianceStatus) IsValid() error {
+	switch e {
+	case ComplianceStatusCreated, ComplianceStatusRunning, ComplianceStatusFinished, ComplianceStatusFailed, ComplianceStatusRemoved:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e ComplianceStatus) String() string {
+	return string(e)
+}
+
+func (e ComplianceStatus) Ordinal() int {
+	switch e {
+	case ComplianceStatusCreated:
+		return 0
+	case ComplianceStatusRunning:
+		return 1
+	case ComplianceStatusFinished:
+		return 2
+	case ComplianceStatusFailed:
+		return 3
+	case ComplianceStatusRemoved:
+		return 4
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type ComplianceType string
+
+// Enum values for ComplianceType
+const (
+	ComplianceTypeDaily ComplianceType = "daily"
+	ComplianceTypeAdhoc ComplianceType = "adhoc"
+)
+
+func AllComplianceType() []ComplianceType {
+	return []ComplianceType{
+		ComplianceTypeDaily,
+		ComplianceTypeAdhoc,
+	}
+}
+
+func (e ComplianceType) IsValid() error {
+	switch e {
+	case ComplianceTypeDaily, ComplianceTypeAdhoc:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e ComplianceType) String() string {
+	return string(e)
+}
+
+func (e ComplianceType) Ordinal() int {
+	switch e {
+	case ComplianceTypeDaily:
+		return 0
+	case ComplianceTypeAdhoc:
+		return 1
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type CustomerEventType string
+
+// Enum values for CustomerEventType
+const (
+	CustomerEventTypeACCOUNT_CREATED          CustomerEventType = "ACCOUNT_CREATED"
+	CustomerEventTypePASSWORD_RESET_LINK_SENT CustomerEventType = "PASSWORD_RESET_LINK_SENT"
+	CustomerEventTypePASSWORD_RESET           CustomerEventType = "PASSWORD_RESET"
+	CustomerEventTypePASSWORD_CHANGED         CustomerEventType = "PASSWORD_CHANGED"
+	CustomerEventTypeEMAIL_CHANGED_REQUEST    CustomerEventType = "EMAIL_CHANGED_REQUEST"
+	CustomerEventTypeEMAIL_CHANGED            CustomerEventType = "EMAIL_CHANGED"
+	CustomerEventTypePLACED_ORDER             CustomerEventType = "PLACED_ORDER"
+	CustomerEventTypeNOTE_ADDED_TO_ORDER      CustomerEventType = "NOTE_ADDED_TO_ORDER"
+	CustomerEventTypeDIGITAL_LINK_DOWNLOADED  CustomerEventType = "DIGITAL_LINK_DOWNLOADED"
+	CustomerEventTypeCUSTOMER_DELETED         CustomerEventType = "CUSTOMER_DELETED"
+	CustomerEventTypeEMAIL_ASSIGNED           CustomerEventType = "EMAIL_ASSIGNED"
+	CustomerEventTypeNAME_ASSIGNED            CustomerEventType = "NAME_ASSIGNED"
+	CustomerEventTypeNOTE_ADDED               CustomerEventType = "NOTE_ADDED"
+	CustomerEventTypeACCOUNT_ACTIVATED        CustomerEventType = "ACCOUNT_ACTIVATED"
+	CustomerEventTypeACCOUNT_DEACTIVATED      CustomerEventType = "ACCOUNT_DEACTIVATED"
+)
+
+func AllCustomerEventType() []CustomerEventType {
+	return []CustomerEventType{
+		CustomerEventTypeACCOUNT_CREATED,
+		CustomerEventTypePASSWORD_RESET_LINK_SENT,
+		CustomerEventTypePASSWORD_RESET,
+		CustomerEventTypePASSWORD_CHANGED,
+		CustomerEventTypeEMAIL_CHANGED_REQUEST,
+		CustomerEventTypeEMAIL_CHANGED,
+		CustomerEventTypePLACED_ORDER,
+		CustomerEventTypeNOTE_ADDED_TO_ORDER,
+		CustomerEventTypeDIGITAL_LINK_DOWNLOADED,
+		CustomerEventTypeCUSTOMER_DELETED,
+		CustomerEventTypeEMAIL_ASSIGNED,
+		CustomerEventTypeNAME_ASSIGNED,
+		CustomerEventTypeNOTE_ADDED,
+		CustomerEventTypeACCOUNT_ACTIVATED,
+		CustomerEventTypeACCOUNT_DEACTIVATED,
+	}
+}
+
+func (e CustomerEventType) IsValid() error {
+	switch e {
+	case CustomerEventTypeACCOUNT_CREATED, CustomerEventTypePASSWORD_RESET_LINK_SENT, CustomerEventTypePASSWORD_RESET, CustomerEventTypePASSWORD_CHANGED, CustomerEventTypeEMAIL_CHANGED_REQUEST, CustomerEventTypeEMAIL_CHANGED, CustomerEventTypePLACED_ORDER, CustomerEventTypeNOTE_ADDED_TO_ORDER, CustomerEventTypeDIGITAL_LINK_DOWNLOADED, CustomerEventTypeCUSTOMER_DELETED, CustomerEventTypeEMAIL_ASSIGNED, CustomerEventTypeNAME_ASSIGNED, CustomerEventTypeNOTE_ADDED, CustomerEventTypeACCOUNT_ACTIVATED, CustomerEventTypeACCOUNT_DEACTIVATED:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e CustomerEventType) String() string {
+	return string(e)
+}
+
+func (e CustomerEventType) Ordinal() int {
+	switch e {
+	case CustomerEventTypeACCOUNT_CREATED:
+		return 0
+	case CustomerEventTypePASSWORD_RESET_LINK_SENT:
+		return 1
+	case CustomerEventTypePASSWORD_RESET:
+		return 2
+	case CustomerEventTypePASSWORD_CHANGED:
+		return 3
+	case CustomerEventTypeEMAIL_CHANGED_REQUEST:
+		return 4
+	case CustomerEventTypeEMAIL_CHANGED:
+		return 5
+	case CustomerEventTypePLACED_ORDER:
+		return 6
+	case CustomerEventTypeNOTE_ADDED_TO_ORDER:
+		return 7
+	case CustomerEventTypeDIGITAL_LINK_DOWNLOADED:
+		return 8
+	case CustomerEventTypeCUSTOMER_DELETED:
+		return 9
+	case CustomerEventTypeEMAIL_ASSIGNED:
+		return 10
+	case CustomerEventTypeNAME_ASSIGNED:
+		return 11
+	case CustomerEventTypeNOTE_ADDED:
+		return 12
+	case CustomerEventTypeACCOUNT_ACTIVATED:
+		return 13
+	case CustomerEventTypeACCOUNT_DEACTIVATED:
+		return 14
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type ContentType string
+
+// Enum values for ContentType
+const (
+	ContentTypeFile ContentType = "file"
+)
+
+func AllContentType() []ContentType {
+	return []ContentType{
+		ContentTypeFile,
+	}
+}
+
+func (e ContentType) IsValid() error {
+	switch e {
+	case ContentTypeFile:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e ContentType) String() string {
+	return string(e)
+}
+
+func (e ContentType) Ordinal() int {
+	switch e {
+	case ContentTypeFile:
+		return 0
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type ExportEventType string
+
+// Enum values for ExportEventType
+const (
+	ExportEventTypeExportPending        ExportEventType = "export_pending"
+	ExportEventTypeExportSuccess        ExportEventType = "export_success"
+	ExportEventTypeExportFailed         ExportEventType = "export_failed"
+	ExportEventTypeExportDeleted        ExportEventType = "export_deleted"
+	ExportEventTypeExportedFileSent     ExportEventType = "exported_file_sent"
+	ExportEventTypeExportFailedInfoSent ExportEventType = "export_failed_info_sent"
+)
+
+func AllExportEventType() []ExportEventType {
+	return []ExportEventType{
+		ExportEventTypeExportPending,
+		ExportEventTypeExportSuccess,
+		ExportEventTypeExportFailed,
+		ExportEventTypeExportDeleted,
+		ExportEventTypeExportedFileSent,
+		ExportEventTypeExportFailedInfoSent,
+	}
+}
+
+func (e ExportEventType) IsValid() error {
+	switch e {
+	case ExportEventTypeExportPending, ExportEventTypeExportSuccess, ExportEventTypeExportFailed, ExportEventTypeExportDeleted, ExportEventTypeExportedFileSent, ExportEventTypeExportFailedInfoSent:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e ExportEventType) String() string {
+	return string(e)
+}
+
+func (e ExportEventType) Ordinal() int {
+	switch e {
+	case ExportEventTypeExportPending:
+		return 0
+	case ExportEventTypeExportSuccess:
+		return 1
+	case ExportEventTypeExportFailed:
+		return 2
+	case ExportEventTypeExportDeleted:
+		return 3
+	case ExportEventTypeExportedFileSent:
+		return 4
+	case ExportEventTypeExportFailedInfoSent:
+		return 5
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type FulfillmentStatus string
+
+// Enum values for FulfillmentStatus
+const (
+	FulfillmentStatusFulfilled           FulfillmentStatus = "fulfilled"
+	FulfillmentStatusRefunded            FulfillmentStatus = "refunded"
+	FulfillmentStatusReturned            FulfillmentStatus = "returned"
+	FulfillmentStatusRefundedAndReturned FulfillmentStatus = "refunded_and_returned"
+	FulfillmentStatusReplaced            FulfillmentStatus = "replaced"
+	FulfillmentStatusCanceled            FulfillmentStatus = "canceled"
+	FulfillmentStatusWaitingForApproval  FulfillmentStatus = "waiting_for_approval"
+)
+
+func AllFulfillmentStatus() []FulfillmentStatus {
+	return []FulfillmentStatus{
+		FulfillmentStatusFulfilled,
+		FulfillmentStatusRefunded,
+		FulfillmentStatusReturned,
+		FulfillmentStatusRefundedAndReturned,
+		FulfillmentStatusReplaced,
+		FulfillmentStatusCanceled,
+		FulfillmentStatusWaitingForApproval,
+	}
+}
+
+func (e FulfillmentStatus) IsValid() error {
+	switch e {
+	case FulfillmentStatusFulfilled, FulfillmentStatusRefunded, FulfillmentStatusReturned, FulfillmentStatusRefundedAndReturned, FulfillmentStatusReplaced, FulfillmentStatusCanceled, FulfillmentStatusWaitingForApproval:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e FulfillmentStatus) String() string {
+	return string(e)
+}
+
+func (e FulfillmentStatus) Ordinal() int {
+	switch e {
+	case FulfillmentStatusFulfilled:
+		return 0
+	case FulfillmentStatusRefunded:
+		return 1
+	case FulfillmentStatusReturned:
+		return 2
+	case FulfillmentStatusRefundedAndReturned:
+		return 3
+	case FulfillmentStatusReplaced:
+		return 4
+	case FulfillmentStatusCanceled:
+		return 5
+	case FulfillmentStatusWaitingForApproval:
+		return 6
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type GiftcardEventType string
+
+// Enum values for GiftcardEventType
+const (
+	GiftcardEventTypeIssued            GiftcardEventType = "issued"
+	GiftcardEventTypeBought            GiftcardEventType = "bought"
+	GiftcardEventTypeUpdated           GiftcardEventType = "updated"
+	GiftcardEventTypeActivated         GiftcardEventType = "activated"
+	GiftcardEventTypeDeactivated       GiftcardEventType = "deactivated"
+	GiftcardEventTypeBalanceReset      GiftcardEventType = "balance_reset"
+	GiftcardEventTypeExpiryDateUpdated GiftcardEventType = "expiry_date_updated"
+	GiftcardEventTypeTagUpdated        GiftcardEventType = "tag_updated"
+	GiftcardEventTypeSentToCustomer    GiftcardEventType = "sent_to_customer"
+	GiftcardEventTypeResent            GiftcardEventType = "resent"
+	GiftcardEventTypeNoteAdded         GiftcardEventType = "note_added"
+	GiftcardEventTypeUsedInOrder       GiftcardEventType = "used_in_order"
+)
+
+func AllGiftcardEventType() []GiftcardEventType {
+	return []GiftcardEventType{
+		GiftcardEventTypeIssued,
+		GiftcardEventTypeBought,
+		GiftcardEventTypeUpdated,
+		GiftcardEventTypeActivated,
+		GiftcardEventTypeDeactivated,
+		GiftcardEventTypeBalanceReset,
+		GiftcardEventTypeExpiryDateUpdated,
+		GiftcardEventTypeTagUpdated,
+		GiftcardEventTypeSentToCustomer,
+		GiftcardEventTypeResent,
+		GiftcardEventTypeNoteAdded,
+		GiftcardEventTypeUsedInOrder,
+	}
+}
+
+func (e GiftcardEventType) IsValid() error {
+	switch e {
+	case GiftcardEventTypeIssued, GiftcardEventTypeBought, GiftcardEventTypeUpdated, GiftcardEventTypeActivated, GiftcardEventTypeDeactivated, GiftcardEventTypeBalanceReset, GiftcardEventTypeExpiryDateUpdated, GiftcardEventTypeTagUpdated, GiftcardEventTypeSentToCustomer, GiftcardEventTypeResent, GiftcardEventTypeNoteAdded, GiftcardEventTypeUsedInOrder:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e GiftcardEventType) String() string {
+	return string(e)
+}
+
+func (e GiftcardEventType) Ordinal() int {
+	switch e {
+	case GiftcardEventTypeIssued:
+		return 0
+	case GiftcardEventTypeBought:
+		return 1
+	case GiftcardEventTypeUpdated:
+		return 2
+	case GiftcardEventTypeActivated:
+		return 3
+	case GiftcardEventTypeDeactivated:
+		return 4
+	case GiftcardEventTypeBalanceReset:
+		return 5
+	case GiftcardEventTypeExpiryDateUpdated:
+		return 6
+	case GiftcardEventTypeTagUpdated:
+		return 7
+	case GiftcardEventTypeSentToCustomer:
+		return 8
+	case GiftcardEventTypeResent:
+		return 9
+	case GiftcardEventTypeNoteAdded:
+		return 10
+	case GiftcardEventTypeUsedInOrder:
+		return 11
 
 	default:
 		panic(errors.New("enum is not valid"))
@@ -6574,6 +6574,50 @@ func (e UploadType) Ordinal() int {
 		return 0
 	case UploadTypeImport:
 		return 1
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
+type WarehouseClickAndCollectOption string
+
+// Enum values for WarehouseClickAndCollectOption
+const (
+	WarehouseClickAndCollectOptionDisabled WarehouseClickAndCollectOption = "disabled"
+	WarehouseClickAndCollectOptionLocal    WarehouseClickAndCollectOption = "local"
+	WarehouseClickAndCollectOptionAll      WarehouseClickAndCollectOption = "all"
+)
+
+func AllWarehouseClickAndCollectOption() []WarehouseClickAndCollectOption {
+	return []WarehouseClickAndCollectOption{
+		WarehouseClickAndCollectOptionDisabled,
+		WarehouseClickAndCollectOptionLocal,
+		WarehouseClickAndCollectOptionAll,
+	}
+}
+
+func (e WarehouseClickAndCollectOption) IsValid() error {
+	switch e {
+	case WarehouseClickAndCollectOptionDisabled, WarehouseClickAndCollectOptionLocal, WarehouseClickAndCollectOptionAll:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e WarehouseClickAndCollectOption) String() string {
+	return string(e)
+}
+
+func (e WarehouseClickAndCollectOption) Ordinal() int {
+	switch e {
+	case WarehouseClickAndCollectOptionDisabled:
+		return 0
+	case WarehouseClickAndCollectOptionLocal:
+		return 1
+	case WarehouseClickAndCollectOptionAll:
+		return 2
 
 	default:
 		panic(errors.New("enum is not valid"))

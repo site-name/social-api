@@ -948,7 +948,7 @@ func (a *ServiceAccount) UpdatePasswordAsUser(userID, currentPassword, newPasswo
 		return err
 	}
 
-	if model_types.IsNotNilAndNotZero(user.AuthData.String) {
+	if model_types.NilTypeIsNotNilAndNotZero(user.AuthData.String) {
 		err = model_helper.NewAppError("updatePassword", "api.user.update_password.oauth.app_error", nil, "auth_service="+user.AuthService, http.StatusBadRequest)
 		return err
 	}
@@ -1118,7 +1118,7 @@ func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, 
 		return false, err
 	}
 
-	if model_types.IsNotNilAndNotZero(user.AuthData.String) {
+	if model_types.NilTypeIsNotNilAndNotZero(user.AuthData.String) {
 		return false, model_helper.NewAppError("SendPasswordReset", "api.user.send_password_reset.sso.app_error", nil, "userId="+user.ID, http.StatusBadRequest)
 	}
 

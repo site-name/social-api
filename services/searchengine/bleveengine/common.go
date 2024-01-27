@@ -5,7 +5,6 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/services/searchengine"
 )
 
@@ -97,7 +96,7 @@ func BLVUserFromUserForIndexing(userForIndexing *model_helper.UserForIndexing) *
 		FirstName: userForIndexing.FirstName,
 		LastName:  userForIndexing.LastName,
 		CreatedAt: userForIndexing.CreatedAt,
-		DeleteAt:  model_types.NewNullInt64(userForIndexing.DeletedAt),
+		DeleteAt:  userForIndexing.DeletedAt,
 	}
 
 	// return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)

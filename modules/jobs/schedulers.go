@@ -20,8 +20,8 @@ type Schedulers struct {
 	isLeader             bool
 	running              bool
 
-	schedulers   map[model.Jobtype]model_helper.Scheduler
-	nextRunTimes map[model.Jobtype]*time.Time
+	schedulers   map[model.JobType]model_helper.Scheduler
+	nextRunTimes map[model.JobType]*time.Time
 }
 
 var (
@@ -30,7 +30,7 @@ var (
 	ErrSchedulersUninitialized = errors.New("job schedulers are not initialized")
 )
 
-func (schedulers *Schedulers) AddScheduler(name model.Jobtype, scheduler model_helper.Scheduler) {
+func (schedulers *Schedulers) AddScheduler(name model.JobType, scheduler model_helper.Scheduler) {
 	schedulers.schedulers[name] = scheduler
 }
 
@@ -121,7 +121,7 @@ func (schedulers *Schedulers) Stop() {
 	schedulers.running = false
 }
 
-func (schedulers *Schedulers) scheduleJob(cfg *model_helper.Config, jobType model.Jobtype, scheduler model_helper.Scheduler) (*model.Job, *model_helper.AppError) {
+func (schedulers *Schedulers) scheduleJob(cfg *model_helper.Config, jobType model.JobType, scheduler model_helper.Scheduler) (*model.Job, *model_helper.AppError) {
 	pendingJobs, err := schedulers.jobs.CheckForPendingJobsByType(jobType)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func (schedulers *Schedulers) handleConfigChange(_, new *model_helper.Config) {
 	schedulers.configChanged <- new
 }
 
-func (schedulers *Schedulers) setNextRunTime(cfg *model_helper.Config, name model.Jobtype, now time.Time, pendingJobs bool) {
+func (schedulers *Schedulers) setNextRunTime(cfg *model_helper.Config, name model.JobType, now time.Time, pendingJobs bool) {
 	scheduler := schedulers.schedulers[name]
 
 	if !pendingJobs {

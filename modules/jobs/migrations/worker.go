@@ -168,7 +168,7 @@ func (worker *Worker) runMigration(key string, lastDone string) (bool, string, *
 	}
 
 	if done {
-		if nErr := worker.store.System().Save(&model.System{Name: key, Value: "true"}); nErr != nil {
+		if nErr := worker.store.System().Save(model.System{Name: key, Value: "true"}); nErr != nil {
 			return false, "", model_helper.NewAppError("runMigration", "migrations.system.save.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 		}
 	}

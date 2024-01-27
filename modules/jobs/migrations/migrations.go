@@ -27,7 +27,7 @@ func GetMigrationState(migration string, store store.Store) (string, *model.Job,
 		return MigrationStateCompleted, nil, nil
 	}
 
-	jobs, err := store.Job().FindAll(model.JobWhere.Type.EQ(model.JobtypeMigrations))
+	jobs, err := store.Job().FindAll(model.JobWhere.Type.EQ(model.JobTypeMigrations))
 	if err != nil {
 		return "", nil, model_helper.NewAppError("GetMigrationState", "app.job.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -39,7 +39,7 @@ func GetMigrationState(migration string, store store.Store) (string, *model.Job,
 			}
 
 			switch job.Status {
-			case model.JobstatusInProgress, model.JobstatusPending:
+			case model.JobStatusInProgress, model.JobStatusPending:
 				return MigrationStateInProgress, job, nil
 			default:
 				return MigrationStateUnscheduled, job, nil

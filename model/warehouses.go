@@ -23,16 +23,16 @@ import (
 
 // Warehouse is an object representing the database table.
 type Warehouse struct {
-	ID                    string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                  string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug                  string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	AddressID             model_types.NullString `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
-	Email                 string                 `boil:"email" json:"email" toml:"email" yaml:"email"`
-	ClickAndCollectOption string                 `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
-	IsPrivate             model_types.NullBool   `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
-	CreatedAt             int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata              model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata       model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                    string                         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name                  string                         `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug                  string                         `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	AddressID             model_types.NullString         `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
+	Email                 string                         `boil:"email" json:"email" toml:"email" yaml:"email"`
+	ClickAndCollectOption WarehouseClickAndCollectOption `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
+	IsPrivate             model_types.NullBool           `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
+	CreatedAt             int64                          `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata              model_types.JsonMap            `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata       model_types.JsonMap            `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *warehouseR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L warehouseL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -88,13 +88,48 @@ var WarehouseTableColumns = struct {
 
 // Generated where
 
+type whereHelperWarehouseClickAndCollectOption struct{ field string }
+
+func (w whereHelperWarehouseClickAndCollectOption) EQ(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) NEQ(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) LT(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) LTE(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) GT(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) GTE(x WarehouseClickAndCollectOption) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelperWarehouseClickAndCollectOption) IN(slice []WarehouseClickAndCollectOption) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperWarehouseClickAndCollectOption) NIN(slice []WarehouseClickAndCollectOption) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var WarehouseWhere = struct {
 	ID                    whereHelperstring
 	Name                  whereHelperstring
 	Slug                  whereHelperstring
 	AddressID             whereHelpermodel_types_NullString
 	Email                 whereHelperstring
-	ClickAndCollectOption whereHelperstring
+	ClickAndCollectOption whereHelperWarehouseClickAndCollectOption
 	IsPrivate             whereHelpermodel_types_NullBool
 	CreatedAt             whereHelperint64
 	Metadata              whereHelpermodel_types_JsonMap
@@ -105,7 +140,7 @@ var WarehouseWhere = struct {
 	Slug:                  whereHelperstring{field: "\"warehouses\".\"slug\""},
 	AddressID:             whereHelpermodel_types_NullString{field: "\"warehouses\".\"address_id\""},
 	Email:                 whereHelperstring{field: "\"warehouses\".\"email\""},
-	ClickAndCollectOption: whereHelperstring{field: "\"warehouses\".\"click_and_collect_option\""},
+	ClickAndCollectOption: whereHelperWarehouseClickAndCollectOption{field: "\"warehouses\".\"click_and_collect_option\""},
 	IsPrivate:             whereHelpermodel_types_NullBool{field: "\"warehouses\".\"is_private\""},
 	CreatedAt:             whereHelperint64{field: "\"warehouses\".\"created_at\""},
 	Metadata:              whereHelpermodel_types_JsonMap{field: "\"warehouses\".\"metadata\""},

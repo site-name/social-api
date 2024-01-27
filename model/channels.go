@@ -26,7 +26,7 @@ type Channel struct {
 	Name           string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	IsActive       bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Slug           string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Currency       string      `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Currency       Currency    `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	DefaultCountry CountryCode `boil:"default_country" json:"default_country" toml:"default_country" yaml:"default_country"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -67,19 +67,54 @@ var ChannelTableColumns = struct {
 
 // Generated where
 
+type whereHelperCurrency struct{ field string }
+
+func (w whereHelperCurrency) EQ(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelperCurrency) NEQ(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelperCurrency) LT(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelperCurrency) LTE(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelperCurrency) GT(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelperCurrency) GTE(x Currency) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelperCurrency) IN(slice []Currency) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperCurrency) NIN(slice []Currency) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var ChannelWhere = struct {
 	ID             whereHelperstring
 	Name           whereHelperstring
 	IsActive       whereHelperbool
 	Slug           whereHelperstring
-	Currency       whereHelperstring
+	Currency       whereHelperCurrency
 	DefaultCountry whereHelperCountryCode
 }{
 	ID:             whereHelperstring{field: "\"channels\".\"id\""},
 	Name:           whereHelperstring{field: "\"channels\".\"name\""},
 	IsActive:       whereHelperbool{field: "\"channels\".\"is_active\""},
 	Slug:           whereHelperstring{field: "\"channels\".\"slug\""},
-	Currency:       whereHelperstring{field: "\"channels\".\"currency\""},
+	Currency:       whereHelperCurrency{field: "\"channels\".\"currency\""},
 	DefaultCountry: whereHelperCountryCode{field: "\"channels\".\"default_country\""},
 }
 

@@ -32,3 +32,4 @@ DROP TYPE store_payment_method;
 DROP TYPE stock_availability;
 DROP TYPE compliance_status;
 DROP TYPE compliance_type;
+DROP TYPE warehouse_click_and_collect_option;

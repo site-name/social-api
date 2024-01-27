@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS warehouses (
   slug varchar(255) NOT NULL,
   address_id uuid,
   email varchar(128) NOT NULL,
-  click_and_collect_option varchar(30) NOT NULL,
+  click_and_collect_option warehouse_click_and_collect_option NOT NULL,
   is_private boolean,
   created_at bigint NOT NULL,
   metadata jsonb,

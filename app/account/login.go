@@ -217,7 +217,7 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 
 	w.Header().Set(model_helper.HeaderToken, session.Token)
 
-	c.SetSession(*savedSession)
+	c.SetSession(savedSession)
 	if a.srv.Ldap != nil {
 		userVal := user
 		sessionVal := session

@@ -54,6 +54,12 @@ type NullInt64 struct {
 func (n NullInt64) IsNil() bool {
 	return n.Int64 == nil
 }
+func (n NullInt64) IsNotNilAndEqual(other int64) bool {
+	return n.Int64 != nil && *n.Int64 == other
+}
+func (n NullInt64) IsNotNilAndNotEqual(other int64) bool {
+	return n.Int64 != nil && *n.Int64 != other
+}
 
 func NewNullInt64(value int64) NullInt64 {
 	return NullInt64{&value}
@@ -109,8 +115,14 @@ type NullInt struct {
 	Int *int
 }
 
-func (n *NullInt) IsNil() bool {
+func (n NullInt) IsNil() bool {
 	return n.Int == nil
+}
+func (n NullInt) IsNotNilAndEqual(other int) bool {
+	return n.Int != nil && *n.Int == other
+}
+func (n NullInt) IsNotNilAndNotEqual(other int) bool {
+	return n.Int != nil && *n.Int != other
 }
 
 func NewNullInt(value int) NullInt {
@@ -173,6 +185,12 @@ func NewNullDecimal(value decimal.Decimal) NullDecimal {
 
 func (n NullDecimal) IsNil() bool {
 	return n.Decimal == nil
+}
+func (n NullDecimal) IsNotNilAndEqual(other decimal.Decimal) bool {
+	return n.Decimal != nil && n.Decimal.Equal(other)
+}
+func (n NullDecimal) IsNotNilAndNotEqual(other decimal.Decimal) bool {
+	return n.Decimal != nil && !n.Decimal.Equal(other)
 }
 
 func (n *NullDecimal) Scan(value any) error {
@@ -253,6 +271,12 @@ type NullString struct {
 func (n NullString) IsNil() bool {
 	return n.String == nil
 }
+func (n NullString) IsNotNilAndEqual(other string) bool {
+	return n.String != nil && *n.String == other
+}
+func (n NullString) IsNotNilAndNotEqual(other string) bool {
+	return n.String != nil && *n.String != other
+}
 
 func NewNullString(value string) NullString {
 	return NullString{&value}
@@ -305,6 +329,12 @@ type NullFloat32 struct {
 
 func (f NullFloat32) IsNil() bool {
 	return f.Float32 == nil
+}
+func (n NullFloat32) IsNotNilAndEqual(other float32) bool {
+	return n.Float32 != nil && *n.Float32 == other
+}
+func (n NullFloat32) IsNotNilAndNotEqual(other float32) bool {
+	return n.Float32 != nil && *n.Float32 != other
 }
 
 func NewNullFloat32(value float32) NullFloat32 {
@@ -364,6 +394,12 @@ type NullBool struct {
 func (n NullBool) IsNil() bool {
 	return n.Bool == nil
 }
+func (n NullBool) IsNotNilAndEqual(other bool) bool {
+	return n.Bool != nil && *n.Bool == other
+}
+func (n NullBool) IsNotNilAndNotEqual(other bool) bool {
+	return n.Bool != nil && *n.Bool != other
+}
 
 func NewNullBool(value bool) NullBool {
 	return NullBool{&value}
@@ -414,6 +450,12 @@ type NullTime struct {
 
 func (n NullTime) IsNil() bool {
 	return n.Time == nil
+}
+func (n NullTime) IsNotNilAndEqual(other time.Time) bool {
+	return n.Time != nil && n.Time.Compare(other) == 0
+}
+func (n NullTime) IsNotNilAndNotEqual(other time.Time) bool {
+	return n.Time != nil && n.Time.Compare(other) != 0
 }
 
 func NewNullTime(value time.Time) NullTime {
@@ -472,15 +514,15 @@ func (n *NullTime) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &n.Time)
 }
 
-// IsNotNilAndNotZero checks if given primitive pointer is not nil AND its point to value is not zero.
+// NilTypeIsNotNilAndNotZero checks if given primitive pointer is not nil AND its point to value is not zero.
 // E.g
 //
 //	var number int = 10
-//	IsNotNilAndNotZero(&number) == true
+//	NilTypeIsNotNilAndNotZero(&number) == true
 //
 //	str := ""
-//	IsNotNilAndNotZero(&str) == false
-func IsNotNilAndNotZero[T cmp.Ordered](v *T) bool {
+//	NilTypeIsNotNilAndNotZero(&str) == false
+func NilTypeIsNotNilAndNotZero[T cmp.Ordered](v *T) bool {
 	var zeroValue T
 	return v != nil && *v != zeroValue
 }

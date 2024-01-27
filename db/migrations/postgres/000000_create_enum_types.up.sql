@@ -1721,3 +1721,15 @@ CREATE TYPE compliance_type AS ENUM (
 );
 END IF;
 END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'warehouse_click_and_collect_option')
+THEN
+CREATE TYPE warehouse_click_and_collect_option AS ENUM (
+    'disabled',
+    'local',
+		'all'
+);
+END IF;
+END $$;

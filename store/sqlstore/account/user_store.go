@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -119,7 +118,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 		queryMods = append(queryMods, model.UserWhere.ID.IN(userIDs))
 	}
 	if !includeDeleted {
-		queryMods = append(queryMods, model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)))
+		queryMods = append(queryMods, model.UserWhere.DeleteAt.EQ(0))
 	}
 
 	if dryRun {
@@ -474,7 +473,7 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model_hel
 				model.UserTableColumns.ID,       // 2
 				model.StatusTableColumns.UserID, // 3
 			)),
-			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+			model.UserWhere.DeleteAt.EQ(0),
 		)
 	}
 
@@ -495,7 +494,7 @@ func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime i
 				model.UserTableColumns.ID,       // 2
 				model.StatusTableColumns.UserID, // 3
 			)),
-			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+			model.UserWhere.DeleteAt.EQ(0),
 		)
 	}
 
@@ -607,7 +606,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 
 func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
 	return model.
-		Users(model.UserWhere.DeleteAt.GT(model_types.NewNullInt64(0))).
+		Users(model.UserWhere.DeleteAt.GT(0)).
 		Count(us.GetReplica())
 }
 
@@ -626,7 +625,7 @@ func (us *SqlUserStore) AnalyticsGetGuestCount() (int64, error) {
 	return model.
 		Users(
 			model.UserWhere.Roles.LIKE("%"+model_helper.SystemGuestRoleId+"%"),
-			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+			model.UserWhere.DeleteAt.EQ(0),
 		).
 		Count(us.GetReplica())
 }
@@ -635,7 +634,7 @@ func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
 	return model.
 		Users(
 			model.UserWhere.Roles.LIKE("%"+model_helper.SystemAdminRoleId+"%"),
-			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+			model.UserWhere.DeleteAt.EQ(0),
 		).
 		Count(us.GetReplica())
 }

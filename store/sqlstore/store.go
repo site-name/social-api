@@ -571,7 +571,7 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model_helper.AppliedMigration, err
 	return migrations, nil
 }
 
-func (s *SqlStore) FinalizeTransaction(tx store.ContextRunner) {
+func (s *SqlStore) FinalizeTransaction(tx boil.ContextTransactor) {
 	err := tx.Rollback()
 	if err != nil && !errors.Is(err, dbsql.ErrTxDone) {
 		slog.Error("failed to rollback a transaction", slog.Err(err))

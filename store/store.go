@@ -25,9 +25,9 @@ type Store interface {
 	ReplicaLagTime() error
 	ReplicaLagAbs() error
 	CheckIntegrity() <-chan model_helper.IntegrityCheckResult
-	DropAllTables()                              // DropAllTables drop all tables in databases
-	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
-	FinalizeTransaction(tx ContextRunner)        // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
+	DropAllTables()                                // DropAllTables drop all tables in databases
+	GetDbVersion(numerical bool) (string, error)   // GetDbVersion returns version in use of database
+	FinalizeTransaction(tx boil.ContextTransactor) // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
 	GetMaster() ContextRunner
 	GetReplica() boil.ContextExecutor
@@ -155,7 +155,7 @@ type (
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
 	}
 	VatStore interface {
-		Upsert(tx ContextRunner, vats model.VatSlice) (model.VatSlice, error)
+		Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error)
 		FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error)
 	}
 )
@@ -455,7 +455,7 @@ type (
 		Get(id string) (*model.ProductVariant, error)                                                 // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                               // GetWeight returns weight of given product variant
 		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                           // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error)     // FilterByOption finds and returns product variants based on given option
+		FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error)   // FilterByOption finds and returns product variants based on given option
 		ToggleProductVariantRelations(
 			tx boil.ContextTransactor,
 			variants model.ProductVariants,
@@ -497,15 +497,15 @@ type (
 	ProductStore interface {
 		ScanFields(product *model.Product) []any
 		Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error)
-		GetByOption(option *model.ProductFilterOption) (*model.Product, error)                                                                                        // GetByOption finds and returns 1 product that satisfies given option
-		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error)                                                                                   // FilterByOption finds and returns all products that satisfy given option
-		PublishedProducts(channelSlug string) ([]*model.Product, error)                                                                                               // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
-		NotPublishedProducts(channelID string) (model.Products, error)                                                                                                // NotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder                                                                                          // PublishedWithVariants finds and returns products.
-		VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                                // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
-		SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                                                   // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                                           // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		GetByOption(option *model.ProductFilterOption) (*model.Product, error)                                                                                          // GetByOption finds and returns 1 product that satisfies given option
+		FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error)                                                                                   // FilterByOption finds and returns all products that satisfy given option
+		PublishedProducts(channelSlug string) (model.ProductSlice, error)                                                                                               // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
+		NotPublishedProducts(channelID string) (model.Products, error)                                                                                                  // NotPublishedProducts finds all not published products belong to given channel
+		PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder                                                                                            // PublishedWithVariants finds and returns products.
+		VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                                  // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) (model.ProductSlice, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
+		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                                                     // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                                             // FilterByQuery finds and returns products with given query, limit, createdAtGt
 		CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error)
 	}
 )
@@ -679,22 +679,22 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 	}
 	VoucherCustomerStore interface {
-		Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error)                  // Save inserts given voucher customer instance into database ands returns it
-		DeleteInBulk(options *model.VoucherCustomerFilterOption) error                                // DeleteInBulk deletes given voucher-customers with given id
-		GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error)       // GetByOption finds and returns a voucher customer with given options
-		FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) // FilterByOptions finds and returns a slice of voucher customers by given options
+		Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error)                    // Save inserts given voucher customer instance into database ands returns it
+		DeleteInBulk(options model.VoucherCustomerFilterOption) error                                  // DeleteInBulk deletes given voucher-customers with given id
+		GetByOption(options model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error)         // GetByOption finds and returns a voucher customer with given options
+		FilterByOptions(options model.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) // FilterByOptions finds and returns a slice of voucher customers by given options
 	}
 )
 
 // csv
 type (
 	CsvExportEventStore interface {
-		Save(event *model.ExportEvent) (*model.ExportEvent, error)                           // Save inserts given export event into database then returns it
-		FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
+		Save(event model.ExportEvent) (*model.ExportEvent, error)                           // Save inserts given export event into database then returns it
+		FilterByOption(options model.ExportEventFilterOption) ([]*model.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
 	}
 	CsvExportFileStore interface {
-		Save(file *model.ExportFile) (*model.ExportFile, error) // Save inserts given export file into database then returns it
-		Get(id string) (*model.ExportFile, error)               // Get finds and returns an export file found using given id
+		Save(file model.ExportFile) (*model.ExportFile, error) // Save inserts given export file into database then returns it
+		Get(id string) (*model.ExportFile, error)              // Get finds and returns an export file found using given id
 	}
 )
 
@@ -702,37 +702,38 @@ type (
 type (
 	CheckoutLineStore interface {
 		ScanFields(line *model.CheckoutLine) []any
-		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)          // Upsert checks whether to update or insert given model line then performs according operation
-		Get(id string) (*model.CheckoutLine, error)                                    // Get returns a model line with given id
-		DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error         // DeleteLines deletes all model lines with given uuids
-		BulkUpdate(checkoutLines []*model.CheckoutLine) error                          // BulkUpdate receives a list of modified model lines, updates them in bulk.
-		BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
+		Upsert(checkoutLine model.CheckoutLine) (*model.CheckoutLine, error)               // Upsert checks whether to update or insert given model line then performs according operation
+		Get(id string) (*model.CheckoutLine, error)                                        // Get returns a model line with given id
+		DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error             // DeleteLines deletes all model lines with given uuids
+		BulkUpdate(checkoutLines model.CheckoutLineSlice) error                            // BulkUpdate receives a list of modified model lines, updates them in bulk.
+		BulkCreate(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, error) // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
 		// CheckoutLinesByCheckoutWithPrefetch finds all model lines belong to given model
 		//
 		// and prefetch all related product variants, products
 		//
 		// this borrows the idea from Django's prefetch_related() method
-		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error)
-		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error)           // TotalWeightForCheckoutLines calculate total weight for given model lines
-		CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) // CheckoutLinesByOption finds and returns model lines filtered using given option
+		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) (model.CheckoutLineSlice, model.ProductVariantSlice, model.ProductSlice, error)
+		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error)            // TotalWeightForCheckoutLines calculate total weight for given model lines
+		CheckoutLinesByOption(option model.CheckoutLineFilterOption) (model.CheckoutLineSlice, error) // CheckoutLinesByOption finds and returns model lines filtered using given option
 	}
 	CheckoutStore interface {
-		Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error)       // Upsert depends on given model's Token property to decide to update or insert it
-		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
-		GetByOption(option model.CheckoutFilterOption) (*model.Checkout, error)                             // GetByOption finds and returns 1 model based on given option
-		FilterByOption(option model.CheckoutFilterOption) (int64, model.CheckoutSlice, error)               // FilterByOption finds and returns a list of model based on given option
-		DeleteCheckoutsByOption(tx boil.ContextTransactor, option model.CheckoutFilterOption) error         // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
+		Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error)           // Upsert depends on given model's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(ckout model.Checkout) (model_helper.CheckoutLineInfos, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
+		GetByOption(option model.CheckoutFilterOption) (*model.Checkout, error)                                 // GetByOption finds and returns 1 model based on given option
+		FilterByOption(option model.CheckoutFilterOption) (int64, model.CheckoutSlice, error)                   // FilterByOption finds and returns a list of model based on given option
+		DeleteCheckoutsByOption(tx boil.ContextTransactor, option model.CheckoutFilterOption) error             // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 		CountCheckouts(options model.CheckoutFilterOption) (int64, error)
 	}
 )
 
 // channel
 type ChannelStore interface {
-	ScanFields(chanNel *model.Channel) []any
-	Get(id string) (*model.Channel, error)                                       // Get returns channel by given id
-	FilterByOption(option model.ChannelFilterOption) (model.ChannelSlice, error) // FilterByOption returns a list of channels with given option
-	Upsert(tx ContextRunner, channel *model.Channel) (*model.Channel, error)
-	DeleteChannels(tx ContextRunner, ids []string) error
+	// ScanFields(chanNel *model.Channel) []any
+	Get(id string) (*model.Channel, error)
+	GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error)
+	Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error)
+	Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error)
+	DeleteChannels(tx boil.ContextTransactor, ids []string) error
 }
 
 // app
@@ -811,9 +812,9 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ScanFields(addr *model.Address) []any
-		Upsert(tx ContextRunner, address model.Address) (*model.Address, error)
+		Upsert(tx boil.ContextTransactor, address model.Address) (*model.Address, error)
 		Get(addressID string) (*model.Address, error)                                        // Get returns an Address with given addressID is exist
-		DeleteAddresses(tx ContextRunner, addressIDs []string) error                         // DeleteAddress deletes given address and returns an error
+		DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error                // DeleteAddress deletes given address and returns an error
 		FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
@@ -880,7 +881,7 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	CustomerEventStore interface {
-		Upsert(tx ContextRunner, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error)
+		Upsert(tx boil.ContextTransactor, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
 		FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error)
