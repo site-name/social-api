@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS tokens (
-  token varchar(64) NOT NULL PRIMARY KEY,
-  created_at bigint NOT NULL,
-  type varchar(64) NOT NULL,
-  extra varchar(2048)
+  token VARCHAR(64) NOT NULL PRIMARY KEY,
+  created_at BIGINT NOT NULL,
+  type VARCHAR(64) NOT NULL,
+  extra VARCHAR(2048) NOT NULL
 );

@@ -219,15 +219,36 @@ var ShopWhere = struct {
 
 // ShopRels is where relationship names are stored.
 var ShopRels = struct {
-}{}
+	Address string
+	TopMenu string
+}{
+	Address: "Address",
+	TopMenu: "TopMenu",
+}
 
 // shopR is where relationships are stored.
 type shopR struct {
+	Address *Address `boil:"Address" json:"Address" toml:"Address" yaml:"Address"`
+	TopMenu *Menu    `boil:"TopMenu" json:"TopMenu" toml:"TopMenu" yaml:"TopMenu"`
 }
 
 // NewStruct creates a new relationship struct
 func (*shopR) NewStruct() *shopR {
 	return &shopR{}
+}
+
+func (r *shopR) GetAddress() *Address {
+	if r == nil {
+		return nil
+	}
+	return r.Address
+}
+
+func (r *shopR) GetTopMenu() *Menu {
+	if r == nil {
+		return nil
+	}
+	return r.TopMenu
 }
 
 // shopL is where Load methods for each relationship are stored.
@@ -330,6 +351,418 @@ func (q shopQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Address pointed to by the foreign key.
+func (o *Shop) Address(mods ...qm.QueryMod) addressQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.AddressID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Addresses(queryMods...)
+}
+
+// TopMenu pointed to by the foreign key.
+func (o *Shop) TopMenu(mods ...qm.QueryMod) menuQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.TopMenuID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Menus(queryMods...)
+}
+
+// LoadAddress allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shopL) LoadAddress(e boil.Executor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
+	var slice []*Shop
+	var object *Shop
+
+	if singular {
+		var ok bool
+		object, ok = maybeShop.(*Shop)
+		if !ok {
+			object = new(Shop)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShop)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShop))
+			}
+		}
+	} else {
+		s, ok := maybeShop.(*[]*Shop)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShop)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShop))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shopR{}
+		}
+		if !queries.IsNil(object.AddressID) {
+			args[object.AddressID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shopR{}
+			}
+
+			if !queries.IsNil(obj.AddressID) {
+				args[obj.AddressID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`addresses`),
+		qm.WhereIn(`addresses.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Address")
+	}
+
+	var resultSlice []*Address
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Address")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for addresses")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Address = foreign
+		if foreign.R == nil {
+			foreign.R = &addressR{}
+		}
+		foreign.R.Shops = append(foreign.R.Shops, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.AddressID, foreign.ID) {
+				local.R.Address = foreign
+				if foreign.R == nil {
+					foreign.R = &addressR{}
+				}
+				foreign.R.Shops = append(foreign.R.Shops, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadTopMenu allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shopL) LoadTopMenu(e boil.Executor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
+	var slice []*Shop
+	var object *Shop
+
+	if singular {
+		var ok bool
+		object, ok = maybeShop.(*Shop)
+		if !ok {
+			object = new(Shop)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShop)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShop))
+			}
+		}
+	} else {
+		s, ok := maybeShop.(*[]*Shop)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShop)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShop))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shopR{}
+		}
+		if !queries.IsNil(object.TopMenuID) {
+			args[object.TopMenuID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shopR{}
+			}
+
+			if !queries.IsNil(obj.TopMenuID) {
+				args[obj.TopMenuID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`menus`),
+		qm.WhereIn(`menus.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Menu")
+	}
+
+	var resultSlice []*Menu
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Menu")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for menus")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menus")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.TopMenu = foreign
+		if foreign.R == nil {
+			foreign.R = &menuR{}
+		}
+		foreign.R.TopMenuShops = append(foreign.R.TopMenuShops, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.TopMenuID, foreign.ID) {
+				local.R.TopMenu = foreign
+				if foreign.R == nil {
+					foreign.R = &menuR{}
+				}
+				foreign.R.TopMenuShops = append(foreign.R.TopMenuShops, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetAddress of the shop to the related item.
+// Sets o.R.Address to related.
+// Adds o to related.R.Shops.
+func (o *Shop) SetAddress(exec boil.Executor, insert bool, related *Address) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shops\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.AddressID, related.ID)
+	if o.R == nil {
+		o.R = &shopR{
+			Address: related,
+		}
+	} else {
+		o.R.Address = related
+	}
+
+	if related.R == nil {
+		related.R = &addressR{
+			Shops: ShopSlice{o},
+		}
+	} else {
+		related.R.Shops = append(related.R.Shops, o)
+	}
+
+	return nil
+}
+
+// RemoveAddress relationship.
+// Sets o.R.Address to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Shop) RemoveAddress(exec boil.Executor, related *Address) error {
+	var err error
+
+	queries.SetScanner(&o.AddressID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("address_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Address = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.Shops {
+		if queries.Equal(o.AddressID, ri.AddressID) {
+			continue
+		}
+
+		ln := len(related.R.Shops)
+		if ln > 1 && i < ln-1 {
+			related.R.Shops[i] = related.R.Shops[ln-1]
+		}
+		related.R.Shops = related.R.Shops[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetTopMenu of the shop to the related item.
+// Sets o.R.TopMenu to related.
+// Adds o to related.R.TopMenuShops.
+func (o *Shop) SetTopMenu(exec boil.Executor, insert bool, related *Menu) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shops\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"top_menu_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.TopMenuID, related.ID)
+	if o.R == nil {
+		o.R = &shopR{
+			TopMenu: related,
+		}
+	} else {
+		o.R.TopMenu = related
+	}
+
+	if related.R == nil {
+		related.R = &menuR{
+			TopMenuShops: ShopSlice{o},
+		}
+	} else {
+		related.R.TopMenuShops = append(related.R.TopMenuShops, o)
+	}
+
+	return nil
+}
+
+// RemoveTopMenu relationship.
+// Sets o.R.TopMenu to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Shop) RemoveTopMenu(exec boil.Executor, related *Menu) error {
+	var err error
+
+	queries.SetScanner(&o.TopMenuID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("top_menu_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.TopMenu = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.TopMenuShops {
+		if queries.Equal(o.TopMenuID, ri.TopMenuID) {
+			continue
+		}
+
+		ln := len(related.R.TopMenuShops)
+		if ln > 1 && i < ln-1 {
+			related.R.TopMenuShops[i] = related.R.TopMenuShops[ln-1]
+		}
+		related.R.TopMenuShops = related.R.TopMenuShops[:ln-1]
+		break
+	}
+	return nil
 }
 
 // Shops retrieves all the records using an executor.

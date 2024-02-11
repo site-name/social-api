@@ -3,11 +3,11 @@ package checkout
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCheckoutStore struct {
@@ -18,215 +18,61 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 	return &SqlCheckoutStore{sqlStore}
 }
 
-func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
-	return []interface{}{
-		&checkOut.Token,
-		&checkOut.CreateAt,
-		&checkOut.UpdateAt,
-		&checkOut.UserID,
-		&checkOut.Email,
-		&checkOut.Quantity,
-		&checkOut.ChannelID,
-		&checkOut.BillingAddressID,
-		&checkOut.ShippingAddressID,
-		&checkOut.ShippingMethodID,
-		&checkOut.CollectionPointID,
-		&checkOut.Note,
-		&checkOut.Currency,
-		&checkOut.Country,
-		&checkOut.DiscountAmount,
-		&checkOut.DiscountName,
-		&checkOut.TranslatedDiscountName,
-		&checkOut.VoucherCode,
-		&checkOut.RedirectURL,
-		&checkOut.TrackingCode,
-		&checkOut.LanguageCode,
-		&checkOut.Metadata,
-		&checkOut.PrivateMetadata,
-	}
-}
-
 // Upsert depends on given checkout's Token property to decide to update or insert it
-func (cs *SqlCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error) {
-	if transaction == nil {
-		transaction = cs.GetMaster()
+func (cs *SqlCheckoutStore) Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error) {
+	if tx == nil {
+		tx = cs.GetMaster()
 	}
 
 	for _, checkout := range checkouts {
-		var err error
-		if checkout.Token == "" {
-			err = transaction.Create(checkout).Error
-		} else {
-			checkout.ShippingAddressID = model.GetPointerOfValue("") // prevent update
-			checkout.BillingAddressID = model.GetPointerOfValue("")  // prevent update
-			checkout.CreateAt = 0                                    // prevent update
+		if checkout == nil {
+			continue
+		}
 
-			err = transaction.Model(checkout).Updates(checkout).Error
+		var isSaving bool
+
+		if checkout.Token == "" {
+			model_helper.CheckoutPreSave(checkout)
+			isSaving = true
+		} else {
+			model_helper.CheckoutPreUpdate(checkout)
+		}
+
+		if err := model_helper.CheckoutIsValid(*checkout); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = checkout.Insert(tx, boil.Infer())
+		} else {
+			_, err = checkout.Update(tx, boil.Blacklist(model.CheckoutColumns.CreatedAt))
 		}
 
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to upsert a checkout")
+			return nil, err
 		}
 	}
 
 	return checkouts, nil
 }
 
-func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilterOption) squirrel.SelectBuilder {
-	andCondition := squirrel.And{}
-	// parse option
-	if option.Conditions != nil {
-		andCondition = append(andCondition, option.Conditions)
-	}
-	if option.ChannelIsActive != nil {
-		andCondition = append(andCondition, option.ChannelIsActive)
-	}
-
-	selectFields := []string{model.CheckoutTableName + ".*"}
-	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, model.ChannelTableName+".*")
-	}
-	if option.SelectRelatedBillingAddress {
-		selectFields = append(selectFields, model.AddressTableName+".*")
-	}
-	if option.SelectRelatedUser {
-		selectFields = append(selectFields, model.UserTableName+".*")
-	}
-
-	query := cs.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.CheckoutTableName).
-		Where(andCondition)
-
-	if option.SelectRelatedChannel || option.ChannelIsActive != nil {
-		query = query.InnerJoin(model.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
-	}
-	if option.SelectRelatedBillingAddress {
-		query = query.InnerJoin(model.AddressTableName + " ON Checkouts.BillingAddressID = Addresses.Id")
-	}
-	if option.SelectRelatedUser {
-		query = query.InnerJoin(model.UserTableName + " ON Users.Id = Checkouts.UserID")
-	}
-
-	return query
-}
-
 // GetByOption finds and returns 1 checkout based on given option
-func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
-	option.GraphqlPaginationValues.Limit = 0
-
-	var (
-		res            model.Checkout
-		channel        model.Channel
-		billingAddress model.Address
-		user           model.User
-		scanFields     = cs.ScanFields(&res)
-	)
-	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, cs.Channel().ScanFields(&channel)...)
-	}
-	if option.SelectRelatedBillingAddress {
-		scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
-	}
-	if option.SelectRelatedUser {
-		scanFields = append(scanFields, cs.User().ScanFields(&user)...)
-	}
-
-	query, args, err := cs.commonFilterQueryBuilder(option).ToSql()
+func (cs *SqlCheckoutStore) GetByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, error) {
+	checkout, err := model.Checkouts(option.Conditions...).One(cs.GetReplica())
 	if err != nil {
-		return nil, errors.Wrap(err, "GetByOption_ToSql")
-	}
-
-	err = cs.GetReplica().Raw(query, args...).Row().Scan(scanFields)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, store.NewErrNotFound(model.CheckoutTableName, "option")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Checkouts, "options")
 		}
-		return nil, errors.Wrap(err, "failed to scan a checkout")
+		return nil, err
 	}
 
-	if option.SelectRelatedChannel {
-		res.SetChannel(&channel)
-	}
-	if option.SelectRelatedBillingAddress {
-		res.SetBilingAddress(&billingAddress)
-	}
-	if option.SelectRelatedUser {
-		res.SetUser(&user)
-	}
-
-	return &res, nil
+	return checkout, nil
 }
 
 // FilterByOption finds and returns a list of checkout based on given option
-func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
-	filterQuery := cs.commonFilterQueryBuilder(option)
-
-	var totalCount int64
-	if option.CountTotal {
-		countQuery, args, err := cs.GetQueryBuilder().Select("COUNT (*)").FromSelect(filterQuery, "subquery").ToSql()
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "FilterByOption_Count_ToSql")
-		}
-
-		err = cs.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "failed to count total number of checkouts by given options")
-		}
-	}
-
-	// apply pagination
-	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&filterQuery)
-
-	query, args, err := filterQuery.ToSql()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
-	rows, err := cs.GetReplica().Raw(query, args...).Rows()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "failed to find checkouts with given options")
-	}
-	defer rows.Close()
-
-	var res []*model.Checkout
-
-	for rows.Next() {
-		var (
-			checkout       model.Checkout
-			channel        model.Channel
-			billingAddress model.Address
-			user           model.User
-			scanFields     = cs.ScanFields(&checkout)
-		)
-		if option.SelectRelatedChannel {
-			scanFields = append(scanFields, cs.Channel().ScanFields(&channel)...)
-		}
-		if option.SelectRelatedBillingAddress {
-			scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
-		}
-		if option.SelectRelatedUser {
-			scanFields = append(scanFields, cs.User().ScanFields(&user)...)
-		}
-
-		if err := rows.Scan(scanFields...); err != nil {
-			return 0, nil, errors.Wrap(err, "failed to scan a row of checkout")
-		}
-
-		if option.SelectRelatedChannel {
-			checkout.SetChannel(&channel)
-		}
-		if option.SelectRelatedBillingAddress {
-			checkout.SetBilingAddress(&billingAddress)
-		}
-		if option.SelectRelatedUser {
-			checkout.SetUser(&user)
-		}
-
-		res = append(res, &checkout)
-	}
-
-	return totalCount, res, nil
+func (cs *SqlCheckoutStore) FilterByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, error) {
+	return model.Checkouts(option.Conditions...).All(cs.GetReplica())
 }
 
 // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
@@ -390,39 +236,15 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
-func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error {
+func (cs *SqlCheckoutStore) Delete(transaction boil.ContextTransactor, tokens []string) error {
 	if transaction == nil {
 		transaction = cs.GetMaster()
 	}
 
-	query, args, err := cs.GetQueryBuilder().Delete(model.CheckoutTableName).Where(option.Conditions).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "DeleteCheckoutsByOption_ToSql")
-	}
-
-	err = transaction.Raw(query, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete checkout(s) by given options")
-	}
-
-	return nil
+	_, err := model.Checkouts(model.CheckoutWhere.Token.IN(tokens)).DeleteAll(transaction)
+	return err
 }
 
-func (cs *SqlCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
-	db := cs.GetReplica().Table(model.CheckoutTableName)
-
-	conditions := squirrel.And{
-		options.Conditions,
-	}
-	if options.ChannelIsActive != nil {
-		conditions = append(conditions, options.ChannelIsActive)
-		db = db.Joins("INNER JOIN Channels ON Checkouts.ChannelID = Channels.Id")
-	}
-
-	condStr, args, err := conditions.ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "CountCheckouts_ToSql")
-	}
-	var count int64
-	return count, db.Where(condStr, args...).Raw("SELECT COUNT(*) FROM " + model.CheckoutTableName).Scan(&count).Error
+func (cs *SqlCheckoutStore) CountCheckouts(options model_helper.CheckoutFilterOptions) (int64, error) {
+	return model.Checkouts(options.Conditions...).Count(cs.GetReplica())
 }

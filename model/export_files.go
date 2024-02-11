@@ -79,15 +79,36 @@ var ExportFileWhere = struct {
 
 // ExportFileRels is where relationship names are stored.
 var ExportFileRels = struct {
-}{}
+	User         string
+	ExportEvents string
+}{
+	User:         "User",
+	ExportEvents: "ExportEvents",
+}
 
 // exportFileR is where relationships are stored.
 type exportFileR struct {
+	User         *User            `boil:"User" json:"User" toml:"User" yaml:"User"`
+	ExportEvents ExportEventSlice `boil:"ExportEvents" json:"ExportEvents" toml:"ExportEvents" yaml:"ExportEvents"`
 }
 
 // NewStruct creates a new relationship struct
 func (*exportFileR) NewStruct() *exportFileR {
 	return &exportFileR{}
+}
+
+func (r *exportFileR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
+}
+
+func (r *exportFileR) GetExportEvents() ExportEventSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ExportEvents
 }
 
 // exportFileL is where Load methods for each relationship are stored.
@@ -190,6 +211,384 @@ func (q exportFileQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// User pointed to by the foreign key.
+func (o *ExportFile) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// ExportEvents retrieves all the export_event's ExportEvents with an executor.
+func (o *ExportFile) ExportEvents(mods ...qm.QueryMod) exportEventQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"export_events\".\"export_file_id\"=?", o.ID),
+	)
+
+	return ExportEvents(queryMods...)
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (exportFileL) LoadUser(e boil.Executor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
+	var slice []*ExportFile
+	var object *ExportFile
+
+	if singular {
+		var ok bool
+		object, ok = maybeExportFile.(*ExportFile)
+		if !ok {
+			object = new(ExportFile)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeExportFile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeExportFile))
+			}
+		}
+	} else {
+		s, ok := maybeExportFile.(*[]*ExportFile)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeExportFile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeExportFile))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &exportFileR{}
+		}
+		if !queries.IsNil(object.UserID) {
+			args[object.UserID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &exportFileR{}
+			}
+
+			if !queries.IsNil(obj.UserID) {
+				args[obj.UserID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.ExportFiles = append(foreign.R.ExportFiles, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.ExportFiles = append(foreign.R.ExportFiles, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadExportEvents allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (exportFileL) LoadExportEvents(e boil.Executor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
+	var slice []*ExportFile
+	var object *ExportFile
+
+	if singular {
+		var ok bool
+		object, ok = maybeExportFile.(*ExportFile)
+		if !ok {
+			object = new(ExportFile)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeExportFile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeExportFile))
+			}
+		}
+	} else {
+		s, ok := maybeExportFile.(*[]*ExportFile)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeExportFile)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeExportFile))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &exportFileR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &exportFileR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`export_events`),
+		qm.WhereIn(`export_events.export_file_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load export_events")
+	}
+
+	var resultSlice []*ExportEvent
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice export_events")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on export_events")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for export_events")
+	}
+
+	if singular {
+		object.R.ExportEvents = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &exportEventR{}
+			}
+			foreign.R.ExportFile = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ExportFileID {
+				local.R.ExportEvents = append(local.R.ExportEvents, foreign)
+				if foreign.R == nil {
+					foreign.R = &exportEventR{}
+				}
+				foreign.R.ExportFile = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetUser of the exportFile to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.ExportFiles.
+func (o *ExportFile) SetUser(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"export_files\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+		strmangle.WhereClause("\"", "\"", 2, exportFilePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.UserID, related.ID)
+	if o.R == nil {
+		o.R = &exportFileR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			ExportFiles: ExportFileSlice{o},
+		}
+	} else {
+		related.R.ExportFiles = append(related.R.ExportFiles, o)
+	}
+
+	return nil
+}
+
+// RemoveUser relationship.
+// Sets o.R.User to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *ExportFile) RemoveUser(exec boil.Executor, related *User) error {
+	var err error
+
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("user_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.User = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.ExportFiles {
+		if queries.Equal(o.UserID, ri.UserID) {
+			continue
+		}
+
+		ln := len(related.R.ExportFiles)
+		if ln > 1 && i < ln-1 {
+			related.R.ExportFiles[i] = related.R.ExportFiles[ln-1]
+		}
+		related.R.ExportFiles = related.R.ExportFiles[:ln-1]
+		break
+	}
+	return nil
+}
+
+// AddExportEvents adds the given related objects to the existing relationships
+// of the export_file, optionally inserting them as new records.
+// Appends related to o.R.ExportEvents.
+// Sets related.R.ExportFile appropriately.
+func (o *ExportFile) AddExportEvents(exec boil.Executor, insert bool, related ...*ExportEvent) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ExportFileID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"export_events\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"export_file_id"}),
+				strmangle.WhereClause("\"", "\"", 2, exportEventPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ExportFileID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &exportFileR{
+			ExportEvents: related,
+		}
+	} else {
+		o.R.ExportEvents = append(o.R.ExportEvents, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &exportEventR{
+				ExportFile: o,
+			}
+		} else {
+			rel.R.ExportFile = o
+		}
+	}
+	return nil
 }
 
 // ExportFiles retrieves all the records using an executor.

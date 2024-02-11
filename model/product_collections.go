@@ -64,15 +64,36 @@ var ProductCollectionWhere = struct {
 
 // ProductCollectionRels is where relationship names are stored.
 var ProductCollectionRels = struct {
-}{}
+	Collection string
+	Product    string
+}{
+	Collection: "Collection",
+	Product:    "Product",
+}
 
 // productCollectionR is where relationships are stored.
 type productCollectionR struct {
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
+	Product    *Product    `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
 }
 
 // NewStruct creates a new relationship struct
 func (*productCollectionR) NewStruct() *productCollectionR {
 	return &productCollectionR{}
+}
+
+func (r *productCollectionR) GetCollection() *Collection {
+	if r == nil {
+		return nil
+	}
+	return r.Collection
+}
+
+func (r *productCollectionR) GetProduct() *Product {
+	if r == nil {
+		return nil
+	}
+	return r.Product
 }
 
 // productCollectionL is where Load methods for each relationship are stored.
@@ -175,6 +196,344 @@ func (q productCollectionQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Collection pointed to by the foreign key.
+func (o *ProductCollection) Collection(mods ...qm.QueryMod) collectionQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CollectionID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Collections(queryMods...)
+}
+
+// Product pointed to by the foreign key.
+func (o *ProductCollection) Product(mods ...qm.QueryMod) productQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ProductID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Products(queryMods...)
+}
+
+// LoadCollection allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybeProductCollection interface{}, mods queries.Applicator) error {
+	var slice []*ProductCollection
+	var object *ProductCollection
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductCollection.(*ProductCollection)
+		if !ok {
+			object = new(ProductCollection)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductCollection))
+			}
+		}
+	} else {
+		s, ok := maybeProductCollection.(*[]*ProductCollection)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductCollection))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productCollectionR{}
+		}
+		args[object.CollectionID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productCollectionR{}
+			}
+
+			args[obj.CollectionID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`collections`),
+		qm.WhereIn(`collections.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Collection")
+	}
+
+	var resultSlice []*Collection
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Collection")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for collections")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Collection = foreign
+		if foreign.R == nil {
+			foreign.R = &collectionR{}
+		}
+		foreign.R.ProductCollections = append(foreign.R.ProductCollections, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CollectionID == foreign.ID {
+				local.R.Collection = foreign
+				if foreign.R == nil {
+					foreign.R = &collectionR{}
+				}
+				foreign.R.ProductCollections = append(foreign.R.ProductCollections, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProduct allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productCollectionL) LoadProduct(e boil.Executor, singular bool, maybeProductCollection interface{}, mods queries.Applicator) error {
+	var slice []*ProductCollection
+	var object *ProductCollection
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductCollection.(*ProductCollection)
+		if !ok {
+			object = new(ProductCollection)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductCollection))
+			}
+		}
+	} else {
+		s, ok := maybeProductCollection.(*[]*ProductCollection)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductCollection))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productCollectionR{}
+		}
+		args[object.ProductID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productCollectionR{}
+			}
+
+			args[obj.ProductID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`products`),
+		qm.WhereIn(`products.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Product")
+	}
+
+	var resultSlice []*Product
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Product")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Product = foreign
+		if foreign.R == nil {
+			foreign.R = &productR{}
+		}
+		foreign.R.ProductCollections = append(foreign.R.ProductCollections, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProductID == foreign.ID {
+				local.R.Product = foreign
+				if foreign.R == nil {
+					foreign.R = &productR{}
+				}
+				foreign.R.ProductCollections = append(foreign.R.ProductCollections, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCollection of the productCollection to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.ProductCollections.
+func (o *ProductCollection) SetCollection(exec boil.Executor, insert bool, related *Collection) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"product_collections\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CollectionID = related.ID
+	if o.R == nil {
+		o.R = &productCollectionR{
+			Collection: related,
+		}
+	} else {
+		o.R.Collection = related
+	}
+
+	if related.R == nil {
+		related.R = &collectionR{
+			ProductCollections: ProductCollectionSlice{o},
+		}
+	} else {
+		related.R.ProductCollections = append(related.R.ProductCollections, o)
+	}
+
+	return nil
+}
+
+// SetProduct of the productCollection to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductCollections.
+func (o *ProductCollection) SetProduct(exec boil.Executor, insert bool, related *Product) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"product_collections\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProductID = related.ID
+	if o.R == nil {
+		o.R = &productCollectionR{
+			Product: related,
+		}
+	} else {
+		o.R.Product = related
+	}
+
+	if related.R == nil {
+		related.R = &productR{
+			ProductCollections: ProductCollectionSlice{o},
+		}
+	} else {
+		related.R.ProductCollections = append(related.R.ProductCollections, o)
+	}
+
+	return nil
 }
 
 // ProductCollections retrieves all the records using an executor.

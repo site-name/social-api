@@ -19,7 +19,7 @@ func TestConvertTo(t *testing.T) {
 	if res.Unit != KG {
 		t.Fatal("res's unit must be 'kg'")
 	}
-	if res.Amount != float32(2) {
+	if res.Amount != 2.0 {
 		t.Fatal("res's amount must be 2")
 	}
 }
@@ -33,7 +33,7 @@ func TestAdd(t *testing.T) {
 		Amount: (2000.3434),
 		Unit:   LB,
 	}
-	addRes, err := w1.Add(&w2)
+	addRes, err := w1.Add(w2)
 	require.NoError(t, err)
 	if addRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
@@ -75,12 +75,12 @@ func TestMul(t *testing.T) {
 		Amount: (2000.87345),
 		Unit:   OZ,
 	}
-	var quan float32 = 5
+	var quan = 5
 	mulRes := w1.Mul(quan)
 	if mulRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
-	resAmount := quan * w1.Amount
+	resAmount := float64(quan) * w1.Amount
 	if mulRes.Amount != resAmount {
 		t.Fatalf("res's amount must be %f\n", resAmount)
 	}

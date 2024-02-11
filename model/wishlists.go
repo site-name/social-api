@@ -71,15 +71,36 @@ var WishlistWhere = struct {
 
 // WishlistRels is where relationship names are stored.
 var WishlistRels = struct {
-}{}
+	User          string
+	WishlistItems string
+}{
+	User:          "User",
+	WishlistItems: "WishlistItems",
+}
 
 // wishlistR is where relationships are stored.
 type wishlistR struct {
+	User          *User             `boil:"User" json:"User" toml:"User" yaml:"User"`
+	WishlistItems WishlistItemSlice `boil:"WishlistItems" json:"WishlistItems" toml:"WishlistItems" yaml:"WishlistItems"`
 }
 
 // NewStruct creates a new relationship struct
 func (*wishlistR) NewStruct() *wishlistR {
 	return &wishlistR{}
+}
+
+func (r *wishlistR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
+}
+
+func (r *wishlistR) GetWishlistItems() WishlistItemSlice {
+	if r == nil {
+		return nil
+	}
+	return r.WishlistItems
 }
 
 // wishlistL is where Load methods for each relationship are stored.
@@ -182,6 +203,347 @@ func (q wishlistQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// User pointed to by the foreign key.
+func (o *Wishlist) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// WishlistItems retrieves all the wishlist_item's WishlistItems with an executor.
+func (o *Wishlist) WishlistItems(mods ...qm.QueryMod) wishlistItemQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"wishlist_items\".\"wishlist_id\"=?", o.ID),
+	)
+
+	return WishlistItems(queryMods...)
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
+	var slice []*Wishlist
+	var object *Wishlist
+
+	if singular {
+		var ok bool
+		object, ok = maybeWishlist.(*Wishlist)
+		if !ok {
+			object = new(Wishlist)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeWishlist)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeWishlist))
+			}
+		}
+	} else {
+		s, ok := maybeWishlist.(*[]*Wishlist)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeWishlist)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeWishlist))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &wishlistR{}
+		}
+		args[object.UserID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &wishlistR{}
+			}
+
+			args[obj.UserID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.Wishlist = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.UserID == foreign.ID {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.Wishlist = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadWishlistItems allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
+	var slice []*Wishlist
+	var object *Wishlist
+
+	if singular {
+		var ok bool
+		object, ok = maybeWishlist.(*Wishlist)
+		if !ok {
+			object = new(Wishlist)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeWishlist)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeWishlist))
+			}
+		}
+	} else {
+		s, ok := maybeWishlist.(*[]*Wishlist)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeWishlist)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeWishlist))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &wishlistR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &wishlistR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`wishlist_items`),
+		qm.WhereIn(`wishlist_items.wishlist_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load wishlist_items")
+	}
+
+	var resultSlice []*WishlistItem
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice wishlist_items")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on wishlist_items")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for wishlist_items")
+	}
+
+	if singular {
+		object.R.WishlistItems = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &wishlistItemR{}
+			}
+			foreign.R.Wishlist = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.WishlistID {
+				local.R.WishlistItems = append(local.R.WishlistItems, foreign)
+				if foreign.R == nil {
+					foreign.R = &wishlistItemR{}
+				}
+				foreign.R.Wishlist = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetUser of the wishlist to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.Wishlist.
+func (o *Wishlist) SetUser(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"wishlists\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+		strmangle.WhereClause("\"", "\"", 2, wishlistPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.UserID = related.ID
+	if o.R == nil {
+		o.R = &wishlistR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			Wishlist: o,
+		}
+	} else {
+		related.R.Wishlist = o
+	}
+
+	return nil
+}
+
+// AddWishlistItems adds the given related objects to the existing relationships
+// of the wishlist, optionally inserting them as new records.
+// Appends related to o.R.WishlistItems.
+// Sets related.R.Wishlist appropriately.
+func (o *Wishlist) AddWishlistItems(exec boil.Executor, insert bool, related ...*WishlistItem) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.WishlistID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"wishlist_items\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"wishlist_id"}),
+				strmangle.WhereClause("\"", "\"", 2, wishlistItemPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.WishlistID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &wishlistR{
+			WishlistItems: related,
+		}
+	} else {
+		o.R.WishlistItems = append(o.R.WishlistItems, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &wishlistItemR{
+				Wishlist: o,
+			}
+		} else {
+			rel.R.Wishlist = o
+		}
+	}
+	return nil
 }
 
 // Wishlists retrieves all the records using an executor.

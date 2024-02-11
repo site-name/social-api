@@ -6,7 +6,7 @@ import (
 )
 
 func TestValidatePhoneNumber(t *testing.T) {
-	number, ok := ValidatePhoneNumber("+84354575050", "US")
+	number, ok := ValidatePhoneNumber("0354575050", "US")
 	if !ok {
 		t.Fatal("invalid")
 	}

@@ -177,15 +177,26 @@ var FulfillmentWhere = struct {
 
 // FulfillmentRels is where relationship names are stored.
 var FulfillmentRels = struct {
-}{}
+	Order string
+}{
+	Order: "Order",
+}
 
 // fulfillmentR is where relationships are stored.
 type fulfillmentR struct {
+	Order *Order `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
 }
 
 // NewStruct creates a new relationship struct
 func (*fulfillmentR) NewStruct() *fulfillmentR {
 	return &fulfillmentR{}
+}
+
+func (r *fulfillmentR) GetOrder() *Order {
+	if r == nil {
+		return nil
+	}
+	return r.Order
 }
 
 // fulfillmentL is where Load methods for each relationship are stored.
@@ -288,6 +299,175 @@ func (q fulfillmentQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Order pointed to by the foreign key.
+func (o *Fulfillment) Order(mods ...qm.QueryMod) orderQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.OrderID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Orders(queryMods...)
+}
+
+// LoadOrder allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (fulfillmentL) LoadOrder(e boil.Executor, singular bool, maybeFulfillment interface{}, mods queries.Applicator) error {
+	var slice []*Fulfillment
+	var object *Fulfillment
+
+	if singular {
+		var ok bool
+		object, ok = maybeFulfillment.(*Fulfillment)
+		if !ok {
+			object = new(Fulfillment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeFulfillment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFulfillment))
+			}
+		}
+	} else {
+		s, ok := maybeFulfillment.(*[]*Fulfillment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeFulfillment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFulfillment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &fulfillmentR{}
+		}
+		args[object.OrderID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &fulfillmentR{}
+			}
+
+			args[obj.OrderID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`orders`),
+		qm.WhereIn(`orders.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Order")
+	}
+
+	var resultSlice []*Order
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Order")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for orders")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Order = foreign
+		if foreign.R == nil {
+			foreign.R = &orderR{}
+		}
+		foreign.R.Fulfillments = append(foreign.R.Fulfillments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.OrderID == foreign.ID {
+				local.R.Order = foreign
+				if foreign.R == nil {
+					foreign.R = &orderR{}
+				}
+				foreign.R.Fulfillments = append(foreign.R.Fulfillments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetOrder of the fulfillment to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.Fulfillments.
+func (o *Fulfillment) SetOrder(exec boil.Executor, insert bool, related *Order) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"fulfillments\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
+		strmangle.WhereClause("\"", "\"", 2, fulfillmentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.OrderID = related.ID
+	if o.R == nil {
+		o.R = &fulfillmentR{
+			Order: related,
+		}
+	} else {
+		o.R.Order = related
+	}
+
+	if related.R == nil {
+		related.R = &orderR{
+			Fulfillments: FulfillmentSlice{o},
+		}
+	} else {
+		related.R.Fulfillments = append(related.R.Fulfillments, o)
+	}
+
+	return nil
 }
 
 // Fulfillments retrieves all the records using an executor.

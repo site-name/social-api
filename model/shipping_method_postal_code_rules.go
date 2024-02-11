@@ -78,15 +78,26 @@ var ShippingMethodPostalCodeRuleWhere = struct {
 
 // ShippingMethodPostalCodeRuleRels is where relationship names are stored.
 var ShippingMethodPostalCodeRuleRels = struct {
-}{}
+	ShippingMethod string
+}{
+	ShippingMethod: "ShippingMethod",
+}
 
 // shippingMethodPostalCodeRuleR is where relationships are stored.
 type shippingMethodPostalCodeRuleR struct {
+	ShippingMethod *ShippingMethod `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
 }
 
 // NewStruct creates a new relationship struct
 func (*shippingMethodPostalCodeRuleR) NewStruct() *shippingMethodPostalCodeRuleR {
 	return &shippingMethodPostalCodeRuleR{}
+}
+
+func (r *shippingMethodPostalCodeRuleR) GetShippingMethod() *ShippingMethod {
+	if r == nil {
+		return nil
+	}
+	return r.ShippingMethod
 }
 
 // shippingMethodPostalCodeRuleL is where Load methods for each relationship are stored.
@@ -189,6 +200,175 @@ func (q shippingMethodPostalCodeRuleQuery) Exists(exec boil.Executor) (bool, err
 	}
 
 	return count > 0, nil
+}
+
+// ShippingMethod pointed to by the foreign key.
+func (o *ShippingMethodPostalCodeRule) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ShippingMethods(queryMods...)
+}
+
+// LoadShippingMethod allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shippingMethodPostalCodeRuleL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodPostalCodeRule interface{}, mods queries.Applicator) error {
+	var slice []*ShippingMethodPostalCodeRule
+	var object *ShippingMethodPostalCodeRule
+
+	if singular {
+		var ok bool
+		object, ok = maybeShippingMethodPostalCodeRule.(*ShippingMethodPostalCodeRule)
+		if !ok {
+			object = new(ShippingMethodPostalCodeRule)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShippingMethodPostalCodeRule)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShippingMethodPostalCodeRule))
+			}
+		}
+	} else {
+		s, ok := maybeShippingMethodPostalCodeRule.(*[]*ShippingMethodPostalCodeRule)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShippingMethodPostalCodeRule)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShippingMethodPostalCodeRule))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shippingMethodPostalCodeRuleR{}
+		}
+		args[object.ShippingMethodID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shippingMethodPostalCodeRuleR{}
+			}
+
+			args[obj.ShippingMethodID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shipping_methods`),
+		qm.WhereIn(`shipping_methods.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ShippingMethod")
+	}
+
+	var resultSlice []*ShippingMethod
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ShippingMethod")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for shipping_methods")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.ShippingMethod = foreign
+		if foreign.R == nil {
+			foreign.R = &shippingMethodR{}
+		}
+		foreign.R.ShippingMethodPostalCodeRules = append(foreign.R.ShippingMethodPostalCodeRules, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ShippingMethodID == foreign.ID {
+				local.R.ShippingMethod = foreign
+				if foreign.R == nil {
+					foreign.R = &shippingMethodR{}
+				}
+				foreign.R.ShippingMethodPostalCodeRules = append(foreign.R.ShippingMethodPostalCodeRules, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetShippingMethod of the shippingMethodPostalCodeRule to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.ShippingMethodPostalCodeRules.
+func (o *ShippingMethodPostalCodeRule) SetShippingMethod(exec boil.Executor, insert bool, related *ShippingMethod) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shipping_method_postal_code_rules\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shippingMethodPostalCodeRulePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ShippingMethodID = related.ID
+	if o.R == nil {
+		o.R = &shippingMethodPostalCodeRuleR{
+			ShippingMethod: related,
+		}
+	} else {
+		o.R.ShippingMethod = related
+	}
+
+	if related.R == nil {
+		related.R = &shippingMethodR{
+			ShippingMethodPostalCodeRules: ShippingMethodPostalCodeRuleSlice{o},
+		}
+	} else {
+		related.R.ShippingMethodPostalCodeRules = append(related.R.ShippingMethodPostalCodeRules, o)
+	}
+
+	return nil
 }
 
 // ShippingMethodPostalCodeRules retrieves all the records using an executor.

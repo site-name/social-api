@@ -19,7 +19,7 @@ var AREA_UNIT_STRINGS = map[string]string{
 	SQ_INCH: "Square inches",
 }
 
-var AREA_UNIT_CONVERSION = map[string]float32{
+var AREA_UNIT_CONVERSION = map[string]float64{
 	SQ_CM:   10000.0,
 	SQ_M:    1.0,
 	SQ_KM:   0.000001,

@@ -182,7 +182,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 					},
 				}
 				if pathIdx == len(cate.Path)-1 {
-					desired.Images = strings.Join(cate.Images, " ")
+					desired.Images = model_types.NewNullString(strings.Join(cate.Images, " "))
 				}
 				if pathIdx > 0 {
 					desired.ParentID = model_types.NewNullString(meetMap[parentKey].ID)

@@ -178,15 +178,26 @@ var TransactionWhere = struct {
 
 // TransactionRels is where relationship names are stored.
 var TransactionRels = struct {
-}{}
+	Payment string
+}{
+	Payment: "Payment",
+}
 
 // transactionR is where relationships are stored.
 type transactionR struct {
+	Payment *Payment `boil:"Payment" json:"Payment" toml:"Payment" yaml:"Payment"`
 }
 
 // NewStruct creates a new relationship struct
 func (*transactionR) NewStruct() *transactionR {
 	return &transactionR{}
+}
+
+func (r *transactionR) GetPayment() *Payment {
+	if r == nil {
+		return nil
+	}
+	return r.Payment
 }
 
 // transactionL is where Load methods for each relationship are stored.
@@ -289,6 +300,175 @@ func (q transactionQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Payment pointed to by the foreign key.
+func (o *Transaction) Payment(mods ...qm.QueryMod) paymentQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.PaymentID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Payments(queryMods...)
+}
+
+// LoadPayment allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction interface{}, mods queries.Applicator) error {
+	var slice []*Transaction
+	var object *Transaction
+
+	if singular {
+		var ok bool
+		object, ok = maybeTransaction.(*Transaction)
+		if !ok {
+			object = new(Transaction)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeTransaction)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTransaction))
+			}
+		}
+	} else {
+		s, ok := maybeTransaction.(*[]*Transaction)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeTransaction)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTransaction))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &transactionR{}
+		}
+		args[object.PaymentID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &transactionR{}
+			}
+
+			args[obj.PaymentID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`payments`),
+		qm.WhereIn(`payments.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Payment")
+	}
+
+	var resultSlice []*Payment
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Payment")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for payments")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payments")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Payment = foreign
+		if foreign.R == nil {
+			foreign.R = &paymentR{}
+		}
+		foreign.R.Transactions = append(foreign.R.Transactions, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.PaymentID == foreign.ID {
+				local.R.Payment = foreign
+				if foreign.R == nil {
+					foreign.R = &paymentR{}
+				}
+				foreign.R.Transactions = append(foreign.R.Transactions, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetPayment of the transaction to the related item.
+// Sets o.R.Payment to related.
+// Adds o to related.R.Transactions.
+func (o *Transaction) SetPayment(exec boil.Executor, insert bool, related *Payment) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"transactions\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
+		strmangle.WhereClause("\"", "\"", 2, transactionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.PaymentID = related.ID
+	if o.R == nil {
+		o.R = &transactionR{
+			Payment: related,
+		}
+	} else {
+		o.R.Payment = related
+	}
+
+	if related.R == nil {
+		related.R = &paymentR{
+			Transactions: TransactionSlice{o},
+		}
+	} else {
+		related.R.Transactions = append(related.R.Transactions, o)
+	}
+
+	return nil
 }
 
 // Transactions retrieves all the records using an executor.

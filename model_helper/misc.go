@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (
@@ -73,4 +74,8 @@ func NewToken(tokentype TokenType, extra string) *model.Token {
 		Type:  tokentype.String(),
 		Extra: extra,
 	}
+}
+
+type ExportEventFilterOption struct {
+	Conds []qm.QueryMod
 }

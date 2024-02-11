@@ -1,10 +1,12 @@
 package discount
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlVoucherCustomerStore struct {
@@ -16,60 +18,41 @@ func NewSqlVoucherCustomerStore(sqlStore store.Store) store.VoucherCustomerStore
 }
 
 // Save inserts given voucher customer instance into database ands returns it
-func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
-	if err := vcs.GetMaster().Create(voucherCustomer).Error; err != nil {
-		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CustomerEmail", "vouchercustomers_voucherid_customeremail_key"}) {
-			return nil, store.NewErrInvalidInput(model.VoucherCustomerTableName, "VoucherID/CustomerEmail", "uniqe constraint")
+func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error) {
+	if err := model_helper.VoucherCustomerIsValid(voucherCustomer); err != nil {
+		return nil, err
+	}
+	err := voucherCustomer.Insert(vcs.GetMaster(), boil.Infer())
+	if err != nil {
+		if vcs.IsUniqueConstraintError(err, []string{model.VoucherCustomerColumns.VoucherID, model.VoucherCustomerColumns.CustomerEmail, "voucher_customers_voucher_id_customer_email_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.VoucherCustomers, "VoucherID/CustomerEmail", "unique constraint")
 		}
-		return nil, errors.Wrapf(err, "failed to save voucher customer relationship with is=%s", voucherCustomer.Id)
+		return nil, err
 	}
 
-	return voucherCustomer, nil
+	return &voucherCustomer, nil
 }
 
 // GetByOption finds and returns a voucher customer with given options
-func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomerGetbyOption")
+func (vcs *SqlVoucherCustomerStore) GetByOption(options model_helper.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
+	record, err := model.VoucherCustomers(options.Conditions...).One(vcs.GetReplica())
 	if err != nil {
-		return nil, err
-	}
-	var res model.VoucherCustomer
-	err = vcs.GetMaster().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.VoucherCustomerTableName, "options")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.VoucherCustomers, "options")
 		}
-		return nil, errors.Wrap(err, "failed to finds voucher-customer relation with options")
-	}
+		return nil, err
 
-	return &res, nil
+	}
+	return record, nil
 }
 
 // FilterByOptions finds and returns a slice of voucher customers by given options
-func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomerFilterByOption")
-	if err != nil {
-		return nil, err
-	}
-	var res []*model.VoucherCustomer
-	err = vcs.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find voucher customers by options")
-	}
-
-	return res, nil
+func (vcs *SqlVoucherCustomerStore) FilterByOptions(options model_helper.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) {
+	return model.VoucherCustomers(options.Conditions...).All(vcs.GetReplica())
 }
 
 // DeleteInBulk deletes given voucher-customers with given id
-func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
-	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomer_Delete")
-	if err != nil {
-		return err
-	}
-	err = vcs.GetMaster().Delete(&model.VoucherCustomer{}, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete voucher-customer relations by given options")
-	}
-
-	return nil
+func (vcs *SqlVoucherCustomerStore) Delete(ids []string) error {
+	_, err := model.VoucherCustomers(model.VoucherCustomerWhere.ID.IN(ids)).DeleteAll(vcs.GetMaster())
+	return err
 }

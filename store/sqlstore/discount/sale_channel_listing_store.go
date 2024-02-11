@@ -1,10 +1,12 @@
 package discount
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlSaleChannelListingStore struct {
@@ -15,36 +17,38 @@ func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountS
 	return &SqlSaleChannelListingStore{sqlStore}
 }
 
-func (scls *SqlSaleChannelListingStore) ScanFields(listing *model.SaleChannelListing) []interface{} {
-	return []interface{}{
-		&listing.Id,
-		&listing.SaleID,
-		&listing.ChannelID,
-		&listing.DiscountValue,
-		&listing.Currency,
-		&listing.CreateAt,
-	}
-}
-
 // Save insert given instance into database then returns it
-func (scls *SqlSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
+func (scls *SqlSaleChannelListingStore) Upsert(transaction boil.ContextTransactor, listings model.SaleChannelListingSlice) (model.SaleChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = scls.GetMaster()
 	}
 
 	for _, listing := range listings {
-		var err error
-		if listing.Id == "" {
-			err = transaction.Create(listing).Error
+		if listing == nil {
+			continue
+		}
+
+		isSaving := false
+		if listing.ID == "" {
+			isSaving = true
+			model_helper.SaleChannelListingPreSave(listing)
 		} else {
-			err = transaction.Model(listing).Updates(listing).Error
+			model_helper.SaleChannelListingPreUpdate(listing)
+		}
+
+		if err := model_helper.SaleChannelListingIsValid(*listing); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = listing.Insert(transaction, boil.Infer())
+		} else {
+			_, err = listing.Update(transaction, boil.Blacklist(model.SaleChannelListingColumns.CreatedAt))
 		}
 
 		if err != nil {
-			if scls.IsUniqueConstraintError(err, []string{"saleid", "channelid", "saleid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(model.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
-			}
-			return nil, errors.Wrap(err, "failed to upsert sale channel listing ")
+			return nil, err
 		}
 	}
 
@@ -53,87 +57,26 @@ func (scls *SqlSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []
 
 // Get finds and returns sale channel listing with given id
 func (scls *SqlSaleChannelListingStore) Get(id string) (*model.SaleChannelListing, error) {
-	var res model.SaleChannelListing
-
-	err := scls.GetReplica().First(&res, "Id = ?", id).Error
+	listing, err := model.FindSaleChannelListing(scls.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.SaleChannelListingTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.SaleChannelListings, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find sale channel listing with id=%s", id)
+		return nil, err
 	}
 
-	return &res, nil
+	return listing, nil
 }
 
 // SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
-func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
-	selectFields := []string{model.SaleChannelListingTableName + ".*"}
-	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, model.ChannelTableName+".*")
-	}
-
-	query := scls.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.SaleChannelListingTableName).
-		Where(option.Conditions)
-
-	if option.SelectRelatedChannel {
-		query = query.InnerJoin(model.ChannelTableName + " ON (Channels.Id = SaleChannelListings.ChannelID)")
-	}
-
-	// parse filter option
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "SaleChannelListingsWithOption_ToSql")
-	}
-
-	rows, err := scls.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find sale channel listing with given option")
-	}
-	defer rows.Close()
-
-	var res []*model.SaleChannelListing
-
-	for rows.Next() {
-		var listing model.SaleChannelListing
-		var channel model.Channel
-		var scanFields = scls.ScanFields(&listing)
-		if option.SelectRelatedChannel {
-			scanFields = append(scanFields, scls.Channel().ScanFields(&channel)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan sale channel listing")
-		}
-
-		if option.SelectRelatedChannel {
-			listing.SetChannel(&channel)
-		}
-		res = append(res, &listing)
-	}
-
-	return res, nil
+func (scls *SqlSaleChannelListingStore) FilterByOptions(option model_helper.SaleChannelListingFilterOption) (model.SaleChannelListingSlice, error) {
+	return model.SaleChannelListings(option.Conditions...).All(scls.GetReplica())
 }
 
-func (s *SqlSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+func (s *SqlSaleChannelListingStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
-	if options.Conditions == nil {
-		return store.NewErrInvalidInput("Delete", "conditions", nil)
-	}
-
-	conds, args, err := options.Conditions.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "Delete_ToSql")
-	}
-
-	err = transaction.Raw("DELETE FROM "+model.SaleChannelListingTableName+" WHERE "+conds, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete sale channel listings by given options")
-	}
-	return nil
+	_, err := model.SaleChannelListings(model.SaleChannelListingWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

@@ -94,15 +94,26 @@ var ShopStaffWhere = struct {
 
 // ShopStaffRels is where relationship names are stored.
 var ShopStaffRels = struct {
-}{}
+	Staff string
+}{
+	Staff: "Staff",
+}
 
 // shopStaffR is where relationships are stored.
 type shopStaffR struct {
+	Staff *User `boil:"Staff" json:"Staff" toml:"Staff" yaml:"Staff"`
 }
 
 // NewStruct creates a new relationship struct
 func (*shopStaffR) NewStruct() *shopStaffR {
 	return &shopStaffR{}
+}
+
+func (r *shopStaffR) GetStaff() *User {
+	if r == nil {
+		return nil
+	}
+	return r.Staff
 }
 
 // shopStaffL is where Load methods for each relationship are stored.
@@ -205,6 +216,175 @@ func (q shopStaffQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Staff pointed to by the foreign key.
+func (o *ShopStaff) Staff(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.StaffID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// LoadStaff allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shopStaffL) LoadStaff(e boil.Executor, singular bool, maybeShopStaff interface{}, mods queries.Applicator) error {
+	var slice []*ShopStaff
+	var object *ShopStaff
+
+	if singular {
+		var ok bool
+		object, ok = maybeShopStaff.(*ShopStaff)
+		if !ok {
+			object = new(ShopStaff)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShopStaff)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShopStaff))
+			}
+		}
+	} else {
+		s, ok := maybeShopStaff.(*[]*ShopStaff)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShopStaff)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShopStaff))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shopStaffR{}
+		}
+		args[object.StaffID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shopStaffR{}
+			}
+
+			args[obj.StaffID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Staff = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.StaffShopStaff = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.StaffID == foreign.ID {
+				local.R.Staff = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.StaffShopStaff = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetStaff of the shopStaff to the related item.
+// Sets o.R.Staff to related.
+// Adds o to related.R.StaffShopStaff.
+func (o *ShopStaff) SetStaff(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shop_staffs\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"staff_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shopStaffPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.StaffID = related.ID
+	if o.R == nil {
+		o.R = &shopStaffR{
+			Staff: related,
+		}
+	} else {
+		o.R.Staff = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			StaffShopStaff: o,
+		}
+	} else {
+		related.R.StaffShopStaff = o
+	}
+
+	return nil
 }
 
 // ShopStaffs retrieves all the records using an executor.

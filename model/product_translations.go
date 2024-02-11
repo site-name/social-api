@@ -93,15 +93,26 @@ var ProductTranslationWhere = struct {
 
 // ProductTranslationRels is where relationship names are stored.
 var ProductTranslationRels = struct {
-}{}
+	Product string
+}{
+	Product: "Product",
+}
 
 // productTranslationR is where relationships are stored.
 type productTranslationR struct {
+	Product *Product `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
 }
 
 // NewStruct creates a new relationship struct
 func (*productTranslationR) NewStruct() *productTranslationR {
 	return &productTranslationR{}
+}
+
+func (r *productTranslationR) GetProduct() *Product {
+	if r == nil {
+		return nil
+	}
+	return r.Product
 }
 
 // productTranslationL is where Load methods for each relationship are stored.
@@ -204,6 +215,175 @@ func (q productTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Product pointed to by the foreign key.
+func (o *ProductTranslation) Product(mods ...qm.QueryMod) productQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ProductID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Products(queryMods...)
+}
+
+// LoadProduct allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productTranslationL) LoadProduct(e boil.Executor, singular bool, maybeProductTranslation interface{}, mods queries.Applicator) error {
+	var slice []*ProductTranslation
+	var object *ProductTranslation
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductTranslation.(*ProductTranslation)
+		if !ok {
+			object = new(ProductTranslation)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductTranslation))
+			}
+		}
+	} else {
+		s, ok := maybeProductTranslation.(*[]*ProductTranslation)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductTranslation))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productTranslationR{}
+		}
+		args[object.ProductID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productTranslationR{}
+			}
+
+			args[obj.ProductID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`products`),
+		qm.WhereIn(`products.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Product")
+	}
+
+	var resultSlice []*Product
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Product")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Product = foreign
+		if foreign.R == nil {
+			foreign.R = &productR{}
+		}
+		foreign.R.ProductTranslations = append(foreign.R.ProductTranslations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProductID == foreign.ID {
+				local.R.Product = foreign
+				if foreign.R == nil {
+					foreign.R = &productR{}
+				}
+				foreign.R.ProductTranslations = append(foreign.R.ProductTranslations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetProduct of the productTranslation to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductTranslations.
+func (o *ProductTranslation) SetProduct(exec boil.Executor, insert bool, related *Product) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"product_translations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productTranslationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProductID = related.ID
+	if o.R == nil {
+		o.R = &productTranslationR{
+			Product: related,
+		}
+	} else {
+		o.R.Product = related
+	}
+
+	if related.R == nil {
+		related.R = &productR{
+			ProductTranslations: ProductTranslationSlice{o},
+		}
+	} else {
+		related.R.ProductTranslations = append(related.R.ProductTranslations, o)
+	}
+
+	return nil
 }
 
 // ProductTranslations retrieves all the records using an executor.

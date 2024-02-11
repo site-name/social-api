@@ -163,14 +163,44 @@ var ProductWhere = struct {
 
 // ProductRels is where relationship names are stored.
 var ProductRels = struct {
-	AssignedProductAttributes string
+	AssignedProductAttributes      string
+	CustomProductAttributes        string
+	Giftcards                      string
+	ProductChannelListings         string
+	ProductCollections             string
+	ProductMedia                   string
+	ProductTranslations            string
+	ProductVariants                string
+	SaleProducts                   string
+	ShippingMethodExcludedProducts string
+	VoucherProducts                string
 }{
-	AssignedProductAttributes: "AssignedProductAttributes",
+	AssignedProductAttributes:      "AssignedProductAttributes",
+	CustomProductAttributes:        "CustomProductAttributes",
+	Giftcards:                      "Giftcards",
+	ProductChannelListings:         "ProductChannelListings",
+	ProductCollections:             "ProductCollections",
+	ProductMedia:                   "ProductMedia",
+	ProductTranslations:            "ProductTranslations",
+	ProductVariants:                "ProductVariants",
+	SaleProducts:                   "SaleProducts",
+	ShippingMethodExcludedProducts: "ShippingMethodExcludedProducts",
+	VoucherProducts:                "VoucherProducts",
 }
 
 // productR is where relationships are stored.
 type productR struct {
-	AssignedProductAttributes AssignedProductAttributeSlice `boil:"AssignedProductAttributes" json:"AssignedProductAttributes" toml:"AssignedProductAttributes" yaml:"AssignedProductAttributes"`
+	AssignedProductAttributes      AssignedProductAttributeSlice      `boil:"AssignedProductAttributes" json:"AssignedProductAttributes" toml:"AssignedProductAttributes" yaml:"AssignedProductAttributes"`
+	CustomProductAttributes        CustomProductAttributeSlice        `boil:"CustomProductAttributes" json:"CustomProductAttributes" toml:"CustomProductAttributes" yaml:"CustomProductAttributes"`
+	Giftcards                      GiftcardSlice                      `boil:"Giftcards" json:"Giftcards" toml:"Giftcards" yaml:"Giftcards"`
+	ProductChannelListings         ProductChannelListingSlice         `boil:"ProductChannelListings" json:"ProductChannelListings" toml:"ProductChannelListings" yaml:"ProductChannelListings"`
+	ProductCollections             ProductCollectionSlice             `boil:"ProductCollections" json:"ProductCollections" toml:"ProductCollections" yaml:"ProductCollections"`
+	ProductMedia                   ProductMediumSlice                 `boil:"ProductMedia" json:"ProductMedia" toml:"ProductMedia" yaml:"ProductMedia"`
+	ProductTranslations            ProductTranslationSlice            `boil:"ProductTranslations" json:"ProductTranslations" toml:"ProductTranslations" yaml:"ProductTranslations"`
+	ProductVariants                ProductVariantSlice                `boil:"ProductVariants" json:"ProductVariants" toml:"ProductVariants" yaml:"ProductVariants"`
+	SaleProducts                   SaleProductSlice                   `boil:"SaleProducts" json:"SaleProducts" toml:"SaleProducts" yaml:"SaleProducts"`
+	ShippingMethodExcludedProducts ShippingMethodExcludedProductSlice `boil:"ShippingMethodExcludedProducts" json:"ShippingMethodExcludedProducts" toml:"ShippingMethodExcludedProducts" yaml:"ShippingMethodExcludedProducts"`
+	VoucherProducts                VoucherProductSlice                `boil:"VoucherProducts" json:"VoucherProducts" toml:"VoucherProducts" yaml:"VoucherProducts"`
 }
 
 // NewStruct creates a new relationship struct
@@ -183,6 +213,76 @@ func (r *productR) GetAssignedProductAttributes() AssignedProductAttributeSlice 
 		return nil
 	}
 	return r.AssignedProductAttributes
+}
+
+func (r *productR) GetCustomProductAttributes() CustomProductAttributeSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CustomProductAttributes
+}
+
+func (r *productR) GetGiftcards() GiftcardSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Giftcards
+}
+
+func (r *productR) GetProductChannelListings() ProductChannelListingSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductChannelListings
+}
+
+func (r *productR) GetProductCollections() ProductCollectionSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductCollections
+}
+
+func (r *productR) GetProductMedia() ProductMediumSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductMedia
+}
+
+func (r *productR) GetProductTranslations() ProductTranslationSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductTranslations
+}
+
+func (r *productR) GetProductVariants() ProductVariantSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductVariants
+}
+
+func (r *productR) GetSaleProducts() SaleProductSlice {
+	if r == nil {
+		return nil
+	}
+	return r.SaleProducts
+}
+
+func (r *productR) GetShippingMethodExcludedProducts() ShippingMethodExcludedProductSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ShippingMethodExcludedProducts
+}
+
+func (r *productR) GetVoucherProducts() VoucherProductSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VoucherProducts
 }
 
 // productL is where Load methods for each relationship are stored.
@@ -301,6 +401,146 @@ func (o *Product) AssignedProductAttributes(mods ...qm.QueryMod) assignedProduct
 	return AssignedProductAttributes(queryMods...)
 }
 
+// CustomProductAttributes retrieves all the custom_product_attribute's CustomProductAttributes with an executor.
+func (o *Product) CustomProductAttributes(mods ...qm.QueryMod) customProductAttributeQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"custom_product_attributes\".\"product_id\"=?", o.ID),
+	)
+
+	return CustomProductAttributes(queryMods...)
+}
+
+// Giftcards retrieves all the giftcard's Giftcards with an executor.
+func (o *Product) Giftcards(mods ...qm.QueryMod) giftcardQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"giftcards\".\"product_id\"=?", o.ID),
+	)
+
+	return Giftcards(queryMods...)
+}
+
+// ProductChannelListings retrieves all the product_channel_listing's ProductChannelListings with an executor.
+func (o *Product) ProductChannelListings(mods ...qm.QueryMod) productChannelListingQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_channel_listings\".\"product_id\"=?", o.ID),
+	)
+
+	return ProductChannelListings(queryMods...)
+}
+
+// ProductCollections retrieves all the product_collection's ProductCollections with an executor.
+func (o *Product) ProductCollections(mods ...qm.QueryMod) productCollectionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_collections\".\"product_id\"=?", o.ID),
+	)
+
+	return ProductCollections(queryMods...)
+}
+
+// ProductMedia retrieves all the product_medium's ProductMedia with an executor.
+func (o *Product) ProductMedia(mods ...qm.QueryMod) productMediumQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_media\".\"product_id\"=?", o.ID),
+	)
+
+	return ProductMedia(queryMods...)
+}
+
+// ProductTranslations retrieves all the product_translation's ProductTranslations with an executor.
+func (o *Product) ProductTranslations(mods ...qm.QueryMod) productTranslationQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_translations\".\"product_id\"=?", o.ID),
+	)
+
+	return ProductTranslations(queryMods...)
+}
+
+// ProductVariants retrieves all the product_variant's ProductVariants with an executor.
+func (o *Product) ProductVariants(mods ...qm.QueryMod) productVariantQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_variants\".\"product_id\"=?", o.ID),
+	)
+
+	return ProductVariants(queryMods...)
+}
+
+// SaleProducts retrieves all the sale_product's SaleProducts with an executor.
+func (o *Product) SaleProducts(mods ...qm.QueryMod) saleProductQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"sale_products\".\"product_id\"=?", o.ID),
+	)
+
+	return SaleProducts(queryMods...)
+}
+
+// ShippingMethodExcludedProducts retrieves all the shipping_method_excluded_product's ShippingMethodExcludedProducts with an executor.
+func (o *Product) ShippingMethodExcludedProducts(mods ...qm.QueryMod) shippingMethodExcludedProductQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"shipping_method_excluded_products\".\"product_id\"=?", o.ID),
+	)
+
+	return ShippingMethodExcludedProducts(queryMods...)
+}
+
+// VoucherProducts retrieves all the voucher_product's VoucherProducts with an executor.
+func (o *Product) VoucherProducts(mods ...qm.QueryMod) voucherProductQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"voucher_products\".\"product_id\"=?", o.ID),
+	)
+
+	return VoucherProducts(queryMods...)
+}
+
 // LoadAssignedProductAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
@@ -407,6 +647,1066 @@ func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, ma
 	return nil
 }
 
+// LoadCustomProductAttributes allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`custom_product_attributes`),
+		qm.WhereIn(`custom_product_attributes.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load custom_product_attributes")
+	}
+
+	var resultSlice []*CustomProductAttribute
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice custom_product_attributes")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on custom_product_attributes")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for custom_product_attributes")
+	}
+
+	if singular {
+		object.R.CustomProductAttributes = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &customProductAttributeR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.CustomProductAttributes = append(local.R.CustomProductAttributes, foreign)
+				if foreign.R == nil {
+					foreign.R = &customProductAttributeR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadGiftcards allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`giftcards`),
+		qm.WhereIn(`giftcards.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load giftcards")
+	}
+
+	var resultSlice []*Giftcard
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice giftcards")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on giftcards")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for giftcards")
+	}
+
+	if singular {
+		object.R.Giftcards = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &giftcardR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.ProductID) {
+				local.R.Giftcards = append(local.R.Giftcards, foreign)
+				if foreign.R == nil {
+					foreign.R = &giftcardR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductChannelListings allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_channel_listings`),
+		qm.WhereIn(`product_channel_listings.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_channel_listings")
+	}
+
+	var resultSlice []*ProductChannelListing
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_channel_listings")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_channel_listings")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_channel_listings")
+	}
+
+	if singular {
+		object.R.ProductChannelListings = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productChannelListingR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductChannelListings = append(local.R.ProductChannelListings, foreign)
+				if foreign.R == nil {
+					foreign.R = &productChannelListingR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductCollections allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_collections`),
+		qm.WhereIn(`product_collections.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_collections")
+	}
+
+	var resultSlice []*ProductCollection
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_collections")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_collections")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_collections")
+	}
+
+	if singular {
+		object.R.ProductCollections = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productCollectionR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductCollections = append(local.R.ProductCollections, foreign)
+				if foreign.R == nil {
+					foreign.R = &productCollectionR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductMedia allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_media`),
+		qm.WhereIn(`product_media.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_media")
+	}
+
+	var resultSlice []*ProductMedium
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_media")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_media")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_media")
+	}
+
+	if singular {
+		object.R.ProductMedia = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productMediumR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductMedia = append(local.R.ProductMedia, foreign)
+				if foreign.R == nil {
+					foreign.R = &productMediumR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductTranslations allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_translations`),
+		qm.WhereIn(`product_translations.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_translations")
+	}
+
+	var resultSlice []*ProductTranslation
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_translations")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_translations")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_translations")
+	}
+
+	if singular {
+		object.R.ProductTranslations = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productTranslationR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductTranslations = append(local.R.ProductTranslations, foreign)
+				if foreign.R == nil {
+					foreign.R = &productTranslationR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductVariants allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_variants`),
+		qm.WhereIn(`product_variants.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_variants")
+	}
+
+	var resultSlice []*ProductVariant
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_variants")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_variants")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
+	}
+
+	if singular {
+		object.R.ProductVariants = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productVariantR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductVariants = append(local.R.ProductVariants, foreign)
+				if foreign.R == nil {
+					foreign.R = &productVariantR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadSaleProducts allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`sale_products`),
+		qm.WhereIn(`sale_products.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load sale_products")
+	}
+
+	var resultSlice []*SaleProduct
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice sale_products")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on sale_products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sale_products")
+	}
+
+	if singular {
+		object.R.SaleProducts = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &saleProductR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.SaleProducts = append(local.R.SaleProducts, foreign)
+				if foreign.R == nil {
+					foreign.R = &saleProductR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadShippingMethodExcludedProducts allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shipping_method_excluded_products`),
+		qm.WhereIn(`shipping_method_excluded_products.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load shipping_method_excluded_products")
+	}
+
+	var resultSlice []*ShippingMethodExcludedProduct
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice shipping_method_excluded_products")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on shipping_method_excluded_products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_method_excluded_products")
+	}
+
+	if singular {
+		object.R.ShippingMethodExcludedProducts = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &shippingMethodExcludedProductR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ShippingMethodExcludedProducts = append(local.R.ShippingMethodExcludedProducts, foreign)
+				if foreign.R == nil {
+					foreign.R = &shippingMethodExcludedProductR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVoucherProducts allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`voucher_products`),
+		qm.WhereIn(`voucher_products.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load voucher_products")
+	}
+
+	var resultSlice []*VoucherProduct
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice voucher_products")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on voucher_products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_products")
+	}
+
+	if singular {
+		object.R.VoucherProducts = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &voucherProductR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.VoucherProducts = append(local.R.VoucherProducts, foreign)
+				if foreign.R == nil {
+					foreign.R = &voucherProductR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // AddAssignedProductAttributes adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.AssignedProductAttributes.
@@ -450,6 +1750,599 @@ func (o *Product) AddAssignedProductAttributes(exec boil.Executor, insert bool, 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedProductAttributeR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddCustomProductAttributes adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.CustomProductAttributes.
+// Sets related.R.Product appropriately.
+func (o *Product) AddCustomProductAttributes(exec boil.Executor, insert bool, related ...*CustomProductAttribute) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"custom_product_attributes\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, customProductAttributePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			CustomProductAttributes: related,
+		}
+	} else {
+		o.R.CustomProductAttributes = append(o.R.CustomProductAttributes, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &customProductAttributeR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddGiftcards adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.Giftcards.
+// Sets related.R.Product appropriately.
+func (o *Product) AddGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.ProductID, o.ID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"giftcards\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.ProductID, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			Giftcards: related,
+		}
+	} else {
+		o.R.Giftcards = append(o.R.Giftcards, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &giftcardR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// SetGiftcards removes all previously related items of the
+// product replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Product's Giftcards accordingly.
+// Replaces o.R.Giftcards with related.
+// Sets related.R.Product's Giftcards accordingly.
+func (o *Product) SetGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
+	query := "update \"giftcards\" set \"product_id\" = null where \"product_id\" = $1"
+	values := []interface{}{o.ID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.Giftcards {
+			queries.SetScanner(&rel.ProductID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.Product = nil
+		}
+		o.R.Giftcards = nil
+	}
+
+	return o.AddGiftcards(exec, insert, related...)
+}
+
+// RemoveGiftcards relationships from objects passed in.
+// Removes related items from R.Giftcards (uses pointer comparison, removal does not keep order)
+// Sets related.R.Product.
+func (o *Product) RemoveGiftcards(exec boil.Executor, related ...*Giftcard) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.ProductID, nil)
+		if rel.R != nil {
+			rel.R.Product = nil
+		}
+		if _, err = rel.Update(exec, boil.Whitelist("product_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.Giftcards {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.Giftcards)
+			if ln > 1 && i < ln-1 {
+				o.R.Giftcards[i] = o.R.Giftcards[ln-1]
+			}
+			o.R.Giftcards = o.R.Giftcards[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddProductChannelListings adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ProductChannelListings.
+// Sets related.R.Product appropriately.
+func (o *Product) AddProductChannelListings(exec boil.Executor, insert bool, related ...*ProductChannelListing) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_channel_listings\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productChannelListingPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ProductChannelListings: related,
+		}
+	} else {
+		o.R.ProductChannelListings = append(o.R.ProductChannelListings, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productChannelListingR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddProductCollections adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ProductCollections.
+// Sets related.R.Product appropriately.
+func (o *Product) AddProductCollections(exec boil.Executor, insert bool, related ...*ProductCollection) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_collections\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ProductCollections: related,
+		}
+	} else {
+		o.R.ProductCollections = append(o.R.ProductCollections, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productCollectionR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddProductMedia adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ProductMedia.
+// Sets related.R.Product appropriately.
+func (o *Product) AddProductMedia(exec boil.Executor, insert bool, related ...*ProductMedium) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_media\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productMediumPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ProductMedia: related,
+		}
+	} else {
+		o.R.ProductMedia = append(o.R.ProductMedia, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productMediumR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddProductTranslations adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ProductTranslations.
+// Sets related.R.Product appropriately.
+func (o *Product) AddProductTranslations(exec boil.Executor, insert bool, related ...*ProductTranslation) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_translations\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productTranslationPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ProductTranslations: related,
+		}
+	} else {
+		o.R.ProductTranslations = append(o.R.ProductTranslations, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productTranslationR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddProductVariants adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ProductVariants.
+// Sets related.R.Product appropriately.
+func (o *Product) AddProductVariants(exec boil.Executor, insert bool, related ...*ProductVariant) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_variants\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productVariantPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ProductVariants: related,
+		}
+	} else {
+		o.R.ProductVariants = append(o.R.ProductVariants, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productVariantR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddSaleProducts adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.SaleProducts.
+// Sets related.R.Product appropriately.
+func (o *Product) AddSaleProducts(exec boil.Executor, insert bool, related ...*SaleProduct) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"sale_products\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			SaleProducts: related,
+		}
+	} else {
+		o.R.SaleProducts = append(o.R.SaleProducts, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &saleProductR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddShippingMethodExcludedProducts adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.ShippingMethodExcludedProducts.
+// Sets related.R.Product appropriately.
+func (o *Product) AddShippingMethodExcludedProducts(exec boil.Executor, insert bool, related ...*ShippingMethodExcludedProduct) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"shipping_method_excluded_products\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			ShippingMethodExcludedProducts: related,
+		}
+	} else {
+		o.R.ShippingMethodExcludedProducts = append(o.R.ShippingMethodExcludedProducts, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &shippingMethodExcludedProductR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
+}
+
+// AddVoucherProducts adds the given related objects to the existing relationships
+// of the product, optionally inserting them as new records.
+// Appends related to o.R.VoucherProducts.
+// Sets related.R.Product appropriately.
+func (o *Product) AddVoucherProducts(exec boil.Executor, insert bool, related ...*VoucherProduct) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"voucher_products\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, voucherProductPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productR{
+			VoucherProducts: related,
+		}
+	} else {
+		o.R.VoucherProducts = append(o.R.VoucherProducts, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &voucherProductR{
 				Product: o,
 			}
 		} else {

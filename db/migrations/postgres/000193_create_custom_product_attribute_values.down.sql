@@ -1,0 +1,3 @@
+
+DROP TABLE IF EXISTS custom_product_attribute_values;
+ALTER TABLE custom_product_attributes DROP CONSTRAINT IF EXISTS custom_product_attributes_name_key;

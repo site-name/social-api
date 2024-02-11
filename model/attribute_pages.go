@@ -72,19 +72,29 @@ var AttributePageWhere = struct {
 
 // AttributePageRels is where relationship names are stored.
 var AttributePageRels = struct {
+	PageType                         string
 	AssignmentAssignedPageAttributes string
 }{
+	PageType:                         "PageType",
 	AssignmentAssignedPageAttributes: "AssignmentAssignedPageAttributes",
 }
 
 // attributePageR is where relationships are stored.
 type attributePageR struct {
+	PageType                         *PageType                  `boil:"PageType" json:"PageType" toml:"PageType" yaml:"PageType"`
 	AssignmentAssignedPageAttributes AssignedPageAttributeSlice `boil:"AssignmentAssignedPageAttributes" json:"AssignmentAssignedPageAttributes" toml:"AssignmentAssignedPageAttributes" yaml:"AssignmentAssignedPageAttributes"`
 }
 
 // NewStruct creates a new relationship struct
 func (*attributePageR) NewStruct() *attributePageR {
 	return &attributePageR{}
+}
+
+func (r *attributePageR) GetPageType() *PageType {
+	if r == nil {
+		return nil
+	}
+	return r.PageType
 }
 
 func (r *attributePageR) GetAssignmentAssignedPageAttributes() AssignedPageAttributeSlice {
@@ -196,6 +206,17 @@ func (q attributePageQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
+// PageType pointed to by the foreign key.
+func (o *AttributePage) PageType(mods ...qm.QueryMod) pageTypeQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.PageTypeID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return PageTypes(queryMods...)
+}
+
 // AssignmentAssignedPageAttributes retrieves all the assigned_page_attribute's AssignedPageAttributes with an executor via assignment_id column.
 func (o *AttributePage) AssignmentAssignedPageAttributes(mods ...qm.QueryMod) assignedPageAttributeQuery {
 	var queryMods []qm.QueryMod
@@ -208,6 +229,118 @@ func (o *AttributePage) AssignmentAssignedPageAttributes(mods ...qm.QueryMod) as
 	)
 
 	return AssignedPageAttributes(queryMods...)
+}
+
+// LoadPageType allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (attributePageL) LoadPageType(e boil.Executor, singular bool, maybeAttributePage interface{}, mods queries.Applicator) error {
+	var slice []*AttributePage
+	var object *AttributePage
+
+	if singular {
+		var ok bool
+		object, ok = maybeAttributePage.(*AttributePage)
+		if !ok {
+			object = new(AttributePage)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAttributePage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAttributePage))
+			}
+		}
+	} else {
+		s, ok := maybeAttributePage.(*[]*AttributePage)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAttributePage)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAttributePage))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &attributePageR{}
+		}
+		args[object.PageTypeID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &attributePageR{}
+			}
+
+			args[obj.PageTypeID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`page_types`),
+		qm.WhereIn(`page_types.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load PageType")
+	}
+
+	var resultSlice []*PageType
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice PageType")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for page_types")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for page_types")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.PageType = foreign
+		if foreign.R == nil {
+			foreign.R = &pageTypeR{}
+		}
+		foreign.R.AttributePages = append(foreign.R.AttributePages, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.PageTypeID == foreign.ID {
+				local.R.PageType = foreign
+				if foreign.R == nil {
+					foreign.R = &pageTypeR{}
+				}
+				foreign.R.AttributePages = append(foreign.R.AttributePages, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadAssignmentAssignedPageAttributes allows an eager lookup of values, cached into the
@@ -311,6 +444,52 @@ func (attributePageL) LoadAssignmentAssignedPageAttributes(e boil.Executor, sing
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetPageType of the attributePage to the related item.
+// Sets o.R.PageType to related.
+// Adds o to related.R.AttributePages.
+func (o *AttributePage) SetPageType(exec boil.Executor, insert bool, related *PageType) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"attribute_pages\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"page_type_id"}),
+		strmangle.WhereClause("\"", "\"", 2, attributePagePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.PageTypeID = related.ID
+	if o.R == nil {
+		o.R = &attributePageR{
+			PageType: related,
+		}
+	} else {
+		o.R.PageType = related
+	}
+
+	if related.R == nil {
+		related.R = &pageTypeR{
+			AttributePages: AttributePageSlice{o},
+		}
+	} else {
+		related.R.AttributePages = append(related.R.AttributePages, o)
 	}
 
 	return nil

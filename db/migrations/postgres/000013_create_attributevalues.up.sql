@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS attribute_values (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar(250) NOT NULL,
-  value varchar(9) NOT NULL,
+  value varchar(250) NOT NULL,
   slug varchar(255) NOT NULL,
   file_url varchar(200),
   content_type varchar(50),

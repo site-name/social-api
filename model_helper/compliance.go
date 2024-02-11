@@ -11,7 +11,6 @@ import (
 )
 
 type CompliancePost struct {
-
 	// From Team
 	TeamName        string
 	TeamDisplayName string
@@ -196,6 +195,15 @@ func ComplianceIsValid(c *model.Compliance) *AppError {
 	}
 	if c.EndAt == 0 || c.EndAt < c.StartAt {
 		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.end_at.app_error", nil, "please provide valid end at", http.StatusBadRequest)
+	}
+	if c.Type.IsValid() != nil {
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
+	}
+	if c.Status.IsValid() != nil {
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.status.app_error", nil, "please provide valid status", http.StatusBadRequest)
+	}
+	if c.CreatedAt == 0 {
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.created_at.app_error", nil, "please provide valid created at", http.StatusBadRequest)
 	}
 
 	return nil

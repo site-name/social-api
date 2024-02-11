@@ -145,10 +145,10 @@ type Store interface {
 // shop
 type (
 	ShopStaffStore interface {
-		Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error)                         // Save inserts given shopStaff into database then returns it with an error
-		Get(shopStaffID string) (*model.ShopStaff, error)                                  // Get finds a shop staff with given id then returns it with an error
-		FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
-		GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error)
+		Upsert(shopStaff model.ShopStaff) (*model.ShopStaff, error)                                // Save inserts given shopStaff into database then returns it with an error
+		Get(shopStaffID string) (*model.ShopStaff, error)                                          // Get finds a shop staff with given id then returns it with an error
+		FilterByOptions(options model_helper.ShopStaffFilterOptions) (model.ShopStaffSlice, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
+		GetByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, error)
 	}
 	ShopTranslationStore interface {
 		Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
@@ -617,60 +617,59 @@ type (
 // discount
 type (
 	OrderDiscountStore interface {
-		Upsert(tx boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
-		Get(orderDiscountID string) (*model.OrderDiscount, error)                                           // Get finds and returns an order discount with given id
-		FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error)             // FilterbyOption filters order discounts that satisfy given option, then returns them
-		BulkDelete(orderDiscountIDs []string) error                                                         // BulkDelete perform bulk delete all given order discount ids
+		Upsert(tx boil.ContextTransactor, orderDiscount model.OrderDiscount) (*model.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*model.OrderDiscount, error)                                          // Get finds and returns an order discount with given id
+		FilterbyOption(option model_helper.OrderDiscountFilterOption) (model.OrderDiscountSlice, error)    // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(ids []string) error                                                                     // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 	}
 	DiscountSaleChannelListingStore interface {
-		Delete(tx boil.ContextTransactor, options *model.SaleChannelListingFilterOption) error
-		Upsert(tx boil.ContextTransactor, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error)
-		Get(saleChannelListingID string) (*model.SaleChannelListing, error) // Get finds and returns sale channel listing with given id
-		SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error)
+		Delete(tx boil.ContextTransactor, ids []string) error
+		Upsert(tx boil.ContextTransactor, listings model.SaleChannelListingSlice) (model.SaleChannelListingSlice, error)
+		Get(id string) (*model.SaleChannelListing, error) // Get finds and returns sale channel listing with given id
+		FilterByOptions(option model_helper.SaleChannelListingFilterOption) (model.SaleChannelListingSlice, error)
 	}
 	VoucherTranslationStore interface {
-		Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error)                    // Save inserts given translation into database and returns it
-		Get(id string) (*model.VoucherTranslation, error)                                                 // Get finds and returns a voucher translation with given id
-		FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) // FilterByOption returns a list of voucher translations filtered using given options
-		GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error)      // GetByOption finds and returns 1 voucher translation by given options
+		Upsert(translation model.VoucherTranslation) (*model.VoucherTranslation, error)                           // Save inserts given translation into database and returns it
+		Get(id string) (*model.VoucherTranslation, error)                                                         // Get finds and returns a voucher translation with given id
+		FilterByOption(option model_helper.VoucherTranslationFilterOption) (model.VoucherTranslationSlice, error) // FilterByOption returns a list of voucher translations filtered using given options
+		GetByOption(option model_helper.VoucherTranslationFilterOption) (*model.VoucherTranslation, error)        // GetByOption finds and returns 1 voucher translation by given options
 	}
 	DiscountSaleStore interface {
-		Delete(tx boil.ContextTransactor, options *model.SaleFilterOption) (int64, error)
-		Upsert(tx boil.ContextTransactor, sale *model.Sale) (*model.Sale, error) // Upsert bases on sale's Id to decide to update or insert given sale
-		Get(saleID string) (*model.Sale, error)                                  // Get finds and returns a sale with given saleID
-		ToggleSaleRelations(tx boil.ContextTransactor, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
-		FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) // FilterSalesByOption filter sales by option
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		Upsert(tx boil.ContextTransactor, sale model.Sale) (*model.Sale, error)            // Upsert bases on sale's Id to decide to update or insert given sale
+		Get(saleID string) (*model.Sale, error)                                            // Get finds and returns a sale with given saleID
+		FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
-		Upsert(tx boil.ContextTransactor, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
-		Get(voucherChannelListingID string) (*model.VoucherChannelListing, error)                                                        // Get finds a listing with given id, then returns it with an error
-		FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error)                          // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
-		Delete(tx boil.ContextTransactor, option *model.VoucherChannelListingFilterOption) error
+		Upsert(tx boil.ContextTransactor, voucherChannelListings model.VoucherChannelListingSlice) (model.VoucherChannelListingSlice, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
+		Get(voucherChannelListingID string) (*model.VoucherChannelListing, error)                                                            // Get finds a listing with given id, then returns it with an error
+		FilterbyOption(option model_helper.VoucherChannelListingFilterOption) (model.VoucherChannelListingSlice, error)                      // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
+		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	DiscountVoucherStore interface {
-		Upsert(voucher *model.Voucher) (*model.Voucher, error)                                     // Upsert saves or updates given voucher then returns it with an error
-		Get(voucherID string) (*model.Voucher, error)                                              // Get finds a voucher with given id, then returns it with an error
-		FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
-		ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error)                           // ExpiredVouchers finds and returns vouchers that are expired before given date
-		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
-		ToggleVoucherRelations(tx boil.ContextTransactor, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
+		Upsert(voucher model.Voucher) (*model.Voucher, error)                                              // Upsert saves or updates given voucher then returns it with an error
+		Get(id string) (*model.Voucher, error)                                                             // Get finds a voucher with given id, then returns it with an error
+		FilterVouchersByOption(option model_helper.VoucherFilterOption) (int64, model.VoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
+		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                                  // ExpiredVouchers finds and returns vouchers that are expired before given date
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		// ToggleVoucherRelations(tx boil.ContextTransactor, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
+		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 	}
 	VoucherCustomerStore interface {
-		Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error)                    // Save inserts given voucher customer instance into database ands returns it
-		DeleteInBulk(options model.VoucherCustomerFilterOption) error                                  // DeleteInBulk deletes given voucher-customers with given id
-		GetByOption(options model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error)         // GetByOption finds and returns a voucher customer with given options
-		FilterByOptions(options model.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) // FilterByOptions finds and returns a slice of voucher customers by given options
+		Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error)                           // Save inserts given voucher customer instance into database ands returns it
+		Delete(ids []string) error                                                                            // DeleteInBulk deletes given voucher-customers with given id
+		GetByOption(options model_helper.VoucherCustomerFilterOption) (*model.VoucherCustomer, error)         // GetByOption finds and returns a voucher customer with given options
+		FilterByOptions(options model_helper.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) // FilterByOptions finds and returns a slice of voucher customers by given options
 	}
 )
 
 // csv
 type (
 	CsvExportEventStore interface {
-		Save(event model.ExportEvent) (*model.ExportEvent, error)                           // Save inserts given export event into database then returns it
-		FilterByOption(options model.ExportEventFilterOption) ([]*model.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
+		Save(event model.ExportEvent) (*model.ExportEvent, error)                                  // Save inserts given export event into database then returns it
+		FilterByOption(options model_helper.ExportEventFilterOption) ([]*model.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
 	}
 	CsvExportFileStore interface {
 		Save(file model.ExportFile) (*model.ExportFile, error) // Save inserts given export file into database then returns it
@@ -681,27 +680,20 @@ type (
 // model
 type (
 	CheckoutLineStore interface {
-		Upsert(checkoutLine model.CheckoutLine) (*model.CheckoutLine, error)               // Upsert checks whether to update or insert given model line then performs according operation
-		Get(id string) (*model.CheckoutLine, error)                                        // Get returns a model line with given id
-		DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error             // DeleteLines deletes all model lines with given uuids
-		BulkUpdate(checkoutLines model.CheckoutLineSlice) error                            // BulkUpdate receives a list of modified model lines, updates them in bulk.
-		BulkCreate(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, error) // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
-		// CheckoutLinesByCheckoutWithPrefetch finds all model lines belong to given model
-		//
-		// and prefetch all related product variants, products
-		//
-		// this borrows the idea from Django's prefetch_related() method
-		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) (model.CheckoutLineSlice, model.ProductVariantSlice, model.ProductSlice, error)
-		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error)            // TotalWeightForCheckoutLines calculate total weight for given model lines
-		CheckoutLinesByOption(option model.CheckoutLineFilterOption) (model.CheckoutLineSlice, error) // CheckoutLinesByOption finds and returns model lines filtered using given option
+		Upsert(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, error)                        // Upsert checks whether to update or insert given model line then performs according operation
+		Get(id string) (*model.CheckoutLine, error)                                                           // Get returns a model line with given id
+		DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error                                // DeleteLines deletes all model lines with given uuids
+		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error)                    // TotalWeightForCheckoutLines calculate total weight for given model lines
+		CheckoutLinesByOption(option model_helper.CheckoutLineFilterOptions) (model.CheckoutLineSlice, error) // CheckoutLinesByOption finds and returns model lines filtered using given option
+		// CheckoutLinesByCheckoutWithPrefetch(checkoutID string) (model.CheckoutLineSlice, model.ProductVariantSlice, model.ProductSlice, error)
 	}
 	CheckoutStore interface {
-		Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error)           // Upsert depends on given model's Token property to decide to update or insert it
-		FetchCheckoutLinesAndPrefetchRelatedValue(ckout model.Checkout) (model_helper.CheckoutLineInfos, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
-		GetByOption(option model.CheckoutFilterOption) (*model.Checkout, error)                                 // GetByOption finds and returns 1 model based on given option
-		FilterByOption(option model.CheckoutFilterOption) (int64, model.CheckoutSlice, error)                   // FilterByOption finds and returns a list of model based on given option
-		DeleteCheckoutsByOption(tx boil.ContextTransactor, option model.CheckoutFilterOption) error             // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
-		CountCheckouts(options model.CheckoutFilterOption) (int64, error)
+		Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error)              // Upsert depends on given model's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(checkout model.Checkout) (model_helper.CheckoutLineInfos, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
+		GetByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, error)                            // GetByOption finds and returns 1 model based on given option
+		FilterByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, error)                     // FilterByOption finds and returns a list of model based on given option
+		Delete(tx boil.ContextTransactor, ids []string) error                                                      // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
+		CountCheckouts(options model_helper.CheckoutFilterOptions) (int64, error)
 	}
 )
 

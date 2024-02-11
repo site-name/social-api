@@ -71,15 +71,36 @@ var SaleCategoryWhere = struct {
 
 // SaleCategoryRels is where relationship names are stored.
 var SaleCategoryRels = struct {
-}{}
+	Category string
+	Sale     string
+}{
+	Category: "Category",
+	Sale:     "Sale",
+}
 
 // saleCategoryR is where relationships are stored.
 type saleCategoryR struct {
+	Category *Category `boil:"Category" json:"Category" toml:"Category" yaml:"Category"`
+	Sale     *Sale     `boil:"Sale" json:"Sale" toml:"Sale" yaml:"Sale"`
 }
 
 // NewStruct creates a new relationship struct
 func (*saleCategoryR) NewStruct() *saleCategoryR {
 	return &saleCategoryR{}
+}
+
+func (r *saleCategoryR) GetCategory() *Category {
+	if r == nil {
+		return nil
+	}
+	return r.Category
+}
+
+func (r *saleCategoryR) GetSale() *Sale {
+	if r == nil {
+		return nil
+	}
+	return r.Sale
 }
 
 // saleCategoryL is where Load methods for each relationship are stored.
@@ -182,6 +203,344 @@ func (q saleCategoryQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Category pointed to by the foreign key.
+func (o *SaleCategory) Category(mods ...qm.QueryMod) categoryQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CategoryID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Categories(queryMods...)
+}
+
+// Sale pointed to by the foreign key.
+func (o *SaleCategory) Sale(mods ...qm.QueryMod) saleQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.SaleID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Sales(queryMods...)
+}
+
+// LoadCategory allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCategory interface{}, mods queries.Applicator) error {
+	var slice []*SaleCategory
+	var object *SaleCategory
+
+	if singular {
+		var ok bool
+		object, ok = maybeSaleCategory.(*SaleCategory)
+		if !ok {
+			object = new(SaleCategory)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSaleCategory)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSaleCategory))
+			}
+		}
+	} else {
+		s, ok := maybeSaleCategory.(*[]*SaleCategory)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSaleCategory)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSaleCategory))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &saleCategoryR{}
+		}
+		args[object.CategoryID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &saleCategoryR{}
+			}
+
+			args[obj.CategoryID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`categories`),
+		qm.WhereIn(`categories.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Category")
+	}
+
+	var resultSlice []*Category
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Category")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for categories")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for categories")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Category = foreign
+		if foreign.R == nil {
+			foreign.R = &categoryR{}
+		}
+		foreign.R.SaleCategories = append(foreign.R.SaleCategories, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CategoryID == foreign.ID {
+				local.R.Category = foreign
+				if foreign.R == nil {
+					foreign.R = &categoryR{}
+				}
+				foreign.R.SaleCategories = append(foreign.R.SaleCategories, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadSale allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (saleCategoryL) LoadSale(e boil.Executor, singular bool, maybeSaleCategory interface{}, mods queries.Applicator) error {
+	var slice []*SaleCategory
+	var object *SaleCategory
+
+	if singular {
+		var ok bool
+		object, ok = maybeSaleCategory.(*SaleCategory)
+		if !ok {
+			object = new(SaleCategory)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSaleCategory)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSaleCategory))
+			}
+		}
+	} else {
+		s, ok := maybeSaleCategory.(*[]*SaleCategory)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSaleCategory)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSaleCategory))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &saleCategoryR{}
+		}
+		args[object.SaleID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &saleCategoryR{}
+			}
+
+			args[obj.SaleID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`sales`),
+		qm.WhereIn(`sales.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Sale")
+	}
+
+	var resultSlice []*Sale
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Sale")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for sales")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sales")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Sale = foreign
+		if foreign.R == nil {
+			foreign.R = &saleR{}
+		}
+		foreign.R.SaleCategories = append(foreign.R.SaleCategories, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.SaleID == foreign.ID {
+				local.R.Sale = foreign
+				if foreign.R == nil {
+					foreign.R = &saleR{}
+				}
+				foreign.R.SaleCategories = append(foreign.R.SaleCategories, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCategory of the saleCategory to the related item.
+// Sets o.R.Category to related.
+// Adds o to related.R.SaleCategories.
+func (o *SaleCategory) SetCategory(exec boil.Executor, insert bool, related *Category) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sale_categories\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
+		strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CategoryID = related.ID
+	if o.R == nil {
+		o.R = &saleCategoryR{
+			Category: related,
+		}
+	} else {
+		o.R.Category = related
+	}
+
+	if related.R == nil {
+		related.R = &categoryR{
+			SaleCategories: SaleCategorySlice{o},
+		}
+	} else {
+		related.R.SaleCategories = append(related.R.SaleCategories, o)
+	}
+
+	return nil
+}
+
+// SetSale of the saleCategory to the related item.
+// Sets o.R.Sale to related.
+// Adds o to related.R.SaleCategories.
+func (o *SaleCategory) SetSale(exec boil.Executor, insert bool, related *Sale) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sale_categories\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
+		strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.SaleID = related.ID
+	if o.R == nil {
+		o.R = &saleCategoryR{
+			Sale: related,
+		}
+	} else {
+		o.R.Sale = related
+	}
+
+	if related.R == nil {
+		related.R = &saleR{
+			SaleCategories: SaleCategorySlice{o},
+		}
+	} else {
+		related.R.SaleCategories = append(related.R.SaleCategories, o)
+	}
+
+	return nil
 }
 
 // SaleCategories retrieves all the records using an executor.

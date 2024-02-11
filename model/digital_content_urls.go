@@ -86,15 +86,36 @@ var DigitalContentURLWhere = struct {
 
 // DigitalContentURLRels is where relationship names are stored.
 var DigitalContentURLRels = struct {
-}{}
+	Content string
+	Line    string
+}{
+	Content: "Content",
+	Line:    "Line",
+}
 
 // digitalContentURLR is where relationships are stored.
 type digitalContentURLR struct {
+	Content *DigitalContent `boil:"Content" json:"Content" toml:"Content" yaml:"Content"`
+	Line    *OrderLine      `boil:"Line" json:"Line" toml:"Line" yaml:"Line"`
 }
 
 // NewStruct creates a new relationship struct
 func (*digitalContentURLR) NewStruct() *digitalContentURLR {
 	return &digitalContentURLR{}
+}
+
+func (r *digitalContentURLR) GetContent() *DigitalContent {
+	if r == nil {
+		return nil
+	}
+	return r.Content
+}
+
+func (r *digitalContentURLR) GetLine() *OrderLine {
+	if r == nil {
+		return nil
+	}
+	return r.Line
 }
 
 // digitalContentURLL is where Load methods for each relationship are stored.
@@ -197,6 +218,370 @@ func (q digitalContentURLQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Content pointed to by the foreign key.
+func (o *DigitalContentURL) Content(mods ...qm.QueryMod) digitalContentQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ContentID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return DigitalContents(queryMods...)
+}
+
+// Line pointed to by the foreign key.
+func (o *DigitalContentURL) Line(mods ...qm.QueryMod) orderLineQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.LineID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return OrderLines(queryMods...)
+}
+
+// LoadContent allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+	var slice []*DigitalContentURL
+	var object *DigitalContentURL
+
+	if singular {
+		var ok bool
+		object, ok = maybeDigitalContentURL.(*DigitalContentURL)
+		if !ok {
+			object = new(DigitalContentURL)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeDigitalContentURL)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeDigitalContentURL))
+			}
+		}
+	} else {
+		s, ok := maybeDigitalContentURL.(*[]*DigitalContentURL)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeDigitalContentURL)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeDigitalContentURL))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &digitalContentURLR{}
+		}
+		args[object.ContentID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &digitalContentURLR{}
+			}
+
+			args[obj.ContentID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`digital_contents`),
+		qm.WhereIn(`digital_contents.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load DigitalContent")
+	}
+
+	var resultSlice []*DigitalContent
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice DigitalContent")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for digital_contents")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for digital_contents")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Content = foreign
+		if foreign.R == nil {
+			foreign.R = &digitalContentR{}
+		}
+		foreign.R.ContentDigitalContentUrls = append(foreign.R.ContentDigitalContentUrls, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ContentID == foreign.ID {
+				local.R.Content = foreign
+				if foreign.R == nil {
+					foreign.R = &digitalContentR{}
+				}
+				foreign.R.ContentDigitalContentUrls = append(foreign.R.ContentDigitalContentUrls, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLine allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+	var slice []*DigitalContentURL
+	var object *DigitalContentURL
+
+	if singular {
+		var ok bool
+		object, ok = maybeDigitalContentURL.(*DigitalContentURL)
+		if !ok {
+			object = new(DigitalContentURL)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeDigitalContentURL)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeDigitalContentURL))
+			}
+		}
+	} else {
+		s, ok := maybeDigitalContentURL.(*[]*DigitalContentURL)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeDigitalContentURL)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeDigitalContentURL))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &digitalContentURLR{}
+		}
+		if !queries.IsNil(object.LineID) {
+			args[object.LineID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &digitalContentURLR{}
+			}
+
+			if !queries.IsNil(obj.LineID) {
+				args[obj.LineID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`order_lines`),
+		qm.WhereIn(`order_lines.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load OrderLine")
+	}
+
+	var resultSlice []*OrderLine
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice OrderLine")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for order_lines")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_lines")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Line = foreign
+		if foreign.R == nil {
+			foreign.R = &orderLineR{}
+		}
+		foreign.R.LineDigitalContentURL = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.LineID, foreign.ID) {
+				local.R.Line = foreign
+				if foreign.R == nil {
+					foreign.R = &orderLineR{}
+				}
+				foreign.R.LineDigitalContentURL = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetContent of the digitalContentURL to the related item.
+// Sets o.R.Content to related.
+// Adds o to related.R.ContentDigitalContentUrls.
+func (o *DigitalContentURL) SetContent(exec boil.Executor, insert bool, related *DigitalContent) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"digital_content_urls\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"content_id"}),
+		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ContentID = related.ID
+	if o.R == nil {
+		o.R = &digitalContentURLR{
+			Content: related,
+		}
+	} else {
+		o.R.Content = related
+	}
+
+	if related.R == nil {
+		related.R = &digitalContentR{
+			ContentDigitalContentUrls: DigitalContentURLSlice{o},
+		}
+	} else {
+		related.R.ContentDigitalContentUrls = append(related.R.ContentDigitalContentUrls, o)
+	}
+
+	return nil
+}
+
+// SetLine of the digitalContentURL to the related item.
+// Sets o.R.Line to related.
+// Adds o to related.R.LineDigitalContentURL.
+func (o *DigitalContentURL) SetLine(exec boil.Executor, insert bool, related *OrderLine) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"digital_content_urls\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"line_id"}),
+		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.LineID, related.ID)
+	if o.R == nil {
+		o.R = &digitalContentURLR{
+			Line: related,
+		}
+	} else {
+		o.R.Line = related
+	}
+
+	if related.R == nil {
+		related.R = &orderLineR{
+			LineDigitalContentURL: o,
+		}
+	} else {
+		related.R.LineDigitalContentURL = o
+	}
+
+	return nil
+}
+
+// RemoveLine relationship.
+// Sets o.R.Line to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *DigitalContentURL) RemoveLine(exec boil.Executor, related *OrderLine) error {
+	var err error
+
+	queries.SetScanner(&o.LineID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("line_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Line = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	related.R.LineDigitalContentURL = nil
+	return nil
 }
 
 // DigitalContentUrls retrieves all the records using an executor.

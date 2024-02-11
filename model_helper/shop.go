@@ -15,3 +15,7 @@ func (g GiftCardSettingsExpiryType) IsValid() bool {
 		return false
 	}
 }
+
+type ShopStaffFilterOptions struct {
+	CommonQueryOptions
+}

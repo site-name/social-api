@@ -163,15 +163,126 @@ var ProductVariantWhere = struct {
 
 // ProductVariantRels is where relationship names are stored.
 var ProductVariantRels = struct {
-}{}
+	Product                                      string
+	VariantAssignedProductVariantAttributeValues string
+	VariantCheckoutLines                         string
+	DigitalContents                              string
+	VariantOrderLines                            string
+	VariantProductVariantChannelListings         string
+	ProductVariantTranslations                   string
+	Stocks                                       string
+	VariantVariantMedia                          string
+	WishlistItemProductVariants                  string
+	ProductWishlistItems                         string
+}{
+	Product: "Product",
+	VariantAssignedProductVariantAttributeValues: "VariantAssignedProductVariantAttributeValues",
+	VariantCheckoutLines:                         "VariantCheckoutLines",
+	DigitalContents:                              "DigitalContents",
+	VariantOrderLines:                            "VariantOrderLines",
+	VariantProductVariantChannelListings:         "VariantProductVariantChannelListings",
+	ProductVariantTranslations:                   "ProductVariantTranslations",
+	Stocks:                                       "Stocks",
+	VariantVariantMedia:                          "VariantVariantMedia",
+	WishlistItemProductVariants:                  "WishlistItemProductVariants",
+	ProductWishlistItems:                         "ProductWishlistItems",
+}
 
 // productVariantR is where relationships are stored.
 type productVariantR struct {
+	Product                                      *Product                                  `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	VariantAssignedProductVariantAttributeValues AssignedProductVariantAttributeValueSlice `boil:"VariantAssignedProductVariantAttributeValues" json:"VariantAssignedProductVariantAttributeValues" toml:"VariantAssignedProductVariantAttributeValues" yaml:"VariantAssignedProductVariantAttributeValues"`
+	VariantCheckoutLines                         CheckoutLineSlice                         `boil:"VariantCheckoutLines" json:"VariantCheckoutLines" toml:"VariantCheckoutLines" yaml:"VariantCheckoutLines"`
+	DigitalContents                              DigitalContentSlice                       `boil:"DigitalContents" json:"DigitalContents" toml:"DigitalContents" yaml:"DigitalContents"`
+	VariantOrderLines                            OrderLineSlice                            `boil:"VariantOrderLines" json:"VariantOrderLines" toml:"VariantOrderLines" yaml:"VariantOrderLines"`
+	VariantProductVariantChannelListings         ProductVariantChannelListingSlice         `boil:"VariantProductVariantChannelListings" json:"VariantProductVariantChannelListings" toml:"VariantProductVariantChannelListings" yaml:"VariantProductVariantChannelListings"`
+	ProductVariantTranslations                   ProductVariantTranslationSlice            `boil:"ProductVariantTranslations" json:"ProductVariantTranslations" toml:"ProductVariantTranslations" yaml:"ProductVariantTranslations"`
+	Stocks                                       StockSlice                                `boil:"Stocks" json:"Stocks" toml:"Stocks" yaml:"Stocks"`
+	VariantVariantMedia                          VariantMediumSlice                        `boil:"VariantVariantMedia" json:"VariantVariantMedia" toml:"VariantVariantMedia" yaml:"VariantVariantMedia"`
+	WishlistItemProductVariants                  WishlistItemProductVariantSlice           `boil:"WishlistItemProductVariants" json:"WishlistItemProductVariants" toml:"WishlistItemProductVariants" yaml:"WishlistItemProductVariants"`
+	ProductWishlistItems                         WishlistItemSlice                         `boil:"ProductWishlistItems" json:"ProductWishlistItems" toml:"ProductWishlistItems" yaml:"ProductWishlistItems"`
 }
 
 // NewStruct creates a new relationship struct
 func (*productVariantR) NewStruct() *productVariantR {
 	return &productVariantR{}
+}
+
+func (r *productVariantR) GetProduct() *Product {
+	if r == nil {
+		return nil
+	}
+	return r.Product
+}
+
+func (r *productVariantR) GetVariantAssignedProductVariantAttributeValues() AssignedProductVariantAttributeValueSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VariantAssignedProductVariantAttributeValues
+}
+
+func (r *productVariantR) GetVariantCheckoutLines() CheckoutLineSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VariantCheckoutLines
+}
+
+func (r *productVariantR) GetDigitalContents() DigitalContentSlice {
+	if r == nil {
+		return nil
+	}
+	return r.DigitalContents
+}
+
+func (r *productVariantR) GetVariantOrderLines() OrderLineSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VariantOrderLines
+}
+
+func (r *productVariantR) GetVariantProductVariantChannelListings() ProductVariantChannelListingSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VariantProductVariantChannelListings
+}
+
+func (r *productVariantR) GetProductVariantTranslations() ProductVariantTranslationSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductVariantTranslations
+}
+
+func (r *productVariantR) GetStocks() StockSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Stocks
+}
+
+func (r *productVariantR) GetVariantVariantMedia() VariantMediumSlice {
+	if r == nil {
+		return nil
+	}
+	return r.VariantVariantMedia
+}
+
+func (r *productVariantR) GetWishlistItemProductVariants() WishlistItemProductVariantSlice {
+	if r == nil {
+		return nil
+	}
+	return r.WishlistItemProductVariants
+}
+
+func (r *productVariantR) GetProductWishlistItems() WishlistItemSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ProductWishlistItems
 }
 
 // productVariantL is where Load methods for each relationship are stored.
@@ -274,6 +385,1968 @@ func (q productVariantQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Product pointed to by the foreign key.
+func (o *ProductVariant) Product(mods ...qm.QueryMod) productQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ProductID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Products(queryMods...)
+}
+
+// VariantAssignedProductVariantAttributeValues retrieves all the assigned_product_variant_attribute_value's AssignedProductVariantAttributeValues with an executor via variant_id column.
+func (o *ProductVariant) VariantAssignedProductVariantAttributeValues(mods ...qm.QueryMod) assignedProductVariantAttributeValueQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"assigned_product_variant_attribute_values\".\"variant_id\"=?", o.ID),
+	)
+
+	return AssignedProductVariantAttributeValues(queryMods...)
+}
+
+// VariantCheckoutLines retrieves all the checkout_line's CheckoutLines with an executor via variant_id column.
+func (o *ProductVariant) VariantCheckoutLines(mods ...qm.QueryMod) checkoutLineQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"checkout_lines\".\"variant_id\"=?", o.ID),
+	)
+
+	return CheckoutLines(queryMods...)
+}
+
+// DigitalContents retrieves all the digital_content's DigitalContents with an executor.
+func (o *ProductVariant) DigitalContents(mods ...qm.QueryMod) digitalContentQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"digital_contents\".\"product_variant_id\"=?", o.ID),
+	)
+
+	return DigitalContents(queryMods...)
+}
+
+// VariantOrderLines retrieves all the order_line's OrderLines with an executor via variant_id column.
+func (o *ProductVariant) VariantOrderLines(mods ...qm.QueryMod) orderLineQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"order_lines\".\"variant_id\"=?", o.ID),
+	)
+
+	return OrderLines(queryMods...)
+}
+
+// VariantProductVariantChannelListings retrieves all the product_variant_channel_listing's ProductVariantChannelListings with an executor via variant_id column.
+func (o *ProductVariant) VariantProductVariantChannelListings(mods ...qm.QueryMod) productVariantChannelListingQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_variant_channel_listings\".\"variant_id\"=?", o.ID),
+	)
+
+	return ProductVariantChannelListings(queryMods...)
+}
+
+// ProductVariantTranslations retrieves all the product_variant_translation's ProductVariantTranslations with an executor.
+func (o *ProductVariant) ProductVariantTranslations(mods ...qm.QueryMod) productVariantTranslationQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"product_variant_translations\".\"product_variant_id\"=?", o.ID),
+	)
+
+	return ProductVariantTranslations(queryMods...)
+}
+
+// Stocks retrieves all the stock's Stocks with an executor.
+func (o *ProductVariant) Stocks(mods ...qm.QueryMod) stockQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"stocks\".\"product_variant_id\"=?", o.ID),
+	)
+
+	return Stocks(queryMods...)
+}
+
+// VariantVariantMedia retrieves all the variant_medium's VariantMedia with an executor via variant_id column.
+func (o *ProductVariant) VariantVariantMedia(mods ...qm.QueryMod) variantMediumQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"variant_media\".\"variant_id\"=?", o.ID),
+	)
+
+	return VariantMedia(queryMods...)
+}
+
+// WishlistItemProductVariants retrieves all the wishlist_item_product_variant's WishlistItemProductVariants with an executor.
+func (o *ProductVariant) WishlistItemProductVariants(mods ...qm.QueryMod) wishlistItemProductVariantQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"wishlist_item_product_variants\".\"product_variant_id\"=?", o.ID),
+	)
+
+	return WishlistItemProductVariants(queryMods...)
+}
+
+// ProductWishlistItems retrieves all the wishlist_item's WishlistItems with an executor via product_id column.
+func (o *ProductVariant) ProductWishlistItems(mods ...qm.QueryMod) wishlistItemQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"wishlist_items\".\"product_id\"=?", o.ID),
+	)
+
+	return WishlistItems(queryMods...)
+}
+
+// LoadProduct allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ProductID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+
+			args[obj.ProductID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`products`),
+		qm.WhereIn(`products.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Product")
+	}
+
+	var resultSlice []*Product
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Product")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Product = foreign
+		if foreign.R == nil {
+			foreign.R = &productR{}
+		}
+		foreign.R.ProductVariants = append(foreign.R.ProductVariants, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProductID == foreign.ID {
+				local.R.Product = foreign
+				if foreign.R == nil {
+					foreign.R = &productR{}
+				}
+				foreign.R.ProductVariants = append(foreign.R.ProductVariants, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariantAssignedProductVariantAttributeValues allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`assigned_product_variant_attribute_values`),
+		qm.WhereIn(`assigned_product_variant_attribute_values.variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load assigned_product_variant_attribute_values")
+	}
+
+	var resultSlice []*AssignedProductVariantAttributeValue
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice assigned_product_variant_attribute_values")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on assigned_product_variant_attribute_values")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_product_variant_attribute_values")
+	}
+
+	if singular {
+		object.R.VariantAssignedProductVariantAttributeValues = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &assignedProductVariantAttributeValueR{}
+			}
+			foreign.R.Variant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.VariantID {
+				local.R.VariantAssignedProductVariantAttributeValues = append(local.R.VariantAssignedProductVariantAttributeValues, foreign)
+				if foreign.R == nil {
+					foreign.R = &assignedProductVariantAttributeValueR{}
+				}
+				foreign.R.Variant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariantCheckoutLines allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`checkout_lines`),
+		qm.WhereIn(`checkout_lines.variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load checkout_lines")
+	}
+
+	var resultSlice []*CheckoutLine
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice checkout_lines")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on checkout_lines")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkout_lines")
+	}
+
+	if singular {
+		object.R.VariantCheckoutLines = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &checkoutLineR{}
+			}
+			foreign.R.Variant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.VariantID {
+				local.R.VariantCheckoutLines = append(local.R.VariantCheckoutLines, foreign)
+				if foreign.R == nil {
+					foreign.R = &checkoutLineR{}
+				}
+				foreign.R.Variant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadDigitalContents allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`digital_contents`),
+		qm.WhereIn(`digital_contents.product_variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load digital_contents")
+	}
+
+	var resultSlice []*DigitalContent
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice digital_contents")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on digital_contents")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for digital_contents")
+	}
+
+	if singular {
+		object.R.DigitalContents = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &digitalContentR{}
+			}
+			foreign.R.ProductVariant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductVariantID {
+				local.R.DigitalContents = append(local.R.DigitalContents, foreign)
+				if foreign.R == nil {
+					foreign.R = &digitalContentR{}
+				}
+				foreign.R.ProductVariant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariantOrderLines allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`order_lines`),
+		qm.WhereIn(`order_lines.variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load order_lines")
+	}
+
+	var resultSlice []*OrderLine
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice order_lines")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on order_lines")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_lines")
+	}
+
+	if singular {
+		object.R.VariantOrderLines = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &orderLineR{}
+			}
+			foreign.R.Variant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.VariantID) {
+				local.R.VariantOrderLines = append(local.R.VariantOrderLines, foreign)
+				if foreign.R == nil {
+					foreign.R = &orderLineR{}
+				}
+				foreign.R.Variant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariantProductVariantChannelListings allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_variant_channel_listings`),
+		qm.WhereIn(`product_variant_channel_listings.variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_variant_channel_listings")
+	}
+
+	var resultSlice []*ProductVariantChannelListing
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_variant_channel_listings")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_variant_channel_listings")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variant_channel_listings")
+	}
+
+	if singular {
+		object.R.VariantProductVariantChannelListings = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productVariantChannelListingR{}
+			}
+			foreign.R.Variant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.VariantID {
+				local.R.VariantProductVariantChannelListings = append(local.R.VariantProductVariantChannelListings, foreign)
+				if foreign.R == nil {
+					foreign.R = &productVariantChannelListingR{}
+				}
+				foreign.R.Variant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductVariantTranslations allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_variant_translations`),
+		qm.WhereIn(`product_variant_translations.product_variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load product_variant_translations")
+	}
+
+	var resultSlice []*ProductVariantTranslation
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice product_variant_translations")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on product_variant_translations")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variant_translations")
+	}
+
+	if singular {
+		object.R.ProductVariantTranslations = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &productVariantTranslationR{}
+			}
+			foreign.R.ProductVariant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductVariantID {
+				local.R.ProductVariantTranslations = append(local.R.ProductVariantTranslations, foreign)
+				if foreign.R == nil {
+					foreign.R = &productVariantTranslationR{}
+				}
+				foreign.R.ProductVariant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadStocks allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`stocks`),
+		qm.WhereIn(`stocks.product_variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load stocks")
+	}
+
+	var resultSlice []*Stock
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice stocks")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on stocks")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for stocks")
+	}
+
+	if singular {
+		object.R.Stocks = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &stockR{}
+			}
+			foreign.R.ProductVariant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductVariantID {
+				local.R.Stocks = append(local.R.Stocks, foreign)
+				if foreign.R == nil {
+					foreign.R = &stockR{}
+				}
+				foreign.R.ProductVariant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariantVariantMedia allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`variant_media`),
+		qm.WhereIn(`variant_media.variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load variant_media")
+	}
+
+	var resultSlice []*VariantMedium
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice variant_media")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on variant_media")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for variant_media")
+	}
+
+	if singular {
+		object.R.VariantVariantMedia = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &variantMediumR{}
+			}
+			foreign.R.Variant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.VariantID {
+				local.R.VariantVariantMedia = append(local.R.VariantVariantMedia, foreign)
+				if foreign.R == nil {
+					foreign.R = &variantMediumR{}
+				}
+				foreign.R.Variant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadWishlistItemProductVariants allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`wishlist_item_product_variants`),
+		qm.WhereIn(`wishlist_item_product_variants.product_variant_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load wishlist_item_product_variants")
+	}
+
+	var resultSlice []*WishlistItemProductVariant
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice wishlist_item_product_variants")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on wishlist_item_product_variants")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for wishlist_item_product_variants")
+	}
+
+	if singular {
+		object.R.WishlistItemProductVariants = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &wishlistItemProductVariantR{}
+			}
+			foreign.R.ProductVariant = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductVariantID {
+				local.R.WishlistItemProductVariants = append(local.R.WishlistItemProductVariants, foreign)
+				if foreign.R == nil {
+					foreign.R = &wishlistItemProductVariantR{}
+				}
+				foreign.R.ProductVariant = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadProductWishlistItems allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productVariantL) LoadProductWishlistItems(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+	var slice []*ProductVariant
+	var object *ProductVariant
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductVariant.(*ProductVariant)
+		if !ok {
+			object = new(ProductVariant)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductVariant))
+			}
+		}
+	} else {
+		s, ok := maybeProductVariant.(*[]*ProductVariant)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductVariant)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductVariant))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productVariantR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productVariantR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`wishlist_items`),
+		qm.WhereIn(`wishlist_items.product_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load wishlist_items")
+	}
+
+	var resultSlice []*WishlistItem
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice wishlist_items")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on wishlist_items")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for wishlist_items")
+	}
+
+	if singular {
+		object.R.ProductWishlistItems = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &wishlistItemR{}
+			}
+			foreign.R.Product = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ProductID {
+				local.R.ProductWishlistItems = append(local.R.ProductWishlistItems, foreign)
+				if foreign.R == nil {
+					foreign.R = &wishlistItemR{}
+				}
+				foreign.R.Product = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetProduct of the productVariant to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductVariants.
+func (o *ProductVariant) SetProduct(exec boil.Executor, insert bool, related *Product) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"product_variants\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productVariantPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProductID = related.ID
+	if o.R == nil {
+		o.R = &productVariantR{
+			Product: related,
+		}
+	} else {
+		o.R.Product = related
+	}
+
+	if related.R == nil {
+		related.R = &productR{
+			ProductVariants: ProductVariantSlice{o},
+		}
+	} else {
+		related.R.ProductVariants = append(related.R.ProductVariants, o)
+	}
+
+	return nil
+}
+
+// AddVariantAssignedProductVariantAttributeValues adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.VariantAssignedProductVariantAttributeValues.
+// Sets related.R.Variant appropriately.
+func (o *ProductVariant) AddVariantAssignedProductVariantAttributeValues(exec boil.Executor, insert bool, related ...*AssignedProductVariantAttributeValue) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.VariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"assigned_product_variant_attribute_values\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, assignedProductVariantAttributeValuePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.VariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			VariantAssignedProductVariantAttributeValues: related,
+		}
+	} else {
+		o.R.VariantAssignedProductVariantAttributeValues = append(o.R.VariantAssignedProductVariantAttributeValues, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &assignedProductVariantAttributeValueR{
+				Variant: o,
+			}
+		} else {
+			rel.R.Variant = o
+		}
+	}
+	return nil
+}
+
+// AddVariantCheckoutLines adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.VariantCheckoutLines.
+// Sets related.R.Variant appropriately.
+func (o *ProductVariant) AddVariantCheckoutLines(exec boil.Executor, insert bool, related ...*CheckoutLine) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.VariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"checkout_lines\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.VariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			VariantCheckoutLines: related,
+		}
+	} else {
+		o.R.VariantCheckoutLines = append(o.R.VariantCheckoutLines, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &checkoutLineR{
+				Variant: o,
+			}
+		} else {
+			rel.R.Variant = o
+		}
+	}
+	return nil
+}
+
+// AddDigitalContents adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.DigitalContents.
+// Sets related.R.ProductVariant appropriately.
+func (o *ProductVariant) AddDigitalContents(exec boil.Executor, insert bool, related ...*DigitalContent) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductVariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"digital_contents\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, digitalContentPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductVariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			DigitalContents: related,
+		}
+	} else {
+		o.R.DigitalContents = append(o.R.DigitalContents, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &digitalContentR{
+				ProductVariant: o,
+			}
+		} else {
+			rel.R.ProductVariant = o
+		}
+	}
+	return nil
+}
+
+// AddVariantOrderLines adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.VariantOrderLines.
+// Sets related.R.Variant appropriately.
+func (o *ProductVariant) AddVariantOrderLines(exec boil.Executor, insert bool, related ...*OrderLine) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.VariantID, o.ID)
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"order_lines\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.VariantID, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			VariantOrderLines: related,
+		}
+	} else {
+		o.R.VariantOrderLines = append(o.R.VariantOrderLines, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &orderLineR{
+				Variant: o,
+			}
+		} else {
+			rel.R.Variant = o
+		}
+	}
+	return nil
+}
+
+// SetVariantOrderLines removes all previously related items of the
+// product_variant replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Variant's VariantOrderLines accordingly.
+// Replaces o.R.VariantOrderLines with related.
+// Sets related.R.Variant's VariantOrderLines accordingly.
+func (o *ProductVariant) SetVariantOrderLines(exec boil.Executor, insert bool, related ...*OrderLine) error {
+	query := "update \"order_lines\" set \"variant_id\" = null where \"variant_id\" = $1"
+	values := []interface{}{o.ID}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	_, err := exec.Exec(query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.VariantOrderLines {
+			queries.SetScanner(&rel.VariantID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.Variant = nil
+		}
+		o.R.VariantOrderLines = nil
+	}
+
+	return o.AddVariantOrderLines(exec, insert, related...)
+}
+
+// RemoveVariantOrderLines relationships from objects passed in.
+// Removes related items from R.VariantOrderLines (uses pointer comparison, removal does not keep order)
+// Sets related.R.Variant.
+func (o *ProductVariant) RemoveVariantOrderLines(exec boil.Executor, related ...*OrderLine) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.VariantID, nil)
+		if rel.R != nil {
+			rel.R.Variant = nil
+		}
+		if _, err = rel.Update(exec, boil.Whitelist("variant_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.VariantOrderLines {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.VariantOrderLines)
+			if ln > 1 && i < ln-1 {
+				o.R.VariantOrderLines[i] = o.R.VariantOrderLines[ln-1]
+			}
+			o.R.VariantOrderLines = o.R.VariantOrderLines[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddVariantProductVariantChannelListings adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.VariantProductVariantChannelListings.
+// Sets related.R.Variant appropriately.
+func (o *ProductVariant) AddVariantProductVariantChannelListings(exec boil.Executor, insert bool, related ...*ProductVariantChannelListing) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.VariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_variant_channel_listings\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.VariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			VariantProductVariantChannelListings: related,
+		}
+	} else {
+		o.R.VariantProductVariantChannelListings = append(o.R.VariantProductVariantChannelListings, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productVariantChannelListingR{
+				Variant: o,
+			}
+		} else {
+			rel.R.Variant = o
+		}
+	}
+	return nil
+}
+
+// AddProductVariantTranslations adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.ProductVariantTranslations.
+// Sets related.R.ProductVariant appropriately.
+func (o *ProductVariant) AddProductVariantTranslations(exec boil.Executor, insert bool, related ...*ProductVariantTranslation) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductVariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"product_variant_translations\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, productVariantTranslationPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductVariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			ProductVariantTranslations: related,
+		}
+	} else {
+		o.R.ProductVariantTranslations = append(o.R.ProductVariantTranslations, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &productVariantTranslationR{
+				ProductVariant: o,
+			}
+		} else {
+			rel.R.ProductVariant = o
+		}
+	}
+	return nil
+}
+
+// AddStocks adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.Stocks.
+// Sets related.R.ProductVariant appropriately.
+func (o *ProductVariant) AddStocks(exec boil.Executor, insert bool, related ...*Stock) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductVariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"stocks\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductVariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			Stocks: related,
+		}
+	} else {
+		o.R.Stocks = append(o.R.Stocks, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &stockR{
+				ProductVariant: o,
+			}
+		} else {
+			rel.R.ProductVariant = o
+		}
+	}
+	return nil
+}
+
+// AddVariantVariantMedia adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.VariantVariantMedia.
+// Sets related.R.Variant appropriately.
+func (o *ProductVariant) AddVariantVariantMedia(exec boil.Executor, insert bool, related ...*VariantMedium) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.VariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"variant_media\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.VariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			VariantVariantMedia: related,
+		}
+	} else {
+		o.R.VariantVariantMedia = append(o.R.VariantVariantMedia, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &variantMediumR{
+				Variant: o,
+			}
+		} else {
+			rel.R.Variant = o
+		}
+	}
+	return nil
+}
+
+// AddWishlistItemProductVariants adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.WishlistItemProductVariants.
+// Sets related.R.ProductVariant appropriately.
+func (o *ProductVariant) AddWishlistItemProductVariants(exec boil.Executor, insert bool, related ...*WishlistItemProductVariant) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductVariantID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"wishlist_item_product_variants\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
+				strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductVariantID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			WishlistItemProductVariants: related,
+		}
+	} else {
+		o.R.WishlistItemProductVariants = append(o.R.WishlistItemProductVariants, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &wishlistItemProductVariantR{
+				ProductVariant: o,
+			}
+		} else {
+			rel.R.ProductVariant = o
+		}
+	}
+	return nil
+}
+
+// AddProductWishlistItems adds the given related objects to the existing relationships
+// of the product_variant, optionally inserting them as new records.
+// Appends related to o.R.ProductWishlistItems.
+// Sets related.R.Product appropriately.
+func (o *ProductVariant) AddProductWishlistItems(exec boil.Executor, insert bool, related ...*WishlistItem) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ProductID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"wishlist_items\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+				strmangle.WhereClause("\"", "\"", 2, wishlistItemPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ProductID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productVariantR{
+			ProductWishlistItems: related,
+		}
+	} else {
+		o.R.ProductWishlistItems = append(o.R.ProductWishlistItems, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &wishlistItemR{
+				Product: o,
+			}
+		} else {
+			rel.R.Product = o
+		}
+	}
+	return nil
 }
 
 // ProductVariants retrieves all the records using an executor.

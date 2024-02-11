@@ -1,15 +1,15 @@
 package discount
 
 import (
-	"strings"
+	"database/sql"
 
 	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlDiscountSaleStore struct {
@@ -20,55 +20,52 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 	return &SqlDiscountSaleStore{sqlStore}
 }
 
-func (s *SqlDiscountSaleStore) ScanFields(sale *model.Sale) []any {
-	return []any{
-		&sale.Id,
-		&sale.Name,
-		&sale.Type,
-		&sale.StartDate,
-		&sale.EndDate,
-		&sale.CreateAt,
-		&sale.UpdateAt,
-		&sale.Metadata,
-		&sale.PrivateMetadata,
-	}
-}
-
 // Upsert bases on sale's Id to decide to update or insert given sale
-func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
+func (ss *SqlDiscountSaleStore) Upsert(transaction boil.ContextTransactor, sale model.Sale) (*model.Sale, error) {
 	if transaction == nil {
 		transaction = ss.GetMaster()
 	}
 
-	var err error
-	if sale.Id == "" {
-		err = transaction.Create(sale).Error
+	var isSaving bool
+	if sale.ID == "" {
+		isSaving = true
+		model_helper.SalePreSave(&sale)
 	} else {
-		sale.CreateAt = 0 // prevent update
-		err = transaction.Model(sale).Updates(sale).Error
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert sale")
+		model_helper.SalePreUpdate(&sale)
 	}
 
-	return sale, nil
+	if err := model_helper.SaleIsValid(sale); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = sale.Insert(transaction, boil.Infer())
+	} else {
+		_, err = sale.Update(transaction, boil.Blacklist(model.SaleColumns.CreatedAt))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &sale, nil
 }
 
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
-	var sale model.Sale
-	err := ss.GetReplica().First(&sale, "Id = ?", saleID).Error
+	sale, err := model.FindSale(ss.GetReplica(), saleID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("sales", saleID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Sales, saleID)
 		}
-		return nil, errors.Wrap(err, "failed to find sale by id")
+		return nil, err
 	}
-	return &sale, nil
+	return sale, nil
 }
 
 // FilterSalesByOption filter sales by option
-func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
+func (ss *SqlDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
 	query := ss.GetQueryBuilder().
 		Select(model.SaleTableName + ".*").
 		From(model.SaleTableName).
@@ -145,57 +142,10 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 	return totalSale, sales, nil
 }
 
-func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
+func (s *SqlDiscountSaleStore) Delete(transaction boil.ContextTransactor, ids []string) (int64, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	args, err := store.BuildSqlizer(options.Conditions, "DeleteSale")
-	if err != nil {
-		return 0, errors.Wrap(err, "Delete_ToSql")
-	}
-
-	result := transaction.Raw("DELETE FROM "+model.SaleTableName, args...)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete sale(s) by given options")
-	}
-
-	return result.RowsAffected, nil
-}
-
-func (s *SqlDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error {
-	if len(sales) == 0 {
-		return errors.New("please speficy relations")
-	}
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-
-	relationsMap := map[string]any{
-		"Products":        lo.Map(productIds, func(id string, _ int) *model.Product { return &model.Product{Id: id} }),
-		"Collections":     lo.Map(collectionIds, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} }),
-		"ProductVariants": lo.Map(variantIds, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
-		"Categories":      lo.Map(categoryIds, func(id string, _ int) *model.Category { return &model.Category{Id: id} }),
-	}
-
-	for associationName, relations := range relationsMap {
-		for _, sale := range sales {
-			if sale != nil {
-				switch {
-				case isDelete:
-					err := transaction.Model(sale).Association(associationName).Delete(relations)
-					if err != nil {
-						return errors.Wrap(err, "failed to delete sale "+strings.ToLower(associationName)+" relations")
-					}
-				default:
-					err := transaction.Model(sale).Association(associationName).Append(relations)
-					if err != nil {
-						return errors.Wrap(err, "failed to insert sale "+strings.ToLower(associationName)+" relations")
-					}
-				}
-			}
-		}
-	}
-
-	return nil
+	return model.Sales(model.SaleWhere.ID.IN(ids)).DeleteAll(transaction)
 }

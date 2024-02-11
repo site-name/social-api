@@ -78,15 +78,36 @@ var CheckoutLineWhere = struct {
 
 // CheckoutLineRels is where relationship names are stored.
 var CheckoutLineRels = struct {
-}{}
+	Checkout string
+	Variant  string
+}{
+	Checkout: "Checkout",
+	Variant:  "Variant",
+}
 
 // checkoutLineR is where relationships are stored.
 type checkoutLineR struct {
+	Checkout *Checkout       `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Variant  *ProductVariant `boil:"Variant" json:"Variant" toml:"Variant" yaml:"Variant"`
 }
 
 // NewStruct creates a new relationship struct
 func (*checkoutLineR) NewStruct() *checkoutLineR {
 	return &checkoutLineR{}
+}
+
+func (r *checkoutLineR) GetCheckout() *Checkout {
+	if r == nil {
+		return nil
+	}
+	return r.Checkout
+}
+
+func (r *checkoutLineR) GetVariant() *ProductVariant {
+	if r == nil {
+		return nil
+	}
+	return r.Variant
 }
 
 // checkoutLineL is where Load methods for each relationship are stored.
@@ -189,6 +210,344 @@ func (q checkoutLineQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Checkout pointed to by the foreign key.
+func (o *CheckoutLine) Checkout(mods ...qm.QueryMod) checkoutQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"token\" = ?", o.CheckoutID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Checkouts(queryMods...)
+}
+
+// Variant pointed to by the foreign key.
+func (o *CheckoutLine) Variant(mods ...qm.QueryMod) productVariantQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.VariantID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ProductVariants(queryMods...)
+}
+
+// LoadCheckout allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (checkoutLineL) LoadCheckout(e boil.Executor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
+	var slice []*CheckoutLine
+	var object *CheckoutLine
+
+	if singular {
+		var ok bool
+		object, ok = maybeCheckoutLine.(*CheckoutLine)
+		if !ok {
+			object = new(CheckoutLine)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCheckoutLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCheckoutLine))
+			}
+		}
+	} else {
+		s, ok := maybeCheckoutLine.(*[]*CheckoutLine)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCheckoutLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCheckoutLine))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &checkoutLineR{}
+		}
+		args[object.CheckoutID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &checkoutLineR{}
+			}
+
+			args[obj.CheckoutID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`checkouts`),
+		qm.WhereIn(`checkouts.token in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Checkout")
+	}
+
+	var resultSlice []*Checkout
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Checkout")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for checkouts")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Checkout = foreign
+		if foreign.R == nil {
+			foreign.R = &checkoutR{}
+		}
+		foreign.R.CheckoutLines = append(foreign.R.CheckoutLines, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CheckoutID == foreign.Token {
+				local.R.Checkout = foreign
+				if foreign.R == nil {
+					foreign.R = &checkoutR{}
+				}
+				foreign.R.CheckoutLines = append(foreign.R.CheckoutLines, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVariant allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (checkoutLineL) LoadVariant(e boil.Executor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
+	var slice []*CheckoutLine
+	var object *CheckoutLine
+
+	if singular {
+		var ok bool
+		object, ok = maybeCheckoutLine.(*CheckoutLine)
+		if !ok {
+			object = new(CheckoutLine)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCheckoutLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCheckoutLine))
+			}
+		}
+	} else {
+		s, ok := maybeCheckoutLine.(*[]*CheckoutLine)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCheckoutLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCheckoutLine))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &checkoutLineR{}
+		}
+		args[object.VariantID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &checkoutLineR{}
+			}
+
+			args[obj.VariantID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`product_variants`),
+		qm.WhereIn(`product_variants.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ProductVariant")
+	}
+
+	var resultSlice []*ProductVariant
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ProductVariant")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for product_variants")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Variant = foreign
+		if foreign.R == nil {
+			foreign.R = &productVariantR{}
+		}
+		foreign.R.VariantCheckoutLines = append(foreign.R.VariantCheckoutLines, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.VariantID == foreign.ID {
+				local.R.Variant = foreign
+				if foreign.R == nil {
+					foreign.R = &productVariantR{}
+				}
+				foreign.R.VariantCheckoutLines = append(foreign.R.VariantCheckoutLines, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCheckout of the checkoutLine to the related item.
+// Sets o.R.Checkout to related.
+// Adds o to related.R.CheckoutLines.
+func (o *CheckoutLine) SetCheckout(exec boil.Executor, insert bool, related *Checkout) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"checkout_lines\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
+		strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
+	)
+	values := []interface{}{related.Token, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CheckoutID = related.Token
+	if o.R == nil {
+		o.R = &checkoutLineR{
+			Checkout: related,
+		}
+	} else {
+		o.R.Checkout = related
+	}
+
+	if related.R == nil {
+		related.R = &checkoutR{
+			CheckoutLines: CheckoutLineSlice{o},
+		}
+	} else {
+		related.R.CheckoutLines = append(related.R.CheckoutLines, o)
+	}
+
+	return nil
+}
+
+// SetVariant of the checkoutLine to the related item.
+// Sets o.R.Variant to related.
+// Adds o to related.R.VariantCheckoutLines.
+func (o *CheckoutLine) SetVariant(exec boil.Executor, insert bool, related *ProductVariant) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"checkout_lines\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
+		strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.VariantID = related.ID
+	if o.R == nil {
+		o.R = &checkoutLineR{
+			Variant: related,
+		}
+	} else {
+		o.R.Variant = related
+	}
+
+	if related.R == nil {
+		related.R = &productVariantR{
+			VariantCheckoutLines: CheckoutLineSlice{o},
+		}
+	} else {
+		related.R.VariantCheckoutLines = append(related.R.VariantCheckoutLines, o)
+	}
+
+	return nil
 }
 
 // CheckoutLines retrieves all the records using an executor.

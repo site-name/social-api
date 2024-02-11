@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS checkouts (
   shipping_method_id uuid,
   collection_point_id uuid,
   note text NOT NULL,
-  currency text NOT NULL,
+  currency Currency NOT NULL,
   country country_code NOT NULL,
   discount_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   discount_name varchar(255),

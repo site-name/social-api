@@ -64,15 +64,36 @@ var GiftcardCheckoutWhere = struct {
 
 // GiftcardCheckoutRels is where relationship names are stored.
 var GiftcardCheckoutRels = struct {
-}{}
+	Checkout string
+	Giftcard string
+}{
+	Checkout: "Checkout",
+	Giftcard: "Giftcard",
+}
 
 // giftcardCheckoutR is where relationships are stored.
 type giftcardCheckoutR struct {
+	Checkout *Checkout `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Giftcard *Giftcard `boil:"Giftcard" json:"Giftcard" toml:"Giftcard" yaml:"Giftcard"`
 }
 
 // NewStruct creates a new relationship struct
 func (*giftcardCheckoutR) NewStruct() *giftcardCheckoutR {
 	return &giftcardCheckoutR{}
+}
+
+func (r *giftcardCheckoutR) GetCheckout() *Checkout {
+	if r == nil {
+		return nil
+	}
+	return r.Checkout
+}
+
+func (r *giftcardCheckoutR) GetGiftcard() *Giftcard {
+	if r == nil {
+		return nil
+	}
+	return r.Giftcard
 }
 
 // giftcardCheckoutL is where Load methods for each relationship are stored.
@@ -175,6 +196,344 @@ func (q giftcardCheckoutQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Checkout pointed to by the foreign key.
+func (o *GiftcardCheckout) Checkout(mods ...qm.QueryMod) checkoutQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"token\" = ?", o.CheckoutID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Checkouts(queryMods...)
+}
+
+// Giftcard pointed to by the foreign key.
+func (o *GiftcardCheckout) Giftcard(mods ...qm.QueryMod) giftcardQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.GiftcardID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Giftcards(queryMods...)
+}
+
+// LoadCheckout allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
+	var slice []*GiftcardCheckout
+	var object *GiftcardCheckout
+
+	if singular {
+		var ok bool
+		object, ok = maybeGiftcardCheckout.(*GiftcardCheckout)
+		if !ok {
+			object = new(GiftcardCheckout)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeGiftcardCheckout)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeGiftcardCheckout))
+			}
+		}
+	} else {
+		s, ok := maybeGiftcardCheckout.(*[]*GiftcardCheckout)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeGiftcardCheckout)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeGiftcardCheckout))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &giftcardCheckoutR{}
+		}
+		args[object.CheckoutID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &giftcardCheckoutR{}
+			}
+
+			args[obj.CheckoutID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`checkouts`),
+		qm.WhereIn(`checkouts.token in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Checkout")
+	}
+
+	var resultSlice []*Checkout
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Checkout")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for checkouts")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Checkout = foreign
+		if foreign.R == nil {
+			foreign.R = &checkoutR{}
+		}
+		foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CheckoutID == foreign.Token {
+				local.R.Checkout = foreign
+				if foreign.R == nil {
+					foreign.R = &checkoutR{}
+				}
+				foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadGiftcard allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (giftcardCheckoutL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
+	var slice []*GiftcardCheckout
+	var object *GiftcardCheckout
+
+	if singular {
+		var ok bool
+		object, ok = maybeGiftcardCheckout.(*GiftcardCheckout)
+		if !ok {
+			object = new(GiftcardCheckout)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeGiftcardCheckout)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeGiftcardCheckout))
+			}
+		}
+	} else {
+		s, ok := maybeGiftcardCheckout.(*[]*GiftcardCheckout)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeGiftcardCheckout)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeGiftcardCheckout))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &giftcardCheckoutR{}
+		}
+		args[object.GiftcardID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &giftcardCheckoutR{}
+			}
+
+			args[obj.GiftcardID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`giftcards`),
+		qm.WhereIn(`giftcards.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Giftcard")
+	}
+
+	var resultSlice []*Giftcard
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Giftcard")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for giftcards")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for giftcards")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Giftcard = foreign
+		if foreign.R == nil {
+			foreign.R = &giftcardR{}
+		}
+		foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.GiftcardID == foreign.ID {
+				local.R.Giftcard = foreign
+				if foreign.R == nil {
+					foreign.R = &giftcardR{}
+				}
+				foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCheckout of the giftcardCheckout to the related item.
+// Sets o.R.Checkout to related.
+// Adds o to related.R.GiftcardCheckouts.
+func (o *GiftcardCheckout) SetCheckout(exec boil.Executor, insert bool, related *Checkout) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"giftcard_checkouts\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
+		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
+	)
+	values := []interface{}{related.Token, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CheckoutID = related.Token
+	if o.R == nil {
+		o.R = &giftcardCheckoutR{
+			Checkout: related,
+		}
+	} else {
+		o.R.Checkout = related
+	}
+
+	if related.R == nil {
+		related.R = &checkoutR{
+			GiftcardCheckouts: GiftcardCheckoutSlice{o},
+		}
+	} else {
+		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
+	}
+
+	return nil
+}
+
+// SetGiftcard of the giftcardCheckout to the related item.
+// Sets o.R.Giftcard to related.
+// Adds o to related.R.GiftcardCheckouts.
+func (o *GiftcardCheckout) SetGiftcard(exec boil.Executor, insert bool, related *Giftcard) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"giftcard_checkouts\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
+		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.GiftcardID = related.ID
+	if o.R == nil {
+		o.R = &giftcardCheckoutR{
+			Giftcard: related,
+		}
+	} else {
+		o.R.Giftcard = related
+	}
+
+	if related.R == nil {
+		related.R = &giftcardR{
+			GiftcardCheckouts: GiftcardCheckoutSlice{o},
+		}
+	} else {
+		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
+	}
+
+	return nil
 }
 
 // GiftcardCheckouts retrieves all the records using an executor.

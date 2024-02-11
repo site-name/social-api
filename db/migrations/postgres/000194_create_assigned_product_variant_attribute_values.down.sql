@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS custom_product_attribute_values_attribute_id_fk;

@@ -29,7 +29,7 @@ type FileInfo struct {
 	ParentID        string                 `boil:"parent_id" json:"parent_id" toml:"parent_id" yaml:"parent_id"`
 	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt       int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeleteAt        int64                  `boil:"delete_at" json:"delete_at" toml:"delete_at" yaml:"delete_at"`
+	DeleteAt        model_types.NullInt64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
 	Path            string                 `boil:"path" json:"path" toml:"path" yaml:"path"`
 	ThumbnailPath   string                 `boil:"thumbnail_path" json:"thumbnail_path" toml:"thumbnail_path" yaml:"thumbnail_path"`
 	PreviewPath     string                 `boil:"preview_path" json:"preview_path" toml:"preview_path" yaml:"preview_path"`
@@ -134,6 +134,32 @@ var FileInfoTableColumns = struct {
 
 // Generated where
 
+type whereHelpermodel_types_NullInt64 struct{ field string }
+
+func (w whereHelpermodel_types_NullInt64) EQ(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpermodel_types_NullInt64) NEQ(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpermodel_types_NullInt64) LT(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpermodel_types_NullInt64) LTE(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpermodel_types_NullInt64) GT(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpermodel_types_NullInt64) GTE(x model_types.NullInt64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpermodel_types_NullInt64) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullInt64) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
+
 type whereHelpernull_Bytes struct{ field string }
 
 func (w whereHelpernull_Bytes) EQ(x null.Bytes) qm.QueryMod {
@@ -164,7 +190,7 @@ var FileInfoWhere = struct {
 	ParentID        whereHelperstring
 	CreatedAt       whereHelperint64
 	UpdatedAt       whereHelperint64
-	DeleteAt        whereHelperint64
+	DeleteAt        whereHelpermodel_types_NullInt64
 	Path            whereHelperstring
 	ThumbnailPath   whereHelperstring
 	PreviewPath     whereHelperstring
@@ -184,7 +210,7 @@ var FileInfoWhere = struct {
 	ParentID:        whereHelperstring{field: "\"file_infos\".\"parent_id\""},
 	CreatedAt:       whereHelperint64{field: "\"file_infos\".\"created_at\""},
 	UpdatedAt:       whereHelperint64{field: "\"file_infos\".\"updated_at\""},
-	DeleteAt:        whereHelperint64{field: "\"file_infos\".\"delete_at\""},
+	DeleteAt:        whereHelpermodel_types_NullInt64{field: "\"file_infos\".\"delete_at\""},
 	Path:            whereHelperstring{field: "\"file_infos\".\"path\""},
 	ThumbnailPath:   whereHelperstring{field: "\"file_infos\".\"thumbnail_path\""},
 	PreviewPath:     whereHelperstring{field: "\"file_infos\".\"preview_path\""},
@@ -218,8 +244,8 @@ type fileInfoL struct{}
 
 var (
 	fileInfoAllColumns            = []string{"id", "creator_id", "parent_id", "created_at", "updated_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
-	fileInfoColumnsWithoutDefault = []string{"creator_id", "parent_id", "created_at", "updated_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "has_preview_image", "content"}
-	fileInfoColumnsWithDefault    = []string{"id", "width", "height", "mini_preview", "remote_id"}
+	fileInfoColumnsWithoutDefault = []string{"creator_id", "parent_id", "created_at", "updated_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "has_preview_image", "content"}
+	fileInfoColumnsWithDefault    = []string{"id", "delete_at", "width", "height", "mini_preview", "remote_id"}
 	fileInfoPrimaryKeyColumns     = []string{"id"}
 	fileInfoGeneratedColumns      = []string{}
 )

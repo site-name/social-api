@@ -22,11 +22,11 @@ import (
 
 // VoucherTranslation is an object representing the database table.
 type VoucherTranslation struct {
-	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	Name         string `boil:"name" json:"name" toml:"name" yaml:"name"`
-	VoucherID    string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
-	CreatedAt    int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID           string       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode LanguageCode `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name         string       `boil:"name" json:"name" toml:"name" yaml:"name"`
+	VoucherID    string       `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	CreatedAt    int64        `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *voucherTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -64,13 +64,13 @@ var VoucherTranslationTableColumns = struct {
 
 var VoucherTranslationWhere = struct {
 	ID           whereHelperstring
-	LanguageCode whereHelperstring
+	LanguageCode whereHelperLanguageCode
 	Name         whereHelperstring
 	VoucherID    whereHelperstring
 	CreatedAt    whereHelperint64
 }{
 	ID:           whereHelperstring{field: "\"voucher_translations\".\"id\""},
-	LanguageCode: whereHelperstring{field: "\"voucher_translations\".\"language_code\""},
+	LanguageCode: whereHelperLanguageCode{field: "\"voucher_translations\".\"language_code\""},
 	Name:         whereHelperstring{field: "\"voucher_translations\".\"name\""},
 	VoucherID:    whereHelperstring{field: "\"voucher_translations\".\"voucher_id\""},
 	CreatedAt:    whereHelperint64{field: "\"voucher_translations\".\"created_at\""},
@@ -78,15 +78,26 @@ var VoucherTranslationWhere = struct {
 
 // VoucherTranslationRels is where relationship names are stored.
 var VoucherTranslationRels = struct {
-}{}
+	Voucher string
+}{
+	Voucher: "Voucher",
+}
 
 // voucherTranslationR is where relationships are stored.
 type voucherTranslationR struct {
+	Voucher *Voucher `boil:"Voucher" json:"Voucher" toml:"Voucher" yaml:"Voucher"`
 }
 
 // NewStruct creates a new relationship struct
 func (*voucherTranslationR) NewStruct() *voucherTranslationR {
 	return &voucherTranslationR{}
+}
+
+func (r *voucherTranslationR) GetVoucher() *Voucher {
+	if r == nil {
+		return nil
+	}
+	return r.Voucher
 }
 
 // voucherTranslationL is where Load methods for each relationship are stored.
@@ -189,6 +200,175 @@ func (q voucherTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Voucher pointed to by the foreign key.
+func (o *VoucherTranslation) Voucher(mods ...qm.QueryMod) voucherQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.VoucherID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Vouchers(queryMods...)
+}
+
+// LoadVoucher allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (voucherTranslationL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherTranslation interface{}, mods queries.Applicator) error {
+	var slice []*VoucherTranslation
+	var object *VoucherTranslation
+
+	if singular {
+		var ok bool
+		object, ok = maybeVoucherTranslation.(*VoucherTranslation)
+		if !ok {
+			object = new(VoucherTranslation)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeVoucherTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeVoucherTranslation))
+			}
+		}
+	} else {
+		s, ok := maybeVoucherTranslation.(*[]*VoucherTranslation)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeVoucherTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeVoucherTranslation))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &voucherTranslationR{}
+		}
+		args[object.VoucherID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &voucherTranslationR{}
+			}
+
+			args[obj.VoucherID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`vouchers`),
+		qm.WhereIn(`vouchers.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Voucher")
+	}
+
+	var resultSlice []*Voucher
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Voucher")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for vouchers")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Voucher = foreign
+		if foreign.R == nil {
+			foreign.R = &voucherR{}
+		}
+		foreign.R.VoucherTranslations = append(foreign.R.VoucherTranslations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.VoucherID == foreign.ID {
+				local.R.Voucher = foreign
+				if foreign.R == nil {
+					foreign.R = &voucherR{}
+				}
+				foreign.R.VoucherTranslations = append(foreign.R.VoucherTranslations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetVoucher of the voucherTranslation to the related item.
+// Sets o.R.Voucher to related.
+// Adds o to related.R.VoucherTranslations.
+func (o *VoucherTranslation) SetVoucher(exec boil.Executor, insert bool, related *Voucher) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"voucher_translations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
+		strmangle.WhereClause("\"", "\"", 2, voucherTranslationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.VoucherID = related.ID
+	if o.R == nil {
+		o.R = &voucherTranslationR{
+			Voucher: related,
+		}
+	} else {
+		o.R.Voucher = related
+	}
+
+	if related.R == nil {
+		related.R = &voucherR{
+			VoucherTranslations: VoucherTranslationSlice{o},
+		}
+	} else {
+		related.R.VoucherTranslations = append(related.R.VoucherTranslations, o)
+	}
+
+	return nil
 }
 
 // VoucherTranslations retrieves all the records using an executor.

@@ -6580,6 +6580,50 @@ func (e UploadType) Ordinal() int {
 	}
 }
 
+type VoucherType string
+
+// Enum values for VoucherType
+const (
+	VoucherTypeShipping        VoucherType = "shipping"
+	VoucherTypeEntireOrder     VoucherType = "entire_order"
+	VoucherTypeSpecificProduct VoucherType = "specific_product"
+)
+
+func AllVoucherType() []VoucherType {
+	return []VoucherType{
+		VoucherTypeShipping,
+		VoucherTypeEntireOrder,
+		VoucherTypeSpecificProduct,
+	}
+}
+
+func (e VoucherType) IsValid() error {
+	switch e {
+	case VoucherTypeShipping, VoucherTypeEntireOrder, VoucherTypeSpecificProduct:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e VoucherType) String() string {
+	return string(e)
+}
+
+func (e VoucherType) Ordinal() int {
+	switch e {
+	case VoucherTypeShipping:
+		return 0
+	case VoucherTypeEntireOrder:
+		return 1
+	case VoucherTypeSpecificProduct:
+		return 2
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
 type WarehouseClickAndCollectOption string
 
 // Enum values for WarehouseClickAndCollectOption

@@ -9,7 +9,7 @@ import (
 )
 
 func AttributePageIsValid(a model.AttributePage) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AttributePageIsValid", "model.attribute_page.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AttributeID) {
@@ -22,7 +22,7 @@ func AttributePageIsValid(a model.AttributePage) *AppError {
 }
 
 func AssignedPageAttributeValueIsValid(a model.AssignedPageAttributeValue) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AssignedPageAttributeValueIsValid", "model.assigned_page_attribute_value.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
 	if !IsValidId(a.ValueID) {
@@ -35,7 +35,7 @@ func AssignedPageAttributeValueIsValid(a model.AssignedPageAttributeValue) *AppE
 }
 
 func AssignedPageAttributeIsValid(a model.AssignedPageAttribute) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AssignedPageAttributeIsValid", "model.assigned_page_attribute.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.PageID) {
@@ -49,7 +49,7 @@ func AssignedPageAttributeIsValid(a model.AssignedPageAttribute) *AppError {
 }
 
 func AttributeProductIsValid(a model.CategoryAttribute) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AttributeProductIsValid", "model.attribute_product.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AttributeID) {
@@ -62,7 +62,7 @@ func AttributeProductIsValid(a model.CategoryAttribute) *AppError {
 }
 
 func AssignedProductAttributeIsValid(a model.AssignedProductAttribute) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AssignedProductAttributeIsValid", "model.assigned_product_attribute.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.ProductID) {
@@ -76,7 +76,7 @@ func AssignedProductAttributeIsValid(a model.AssignedProductAttribute) *AppError
 }
 
 func AssignedProductAttributeValueIsValid(a model.AssignedProductAttributeValue) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AssignedProductAttributeValueIsValid", "model.assigned_product_attribute_value.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AssignmentID) {
@@ -99,7 +99,7 @@ func AttributeValuePreSave(a *model.AttributeValue) {
 }
 
 func AttributeValueIsValid(a model.AttributeValue) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("AttributeValueIsValid", "model.attribute_value.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AttributeID) {
@@ -107,6 +107,9 @@ func AttributeValueIsValid(a model.AttributeValue) *AppError {
 	}
 	if a.Datetime.IsNil() || a.Datetime.Time.IsZero() {
 		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.date_time.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !slug.IsSlug(a.Slug) {
+		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.slug.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
@@ -131,7 +134,7 @@ func AttributePreUpdate(a *model.Attribute) {
 }
 
 func AttributeIsValid(a model.Attribute) *AppError {
-	if a.ID != "" && !IsValidId(a.ID) {
+	if !IsValidId(a.ID) {
 		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.id.app_error", nil, "please provide valid attribute id", http.StatusBadRequest)
 	}
 	if a.Type.IsValid() != nil {
@@ -145,6 +148,9 @@ func AttributeIsValid(a model.Attribute) *AppError {
 	}
 	if !a.Unit.IsNil() && measurement.MeasurementUnitMap[*a.Unit.String] == "" {
 		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.unit.app_error", nil, "please provide valid attribute unit", http.StatusBadRequest)
+	}
+	if !slug.IsSlug(a.Slug) {
+		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.slug.app_error", nil, "please provide valid attribute slug", http.StatusBadRequest)
 	}
 
 	return nil

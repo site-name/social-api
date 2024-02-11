@@ -121,15 +121,36 @@ var CustomerEventWhere = struct {
 
 // CustomerEventRels is where relationship names are stored.
 var CustomerEventRels = struct {
-}{}
+	Order string
+	User  string
+}{
+	Order: "Order",
+	User:  "User",
+}
 
 // customerEventR is where relationships are stored.
 type customerEventR struct {
+	Order *Order `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	User  *User  `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
 func (*customerEventR) NewStruct() *customerEventR {
 	return &customerEventR{}
+}
+
+func (r *customerEventR) GetOrder() *Order {
+	if r == nil {
+		return nil
+	}
+	return r.Order
+}
+
+func (r *customerEventR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
 }
 
 // customerEventL is where Load methods for each relationship are stored.
@@ -232,6 +253,418 @@ func (q customerEventQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Order pointed to by the foreign key.
+func (o *CustomerEvent) Order(mods ...qm.QueryMod) orderQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.OrderID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Orders(queryMods...)
+}
+
+// User pointed to by the foreign key.
+func (o *CustomerEvent) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// LoadOrder allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEvent interface{}, mods queries.Applicator) error {
+	var slice []*CustomerEvent
+	var object *CustomerEvent
+
+	if singular {
+		var ok bool
+		object, ok = maybeCustomerEvent.(*CustomerEvent)
+		if !ok {
+			object = new(CustomerEvent)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCustomerEvent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCustomerEvent))
+			}
+		}
+	} else {
+		s, ok := maybeCustomerEvent.(*[]*CustomerEvent)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCustomerEvent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCustomerEvent))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &customerEventR{}
+		}
+		if !queries.IsNil(object.OrderID) {
+			args[object.OrderID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &customerEventR{}
+			}
+
+			if !queries.IsNil(obj.OrderID) {
+				args[obj.OrderID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`orders`),
+		qm.WhereIn(`orders.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Order")
+	}
+
+	var resultSlice []*Order
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Order")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for orders")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Order = foreign
+		if foreign.R == nil {
+			foreign.R = &orderR{}
+		}
+		foreign.R.CustomerEvents = append(foreign.R.CustomerEvents, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
+				if foreign.R == nil {
+					foreign.R = &orderR{}
+				}
+				foreign.R.CustomerEvents = append(foreign.R.CustomerEvents, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (customerEventL) LoadUser(e boil.Executor, singular bool, maybeCustomerEvent interface{}, mods queries.Applicator) error {
+	var slice []*CustomerEvent
+	var object *CustomerEvent
+
+	if singular {
+		var ok bool
+		object, ok = maybeCustomerEvent.(*CustomerEvent)
+		if !ok {
+			object = new(CustomerEvent)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCustomerEvent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCustomerEvent))
+			}
+		}
+	} else {
+		s, ok := maybeCustomerEvent.(*[]*CustomerEvent)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCustomerEvent)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCustomerEvent))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &customerEventR{}
+		}
+		if !queries.IsNil(object.UserID) {
+			args[object.UserID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &customerEventR{}
+			}
+
+			if !queries.IsNil(obj.UserID) {
+				args[obj.UserID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.CustomerEvents = append(foreign.R.CustomerEvents, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.CustomerEvents = append(foreign.R.CustomerEvents, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetOrder of the customerEvent to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.CustomerEvents.
+func (o *CustomerEvent) SetOrder(exec boil.Executor, insert bool, related *Order) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"customer_events\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
+		strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.OrderID, related.ID)
+	if o.R == nil {
+		o.R = &customerEventR{
+			Order: related,
+		}
+	} else {
+		o.R.Order = related
+	}
+
+	if related.R == nil {
+		related.R = &orderR{
+			CustomerEvents: CustomerEventSlice{o},
+		}
+	} else {
+		related.R.CustomerEvents = append(related.R.CustomerEvents, o)
+	}
+
+	return nil
+}
+
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *CustomerEvent) RemoveOrder(exec boil.Executor, related *Order) error {
+	var err error
+
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("order_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Order = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.CustomerEvents {
+		if queries.Equal(o.OrderID, ri.OrderID) {
+			continue
+		}
+
+		ln := len(related.R.CustomerEvents)
+		if ln > 1 && i < ln-1 {
+			related.R.CustomerEvents[i] = related.R.CustomerEvents[ln-1]
+		}
+		related.R.CustomerEvents = related.R.CustomerEvents[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetUser of the customerEvent to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.CustomerEvents.
+func (o *CustomerEvent) SetUser(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"customer_events\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+		strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.UserID, related.ID)
+	if o.R == nil {
+		o.R = &customerEventR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			CustomerEvents: CustomerEventSlice{o},
+		}
+	} else {
+		related.R.CustomerEvents = append(related.R.CustomerEvents, o)
+	}
+
+	return nil
+}
+
+// RemoveUser relationship.
+// Sets o.R.User to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *CustomerEvent) RemoveUser(exec boil.Executor, related *User) error {
+	var err error
+
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("user_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.User = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.CustomerEvents {
+		if queries.Equal(o.UserID, ri.UserID) {
+			continue
+		}
+
+		ln := len(related.R.CustomerEvents)
+		if ln > 1 && i < ln-1 {
+			related.R.CustomerEvents[i] = related.R.CustomerEvents[ln-1]
+		}
+		related.R.CustomerEvents = related.R.CustomerEvents[:ln-1]
+		break
+	}
+	return nil
 }
 
 // CustomerEvents retrieves all the records using an executor.

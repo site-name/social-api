@@ -19,18 +19,6 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	return &SqlShippingZoneStore{s}
 }
 
-func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []interface{} {
-	return []interface{}{
-		&shippingZone.Id,
-		&shippingZone.Name,
-		&shippingZone.Countries,
-		&shippingZone.Default,
-		&shippingZone.Description,
-		&shippingZone.Metadata,
-		&shippingZone.PrivateMetadata,
-	}
-}
-
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 func (s *SqlShippingZoneStore) Upsert(tran *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	if tran == nil {

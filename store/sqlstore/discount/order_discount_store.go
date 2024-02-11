@@ -1,10 +1,12 @@
 package discount
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlOrderDiscountStore struct {
@@ -15,60 +17,56 @@ func NewSqlOrderDiscountStore(sqlStore store.Store) store.OrderDiscountStore {
 	return &SqlOrderDiscountStore{sqlStore}
 }
 
-// Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (ods *SqlOrderDiscountStore) Upsert(transaction boil.ContextTransactor, orderDiscount model.OrderDiscount) (*model.OrderDiscount, error) {
 	if transaction == nil {
 		transaction = ods.GetMaster()
 	}
 
-	err := transaction.Save(orderDiscount).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert given order discount")
-	}
-	return orderDiscount, nil
-}
-
-// Get finds and returns an order discount with given id
-func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
-	var res model.OrderDiscount
-
-	err := ods.GetReplica().First(&res, "Id = ?", orderDiscountID).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.OrderDiscountTableName, orderDiscountID)
-		}
-		return nil, errors.Wrapf(err, "failed to save order discount with id=%s", orderDiscountID)
+	isSaving := false
+	if orderDiscount.ID == "" {
+		isSaving = true
+		model_helper.OrderDiscountPreSave(&orderDiscount)
+	} else {
+		model_helper.OrderDiscountPreUpdate(&orderDiscount)
 	}
 
-	return &res, nil
-}
-
-// FilterbyOption filters order discounts that satisfy given option, then returns them
-func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
-	db := ods.GetReplica()
-	if option.PreloadOrder {
-		db = db.Preload("Order")
+	if err := model_helper.OrderDiscountIsValid(orderDiscount); err != nil {
+		return nil, err
 	}
 
-	args, err := store.BuildSqlizer(option.Conditions, "FilterByOptions")
+	var err error
+	if isSaving {
+		err = orderDiscount.Insert(transaction, boil.Infer())
+	} else {
+		_, err = orderDiscount.Update(transaction, boil.Infer())
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	var res []*model.OrderDiscount
-	err = db.Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find order discounts with given option")
-	}
-
-	return res, nil
+	return &orderDiscount, nil
 }
 
-// BulkDelete perform bulk delete all given order discount ids
-func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
-	err := ods.GetMaster().Table(model.OrderDiscountTableName).Delete("Id IN ?", orderDiscountIDs).Error
+func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
+	orderDiscount, err := model.FindOrderDiscount(ods.GetReplica(), orderDiscountID)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete order discounts")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.OrderDiscounts, orderDiscountID)
+		}
+		return nil, err
+	}
+	return orderDiscount, nil
+}
+
+func (ods *SqlOrderDiscountStore) FilterbyOption(option model_helper.OrderDiscountFilterOption) (model.OrderDiscountSlice, error) {
+	return model.OrderDiscounts(option.Conditions...).All(ods.GetReplica())
+}
+
+func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+	_, err := model.OrderDiscounts(model.OrderDiscountWhere.ID.IN(orderDiscountIDs)).DeleteAll(ods.GetMaster())
+	if err != nil {
+		return err
 	}
 	return nil
 }

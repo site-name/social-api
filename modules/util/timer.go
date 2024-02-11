@@ -29,9 +29,8 @@ func TimeFromMillis(millis int64) time.Time {
 	return time.Unix(0, millis*int64(time.Millisecond))
 }
 
-func TimePointerFromMillis(millis int64) *time.Time {
-	t := TimeFromMillis(millis)
-	return &t
+func TimePointerFromMillis(millis int64) time.Time {
+	return TimeFromMillis(millis)
 }
 
 func StartOfDay(t time.Time) time.Time {

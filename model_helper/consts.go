@@ -100,20 +100,20 @@ const (
 
 // some default values for model fields
 const (
-	TimeZone                       = "UTC"
-	USER_AUTH_SERVICE_EMAIL        = "email"
-	DEFAULT_CURRENCY               = model.CurrencyUSD
-	USER_NAME_MAX_LENGTH           = 64
-	USER_EMAIL_MAX_LENGTH          = 128
-	USER_NAME_MIN_LENGTH           = 1
-	CURRENCY_CODE_MAX_LENGTH       = 3
-	LANGUAGE_CODE_MAX_LENGTH       = 5
-	WEIGHT_UNIT_MAX_LENGTH         = 5
-	URL_LINK_MAX_LENGTH            = 200
-	SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
-	IP_ADDRESS_MAX_LENGTH          = 39
-	DEFAULT_LOCALE                 = model.LanguageCodeEN // this is default language also
-	DEFAULT_COUNTRY                = model.CountryCodeUS
+	TimeZone                = "UTC"
+	USER_AUTH_SERVICE_EMAIL = "email"
+	DEFAULT_CURRENCY        = model.CurrencyUSD
+	USER_NAME_MAX_LENGTH    = 64
+	USER_EMAIL_MAX_LENGTH   = 128
+	USER_NAME_MIN_LENGTH    = 1
+	DEFAULT_LOCALE          = model.LanguageCodeEN // this is default language also
+	DEFAULT_COUNTRY         = model.CountryCodeUS
+	// URL_LINK_MAX_LENGTH     = 200
+	// SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
+	// WEIGHT_UNIT_MAX_LENGTH         = 5
+	// IP_ADDRESS_MAX_LENGTH          = 39
+	// LANGUAGE_CODE_MAX_LENGTH       = 5
+	// CURRENCY_CODE_MAX_LENGTH       = 3
 )
 
 var (

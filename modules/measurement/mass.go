@@ -15,7 +15,7 @@ var (
 		KG:    "Kg",
 		TONNE: "Tonne",
 	} // weight unit aliases to their full name
-	WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
+	WEIGHT_UNIT_CONVERSION = map[WeightUnit]float64{
 		KG:    1.0,
 		G:     1000.0,
 		OZ:    35.27396195,
@@ -37,7 +37,7 @@ const (
 const STANDARD_WEIGHT_UNIT = KG
 
 type Weight struct {
-	Amount float32    `json:"amount"`
+	Amount float64    `json:"amount"`
 	Unit   WeightUnit `json:"unit"`
 }
 
@@ -46,7 +46,7 @@ func (w Weight) String() string {
 }
 
 // Adds weight to current weight and returns new weight.
-func (w *Weight) Add(other *Weight) (*Weight, error) {
+func (w Weight) Add(other Weight) (*Weight, error) {
 	// convert other's unit to w's unit
 	converted, err := other.ConvertTo(w.Unit)
 	if err != nil {
@@ -59,7 +59,7 @@ func (w *Weight) Add(other *Weight) (*Weight, error) {
 }
 
 // Subs weight to current weight and returns new weight.
-func (w *Weight) Sub(other Weight) (*Weight, error) {
+func (w Weight) Sub(other Weight) (*Weight, error) {
 	// convert other's unit to w's unit
 	converted, err := other.ConvertTo(w.Unit)
 	if err != nil {
@@ -72,9 +72,9 @@ func (w *Weight) Sub(other Weight) (*Weight, error) {
 }
 
 // Multiplies weight to current weight and returns new weight.
-func (w *Weight) Mul(quantity float32) *Weight {
-	return &Weight{
-		Amount: w.Amount * quantity,
+func (w Weight) Mul(quantity int) Weight {
+	return Weight{
+		Amount: w.Amount * float64(quantity),
 		Unit:   w.Unit,
 	}
 }
@@ -89,21 +89,19 @@ func (w *Weight) ConvertTo(unit WeightUnit) (*Weight, error) {
 		return w, nil
 	}
 
-	resAmount := w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
-	return &Weight{
-		Amount: resAmount,
-		Unit:   unit,
-	}, nil
+	w.Amount = w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
+	w.Unit = unit
+	return w, nil
 }
 
 // Zero weight for unit (kg)
-var ZeroWeight = &Weight{
+var ZeroWeight = Weight{
 	Amount: 0,
 	Unit:   KG,
 }
 
 // NewWeight returns a customized weight user wants
-func NewWeight(amount float32, unit WeightUnit) (*Weight, error) {
+func NewWeight(amount float64, unit WeightUnit) (*Weight, error) {
 	if WEIGHT_UNIT_STRINGS[unit] == "" {
 		return nil, ErrInvalidWeightUnit
 	}

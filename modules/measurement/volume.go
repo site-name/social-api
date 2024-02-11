@@ -33,7 +33,7 @@ var VOLUME_UNIT_STRINGS = map[string]string{
 	ACRE_FT:          "Acre feet",
 }
 
-var VOLUME_UNITS_CONVERSION = map[string]float32{
+var VOLUME_UNITS_CONVERSION = map[string]float64{
 	CUBIC_MILLIMETER: 0.000000001,
 	CUBIC_CENTIMETER: 0.000001,
 	CUBIC_DECIMETER:  0.001,

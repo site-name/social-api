@@ -93,15 +93,26 @@ var PageTranslationWhere = struct {
 
 // PageTranslationRels is where relationship names are stored.
 var PageTranslationRels = struct {
-}{}
+	Page string
+}{
+	Page: "Page",
+}
 
 // pageTranslationR is where relationships are stored.
 type pageTranslationR struct {
+	Page *Page `boil:"Page" json:"Page" toml:"Page" yaml:"Page"`
 }
 
 // NewStruct creates a new relationship struct
 func (*pageTranslationR) NewStruct() *pageTranslationR {
 	return &pageTranslationR{}
+}
+
+func (r *pageTranslationR) GetPage() *Page {
+	if r == nil {
+		return nil
+	}
+	return r.Page
 }
 
 // pageTranslationL is where Load methods for each relationship are stored.
@@ -204,6 +215,175 @@ func (q pageTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Page pointed to by the foreign key.
+func (o *PageTranslation) Page(mods ...qm.QueryMod) pageQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.PageID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Pages(queryMods...)
+}
+
+// LoadPage allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (pageTranslationL) LoadPage(e boil.Executor, singular bool, maybePageTranslation interface{}, mods queries.Applicator) error {
+	var slice []*PageTranslation
+	var object *PageTranslation
+
+	if singular {
+		var ok bool
+		object, ok = maybePageTranslation.(*PageTranslation)
+		if !ok {
+			object = new(PageTranslation)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePageTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePageTranslation))
+			}
+		}
+	} else {
+		s, ok := maybePageTranslation.(*[]*PageTranslation)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePageTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePageTranslation))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &pageTranslationR{}
+		}
+		args[object.PageID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &pageTranslationR{}
+			}
+
+			args[obj.PageID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`pages`),
+		qm.WhereIn(`pages.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Page")
+	}
+
+	var resultSlice []*Page
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Page")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for pages")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pages")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Page = foreign
+		if foreign.R == nil {
+			foreign.R = &pageR{}
+		}
+		foreign.R.PageTranslations = append(foreign.R.PageTranslations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.PageID == foreign.ID {
+				local.R.Page = foreign
+				if foreign.R == nil {
+					foreign.R = &pageR{}
+				}
+				foreign.R.PageTranslations = append(foreign.R.PageTranslations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetPage of the pageTranslation to the related item.
+// Sets o.R.Page to related.
+// Adds o to related.R.PageTranslations.
+func (o *PageTranslation) SetPage(exec boil.Executor, insert bool, related *Page) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"page_translations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
+		strmangle.WhereClause("\"", "\"", 2, pageTranslationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.PageID = related.ID
+	if o.R == nil {
+		o.R = &pageTranslationR{
+			Page: related,
+		}
+	} else {
+		o.R.Page = related
+	}
+
+	if related.R == nil {
+		related.R = &pageR{
+			PageTranslations: PageTranslationSlice{o},
+		}
+	} else {
+		related.R.PageTranslations = append(related.R.PageTranslations, o)
+	}
+
+	return nil
 }
 
 // PageTranslations retrieves all the records using an executor.

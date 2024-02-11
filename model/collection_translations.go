@@ -93,15 +93,26 @@ var CollectionTranslationWhere = struct {
 
 // CollectionTranslationRels is where relationship names are stored.
 var CollectionTranslationRels = struct {
-}{}
+	Collection string
+}{
+	Collection: "Collection",
+}
 
 // collectionTranslationR is where relationships are stored.
 type collectionTranslationR struct {
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
 }
 
 // NewStruct creates a new relationship struct
 func (*collectionTranslationR) NewStruct() *collectionTranslationR {
 	return &collectionTranslationR{}
+}
+
+func (r *collectionTranslationR) GetCollection() *Collection {
+	if r == nil {
+		return nil
+	}
+	return r.Collection
 }
 
 // collectionTranslationL is where Load methods for each relationship are stored.
@@ -204,6 +215,175 @@ func (q collectionTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Collection pointed to by the foreign key.
+func (o *CollectionTranslation) Collection(mods ...qm.QueryMod) collectionQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CollectionID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Collections(queryMods...)
+}
+
+// LoadCollection allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (collectionTranslationL) LoadCollection(e boil.Executor, singular bool, maybeCollectionTranslation interface{}, mods queries.Applicator) error {
+	var slice []*CollectionTranslation
+	var object *CollectionTranslation
+
+	if singular {
+		var ok bool
+		object, ok = maybeCollectionTranslation.(*CollectionTranslation)
+		if !ok {
+			object = new(CollectionTranslation)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCollectionTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCollectionTranslation))
+			}
+		}
+	} else {
+		s, ok := maybeCollectionTranslation.(*[]*CollectionTranslation)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCollectionTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCollectionTranslation))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &collectionTranslationR{}
+		}
+		args[object.CollectionID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &collectionTranslationR{}
+			}
+
+			args[obj.CollectionID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`collections`),
+		qm.WhereIn(`collections.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Collection")
+	}
+
+	var resultSlice []*Collection
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Collection")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for collections")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Collection = foreign
+		if foreign.R == nil {
+			foreign.R = &collectionR{}
+		}
+		foreign.R.CollectionTranslations = append(foreign.R.CollectionTranslations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CollectionID == foreign.ID {
+				local.R.Collection = foreign
+				if foreign.R == nil {
+					foreign.R = &collectionR{}
+				}
+				foreign.R.CollectionTranslations = append(foreign.R.CollectionTranslations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCollection of the collectionTranslation to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.CollectionTranslations.
+func (o *CollectionTranslation) SetCollection(exec boil.Executor, insert bool, related *Collection) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"collection_translations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
+		strmangle.WhereClause("\"", "\"", 2, collectionTranslationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CollectionID = related.ID
+	if o.R == nil {
+		o.R = &collectionTranslationR{
+			Collection: related,
+		}
+	} else {
+		o.R.Collection = related
+	}
+
+	if related.R == nil {
+		related.R = &collectionR{
+			CollectionTranslations: CollectionTranslationSlice{o},
+		}
+	} else {
+		related.R.CollectionTranslations = append(related.R.CollectionTranslations, o)
+	}
+
+	return nil
 }
 
 // CollectionTranslations retrieves all the records using an executor.

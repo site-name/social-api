@@ -173,25 +173,32 @@ var AttributeValueWhere = struct {
 
 // AttributeValueRels is where relationship names are stored.
 var AttributeValueRels = struct {
+	Attribute                           string
 	ValueAssignedPageAttributeValues    string
 	ValueAssignedProductAttributeValues string
-	ValueAssignedVariantAttributeValues string
 }{
+	Attribute:                           "Attribute",
 	ValueAssignedPageAttributeValues:    "ValueAssignedPageAttributeValues",
 	ValueAssignedProductAttributeValues: "ValueAssignedProductAttributeValues",
-	ValueAssignedVariantAttributeValues: "ValueAssignedVariantAttributeValues",
 }
 
 // attributeValueR is where relationships are stored.
 type attributeValueR struct {
+	Attribute                           *Attribute                         `boil:"Attribute" json:"Attribute" toml:"Attribute" yaml:"Attribute"`
 	ValueAssignedPageAttributeValues    AssignedPageAttributeValueSlice    `boil:"ValueAssignedPageAttributeValues" json:"ValueAssignedPageAttributeValues" toml:"ValueAssignedPageAttributeValues" yaml:"ValueAssignedPageAttributeValues"`
 	ValueAssignedProductAttributeValues AssignedProductAttributeValueSlice `boil:"ValueAssignedProductAttributeValues" json:"ValueAssignedProductAttributeValues" toml:"ValueAssignedProductAttributeValues" yaml:"ValueAssignedProductAttributeValues"`
-	ValueAssignedVariantAttributeValues AssignedVariantAttributeValueSlice `boil:"ValueAssignedVariantAttributeValues" json:"ValueAssignedVariantAttributeValues" toml:"ValueAssignedVariantAttributeValues" yaml:"ValueAssignedVariantAttributeValues"`
 }
 
 // NewStruct creates a new relationship struct
 func (*attributeValueR) NewStruct() *attributeValueR {
 	return &attributeValueR{}
+}
+
+func (r *attributeValueR) GetAttribute() *Attribute {
+	if r == nil {
+		return nil
+	}
+	return r.Attribute
 }
 
 func (r *attributeValueR) GetValueAssignedPageAttributeValues() AssignedPageAttributeValueSlice {
@@ -206,13 +213,6 @@ func (r *attributeValueR) GetValueAssignedProductAttributeValues() AssignedProdu
 		return nil
 	}
 	return r.ValueAssignedProductAttributeValues
-}
-
-func (r *attributeValueR) GetValueAssignedVariantAttributeValues() AssignedVariantAttributeValueSlice {
-	if r == nil {
-		return nil
-	}
-	return r.ValueAssignedVariantAttributeValues
 }
 
 // attributeValueL is where Load methods for each relationship are stored.
@@ -317,6 +317,17 @@ func (q attributeValueQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
+// Attribute pointed to by the foreign key.
+func (o *AttributeValue) Attribute(mods ...qm.QueryMod) attributeQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.AttributeID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Attributes(queryMods...)
+}
+
 // ValueAssignedPageAttributeValues retrieves all the assigned_page_attribute_value's AssignedPageAttributeValues with an executor via value_id column.
 func (o *AttributeValue) ValueAssignedPageAttributeValues(mods ...qm.QueryMod) assignedPageAttributeValueQuery {
 	var queryMods []qm.QueryMod
@@ -345,18 +356,116 @@ func (o *AttributeValue) ValueAssignedProductAttributeValues(mods ...qm.QueryMod
 	return AssignedProductAttributeValues(queryMods...)
 }
 
-// ValueAssignedVariantAttributeValues retrieves all the assigned_variant_attribute_value's AssignedVariantAttributeValues with an executor via value_id column.
-func (o *AttributeValue) ValueAssignedVariantAttributeValues(mods ...qm.QueryMod) assignedVariantAttributeValueQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
+// LoadAttribute allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
+	var slice []*AttributeValue
+	var object *AttributeValue
+
+	if singular {
+		var ok bool
+		object, ok = maybeAttributeValue.(*AttributeValue)
+		if !ok {
+			object = new(AttributeValue)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAttributeValue)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAttributeValue))
+			}
+		}
+	} else {
+		s, ok := maybeAttributeValue.(*[]*AttributeValue)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAttributeValue)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAttributeValue))
+			}
+		}
 	}
 
-	queryMods = append(queryMods,
-		qm.Where("\"assigned_variant_attribute_values\".\"value_id\"=?", o.ID),
-	)
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &attributeValueR{}
+		}
+		args[object.AttributeID] = struct{}{}
 
-	return AssignedVariantAttributeValues(queryMods...)
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &attributeValueR{}
+			}
+
+			args[obj.AttributeID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`attributes`),
+		qm.WhereIn(`attributes.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Attribute")
+	}
+
+	var resultSlice []*Attribute
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Attribute")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for attributes")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attributes")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Attribute = foreign
+		if foreign.R == nil {
+			foreign.R = &attributeR{}
+		}
+		foreign.R.AttributeValues = append(foreign.R.AttributeValues, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.AttributeID == foreign.ID {
+				local.R.Attribute = foreign
+				if foreign.R == nil {
+					foreign.R = &attributeR{}
+				}
+				foreign.R.AttributeValues = append(foreign.R.AttributeValues, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadValueAssignedPageAttributeValues allows an eager lookup of values, cached into the
@@ -571,107 +680,47 @@ func (attributeValueL) LoadValueAssignedProductAttributeValues(e boil.Executor, 
 	return nil
 }
 
-// LoadValueAssignedVariantAttributeValues allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueAssignedVariantAttributeValues(e boil.Executor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
-	var slice []*AttributeValue
-	var object *AttributeValue
-
-	if singular {
-		var ok bool
-		object, ok = maybeAttributeValue.(*AttributeValue)
-		if !ok {
-			object = new(AttributeValue)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeAttributeValue)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAttributeValue))
-			}
-		}
-	} else {
-		s, ok := maybeAttributeValue.(*[]*AttributeValue)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeAttributeValue)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAttributeValue))
-			}
+// SetAttribute of the attributeValue to the related item.
+// Sets o.R.Attribute to related.
+// Adds o to related.R.AttributeValues.
+func (o *AttributeValue) SetAttribute(exec boil.Executor, insert bool, related *Attribute) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
 
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &attributeValueR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &attributeValueR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`assigned_variant_attribute_values`),
-		qm.WhereIn(`assigned_variant_attribute_values.value_id in ?`, argsSlice...),
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"attribute_values\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
+		strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
 	)
-	if mods != nil {
-		mods.Apply(query)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
 	}
 
-	results, err := query.Query(e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load assigned_variant_attribute_values")
-	}
-
-	var resultSlice []*AssignedVariantAttributeValue
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice assigned_variant_attribute_values")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on assigned_variant_attribute_values")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_variant_attribute_values")
-	}
-
-	if singular {
-		object.R.ValueAssignedVariantAttributeValues = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &assignedVariantAttributeValueR{}
-			}
-			foreign.R.Value = object
+	o.AttributeID = related.ID
+	if o.R == nil {
+		o.R = &attributeValueR{
+			Attribute: related,
 		}
-		return nil
+	} else {
+		o.R.Attribute = related
 	}
 
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.ValueID {
-				local.R.ValueAssignedVariantAttributeValues = append(local.R.ValueAssignedVariantAttributeValues, foreign)
-				if foreign.R == nil {
-					foreign.R = &assignedVariantAttributeValueR{}
-				}
-				foreign.R.Value = local
-				break
-			}
+	if related.R == nil {
+		related.R = &attributeR{
+			AttributeValues: AttributeValueSlice{o},
 		}
+	} else {
+		related.R.AttributeValues = append(related.R.AttributeValues, o)
 	}
 
 	return nil
@@ -772,58 +821,6 @@ func (o *AttributeValue) AddValueAssignedProductAttributeValues(exec boil.Execut
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedProductAttributeValueR{
-				Value: o,
-			}
-		} else {
-			rel.R.Value = o
-		}
-	}
-	return nil
-}
-
-// AddValueAssignedVariantAttributeValues adds the given related objects to the existing relationships
-// of the attribute_value, optionally inserting them as new records.
-// Appends related to o.R.ValueAssignedVariantAttributeValues.
-// Sets related.R.Value appropriately.
-func (o *AttributeValue) AddValueAssignedVariantAttributeValues(exec boil.Executor, insert bool, related ...*AssignedVariantAttributeValue) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.ValueID = o.ID
-			if err = rel.Insert(exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"assigned_variant_attribute_values\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
-				strmangle.WhereClause("\"", "\"", 2, assignedVariantAttributeValuePrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.DebugMode {
-				fmt.Fprintln(boil.DebugWriter, updateQuery)
-				fmt.Fprintln(boil.DebugWriter, values)
-			}
-			if _, err = exec.Exec(updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.ValueID = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &attributeValueR{
-			ValueAssignedVariantAttributeValues: related,
-		}
-	} else {
-		o.R.ValueAssignedVariantAttributeValues = append(o.R.ValueAssignedVariantAttributeValues, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &assignedVariantAttributeValueR{
 				Value: o,
 			}
 		} else {

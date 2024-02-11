@@ -124,7 +124,17 @@ func AddressString(a model.Address) string {
 	return AddressFullname(a)
 }
 
-func AddressCommonPre(a *model.Address) {
+func AddressPreSave(a *model.Address) {
+	if a.ID == "" {
+		a.ID = NewId()
+
+	}
+	addressCommonPre(a)
+	a.CreatedAt = GetMillis()
+	a.UpdatedAt = a.CreatedAt
+}
+
+func addressCommonPre(a *model.Address) {
 	if strings.TrimSpace(a.FirstName) == "" {
 		a.FirstName = "first_name"
 	}
@@ -138,7 +148,24 @@ func AddressCommonPre(a *model.Address) {
 	}
 }
 
+func AddressPreUpdate(a *model.Address) {
+	addressCommonPre(a)
+	a.UpdatedAt = GetMillis()
+}
+
 func AddressIsValid(a model.Address) *AppError {
+	if !IsValidId(a.ID) {
+		return NewAppError("Address.IsValid", "model.address.is_valid.id.app_error", nil, "please provide valid id", http.StatusBadRequest)
+	}
+	if !IsValidId(a.UserID) {
+		return NewAppError("Address.IsValid", "model.address.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
+	}
+	if a.CreatedAt <= 0 {
+		return NewAppError("Address.IsValid", "model.address.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if a.UpdatedAt <= 0 {
+		return NewAppError("Address.IsValid", "model.address.is_valid.updated_at.app_error", nil, "", http.StatusBadRequest)
+	}
 	if !IsValidNamePart(a.FirstName) {
 		return NewAppError("Address.IsValid", "model.address.is_valid.first_name.app_error", nil, "please provide valid first name", http.StatusBadRequest)
 	}
@@ -385,6 +412,7 @@ func UserAccessTokenCommonPre(t *model.UserAccessToken) {
 	if t.Token == "" {
 		t.Token = NewId()
 	}
+	t.Description = SanitizeUnicode(t.Description)
 }
 
 // ------------ user ---------------
@@ -450,6 +478,9 @@ func UserIsOauth(u model.User) bool {
 }
 
 func UserPreSave(u *model.User) {
+	if u.ID == "" {
+		u.ID = NewId()
+	}
 	userCommonPre(u)
 	if u.Password != "" {
 		u.Password = HashPassword(u.Password)

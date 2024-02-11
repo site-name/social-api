@@ -86,15 +86,36 @@ var CollectionChannelListingWhere = struct {
 
 // CollectionChannelListingRels is where relationship names are stored.
 var CollectionChannelListingRels = struct {
-}{}
+	Channel    string
+	Collection string
+}{
+	Channel:    "Channel",
+	Collection: "Collection",
+}
 
 // collectionChannelListingR is where relationships are stored.
 type collectionChannelListingR struct {
+	Channel    *Channel    `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
 }
 
 // NewStruct creates a new relationship struct
 func (*collectionChannelListingR) NewStruct() *collectionChannelListingR {
 	return &collectionChannelListingR{}
+}
+
+func (r *collectionChannelListingR) GetChannel() *Channel {
+	if r == nil {
+		return nil
+	}
+	return r.Channel
+}
+
+func (r *collectionChannelListingR) GetCollection() *Collection {
+	if r == nil {
+		return nil
+	}
+	return r.Collection
 }
 
 // collectionChannelListingL is where Load methods for each relationship are stored.
@@ -197,6 +218,381 @@ func (q collectionChannelListingQuery) Exists(exec boil.Executor) (bool, error) 
 	}
 
 	return count > 0, nil
+}
+
+// Channel pointed to by the foreign key.
+func (o *CollectionChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ChannelID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Channels(queryMods...)
+}
+
+// Collection pointed to by the foreign key.
+func (o *CollectionChannelListing) Collection(mods ...qm.QueryMod) collectionQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CollectionID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Collections(queryMods...)
+}
+
+// LoadChannel allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*CollectionChannelListing
+	var object *CollectionChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeCollectionChannelListing.(*CollectionChannelListing)
+		if !ok {
+			object = new(CollectionChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCollectionChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCollectionChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeCollectionChannelListing.(*[]*CollectionChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCollectionChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCollectionChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &collectionChannelListingR{}
+		}
+		if !queries.IsNil(object.ChannelID) {
+			args[object.ChannelID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &collectionChannelListingR{}
+			}
+
+			if !queries.IsNil(obj.ChannelID) {
+				args[obj.ChannelID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`channels`),
+		qm.WhereIn(`channels.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Channel")
+	}
+
+	var resultSlice []*Channel
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Channel")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for channels")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Channel = foreign
+		if foreign.R == nil {
+			foreign.R = &channelR{}
+		}
+		foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.ChannelID, foreign.ID) {
+				local.R.Channel = foreign
+				if foreign.R == nil {
+					foreign.R = &channelR{}
+				}
+				foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCollection allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (collectionChannelListingL) LoadCollection(e boil.Executor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*CollectionChannelListing
+	var object *CollectionChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeCollectionChannelListing.(*CollectionChannelListing)
+		if !ok {
+			object = new(CollectionChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCollectionChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCollectionChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeCollectionChannelListing.(*[]*CollectionChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCollectionChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCollectionChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &collectionChannelListingR{}
+		}
+		args[object.CollectionID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &collectionChannelListingR{}
+			}
+
+			args[obj.CollectionID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`collections`),
+		qm.WhereIn(`collections.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Collection")
+	}
+
+	var resultSlice []*Collection
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Collection")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for collections")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Collection = foreign
+		if foreign.R == nil {
+			foreign.R = &collectionR{}
+		}
+		foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CollectionID == foreign.ID {
+				local.R.Collection = foreign
+				if foreign.R == nil {
+					foreign.R = &collectionR{}
+				}
+				foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetChannel of the collectionChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.CollectionChannelListings.
+func (o *CollectionChannelListing) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"collection_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.ChannelID, related.ID)
+	if o.R == nil {
+		o.R = &collectionChannelListingR{
+			Channel: related,
+		}
+	} else {
+		o.R.Channel = related
+	}
+
+	if related.R == nil {
+		related.R = &channelR{
+			CollectionChannelListings: CollectionChannelListingSlice{o},
+		}
+	} else {
+		related.R.CollectionChannelListings = append(related.R.CollectionChannelListings, o)
+	}
+
+	return nil
+}
+
+// RemoveChannel relationship.
+// Sets o.R.Channel to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *CollectionChannelListing) RemoveChannel(exec boil.Executor, related *Channel) error {
+	var err error
+
+	queries.SetScanner(&o.ChannelID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("channel_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Channel = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.CollectionChannelListings {
+		if queries.Equal(o.ChannelID, ri.ChannelID) {
+			continue
+		}
+
+		ln := len(related.R.CollectionChannelListings)
+		if ln > 1 && i < ln-1 {
+			related.R.CollectionChannelListings[i] = related.R.CollectionChannelListings[ln-1]
+		}
+		related.R.CollectionChannelListings = related.R.CollectionChannelListings[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetCollection of the collectionChannelListing to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.CollectionChannelListings.
+func (o *CollectionChannelListing) SetCollection(exec boil.Executor, insert bool, related *Collection) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"collection_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
+		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CollectionID = related.ID
+	if o.R == nil {
+		o.R = &collectionChannelListingR{
+			Collection: related,
+		}
+	} else {
+		o.R.Collection = related
+	}
+
+	if related.R == nil {
+		related.R = &collectionR{
+			CollectionChannelListings: CollectionChannelListingSlice{o},
+		}
+	} else {
+		related.R.CollectionChannelListings = append(related.R.CollectionChannelListings, o)
+	}
+
+	return nil
 }
 
 // CollectionChannelListings retrieves all the records using an executor.

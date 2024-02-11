@@ -374,15 +374,46 @@ var PaymentWhere = struct {
 
 // PaymentRels is where relationship names are stored.
 var PaymentRels = struct {
-}{}
+	Checkout     string
+	Order        string
+	Transactions string
+}{
+	Checkout:     "Checkout",
+	Order:        "Order",
+	Transactions: "Transactions",
+}
 
 // paymentR is where relationships are stored.
 type paymentR struct {
+	Checkout     *Checkout        `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Order        *Order           `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	Transactions TransactionSlice `boil:"Transactions" json:"Transactions" toml:"Transactions" yaml:"Transactions"`
 }
 
 // NewStruct creates a new relationship struct
 func (*paymentR) NewStruct() *paymentR {
 	return &paymentR{}
+}
+
+func (r *paymentR) GetCheckout() *Checkout {
+	if r == nil {
+		return nil
+	}
+	return r.Checkout
+}
+
+func (r *paymentR) GetOrder() *Order {
+	if r == nil {
+		return nil
+	}
+	return r.Order
+}
+
+func (r *paymentR) GetTransactions() TransactionSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Transactions
 }
 
 // paymentL is where Load methods for each relationship are stored.
@@ -485,6 +516,590 @@ func (q paymentQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Checkout pointed to by the foreign key.
+func (o *Payment) Checkout(mods ...qm.QueryMod) checkoutQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"token\" = ?", o.CheckoutID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Checkouts(queryMods...)
+}
+
+// Order pointed to by the foreign key.
+func (o *Payment) Order(mods ...qm.QueryMod) orderQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.OrderID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Orders(queryMods...)
+}
+
+// Transactions retrieves all the transaction's Transactions with an executor.
+func (o *Payment) Transactions(mods ...qm.QueryMod) transactionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"transactions\".\"payment_id\"=?", o.ID),
+	)
+
+	return Transactions(queryMods...)
+}
+
+// LoadCheckout allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (paymentL) LoadCheckout(e boil.Executor, singular bool, maybePayment interface{}, mods queries.Applicator) error {
+	var slice []*Payment
+	var object *Payment
+
+	if singular {
+		var ok bool
+		object, ok = maybePayment.(*Payment)
+		if !ok {
+			object = new(Payment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePayment))
+			}
+		}
+	} else {
+		s, ok := maybePayment.(*[]*Payment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePayment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &paymentR{}
+		}
+		if !queries.IsNil(object.CheckoutID) {
+			args[object.CheckoutID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &paymentR{}
+			}
+
+			if !queries.IsNil(obj.CheckoutID) {
+				args[obj.CheckoutID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`checkouts`),
+		qm.WhereIn(`checkouts.token in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Checkout")
+	}
+
+	var resultSlice []*Checkout
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Checkout")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for checkouts")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Checkout = foreign
+		if foreign.R == nil {
+			foreign.R = &checkoutR{}
+		}
+		foreign.R.Payments = append(foreign.R.Payments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.CheckoutID, foreign.Token) {
+				local.R.Checkout = foreign
+				if foreign.R == nil {
+					foreign.R = &checkoutR{}
+				}
+				foreign.R.Payments = append(foreign.R.Payments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadOrder allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (paymentL) LoadOrder(e boil.Executor, singular bool, maybePayment interface{}, mods queries.Applicator) error {
+	var slice []*Payment
+	var object *Payment
+
+	if singular {
+		var ok bool
+		object, ok = maybePayment.(*Payment)
+		if !ok {
+			object = new(Payment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePayment))
+			}
+		}
+	} else {
+		s, ok := maybePayment.(*[]*Payment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePayment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &paymentR{}
+		}
+		if !queries.IsNil(object.OrderID) {
+			args[object.OrderID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &paymentR{}
+			}
+
+			if !queries.IsNil(obj.OrderID) {
+				args[obj.OrderID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`orders`),
+		qm.WhereIn(`orders.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Order")
+	}
+
+	var resultSlice []*Order
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Order")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for orders")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Order = foreign
+		if foreign.R == nil {
+			foreign.R = &orderR{}
+		}
+		foreign.R.Payments = append(foreign.R.Payments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
+				if foreign.R == nil {
+					foreign.R = &orderR{}
+				}
+				foreign.R.Payments = append(foreign.R.Payments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadTransactions allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (paymentL) LoadTransactions(e boil.Executor, singular bool, maybePayment interface{}, mods queries.Applicator) error {
+	var slice []*Payment
+	var object *Payment
+
+	if singular {
+		var ok bool
+		object, ok = maybePayment.(*Payment)
+		if !ok {
+			object = new(Payment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePayment))
+			}
+		}
+	} else {
+		s, ok := maybePayment.(*[]*Payment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePayment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePayment))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &paymentR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &paymentR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`transactions`),
+		qm.WhereIn(`transactions.payment_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load transactions")
+	}
+
+	var resultSlice []*Transaction
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice transactions")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on transactions")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for transactions")
+	}
+
+	if singular {
+		object.R.Transactions = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &transactionR{}
+			}
+			foreign.R.Payment = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.PaymentID {
+				local.R.Transactions = append(local.R.Transactions, foreign)
+				if foreign.R == nil {
+					foreign.R = &transactionR{}
+				}
+				foreign.R.Payment = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCheckout of the payment to the related item.
+// Sets o.R.Checkout to related.
+// Adds o to related.R.Payments.
+func (o *Payment) SetCheckout(exec boil.Executor, insert bool, related *Checkout) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"payments\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
+		strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.Token, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.CheckoutID, related.Token)
+	if o.R == nil {
+		o.R = &paymentR{
+			Checkout: related,
+		}
+	} else {
+		o.R.Checkout = related
+	}
+
+	if related.R == nil {
+		related.R = &checkoutR{
+			Payments: PaymentSlice{o},
+		}
+	} else {
+		related.R.Payments = append(related.R.Payments, o)
+	}
+
+	return nil
+}
+
+// RemoveCheckout relationship.
+// Sets o.R.Checkout to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Payment) RemoveCheckout(exec boil.Executor, related *Checkout) error {
+	var err error
+
+	queries.SetScanner(&o.CheckoutID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("checkout_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Checkout = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.Payments {
+		if queries.Equal(o.CheckoutID, ri.CheckoutID) {
+			continue
+		}
+
+		ln := len(related.R.Payments)
+		if ln > 1 && i < ln-1 {
+			related.R.Payments[i] = related.R.Payments[ln-1]
+		}
+		related.R.Payments = related.R.Payments[:ln-1]
+		break
+	}
+	return nil
+}
+
+// SetOrder of the payment to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.Payments.
+func (o *Payment) SetOrder(exec boil.Executor, insert bool, related *Order) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"payments\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
+		strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.OrderID, related.ID)
+	if o.R == nil {
+		o.R = &paymentR{
+			Order: related,
+		}
+	} else {
+		o.R.Order = related
+	}
+
+	if related.R == nil {
+		related.R = &orderR{
+			Payments: PaymentSlice{o},
+		}
+	} else {
+		related.R.Payments = append(related.R.Payments, o)
+	}
+
+	return nil
+}
+
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Payment) RemoveOrder(exec boil.Executor, related *Order) error {
+	var err error
+
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("order_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Order = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.Payments {
+		if queries.Equal(o.OrderID, ri.OrderID) {
+			continue
+		}
+
+		ln := len(related.R.Payments)
+		if ln > 1 && i < ln-1 {
+			related.R.Payments[i] = related.R.Payments[ln-1]
+		}
+		related.R.Payments = related.R.Payments[:ln-1]
+		break
+	}
+	return nil
+}
+
+// AddTransactions adds the given related objects to the existing relationships
+// of the payment, optionally inserting them as new records.
+// Appends related to o.R.Transactions.
+// Sets related.R.Payment appropriately.
+func (o *Payment) AddTransactions(exec boil.Executor, insert bool, related ...*Transaction) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.PaymentID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"transactions\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
+				strmangle.WhereClause("\"", "\"", 2, transactionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.PaymentID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &paymentR{
+			Transactions: related,
+		}
+	} else {
+		o.R.Transactions = append(o.R.Transactions, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &transactionR{
+				Payment: o,
+			}
+		} else {
+			rel.R.Payment = o
+		}
+	}
+	return nil
 }
 
 // Payments retrieves all the records using an executor.

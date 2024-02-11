@@ -303,15 +303,36 @@ var AttributeWhere = struct {
 
 // AttributeRels is where relationship names are stored.
 var AttributeRels = struct {
-}{}
+	AttributeValues    string
+	CategoryAttributes string
+}{
+	AttributeValues:    "AttributeValues",
+	CategoryAttributes: "CategoryAttributes",
+}
 
 // attributeR is where relationships are stored.
 type attributeR struct {
+	AttributeValues    AttributeValueSlice    `boil:"AttributeValues" json:"AttributeValues" toml:"AttributeValues" yaml:"AttributeValues"`
+	CategoryAttributes CategoryAttributeSlice `boil:"CategoryAttributes" json:"CategoryAttributes" toml:"CategoryAttributes" yaml:"CategoryAttributes"`
 }
 
 // NewStruct creates a new relationship struct
 func (*attributeR) NewStruct() *attributeR {
 	return &attributeR{}
+}
+
+func (r *attributeR) GetAttributeValues() AttributeValueSlice {
+	if r == nil {
+		return nil
+	}
+	return r.AttributeValues
+}
+
+func (r *attributeR) GetCategoryAttributes() CategoryAttributeSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CategoryAttributes
 }
 
 // attributeL is where Load methods for each relationship are stored.
@@ -414,6 +435,350 @@ func (q attributeQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// AttributeValues retrieves all the attribute_value's AttributeValues with an executor.
+func (o *Attribute) AttributeValues(mods ...qm.QueryMod) attributeValueQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"attribute_values\".\"attribute_id\"=?", o.ID),
+	)
+
+	return AttributeValues(queryMods...)
+}
+
+// CategoryAttributes retrieves all the category_attribute's CategoryAttributes with an executor.
+func (o *Attribute) CategoryAttributes(mods ...qm.QueryMod) categoryAttributeQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"category_attributes\".\"attribute_id\"=?", o.ID),
+	)
+
+	return CategoryAttributes(queryMods...)
+}
+
+// LoadAttributeValues allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
+	var slice []*Attribute
+	var object *Attribute
+
+	if singular {
+		var ok bool
+		object, ok = maybeAttribute.(*Attribute)
+		if !ok {
+			object = new(Attribute)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAttribute)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAttribute))
+			}
+		}
+	} else {
+		s, ok := maybeAttribute.(*[]*Attribute)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAttribute)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAttribute))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &attributeR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &attributeR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`attribute_values`),
+		qm.WhereIn(`attribute_values.attribute_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load attribute_values")
+	}
+
+	var resultSlice []*AttributeValue
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice attribute_values")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on attribute_values")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_values")
+	}
+
+	if singular {
+		object.R.AttributeValues = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &attributeValueR{}
+			}
+			foreign.R.Attribute = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.AttributeID {
+				local.R.AttributeValues = append(local.R.AttributeValues, foreign)
+				if foreign.R == nil {
+					foreign.R = &attributeValueR{}
+				}
+				foreign.R.Attribute = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCategoryAttributes allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
+	var slice []*Attribute
+	var object *Attribute
+
+	if singular {
+		var ok bool
+		object, ok = maybeAttribute.(*Attribute)
+		if !ok {
+			object = new(Attribute)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAttribute)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAttribute))
+			}
+		}
+	} else {
+		s, ok := maybeAttribute.(*[]*Attribute)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAttribute)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAttribute))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &attributeR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &attributeR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`category_attributes`),
+		qm.WhereIn(`category_attributes.attribute_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load category_attributes")
+	}
+
+	var resultSlice []*CategoryAttribute
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice category_attributes")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on category_attributes")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for category_attributes")
+	}
+
+	if singular {
+		object.R.CategoryAttributes = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &categoryAttributeR{}
+			}
+			foreign.R.Attribute = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.AttributeID {
+				local.R.CategoryAttributes = append(local.R.CategoryAttributes, foreign)
+				if foreign.R == nil {
+					foreign.R = &categoryAttributeR{}
+				}
+				foreign.R.Attribute = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// AddAttributeValues adds the given related objects to the existing relationships
+// of the attribute, optionally inserting them as new records.
+// Appends related to o.R.AttributeValues.
+// Sets related.R.Attribute appropriately.
+func (o *Attribute) AddAttributeValues(exec boil.Executor, insert bool, related ...*AttributeValue) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.AttributeID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"attribute_values\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
+				strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.AttributeID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &attributeR{
+			AttributeValues: related,
+		}
+	} else {
+		o.R.AttributeValues = append(o.R.AttributeValues, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &attributeValueR{
+				Attribute: o,
+			}
+		} else {
+			rel.R.Attribute = o
+		}
+	}
+	return nil
+}
+
+// AddCategoryAttributes adds the given related objects to the existing relationships
+// of the attribute, optionally inserting them as new records.
+// Appends related to o.R.CategoryAttributes.
+// Sets related.R.Attribute appropriately.
+func (o *Attribute) AddCategoryAttributes(exec boil.Executor, insert bool, related ...*CategoryAttribute) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.AttributeID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"category_attributes\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
+				strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.AttributeID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &attributeR{
+			CategoryAttributes: related,
+		}
+	} else {
+		o.R.CategoryAttributes = append(o.R.CategoryAttributes, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &categoryAttributeR{
+				Attribute: o,
+			}
+		} else {
+			rel.R.Attribute = o
+		}
+	}
+	return nil
 }
 
 // Attributes retrieves all the records using an executor.

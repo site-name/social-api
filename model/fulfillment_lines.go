@@ -79,15 +79,36 @@ var FulfillmentLineWhere = struct {
 
 // FulfillmentLineRels is where relationship names are stored.
 var FulfillmentLineRels = struct {
-}{}
+	OrderLine string
+	Stock     string
+}{
+	OrderLine: "OrderLine",
+	Stock:     "Stock",
+}
 
 // fulfillmentLineR is where relationships are stored.
 type fulfillmentLineR struct {
+	OrderLine *OrderLine `boil:"OrderLine" json:"OrderLine" toml:"OrderLine" yaml:"OrderLine"`
+	Stock     *Stock     `boil:"Stock" json:"Stock" toml:"Stock" yaml:"Stock"`
 }
 
 // NewStruct creates a new relationship struct
 func (*fulfillmentLineR) NewStruct() *fulfillmentLineR {
 	return &fulfillmentLineR{}
+}
+
+func (r *fulfillmentLineR) GetOrderLine() *OrderLine {
+	if r == nil {
+		return nil
+	}
+	return r.OrderLine
+}
+
+func (r *fulfillmentLineR) GetStock() *Stock {
+	if r == nil {
+		return nil
+	}
+	return r.Stock
 }
 
 // fulfillmentLineL is where Load methods for each relationship are stored.
@@ -190,6 +211,381 @@ func (q fulfillmentLineQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// OrderLine pointed to by the foreign key.
+func (o *FulfillmentLine) OrderLine(mods ...qm.QueryMod) orderLineQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.OrderLineID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return OrderLines(queryMods...)
+}
+
+// Stock pointed to by the foreign key.
+func (o *FulfillmentLine) Stock(mods ...qm.QueryMod) stockQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.StockID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Stocks(queryMods...)
+}
+
+// LoadOrderLine allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfillmentLine interface{}, mods queries.Applicator) error {
+	var slice []*FulfillmentLine
+	var object *FulfillmentLine
+
+	if singular {
+		var ok bool
+		object, ok = maybeFulfillmentLine.(*FulfillmentLine)
+		if !ok {
+			object = new(FulfillmentLine)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeFulfillmentLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFulfillmentLine))
+			}
+		}
+	} else {
+		s, ok := maybeFulfillmentLine.(*[]*FulfillmentLine)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeFulfillmentLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFulfillmentLine))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &fulfillmentLineR{}
+		}
+		args[object.OrderLineID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &fulfillmentLineR{}
+			}
+
+			args[obj.OrderLineID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`order_lines`),
+		qm.WhereIn(`order_lines.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load OrderLine")
+	}
+
+	var resultSlice []*OrderLine
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice OrderLine")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for order_lines")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_lines")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.OrderLine = foreign
+		if foreign.R == nil {
+			foreign.R = &orderLineR{}
+		}
+		foreign.R.FulfillmentLines = append(foreign.R.FulfillmentLines, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.OrderLineID == foreign.ID {
+				local.R.OrderLine = foreign
+				if foreign.R == nil {
+					foreign.R = &orderLineR{}
+				}
+				foreign.R.FulfillmentLines = append(foreign.R.FulfillmentLines, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadStock allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (fulfillmentLineL) LoadStock(e boil.Executor, singular bool, maybeFulfillmentLine interface{}, mods queries.Applicator) error {
+	var slice []*FulfillmentLine
+	var object *FulfillmentLine
+
+	if singular {
+		var ok bool
+		object, ok = maybeFulfillmentLine.(*FulfillmentLine)
+		if !ok {
+			object = new(FulfillmentLine)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeFulfillmentLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFulfillmentLine))
+			}
+		}
+	} else {
+		s, ok := maybeFulfillmentLine.(*[]*FulfillmentLine)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeFulfillmentLine)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFulfillmentLine))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &fulfillmentLineR{}
+		}
+		if !queries.IsNil(object.StockID) {
+			args[object.StockID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &fulfillmentLineR{}
+			}
+
+			if !queries.IsNil(obj.StockID) {
+				args[obj.StockID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`stocks`),
+		qm.WhereIn(`stocks.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Stock")
+	}
+
+	var resultSlice []*Stock
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Stock")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for stocks")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for stocks")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Stock = foreign
+		if foreign.R == nil {
+			foreign.R = &stockR{}
+		}
+		foreign.R.FulfillmentLines = append(foreign.R.FulfillmentLines, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.StockID, foreign.ID) {
+				local.R.Stock = foreign
+				if foreign.R == nil {
+					foreign.R = &stockR{}
+				}
+				foreign.R.FulfillmentLines = append(foreign.R.FulfillmentLines, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetOrderLine of the fulfillmentLine to the related item.
+// Sets o.R.OrderLine to related.
+// Adds o to related.R.FulfillmentLines.
+func (o *FulfillmentLine) SetOrderLine(exec boil.Executor, insert bool, related *OrderLine) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"fulfillment_lines\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
+		strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.OrderLineID = related.ID
+	if o.R == nil {
+		o.R = &fulfillmentLineR{
+			OrderLine: related,
+		}
+	} else {
+		o.R.OrderLine = related
+	}
+
+	if related.R == nil {
+		related.R = &orderLineR{
+			FulfillmentLines: FulfillmentLineSlice{o},
+		}
+	} else {
+		related.R.FulfillmentLines = append(related.R.FulfillmentLines, o)
+	}
+
+	return nil
+}
+
+// SetStock of the fulfillmentLine to the related item.
+// Sets o.R.Stock to related.
+// Adds o to related.R.FulfillmentLines.
+func (o *FulfillmentLine) SetStock(exec boil.Executor, insert bool, related *Stock) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"fulfillment_lines\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
+		strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.StockID, related.ID)
+	if o.R == nil {
+		o.R = &fulfillmentLineR{
+			Stock: related,
+		}
+	} else {
+		o.R.Stock = related
+	}
+
+	if related.R == nil {
+		related.R = &stockR{
+			FulfillmentLines: FulfillmentLineSlice{o},
+		}
+	} else {
+		related.R.FulfillmentLines = append(related.R.FulfillmentLines, o)
+	}
+
+	return nil
+}
+
+// RemoveStock relationship.
+// Sets o.R.Stock to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *FulfillmentLine) RemoveStock(exec boil.Executor, related *Stock) error {
+	var err error
+
+	queries.SetScanner(&o.StockID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("stock_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Stock = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.FulfillmentLines {
+		if queries.Equal(o.StockID, ri.StockID) {
+			continue
+		}
+
+		ln := len(related.R.FulfillmentLines)
+		if ln > 1 && i < ln-1 {
+			related.R.FulfillmentLines[i] = related.R.FulfillmentLines[ln-1]
+		}
+		related.R.FulfillmentLines = related.R.FulfillmentLines[:ln-1]
+		break
+	}
+	return nil
 }
 
 // FulfillmentLines retrieves all the records using an executor.

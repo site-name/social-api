@@ -86,15 +86,36 @@ var CustomerNoteWhere = struct {
 
 // CustomerNoteRels is where relationship names are stored.
 var CustomerNoteRels = struct {
-}{}
+	Customer string
+	User     string
+}{
+	Customer: "Customer",
+	User:     "User",
+}
 
 // customerNoteR is where relationships are stored.
 type customerNoteR struct {
+	Customer *User `boil:"Customer" json:"Customer" toml:"Customer" yaml:"Customer"`
+	User     *User `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
 func (*customerNoteR) NewStruct() *customerNoteR {
 	return &customerNoteR{}
+}
+
+func (r *customerNoteR) GetCustomer() *User {
+	if r == nil {
+		return nil
+	}
+	return r.Customer
+}
+
+func (r *customerNoteR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
 }
 
 // customerNoteL is where Load methods for each relationship are stored.
@@ -197,6 +218,381 @@ func (q customerNoteQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Customer pointed to by the foreign key.
+func (o *CustomerNote) Customer(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CustomerID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// User pointed to by the foreign key.
+func (o *CustomerNote) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// LoadCustomer allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+	var slice []*CustomerNote
+	var object *CustomerNote
+
+	if singular {
+		var ok bool
+		object, ok = maybeCustomerNote.(*CustomerNote)
+		if !ok {
+			object = new(CustomerNote)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCustomerNote))
+			}
+		}
+	} else {
+		s, ok := maybeCustomerNote.(*[]*CustomerNote)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCustomerNote))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &customerNoteR{}
+		}
+		args[object.CustomerID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &customerNoteR{}
+			}
+
+			args[obj.CustomerID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Customer = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.CustomerCustomerNotes = append(foreign.R.CustomerCustomerNotes, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CustomerID == foreign.ID {
+				local.R.Customer = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.CustomerCustomerNotes = append(foreign.R.CustomerCustomerNotes, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (customerNoteL) LoadUser(e boil.Executor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+	var slice []*CustomerNote
+	var object *CustomerNote
+
+	if singular {
+		var ok bool
+		object, ok = maybeCustomerNote.(*CustomerNote)
+		if !ok {
+			object = new(CustomerNote)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCustomerNote))
+			}
+		}
+	} else {
+		s, ok := maybeCustomerNote.(*[]*CustomerNote)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCustomerNote))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &customerNoteR{}
+		}
+		if !queries.IsNil(object.UserID) {
+			args[object.UserID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &customerNoteR{}
+			}
+
+			if !queries.IsNil(obj.UserID) {
+				args[obj.UserID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.CustomerNotes = append(foreign.R.CustomerNotes, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.CustomerNotes = append(foreign.R.CustomerNotes, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCustomer of the customerNote to the related item.
+// Sets o.R.Customer to related.
+// Adds o to related.R.CustomerCustomerNotes.
+func (o *CustomerNote) SetCustomer(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"customer_notes\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"customer_id"}),
+		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CustomerID = related.ID
+	if o.R == nil {
+		o.R = &customerNoteR{
+			Customer: related,
+		}
+	} else {
+		o.R.Customer = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			CustomerCustomerNotes: CustomerNoteSlice{o},
+		}
+	} else {
+		related.R.CustomerCustomerNotes = append(related.R.CustomerCustomerNotes, o)
+	}
+
+	return nil
+}
+
+// SetUser of the customerNote to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.CustomerNotes.
+func (o *CustomerNote) SetUser(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"customer_notes\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.UserID, related.ID)
+	if o.R == nil {
+		o.R = &customerNoteR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			CustomerNotes: CustomerNoteSlice{o},
+		}
+	} else {
+		related.R.CustomerNotes = append(related.R.CustomerNotes, o)
+	}
+
+	return nil
+}
+
+// RemoveUser relationship.
+// Sets o.R.User to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *CustomerNote) RemoveUser(exec boil.Executor, related *User) error {
+	var err error
+
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(exec, boil.Whitelist("user_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.User = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.CustomerNotes {
+		if queries.Equal(o.UserID, ri.UserID) {
+			continue
+		}
+
+		ln := len(related.R.CustomerNotes)
+		if ln > 1 && i < ln-1 {
+			related.R.CustomerNotes[i] = related.R.CustomerNotes[ln-1]
+		}
+		related.R.CustomerNotes = related.R.CustomerNotes[:ln-1]
+		break
+	}
+	return nil
 }
 
 // CustomerNotes retrieves all the records using an executor.

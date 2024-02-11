@@ -64,15 +64,36 @@ var VoucherCollectionWhere = struct {
 
 // VoucherCollectionRels is where relationship names are stored.
 var VoucherCollectionRels = struct {
-}{}
+	Collection string
+	Voucher    string
+}{
+	Collection: "Collection",
+	Voucher:    "Voucher",
+}
 
 // voucherCollectionR is where relationships are stored.
 type voucherCollectionR struct {
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
+	Voucher    *Voucher    `boil:"Voucher" json:"Voucher" toml:"Voucher" yaml:"Voucher"`
 }
 
 // NewStruct creates a new relationship struct
 func (*voucherCollectionR) NewStruct() *voucherCollectionR {
 	return &voucherCollectionR{}
+}
+
+func (r *voucherCollectionR) GetCollection() *Collection {
+	if r == nil {
+		return nil
+	}
+	return r.Collection
+}
+
+func (r *voucherCollectionR) GetVoucher() *Voucher {
+	if r == nil {
+		return nil
+	}
+	return r.Voucher
 }
 
 // voucherCollectionL is where Load methods for each relationship are stored.
@@ -175,6 +196,344 @@ func (q voucherCollectionQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Collection pointed to by the foreign key.
+func (o *VoucherCollection) Collection(mods ...qm.QueryMod) collectionQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CollectionID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Collections(queryMods...)
+}
+
+// Voucher pointed to by the foreign key.
+func (o *VoucherCollection) Voucher(mods ...qm.QueryMod) voucherQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.VoucherID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Vouchers(queryMods...)
+}
+
+// LoadCollection allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (voucherCollectionL) LoadCollection(e boil.Executor, singular bool, maybeVoucherCollection interface{}, mods queries.Applicator) error {
+	var slice []*VoucherCollection
+	var object *VoucherCollection
+
+	if singular {
+		var ok bool
+		object, ok = maybeVoucherCollection.(*VoucherCollection)
+		if !ok {
+			object = new(VoucherCollection)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeVoucherCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeVoucherCollection))
+			}
+		}
+	} else {
+		s, ok := maybeVoucherCollection.(*[]*VoucherCollection)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeVoucherCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeVoucherCollection))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &voucherCollectionR{}
+		}
+		args[object.CollectionID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &voucherCollectionR{}
+			}
+
+			args[obj.CollectionID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`collections`),
+		qm.WhereIn(`collections.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Collection")
+	}
+
+	var resultSlice []*Collection
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Collection")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for collections")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Collection = foreign
+		if foreign.R == nil {
+			foreign.R = &collectionR{}
+		}
+		foreign.R.VoucherCollections = append(foreign.R.VoucherCollections, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CollectionID == foreign.ID {
+				local.R.Collection = foreign
+				if foreign.R == nil {
+					foreign.R = &collectionR{}
+				}
+				foreign.R.VoucherCollections = append(foreign.R.VoucherCollections, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVoucher allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (voucherCollectionL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherCollection interface{}, mods queries.Applicator) error {
+	var slice []*VoucherCollection
+	var object *VoucherCollection
+
+	if singular {
+		var ok bool
+		object, ok = maybeVoucherCollection.(*VoucherCollection)
+		if !ok {
+			object = new(VoucherCollection)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeVoucherCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeVoucherCollection))
+			}
+		}
+	} else {
+		s, ok := maybeVoucherCollection.(*[]*VoucherCollection)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeVoucherCollection)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeVoucherCollection))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &voucherCollectionR{}
+		}
+		args[object.VoucherID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &voucherCollectionR{}
+			}
+
+			args[obj.VoucherID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`vouchers`),
+		qm.WhereIn(`vouchers.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Voucher")
+	}
+
+	var resultSlice []*Voucher
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Voucher")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for vouchers")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Voucher = foreign
+		if foreign.R == nil {
+			foreign.R = &voucherR{}
+		}
+		foreign.R.VoucherCollections = append(foreign.R.VoucherCollections, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.VoucherID == foreign.ID {
+				local.R.Voucher = foreign
+				if foreign.R == nil {
+					foreign.R = &voucherR{}
+				}
+				foreign.R.VoucherCollections = append(foreign.R.VoucherCollections, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetCollection of the voucherCollection to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.VoucherCollections.
+func (o *VoucherCollection) SetCollection(exec boil.Executor, insert bool, related *Collection) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"voucher_collections\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
+		strmangle.WhereClause("\"", "\"", 2, voucherCollectionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CollectionID = related.ID
+	if o.R == nil {
+		o.R = &voucherCollectionR{
+			Collection: related,
+		}
+	} else {
+		o.R.Collection = related
+	}
+
+	if related.R == nil {
+		related.R = &collectionR{
+			VoucherCollections: VoucherCollectionSlice{o},
+		}
+	} else {
+		related.R.VoucherCollections = append(related.R.VoucherCollections, o)
+	}
+
+	return nil
+}
+
+// SetVoucher of the voucherCollection to the related item.
+// Sets o.R.Voucher to related.
+// Adds o to related.R.VoucherCollections.
+func (o *VoucherCollection) SetVoucher(exec boil.Executor, insert bool, related *Voucher) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"voucher_collections\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
+		strmangle.WhereClause("\"", "\"", 2, voucherCollectionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.VoucherID = related.ID
+	if o.R == nil {
+		o.R = &voucherCollectionR{
+			Voucher: related,
+		}
+	} else {
+		o.R.Voucher = related
+	}
+
+	if related.R == nil {
+		related.R = &voucherR{
+			VoucherCollections: VoucherCollectionSlice{o},
+		}
+	} else {
+		related.R.VoucherCollections = append(related.R.VoucherCollections, o)
+	}
+
+	return nil
 }
 
 // VoucherCollections retrieves all the records using an executor.

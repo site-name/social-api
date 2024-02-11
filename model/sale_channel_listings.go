@@ -86,15 +86,36 @@ var SaleChannelListingWhere = struct {
 
 // SaleChannelListingRels is where relationship names are stored.
 var SaleChannelListingRels = struct {
-}{}
+	Channel string
+	Sale    string
+}{
+	Channel: "Channel",
+	Sale:    "Sale",
+}
 
 // saleChannelListingR is where relationships are stored.
 type saleChannelListingR struct {
+	Channel *Channel `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Sale    *Sale    `boil:"Sale" json:"Sale" toml:"Sale" yaml:"Sale"`
 }
 
 // NewStruct creates a new relationship struct
 func (*saleChannelListingR) NewStruct() *saleChannelListingR {
 	return &saleChannelListingR{}
+}
+
+func (r *saleChannelListingR) GetChannel() *Channel {
+	if r == nil {
+		return nil
+	}
+	return r.Channel
+}
+
+func (r *saleChannelListingR) GetSale() *Sale {
+	if r == nil {
+		return nil
+	}
+	return r.Sale
 }
 
 // saleChannelListingL is where Load methods for each relationship are stored.
@@ -197,6 +218,344 @@ func (q saleChannelListingQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Channel pointed to by the foreign key.
+func (o *SaleChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ChannelID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Channels(queryMods...)
+}
+
+// Sale pointed to by the foreign key.
+func (o *SaleChannelListing) Sale(mods ...qm.QueryMod) saleQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.SaleID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Sales(queryMods...)
+}
+
+// LoadChannel allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (saleChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*SaleChannelListing
+	var object *SaleChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeSaleChannelListing.(*SaleChannelListing)
+		if !ok {
+			object = new(SaleChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSaleChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSaleChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeSaleChannelListing.(*[]*SaleChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSaleChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSaleChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &saleChannelListingR{}
+		}
+		args[object.ChannelID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &saleChannelListingR{}
+			}
+
+			args[obj.ChannelID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`channels`),
+		qm.WhereIn(`channels.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Channel")
+	}
+
+	var resultSlice []*Channel
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Channel")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for channels")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Channel = foreign
+		if foreign.R == nil {
+			foreign.R = &channelR{}
+		}
+		foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
+				if foreign.R == nil {
+					foreign.R = &channelR{}
+				}
+				foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadSale allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (saleChannelListingL) LoadSale(e boil.Executor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*SaleChannelListing
+	var object *SaleChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeSaleChannelListing.(*SaleChannelListing)
+		if !ok {
+			object = new(SaleChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSaleChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSaleChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeSaleChannelListing.(*[]*SaleChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSaleChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSaleChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &saleChannelListingR{}
+		}
+		args[object.SaleID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &saleChannelListingR{}
+			}
+
+			args[obj.SaleID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`sales`),
+		qm.WhereIn(`sales.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Sale")
+	}
+
+	var resultSlice []*Sale
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Sale")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for sales")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sales")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Sale = foreign
+		if foreign.R == nil {
+			foreign.R = &saleR{}
+		}
+		foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.SaleID == foreign.ID {
+				local.R.Sale = foreign
+				if foreign.R == nil {
+					foreign.R = &saleR{}
+				}
+				foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetChannel of the saleChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.SaleChannelListings.
+func (o *SaleChannelListing) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sale_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+		strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ChannelID = related.ID
+	if o.R == nil {
+		o.R = &saleChannelListingR{
+			Channel: related,
+		}
+	} else {
+		o.R.Channel = related
+	}
+
+	if related.R == nil {
+		related.R = &channelR{
+			SaleChannelListings: SaleChannelListingSlice{o},
+		}
+	} else {
+		related.R.SaleChannelListings = append(related.R.SaleChannelListings, o)
+	}
+
+	return nil
+}
+
+// SetSale of the saleChannelListing to the related item.
+// Sets o.R.Sale to related.
+// Adds o to related.R.SaleChannelListings.
+func (o *SaleChannelListing) SetSale(exec boil.Executor, insert bool, related *Sale) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sale_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
+		strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.SaleID = related.ID
+	if o.R == nil {
+		o.R = &saleChannelListingR{
+			Sale: related,
+		}
+	} else {
+		o.R.Sale = related
+	}
+
+	if related.R == nil {
+		related.R = &saleR{
+			SaleChannelListings: SaleChannelListingSlice{o},
+		}
+	} else {
+		related.R.SaleChannelListings = append(related.R.SaleChannelListings, o)
+	}
+
+	return nil
 }
 
 // SaleChannelListings retrieves all the records using an executor.

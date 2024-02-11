@@ -114,15 +114,36 @@ var ProductMediumWhere = struct {
 
 // ProductMediumRels is where relationship names are stored.
 var ProductMediumRels = struct {
-}{}
+	Product            string
+	MediumVariantMedia string
+}{
+	Product:            "Product",
+	MediumVariantMedia: "MediumVariantMedia",
+}
 
 // productMediumR is where relationships are stored.
 type productMediumR struct {
+	Product            *Product           `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	MediumVariantMedia VariantMediumSlice `boil:"MediumVariantMedia" json:"MediumVariantMedia" toml:"MediumVariantMedia" yaml:"MediumVariantMedia"`
 }
 
 // NewStruct creates a new relationship struct
 func (*productMediumR) NewStruct() *productMediumR {
 	return &productMediumR{}
+}
+
+func (r *productMediumR) GetProduct() *Product {
+	if r == nil {
+		return nil
+	}
+	return r.Product
+}
+
+func (r *productMediumR) GetMediumVariantMedia() VariantMediumSlice {
+	if r == nil {
+		return nil
+	}
+	return r.MediumVariantMedia
 }
 
 // productMediumL is where Load methods for each relationship are stored.
@@ -225,6 +246,347 @@ func (q productMediumQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Product pointed to by the foreign key.
+func (o *ProductMedium) Product(mods ...qm.QueryMod) productQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ProductID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Products(queryMods...)
+}
+
+// MediumVariantMedia retrieves all the variant_medium's VariantMedia with an executor via media_id column.
+func (o *ProductMedium) MediumVariantMedia(mods ...qm.QueryMod) variantMediumQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"variant_media\".\"media_id\"=?", o.ID),
+	)
+
+	return VariantMedia(queryMods...)
+}
+
+// LoadProduct allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+	var slice []*ProductMedium
+	var object *ProductMedium
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductMedium.(*ProductMedium)
+		if !ok {
+			object = new(ProductMedium)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductMedium)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductMedium))
+			}
+		}
+	} else {
+		s, ok := maybeProductMedium.(*[]*ProductMedium)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductMedium)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductMedium))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productMediumR{}
+		}
+		args[object.ProductID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productMediumR{}
+			}
+
+			args[obj.ProductID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`products`),
+		qm.WhereIn(`products.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Product")
+	}
+
+	var resultSlice []*Product
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Product")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Product = foreign
+		if foreign.R == nil {
+			foreign.R = &productR{}
+		}
+		foreign.R.ProductMedia = append(foreign.R.ProductMedia, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProductID == foreign.ID {
+				local.R.Product = foreign
+				if foreign.R == nil {
+					foreign.R = &productR{}
+				}
+				foreign.R.ProductMedia = append(foreign.R.ProductMedia, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadMediumVariantMedia allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+	var slice []*ProductMedium
+	var object *ProductMedium
+
+	if singular {
+		var ok bool
+		object, ok = maybeProductMedium.(*ProductMedium)
+		if !ok {
+			object = new(ProductMedium)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProductMedium)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProductMedium))
+			}
+		}
+	} else {
+		s, ok := maybeProductMedium.(*[]*ProductMedium)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProductMedium)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProductMedium))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productMediumR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productMediumR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`variant_media`),
+		qm.WhereIn(`variant_media.media_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load variant_media")
+	}
+
+	var resultSlice []*VariantMedium
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice variant_media")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on variant_media")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for variant_media")
+	}
+
+	if singular {
+		object.R.MediumVariantMedia = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &variantMediumR{}
+			}
+			foreign.R.Medium = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.MediaID {
+				local.R.MediumVariantMedia = append(local.R.MediumVariantMedia, foreign)
+				if foreign.R == nil {
+					foreign.R = &variantMediumR{}
+				}
+				foreign.R.Medium = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetProduct of the productMedium to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductMedia.
+func (o *ProductMedium) SetProduct(exec boil.Executor, insert bool, related *Product) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"product_media\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productMediumPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProductID = related.ID
+	if o.R == nil {
+		o.R = &productMediumR{
+			Product: related,
+		}
+	} else {
+		o.R.Product = related
+	}
+
+	if related.R == nil {
+		related.R = &productR{
+			ProductMedia: ProductMediumSlice{o},
+		}
+	} else {
+		related.R.ProductMedia = append(related.R.ProductMedia, o)
+	}
+
+	return nil
+}
+
+// AddMediumVariantMedia adds the given related objects to the existing relationships
+// of the product_medium, optionally inserting them as new records.
+// Appends related to o.R.MediumVariantMedia.
+// Sets related.R.Medium appropriately.
+func (o *ProductMedium) AddMediumVariantMedia(exec boil.Executor, insert bool, related ...*VariantMedium) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.MediaID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"variant_media\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"media_id"}),
+				strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.MediaID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &productMediumR{
+			MediumVariantMedia: related,
+		}
+	} else {
+		o.R.MediumVariantMedia = append(o.R.MediumVariantMedia, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &variantMediumR{
+				Medium: o,
+			}
+		} else {
+			rel.R.Medium = o
+		}
+	}
+	return nil
 }
 
 // ProductMedia retrieves all the records using an executor.

@@ -64,15 +64,36 @@ var ShippingZoneChannelWhere = struct {
 
 // ShippingZoneChannelRels is where relationship names are stored.
 var ShippingZoneChannelRels = struct {
-}{}
+	Channel      string
+	ShippingZone string
+}{
+	Channel:      "Channel",
+	ShippingZone: "ShippingZone",
+}
 
 // shippingZoneChannelR is where relationships are stored.
 type shippingZoneChannelR struct {
+	Channel      *Channel      `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	ShippingZone *ShippingZone `boil:"ShippingZone" json:"ShippingZone" toml:"ShippingZone" yaml:"ShippingZone"`
 }
 
 // NewStruct creates a new relationship struct
 func (*shippingZoneChannelR) NewStruct() *shippingZoneChannelR {
 	return &shippingZoneChannelR{}
+}
+
+func (r *shippingZoneChannelR) GetChannel() *Channel {
+	if r == nil {
+		return nil
+	}
+	return r.Channel
+}
+
+func (r *shippingZoneChannelR) GetShippingZone() *ShippingZone {
+	if r == nil {
+		return nil
+	}
+	return r.ShippingZone
 }
 
 // shippingZoneChannelL is where Load methods for each relationship are stored.
@@ -175,6 +196,344 @@ func (q shippingZoneChannelQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Channel pointed to by the foreign key.
+func (o *ShippingZoneChannel) Channel(mods ...qm.QueryMod) channelQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ChannelID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Channels(queryMods...)
+}
+
+// ShippingZone pointed to by the foreign key.
+func (o *ShippingZoneChannel) ShippingZone(mods ...qm.QueryMod) shippingZoneQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ShippingZoneID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ShippingZones(queryMods...)
+}
+
+// LoadChannel allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shippingZoneChannelL) LoadChannel(e boil.Executor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
+	var slice []*ShippingZoneChannel
+	var object *ShippingZoneChannel
+
+	if singular {
+		var ok bool
+		object, ok = maybeShippingZoneChannel.(*ShippingZoneChannel)
+		if !ok {
+			object = new(ShippingZoneChannel)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShippingZoneChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShippingZoneChannel))
+			}
+		}
+	} else {
+		s, ok := maybeShippingZoneChannel.(*[]*ShippingZoneChannel)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShippingZoneChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShippingZoneChannel))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shippingZoneChannelR{}
+		}
+		args[object.ChannelID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shippingZoneChannelR{}
+			}
+
+			args[obj.ChannelID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`channels`),
+		qm.WhereIn(`channels.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Channel")
+	}
+
+	var resultSlice []*Channel
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Channel")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for channels")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Channel = foreign
+		if foreign.R == nil {
+			foreign.R = &channelR{}
+		}
+		foreign.R.ShippingZoneChannels = append(foreign.R.ShippingZoneChannels, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
+				if foreign.R == nil {
+					foreign.R = &channelR{}
+				}
+				foreign.R.ShippingZoneChannels = append(foreign.R.ShippingZoneChannels, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadShippingZone allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shippingZoneChannelL) LoadShippingZone(e boil.Executor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
+	var slice []*ShippingZoneChannel
+	var object *ShippingZoneChannel
+
+	if singular {
+		var ok bool
+		object, ok = maybeShippingZoneChannel.(*ShippingZoneChannel)
+		if !ok {
+			object = new(ShippingZoneChannel)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShippingZoneChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShippingZoneChannel))
+			}
+		}
+	} else {
+		s, ok := maybeShippingZoneChannel.(*[]*ShippingZoneChannel)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShippingZoneChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShippingZoneChannel))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shippingZoneChannelR{}
+		}
+		args[object.ShippingZoneID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shippingZoneChannelR{}
+			}
+
+			args[obj.ShippingZoneID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shipping_zones`),
+		qm.WhereIn(`shipping_zones.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ShippingZone")
+	}
+
+	var resultSlice []*ShippingZone
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ShippingZone")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for shipping_zones")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_zones")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.ShippingZone = foreign
+		if foreign.R == nil {
+			foreign.R = &shippingZoneR{}
+		}
+		foreign.R.ShippingZoneChannels = append(foreign.R.ShippingZoneChannels, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ShippingZoneID == foreign.ID {
+				local.R.ShippingZone = foreign
+				if foreign.R == nil {
+					foreign.R = &shippingZoneR{}
+				}
+				foreign.R.ShippingZoneChannels = append(foreign.R.ShippingZoneChannels, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetChannel of the shippingZoneChannel to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.ShippingZoneChannels.
+func (o *ShippingZoneChannel) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shipping_zone_channels\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shippingZoneChannelPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ChannelID = related.ID
+	if o.R == nil {
+		o.R = &shippingZoneChannelR{
+			Channel: related,
+		}
+	} else {
+		o.R.Channel = related
+	}
+
+	if related.R == nil {
+		related.R = &channelR{
+			ShippingZoneChannels: ShippingZoneChannelSlice{o},
+		}
+	} else {
+		related.R.ShippingZoneChannels = append(related.R.ShippingZoneChannels, o)
+	}
+
+	return nil
+}
+
+// SetShippingZone of the shippingZoneChannel to the related item.
+// Sets o.R.ShippingZone to related.
+// Adds o to related.R.ShippingZoneChannels.
+func (o *ShippingZoneChannel) SetShippingZone(exec boil.Executor, insert bool, related *ShippingZone) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shipping_zone_channels\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shippingZoneChannelPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ShippingZoneID = related.ID
+	if o.R == nil {
+		o.R = &shippingZoneChannelR{
+			ShippingZone: related,
+		}
+	} else {
+		o.R.ShippingZone = related
+	}
+
+	if related.R == nil {
+		related.R = &shippingZoneR{
+			ShippingZoneChannels: ShippingZoneChannelSlice{o},
+		}
+	} else {
+		related.R.ShippingZoneChannels = append(related.R.ShippingZoneChannels, o)
+	}
+
+	return nil
 }
 
 // ShippingZoneChannels retrieves all the records using an executor.

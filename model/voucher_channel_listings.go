@@ -93,15 +93,36 @@ var VoucherChannelListingWhere = struct {
 
 // VoucherChannelListingRels is where relationship names are stored.
 var VoucherChannelListingRels = struct {
-}{}
+	Channel string
+	Voucher string
+}{
+	Channel: "Channel",
+	Voucher: "Voucher",
+}
 
 // voucherChannelListingR is where relationships are stored.
 type voucherChannelListingR struct {
+	Channel *Channel `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Voucher *Voucher `boil:"Voucher" json:"Voucher" toml:"Voucher" yaml:"Voucher"`
 }
 
 // NewStruct creates a new relationship struct
 func (*voucherChannelListingR) NewStruct() *voucherChannelListingR {
 	return &voucherChannelListingR{}
+}
+
+func (r *voucherChannelListingR) GetChannel() *Channel {
+	if r == nil {
+		return nil
+	}
+	return r.Channel
+}
+
+func (r *voucherChannelListingR) GetVoucher() *Voucher {
+	if r == nil {
+		return nil
+	}
+	return r.Voucher
 }
 
 // voucherChannelListingL is where Load methods for each relationship are stored.
@@ -204,6 +225,344 @@ func (q voucherChannelListingQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Channel pointed to by the foreign key.
+func (o *VoucherChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ChannelID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Channels(queryMods...)
+}
+
+// Voucher pointed to by the foreign key.
+func (o *VoucherChannelListing) Voucher(mods ...qm.QueryMod) voucherQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.VoucherID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Vouchers(queryMods...)
+}
+
+// LoadChannel allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*VoucherChannelListing
+	var object *VoucherChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeVoucherChannelListing.(*VoucherChannelListing)
+		if !ok {
+			object = new(VoucherChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeVoucherChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeVoucherChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeVoucherChannelListing.(*[]*VoucherChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeVoucherChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeVoucherChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &voucherChannelListingR{}
+		}
+		args[object.ChannelID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &voucherChannelListingR{}
+			}
+
+			args[obj.ChannelID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`channels`),
+		qm.WhereIn(`channels.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Channel")
+	}
+
+	var resultSlice []*Channel
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Channel")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for channels")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Channel = foreign
+		if foreign.R == nil {
+			foreign.R = &channelR{}
+		}
+		foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
+				if foreign.R == nil {
+					foreign.R = &channelR{}
+				}
+				foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadVoucher allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (voucherChannelListingL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+	var slice []*VoucherChannelListing
+	var object *VoucherChannelListing
+
+	if singular {
+		var ok bool
+		object, ok = maybeVoucherChannelListing.(*VoucherChannelListing)
+		if !ok {
+			object = new(VoucherChannelListing)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeVoucherChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeVoucherChannelListing))
+			}
+		}
+	} else {
+		s, ok := maybeVoucherChannelListing.(*[]*VoucherChannelListing)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeVoucherChannelListing)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeVoucherChannelListing))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &voucherChannelListingR{}
+		}
+		args[object.VoucherID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &voucherChannelListingR{}
+			}
+
+			args[obj.VoucherID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`vouchers`),
+		qm.WhereIn(`vouchers.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Voucher")
+	}
+
+	var resultSlice []*Voucher
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Voucher")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for vouchers")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Voucher = foreign
+		if foreign.R == nil {
+			foreign.R = &voucherR{}
+		}
+		foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.VoucherID == foreign.ID {
+				local.R.Voucher = foreign
+				if foreign.R == nil {
+					foreign.R = &voucherR{}
+				}
+				foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetChannel of the voucherChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.VoucherChannelListings.
+func (o *VoucherChannelListing) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"voucher_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ChannelID = related.ID
+	if o.R == nil {
+		o.R = &voucherChannelListingR{
+			Channel: related,
+		}
+	} else {
+		o.R.Channel = related
+	}
+
+	if related.R == nil {
+		related.R = &channelR{
+			VoucherChannelListings: VoucherChannelListingSlice{o},
+		}
+	} else {
+		related.R.VoucherChannelListings = append(related.R.VoucherChannelListings, o)
+	}
+
+	return nil
+}
+
+// SetVoucher of the voucherChannelListing to the related item.
+// Sets o.R.Voucher to related.
+// Adds o to related.R.VoucherChannelListings.
+func (o *VoucherChannelListing) SetVoucher(exec boil.Executor, insert bool, related *Voucher) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"voucher_channel_listings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
+		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.VoucherID = related.ID
+	if o.R == nil {
+		o.R = &voucherChannelListingR{
+			Voucher: related,
+		}
+	} else {
+		o.R.Voucher = related
+	}
+
+	if related.R == nil {
+		related.R = &voucherR{
+			VoucherChannelListings: VoucherChannelListingSlice{o},
+		}
+	} else {
+		related.R.VoucherChannelListings = append(related.R.VoucherChannelListings, o)
+	}
+
+	return nil
 }
 
 // VoucherChannelListings retrieves all the records using an executor.

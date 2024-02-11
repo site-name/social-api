@@ -71,15 +71,26 @@ var MenuItemTranslationWhere = struct {
 
 // MenuItemTranslationRels is where relationship names are stored.
 var MenuItemTranslationRels = struct {
-}{}
+	MenuItem string
+}{
+	MenuItem: "MenuItem",
+}
 
 // menuItemTranslationR is where relationships are stored.
 type menuItemTranslationR struct {
+	MenuItem *MenuItem `boil:"MenuItem" json:"MenuItem" toml:"MenuItem" yaml:"MenuItem"`
 }
 
 // NewStruct creates a new relationship struct
 func (*menuItemTranslationR) NewStruct() *menuItemTranslationR {
 	return &menuItemTranslationR{}
+}
+
+func (r *menuItemTranslationR) GetMenuItem() *MenuItem {
+	if r == nil {
+		return nil
+	}
+	return r.MenuItem
 }
 
 // menuItemTranslationL is where Load methods for each relationship are stored.
@@ -182,6 +193,175 @@ func (q menuItemTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// MenuItem pointed to by the foreign key.
+func (o *MenuItemTranslation) MenuItem(mods ...qm.QueryMod) menuItemQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.MenuItemID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return MenuItems(queryMods...)
+}
+
+// LoadMenuItem allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (menuItemTranslationL) LoadMenuItem(e boil.Executor, singular bool, maybeMenuItemTranslation interface{}, mods queries.Applicator) error {
+	var slice []*MenuItemTranslation
+	var object *MenuItemTranslation
+
+	if singular {
+		var ok bool
+		object, ok = maybeMenuItemTranslation.(*MenuItemTranslation)
+		if !ok {
+			object = new(MenuItemTranslation)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeMenuItemTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeMenuItemTranslation))
+			}
+		}
+	} else {
+		s, ok := maybeMenuItemTranslation.(*[]*MenuItemTranslation)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeMenuItemTranslation)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeMenuItemTranslation))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &menuItemTranslationR{}
+		}
+		args[object.MenuItemID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &menuItemTranslationR{}
+			}
+
+			args[obj.MenuItemID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`menu_items`),
+		qm.WhereIn(`menu_items.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load MenuItem")
+	}
+
+	var resultSlice []*MenuItem
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice MenuItem")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for menu_items")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menu_items")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.MenuItem = foreign
+		if foreign.R == nil {
+			foreign.R = &menuItemR{}
+		}
+		foreign.R.MenuItemTranslations = append(foreign.R.MenuItemTranslations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.MenuItemID == foreign.ID {
+				local.R.MenuItem = foreign
+				if foreign.R == nil {
+					foreign.R = &menuItemR{}
+				}
+				foreign.R.MenuItemTranslations = append(foreign.R.MenuItemTranslations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetMenuItem of the menuItemTranslation to the related item.
+// Sets o.R.MenuItem to related.
+// Adds o to related.R.MenuItemTranslations.
+func (o *MenuItemTranslation) SetMenuItem(exec boil.Executor, insert bool, related *MenuItem) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"menu_item_translations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"menu_item_id"}),
+		strmangle.WhereClause("\"", "\"", 2, menuItemTranslationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.MenuItemID = related.ID
+	if o.R == nil {
+		o.R = &menuItemTranslationR{
+			MenuItem: related,
+		}
+	} else {
+		o.R.MenuItem = related
+	}
+
+	if related.R == nil {
+		related.R = &menuItemR{
+			MenuItemTranslations: MenuItemTranslationSlice{o},
+		}
+	} else {
+		related.R.MenuItemTranslations = append(related.R.MenuItemTranslations, o)
+	}
+
+	return nil
 }
 
 // MenuItemTranslations retrieves all the records using an executor.

@@ -1002,13 +1002,27 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model_helper.AppError {
+func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error {
 
-	return s.AddressStore.DeleteAddresses(tx, addressIDs)
+	tries := 0
+	for {
+		err := s.AddressStore.DeleteAddresses(tx, addressIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
-func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (s *RetryLayerAddressStore) FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) {
 
 	tries := 0
 	for {
@@ -1048,7 +1062,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address *model.Address) (*model.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address model.Address) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1068,11 +1082,11 @@ func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address *mode
 
 }
 
-func (s *RetryLayerAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
+func (s *RetryLayerAllocationStore) BulkDelete(tx boil.ContextTransactor, allocationIDs []string) error {
 
 	tries := 0
 	for {
-		err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
+		err := s.AllocationStore.BulkDelete(tx, allocationIDs)
 		if err == nil {
 			return nil
 		}
@@ -1088,11 +1102,11 @@ func (s *RetryLayerAllocationStore) BulkDelete(transaction *gorm.DB, allocationI
 
 }
 
-func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (s *RetryLayerAllocationStore) BulkUpsert(tx boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
+		result, err := s.AllocationStore.BulkUpsert(tx, allocations)
 		if err == nil {
 			return result, nil
 		}
@@ -1108,7 +1122,7 @@ func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorm.DB, allocations
 
 }
 
-func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
+func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock model.Stock) (int, error) {
 
 	tries := 0
 	for {
@@ -1128,7 +1142,7 @@ func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *model.
 
 }
 
-func (s *RetryLayerAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (s *RetryLayerAllocationStore) FilterByOption(option model.AllocationFilterOption) (model.AllocationSlice, error) {
 
 	tries := 0
 	for {
@@ -1168,31 +1182,11 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*model.Allocation,
 
 }
 
-func (s *RetryLayerAppStore) Save(app *model.App) (*model.App, error) {
+func (s *RetryLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.AppStore.Save(app)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {
-
-	tries := 0
-	for {
-		result, err := s.AppTokenStore.Save(appToken)
+		result, err := s.AssignedPageAttributeStore.FilterByOptions(mods...)
 		if err == nil {
 			return result, nil
 		}
@@ -1228,31 +1222,11 @@ func (s *RetryLayerAssignedPageAttributeStore) Get(id string) (*model.AssignedPa
 
 }
 
-func (s *RetryLayerAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
+func (s *RetryLayerAssignedPageAttributeStore) Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
 
 	tries := 0
 	for {
-		result, err := s.AssignedPageAttributeStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedPageAttributeStore.Save(assignedPageAttr)
+		result, err := s.AssignedPageAttributeStore.Upsert(assignedPageAttr)
 		if err == nil {
 			return result, nil
 		}
@@ -1273,26 +1247,6 @@ func (s *RetryLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID 
 	tries := 0
 	for {
 		result, err := s.AssignedPageAttributeValueStore.Get(assignedPageAttrValueID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedPageAttributeValueStore.Save(assignedPageAttrValue)
 		if err == nil {
 			return result, nil
 		}
@@ -1368,7 +1322,27 @@ func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeValueStore.Upsert(assignedPageAttrValue)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1408,7 +1382,7 @@ func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*model.Assigne
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1428,7 +1402,7 @@ func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *model.As
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1448,7 +1422,7 @@ func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1488,7 +1462,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1508,7 +1482,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1528,7 +1502,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID s
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1548,7 +1522,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
+func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error {
 
 	tries := 0
 	for {
@@ -1568,7 +1542,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1608,7 +1582,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*model.Assigne
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1628,7 +1602,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *model.As
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1648,7 +1622,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1688,7 +1662,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) Get(id string) (*model.As
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1708,7 +1682,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1728,7 +1702,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID s
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedVariantAttributeValueSlice, []*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1748,7 +1722,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentI
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
+func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error {
 
 	tries := 0
 	for {
@@ -1768,7 +1742,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+func (s *RetryLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -1808,7 +1782,7 @@ func (s *RetryLayerAttributeStore) Delete(ids ...string) (int64, error) {
 
 }
 
-func (s *RetryLayerAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
+func (s *RetryLayerAttributeStore) FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1828,7 +1802,7 @@ func (s *RetryLayerAttributeStore) FilterbyOption(option *model.AttributeFilterO
 
 }
 
-func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.AttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1848,7 +1822,7 @@ func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 
 }
 
-func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
+func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1868,7 +1842,7 @@ func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string
 
 }
 
-func (s *RetryLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
+func (s *RetryLayerAttributeStore) Upsert(attr model.Attribute) (*model.Attribute, error) {
 
 	tries := 0
 	for {
@@ -1908,7 +1882,7 @@ func (s *RetryLayerAttributePageStore) Get(pageID string) (*model.AttributePage,
 
 }
 
-func (s *RetryLayerAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -1928,7 +1902,7 @@ func (s *RetryLayerAttributePageStore) GetByOption(option *model.AttributePageFi
 
 }
 
-func (s *RetryLayerAttributePageStore) Save(page *model.AttributePage) (*model.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) Save(page model.AttributePage) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -1948,7 +1922,7 @@ func (s *RetryLayerAttributePageStore) Save(page *model.AttributePage) (*model.A
 
 }
 
-func (s *RetryLayerAttributeProductStore) FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -1988,7 +1962,7 @@ func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*model
 
 }
 
-func (s *RetryLayerAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -2008,7 +1982,7 @@ func (s *RetryLayerAttributeProductStore) GetByOption(option *model.AttributePro
 
 }
 
-func (s *RetryLayerAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -2028,11 +2002,11 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *model.Attribute
 
 }
 
-func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) BulkUpsert(tx boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
+		result, err := s.AttributeValueStore.BulkUpsert(tx, values)
 		if err == nil {
 			return result, nil
 		}
@@ -2048,7 +2022,7 @@ func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction *gorm.DB, values 
 
 }
 
-func (s *RetryLayerAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
+func (s *RetryLayerAttributeValueStore) Count(options model.AttributeValueFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -2068,7 +2042,7 @@ func (s *RetryLayerAttributeValueStore) Count(options *model.AttributeValueFilte
 
 }
 
-func (s *RetryLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
+func (s *RetryLayerAttributeValueStore) Delete(tx boil.ContextTransactor, ids ...string) (int64, error) {
 
 	tries := 0
 	for {
@@ -2088,7 +2062,7 @@ func (s *RetryLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int6
 
 }
 
-func (s *RetryLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -2128,7 +2102,7 @@ func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*model.Attribut
 
 }
 
-func (s *RetryLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) Upsert(av model.AttributeValue) (*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -2148,7 +2122,7 @@ func (s *RetryLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model
 
 }
 
-func (s *RetryLayerAttributeVariantStore) FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2188,7 +2162,7 @@ func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*model
 
 }
 
-func (s *RetryLayerAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2208,7 +2182,7 @@ func (s *RetryLayerAttributeVariantStore) GetByOption(option *model.AttributeVar
 
 }
 
-func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2228,7 +2202,7 @@ func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *model.Attribute
 
 }
 
-func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (model.Audits, error) {
+func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (model.AuditSlice, error) {
 
 	tries := 0
 	for {
@@ -2268,7 +2242,7 @@ func (s *RetryLayerAuditStore) PermanentDeleteByUser(userID string) error {
 
 }
 
-func (s *RetryLayerAuditStore) Save(audit *model.Audit) error {
+func (s *RetryLayerAuditStore) Save(audit model.Audit) error {
 
 	tries := 0
 	for {
@@ -2368,11 +2342,11 @@ func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 
 }
 
-func (s *RetryLayerChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
+func (s *RetryLayerChannelStore) DeleteChannels(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.ChannelStore.DeleteChannels(transaction, ids)
+		err := s.ChannelStore.DeleteChannels(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -2388,11 +2362,11 @@ func (s *RetryLayerChannelStore) DeleteChannels(transaction *gorm.DB, ids []stri
 
 }
 
-func (s *RetryLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
+func (s *RetryLayerChannelStore) Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.FilterByOption(option)
+		result, err := s.ChannelStore.Find(conds)
 		if err == nil {
 			return result, nil
 		}
@@ -2428,11 +2402,11 @@ func (s *RetryLayerChannelStore) Get(id string) (*model.Channel, error) {
 
 }
 
-func (s *RetryLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
+func (s *RetryLayerChannelStore) GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.Upsert(transaction, channel)
+		result, err := s.ChannelStore.GetByOptions(conds)
 		if err == nil {
 			return result, nil
 		}
@@ -2448,7 +2422,27 @@ func (s *RetryLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Cha
 
 }
 
-func (s *RetryLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
+func (s *RetryLayerChannelStore) Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.Upsert(tx, channel)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutStore) CountCheckouts(options model_helper.CheckoutFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -2468,11 +2462,11 @@ func (s *RetryLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOp
 
 }
 
-func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error {
+func (s *RetryLayerCheckoutStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
+		err := s.CheckoutStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -2488,11 +2482,11 @@ func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, 
 
 }
 
-func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
+func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout model.Checkout) (model_helper.CheckoutLineInfos, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+		result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(checkout)
 		if err == nil {
 			return result, nil
 		}
@@ -2508,27 +2502,27 @@ func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 
 }
 
-func (s *RetryLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) FilterByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.CheckoutStore.FilterByOption(option)
+		result, err := s.CheckoutStore.FilterByOption(option)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 
 }
 
-func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) GetByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2548,11 +2542,11 @@ func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 
 }
 
-func (s *RetryLayerCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutStore.Upsert(transaction, checkouts)
+		result, err := s.CheckoutStore.Upsert(tx, checkouts)
 		if err == nil {
 			return result, nil
 		}
@@ -2568,67 +2562,7 @@ func (s *RetryLayerCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*mode
 
 }
 
-func (s *RetryLayerCheckoutLineStore) BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
-
-	tries := 0
-	for {
-		result, err := s.CheckoutLineStore.BulkCreate(checkoutLines)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.CheckoutLine) error {
-
-	tries := 0
-	for {
-		err := s.CheckoutLineStore.BulkUpdate(checkoutLines)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
-		if err == nil {
-			return result, resultVar1, resultVar2, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
-		}
-	}
-
-}
-
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option model_helper.CheckoutLineFilterOptions) (model.CheckoutLineSlice, error) {
 
 	tries := 0
 	for {
@@ -2648,11 +2582,11 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *model.Checko
 
 }
 
-func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction *gorm.DB, checkoutLineIDs []string) error {
+func (s *RetryLayerCheckoutLineStore) DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error {
 
 	tries := 0
 	for {
-		err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
+		err := s.CheckoutLineStore.DeleteLines(tx, checkoutLineIDs)
 		if err == nil {
 			return nil
 		}
@@ -2708,11 +2642,11 @@ func (s *RetryLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineID
 
 }
 
-func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutLineStore.Upsert(checkoutLine)
+		result, err := s.CheckoutLineStore.Upsert(checkoutLines)
 		if err == nil {
 			return result, nil
 		}
@@ -2928,11 +2862,11 @@ func (s *RetryLayerCollectionStore) Upsert(collection *model.Collection) (*model
 
 }
 
-func (s *RetryLayerCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
+func (s *RetryLayerCollectionChannelListingStore) Delete(tx boil.ContextTransactor, options *model.CollectionChannelListingFilterOptions) error {
 
 	tries := 0
 	for {
-		err := s.CollectionChannelListingStore.Delete(transaction, options)
+		err := s.CollectionChannelListingStore.Delete(tx, options)
 		if err == nil {
 			return nil
 		}
@@ -2968,11 +2902,11 @@ func (s *RetryLayerCollectionChannelListingStore) FilterByOptions(options *model
 
 }
 
-func (s *RetryLayerCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *RetryLayerCollectionChannelListingStore) Upsert(tx boil.ContextTransactor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.CollectionChannelListingStore.Upsert(transaction, relations...)
+		result, err := s.CollectionChannelListingStore.Upsert(tx, relations...)
 		if err == nil {
 			return result, nil
 		}
@@ -2988,11 +2922,11 @@ func (s *RetryLayerCollectionChannelListingStore) Upsert(transaction *gorm.DB, r
 
 }
 
-func (s *RetryLayerCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+func (s *RetryLayerCollectionProductStore) BulkSave(tx boil.ContextTransactor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 
 	tries := 0
 	for {
-		result, err := s.CollectionProductStore.BulkSave(transaction, relations)
+		result, err := s.CollectionProductStore.BulkSave(tx, relations)
 		if err == nil {
 			return result, nil
 		}
@@ -3008,11 +2942,11 @@ func (s *RetryLayerCollectionProductStore) BulkSave(transaction *gorm.DB, relati
 
 }
 
-func (s *RetryLayerCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
+func (s *RetryLayerCollectionProductStore) Delete(tx boil.ContextTransactor, options *model.CollectionProductFilterOptions) error {
 
 	tries := 0
 	for {
-		err := s.CollectionProductStore.Delete(transaction, options)
+		err := s.CollectionProductStore.Delete(tx, options)
 		if err == nil {
 			return nil
 		}
@@ -3048,7 +2982,7 @@ func (s *RetryLayerCollectionProductStore) FilterByOptions(options *model.Collec
 
 }
 
-func (s *RetryLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model.ComplianceExportCursor, limit int) ([]*model.CompliancePost, model.ComplianceExportCursor, error) {
+func (s *RetryLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 
 	tries := 0
 	for {
@@ -3088,7 +3022,7 @@ func (s *RetryLayerComplianceStore) Get(id string) (*model.Compliance, error) {
 
 }
 
-func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (model.Compliances, error) {
+func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (model.ComplianceSlice, error) {
 
 	tries := 0
 	for {
@@ -3108,7 +3042,7 @@ func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (model.Complia
 
 }
 
-func (s *RetryLayerComplianceStore) MessageExport(cursor model.MessageExportCursor, limit int) ([]*model.MessageExport, model.MessageExportCursor, error) {
+func (s *RetryLayerComplianceStore) MessageExport(cursor model_helper.MessageExportCursor, limit int) ([]*model_helper.MessageExport, model_helper.MessageExportCursor, error) {
 
 	tries := 0
 	for {
@@ -3128,7 +3062,7 @@ func (s *RetryLayerComplianceStore) MessageExport(cursor model.MessageExportCurs
 
 }
 
-func (s *RetryLayerComplianceStore) Save(model *model.Compliance) (*model.Compliance, error) {
+func (s *RetryLayerComplianceStore) Save(model model.Compliance) (*model.Compliance, error) {
 
 	tries := 0
 	for {
@@ -3148,7 +3082,7 @@ func (s *RetryLayerComplianceStore) Save(model *model.Compliance) (*model.Compli
 
 }
 
-func (s *RetryLayerComplianceStore) Update(model *model.Compliance) (*model.Compliance, error) {
+func (s *RetryLayerComplianceStore) Update(model model.Compliance) (*model.Compliance, error) {
 
 	tries := 0
 	for {
@@ -3168,7 +3102,7 @@ func (s *RetryLayerComplianceStore) Update(model *model.Compliance) (*model.Comp
 
 }
 
-func (s *RetryLayerCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
+func (s *RetryLayerCsvExportEventStore) FilterByOption(options model_helper.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 
 	tries := 0
 	for {
@@ -3188,7 +3122,7 @@ func (s *RetryLayerCsvExportEventStore) FilterByOption(options *model.ExportEven
 
 }
 
-func (s *RetryLayerCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
+func (s *RetryLayerCsvExportEventStore) Save(event model.ExportEvent) (*model.ExportEvent, error) {
 
 	tries := 0
 	for {
@@ -3228,7 +3162,7 @@ func (s *RetryLayerCsvExportFileStore) Get(id string) (*model.ExportFile, error)
 
 }
 
-func (s *RetryLayerCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
+func (s *RetryLayerCsvExportFileStore) Save(file model.ExportFile) (*model.ExportFile, error) {
 
 	tries := 0
 	for {
@@ -3268,11 +3202,11 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.FilterByOptions(options)
+		result, err := s.CustomerEventStore.FilterByOptions(queryMods...)
 		if err == nil {
 			return result, nil
 		}
@@ -3308,11 +3242,11 @@ func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 
 }
 
-func (s *RetryLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) Upsert(tx boil.ContextTransactor, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.Save(tx, customemrEvent)
+		result, err := s.CustomerEventStore.Upsert(tx, customemrEvent)
 		if err == nil {
 			return result, nil
 		}
@@ -3348,11 +3282,11 @@ func (s *RetryLayerCustomerNoteStore) Get(id string) (*model.CustomerNote, error
 
 }
 
-func (s *RetryLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
+func (s *RetryLayerCustomerNoteStore) Upsert(note model.CustomerNote) (*model.CustomerNote, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerNoteStore.Save(note)
+		result, err := s.CustomerNoteStore.Upsert(note)
 		if err == nil {
 			return result, nil
 		}
@@ -3368,11 +3302,11 @@ func (s *RetryLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 
 }
 
-func (s *RetryLayerDigitalContentStore) Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error {
+func (s *RetryLayerDigitalContentStore) Delete(tx boil.ContextTransactor, options *model.DigitalContentFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.DigitalContentStore.Delete(transaction, options)
+		err := s.DigitalContentStore.Delete(tx, options)
 		if err == nil {
 			return nil
 		}
@@ -3508,11 +3442,11 @@ func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalConte
 
 }
 
-func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
+func (s *RetryLayerDiscountSaleStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleStore.Delete(transaction, options)
+		result, err := s.DiscountSaleStore.Delete(tx, ids)
 		if err == nil {
 			return result, nil
 		}
@@ -3528,21 +3462,21 @@ func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *mode
 
 }
 
-func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.DiscountSaleStore.FilterSalesByOption(option)
+		result, err := s.DiscountSaleStore.FilterSalesByOption(option)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 
@@ -3568,11 +3502,31 @@ func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 }
 
-func (s *RetryLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *RetryLayerDiscountSaleStore) Upsert(tx boil.ContextTransactor, sale model.Sale) (*model.Sale, error) {
 
 	tries := 0
 	for {
-		err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+		result, err := s.DiscountSaleStore.Upsert(tx, sale)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) Delete(tx boil.ContextTransactor, ids []string) error {
+
+	tries := 0
+	for {
+		err := s.DiscountSaleChannelListingStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -3588,11 +3542,11 @@ func (s *RetryLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, 
 
 }
 
-func (s *RetryLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) FilterByOptions(option model_helper.SaleChannelListingFilterOption) (model.SaleChannelListingSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleStore.Upsert(transaction, sale)
+		result, err := s.DiscountSaleChannelListingStore.FilterByOptions(option)
 		if err == nil {
 			return result, nil
 		}
@@ -3608,31 +3562,11 @@ func (s *RetryLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.S
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+func (s *RetryLayerDiscountSaleChannelListingStore) Get(id string) (*model.SaleChannelListing, error) {
 
 	tries := 0
 	for {
-		err := s.DiscountSaleChannelListingStore.Delete(transaction, options)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
-
-	tries := 0
-	for {
-		result, err := s.DiscountSaleChannelListingStore.Get(saleChannelListingID)
+		result, err := s.DiscountSaleChannelListingStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
@@ -3648,11 +3582,11 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.SaleChannelListingSlice) (model.SaleChannelListingSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleChannelListingStore.SaleChannelListingsWithOption(option)
+		result, err := s.DiscountSaleChannelListingStore.Upsert(tx, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -3668,11 +3602,11 @@ func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOptio
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
+func (s *RetryLayerDiscountVoucherStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleChannelListingStore.Upsert(transaction, listings)
+		result, err := s.DiscountVoucherStore.Delete(tx, ids)
 		if err == nil {
 			return result, nil
 		}
@@ -3688,27 +3622,7 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.DiscountVoucherStore.Delete(transaction, ids)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error) {
 
 	tries := 0
 	for {
@@ -3728,7 +3642,7 @@ func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (int64, model.VoucherSlice, error) {
 
 	tries := 0
 	for {
@@ -3748,11 +3662,11 @@ func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *model.Vo
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) Get(id string) (*model.Voucher, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountVoucherStore.Get(voucherID)
+		result, err := s.DiscountVoucherStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
@@ -3768,27 +3682,7 @@ func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
-
-	tries := 0
-	for {
-		err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3854,11 +3748,11 @@ func (s *RetryLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileIn
 
 }
 
-func (s *RetryLayerFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(conds ...qm.QueryMod) (model.FileInfoSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.FileInfoStore.GetWithOptions(opt)
+		result, err := s.FileInfoStore.GetWithOptions(conds...)
 		if err == nil {
 			return result, nil
 		}
@@ -3940,7 +3834,7 @@ func (s *RetryLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 
 }
 
-func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Upsert(info model.FileInfo) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3960,11 +3854,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 
 }
 
-func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(tx boil.ContextTransactor, fulfillments model.Fulfillments) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
+		err := s.FulfillmentStore.BulkDeleteFulfillments(tx, fulfillments)
 		if err == nil {
 			return nil
 		}
@@ -4040,11 +3934,11 @@ func (s *RetryLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilter
 
 }
 
-func (s *RetryLayerFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(tx boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
+		result, err := s.FulfillmentStore.Upsert(tx, fulfillment)
 		if err == nil {
 			return result, nil
 		}
@@ -4060,11 +3954,11 @@ func (s *RetryLayerFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *m
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(tx boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
+		result, err := s.FulfillmentLineStore.BulkUpsert(tx, fulfillmentLines)
 		if err == nil {
 			return result, nil
 		}
@@ -4080,11 +3974,11 @@ func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfil
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error {
+func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(tx boil.ContextTransactor, option *model.FulfillmentLineFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
+		err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(tx, option)
 		if err == nil {
 			return nil
 		}
@@ -4160,11 +4054,11 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 
 }
 
-func (s *RetryLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+func (s *RetryLayerGiftCardStore) AddRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error {
 
 	tries := 0
 	for {
-		err := s.GiftCardStore.AddRelations(transaction, giftcards, relations)
+		err := s.GiftCardStore.AddRelations(tx, giftcards, relations)
 		if err == nil {
 			return nil
 		}
@@ -4180,11 +4074,11 @@ func (s *RetryLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards m
 
 }
 
-func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) BulkUpsert(tx boil.ContextTransactor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 
 	tries := 0
 	for {
-		result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
+		result, err := s.GiftCardStore.BulkUpsert(tx, giftCards...)
 		if err == nil {
 			return result, nil
 		}
@@ -4200,7 +4094,7 @@ func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...
 
 }
 
-func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
+func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error) {
 
 	tries := 0
 	for {
@@ -4220,11 +4114,11 @@ func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID 
 
 }
 
-func (s *RetryLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
+func (s *RetryLayerGiftCardStore) DeleteGiftcards(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
+		err := s.GiftCardStore.DeleteGiftcards(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -4280,11 +4174,11 @@ func (s *RetryLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 
 }
 
-func (s *RetryLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+func (s *RetryLayerGiftCardStore) RemoveRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error {
 
 	tries := 0
 	for {
-		err := s.GiftCardStore.RemoveRelations(transaction, giftcards, relations)
+		err := s.GiftCardStore.RemoveRelations(tx, giftcards, relations)
 		if err == nil {
 			return nil
 		}
@@ -4300,11 +4194,11 @@ func (s *RetryLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcard
 
 }
 
-func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) BulkUpsert(tx boil.ContextTransactor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
+		result, err := s.GiftcardEventStore.BulkUpsert(tx, events...)
 		if err == nil {
 			return result, nil
 		}
@@ -4380,11 +4274,11 @@ func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 
 }
 
-func (s *RetryLayerInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *RetryLayerInvoiceStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 
 	tries := 0
 	for {
-		err := s.InvoiceStore.Delete(transaction, ids...)
+		err := s.InvoiceStore.Delete(tx, ids...)
 		if err == nil {
 			return nil
 		}
@@ -4500,6 +4394,26 @@ func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (
 
 }
 
+func (s *RetryLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.JobStore.Count(mods...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerJobStore) Delete(id string) (string, error) {
 
 	tries := 0
@@ -4520,11 +4434,11 @@ func (s *RetryLayerJobStore) Delete(id string) (string, error) {
 
 }
 
-func (s *RetryLayerJobStore) Get(id string) (*model.Job, error) {
+func (s *RetryLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.Get(id)
+		result, err := s.JobStore.FindAll(mods...)
 		if err == nil {
 			return result, nil
 		}
@@ -4540,11 +4454,11 @@ func (s *RetryLayerJobStore) Get(id string) (*model.Job, error) {
 
 }
 
-func (s *RetryLayerJobStore) GetAllByStatus(status string) ([]*model.Job, error) {
+func (s *RetryLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.GetAllByStatus(status)
+		result, err := s.JobStore.Get(mods...)
 		if err == nil {
 			return result, nil
 		}
@@ -4560,147 +4474,7 @@ func (s *RetryLayerJobStore) GetAllByStatus(status string) ([]*model.Job, error)
 
 }
 
-func (s *RetryLayerJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetAllByType(jobType)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetAllByTypePage(jobType, offset, limit)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetAllByTypesPage(jobTypes, offset, limit)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetAllPage(offset, limit)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetCountByStatusAndType(status string, jobType string) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetCountByStatusAndType(status, jobType)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetNewestJobByStatusAndType(status string, jobType string) (*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetNewestJobByStatusAndType(status, jobType)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
-
-	tries := 0
-	for {
-		result, err := s.JobStore.GetNewestJobByStatusesAndType(statuses, jobType)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerJobStore) Save(job *model.Job) (*model.Job, error) {
+func (s *RetryLayerJobStore) Save(job model.Job) (*model.Job, error) {
 
 	tries := 0
 	for {
@@ -4720,7 +4494,7 @@ func (s *RetryLayerJobStore) Save(job *model.Job) (*model.Job, error) {
 
 }
 
-func (s *RetryLayerJobStore) UpdateOptimistically(job *model.Job, currentStatus string) (bool, error) {
+func (s *RetryLayerJobStore) UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error) {
 
 	tries := 0
 	for {
@@ -4740,7 +4514,7 @@ func (s *RetryLayerJobStore) UpdateOptimistically(job *model.Job, currentStatus 
 
 }
 
-func (s *RetryLayerJobStore) UpdateStatus(id string, status string) (*model.Job, error) {
+func (s *RetryLayerJobStore) UpdateStatus(id string, status model.JobStatus) (*model.Job, error) {
 
 	tries := 0
 	for {
@@ -4760,7 +4534,7 @@ func (s *RetryLayerJobStore) UpdateStatus(id string, status string) (*model.Job,
 
 }
 
-func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {
+func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) {
 
 	tries := 0
 	for {
@@ -4780,9 +4554,23 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
-func (s *RetryLayerMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
+func (s *RetryLayerMenuStore) Delete(ids []string) (int64, error) {
 
-	return s.MenuStore.Delete(ids)
+	tries := 0
+	for {
+		result, err := s.MenuStore.Delete(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -4846,9 +4634,23 @@ func (s *RetryLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 
 }
 
-func (s *RetryLayerMenuItemStore) Delete(ids []string) (int64, *model_helper.AppError) {
+func (s *RetryLayerMenuItemStore) Delete(ids []string) (int64, error) {
 
-	return s.MenuItemStore.Delete(ids)
+	tries := 0
+	for {
+		result, err := s.MenuItemStore.Delete(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -4952,11 +4754,11 @@ func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 
 }
 
-func (s *RetryLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
+func (s *RetryLayerOrderStore) BulkUpsert(tx boil.ContextTransactor, orders []*model.Order) ([]*model.Order, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.BulkUpsert(transaction, orders)
+		result, err := s.OrderStore.BulkUpsert(tx, orders)
 		if err == nil {
 			return result, nil
 		}
@@ -4972,11 +4774,11 @@ func (s *RetryLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.
 
 }
 
-func (s *RetryLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+func (s *RetryLayerOrderStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.Delete(transaction, ids)
+		result, err := s.OrderStore.Delete(tx, ids)
 		if err == nil {
 			return result, nil
 		}
@@ -5092,11 +4894,11 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
+		result, err := s.OrderDiscountStore.Upsert(tx, orderDiscount)
 		if err == nil {
 			return result, nil
 		}
@@ -5152,11 +4954,11 @@ func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent,
 
 }
 
-func (s *RetryLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Save(tx boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderEventStore.Save(transaction, orderEvent)
+		result, err := s.OrderEventStore.Save(tx, orderEvent)
 		if err == nil {
 			return result, nil
 		}
@@ -5172,7 +4974,7 @@ func (s *RetryLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
+func (s *RetryLayerOrderLineStore) BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error {
 
 	tries := 0
 	for {
@@ -5192,11 +4994,11 @@ func (s *RetryLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
+		result, err := s.OrderLineStore.BulkUpsert(tx, orderLines)
 		if err == nil {
 			return result, nil
 		}
@@ -5252,11 +5054,11 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.Upsert(transaction, orderLine)
+		result, err := s.OrderLineStore.Upsert(tx, orderLine)
 		if err == nil {
 			return result, nil
 		}
@@ -5352,11 +5154,11 @@ func (s *RetryLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 
 }
 
-func (s *RetryLayerPaymentStore) Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Save(transaction, model)
+		result, err := s.PaymentStore.Save(tx, model)
 		if err == nil {
 			return result, nil
 		}
@@ -5372,11 +5174,11 @@ func (s *RetryLayerPaymentStore) Save(transaction *gorm.DB, model *model.Payment
 
 }
 
-func (s *RetryLayerPaymentStore) Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Update(transaction, model)
+		result, err := s.PaymentStore.Update(tx, model)
 		if err == nil {
 			return result, nil
 		}
@@ -5392,11 +5194,11 @@ func (s *RetryLayerPaymentStore) Update(transaction *gorm.DB, model *model.Payme
 
 }
 
-func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error {
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error {
 
 	tries := 0
 	for {
-		err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+		err := s.PaymentStore.UpdatePaymentsOfCheckout(tx, checkoutToken, option)
 		if err == nil {
 			return nil
 		}
@@ -5452,11 +5254,11 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
+		result, err := s.PaymentTransactionStore.Save(tx, paymentTransaction)
 		if err == nil {
 			return result, nil
 		}
@@ -5672,7 +5474,7 @@ func (s *RetryLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) (model.PluginConfigurationSlice, error) {
 
 	tries := 0
 	for {
@@ -5712,7 +5514,7 @@ func (s *RetryLayerPluginConfigurationStore) Get(id string) (*model.PluginConfig
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) GetByOptions(options model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5732,7 +5534,7 @@ func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *model.PluginC
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) Upsert(config model.PluginConfiguration) (*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5858,7 +5660,7 @@ func (s *RetryLayerPreferenceStore) Get(userID string, category string, name str
 
 }
 
-func (s *RetryLayerPreferenceStore) GetAll(userID string) (model.Preferences, error) {
+func (s *RetryLayerPreferenceStore) GetAll(userID string) (model.PreferenceSlice, error) {
 
 	tries := 0
 	for {
@@ -5878,7 +5680,7 @@ func (s *RetryLayerPreferenceStore) GetAll(userID string) (model.Preferences, er
 
 }
 
-func (s *RetryLayerPreferenceStore) GetCategory(userID string, category string) (model.Preferences, error) {
+func (s *RetryLayerPreferenceStore) GetCategory(userID string, category string) (model.PreferenceSlice, error) {
 
 	tries := 0
 	for {
@@ -5918,7 +5720,7 @@ func (s *RetryLayerPreferenceStore) PermanentDeleteByUser(userID string) error {
 
 }
 
-func (s *RetryLayerPreferenceStore) Save(preferences model.Preferences) error {
+func (s *RetryLayerPreferenceStore) Save(preferences model.PreferenceSlice) error {
 
 	tries := 0
 	for {
@@ -5938,11 +5740,11 @@ func (s *RetryLayerPreferenceStore) Save(preferences model.Preferences) error {
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
+		result, err := s.PreorderAllocationStore.BulkCreate(tx, preorderAllocations)
 		if err == nil {
 			return result, nil
 		}
@@ -5958,11 +5760,11 @@ func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction *gorm.DB, pre
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error {
+func (s *RetryLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error {
 
 	tries := 0
 	for {
-		err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
+		err := s.PreorderAllocationStore.Delete(tx, preorderAllocationIDs...)
 		if err == nil {
 			return nil
 		}
@@ -5978,7 +5780,7 @@ func (s *RetryLayerPreorderAllocationStore) Delete(transaction *gorm.DB, preorde
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
 
 	tries := 0
 	for {
@@ -6024,7 +5826,7 @@ func (s *RetryLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*mo
 
 }
 
-func (s *RetryLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
@@ -6104,7 +5906,7 @@ func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) (model.P
 
 }
 
-func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
@@ -6130,7 +5932,7 @@ func (s *RetryLayerProductStore) PublishedWithVariants(channelIdOrSlug string) s
 
 }
 
-func (s *RetryLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+func (s *RetryLayerProductStore) Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6150,11 +5952,11 @@ func (s *RetryLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*mod
 
 }
 
-func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
+		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 		if err == nil {
 			return result, nil
 		}
@@ -6176,11 +5978,11 @@ func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug stri
 
 }
 
-func (s *RetryLayerProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
+		result, err := s.ProductChannelListingStore.BulkUpsert(tx, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -6236,7 +6038,7 @@ func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*mo
 
 }
 
-func (s *RetryLayerProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *RetryLayerProductMediaStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
@@ -6296,7 +6098,7 @@ func (s *RetryLayerProductMediaStore) Get(id string) (*model.ProductMedia, error
 
 }
 
-func (s *RetryLayerProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
+func (s *RetryLayerProductMediaStore) Upsert(tx boil.ContextTransactor, medias model.ProductMedias) (model.ProductMedias, error) {
 
 	tries := 0
 	for {
@@ -6376,7 +6178,7 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *model.ProductTra
 
 }
 
-func (s *RetryLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *RetryLayerProductTypeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
@@ -6496,7 +6298,7 @@ func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 
 }
 
-func (s *RetryLayerProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
+func (s *RetryLayerProductTypeStore) Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6516,7 +6318,7 @@ func (s *RetryLayerProductTypeStore) Save(tx *gorm.DB, productType *model.Produc
 
 }
 
-func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes model.Attributes, variantAttributes model.Attributes, isDelete bool) error {
+func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes model.AttributeSlice, variantAttributes model.AttributeSlice, isDelete bool) error {
 
 	tries := 0
 	for {
@@ -6536,7 +6338,7 @@ func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 
 }
 
-func (s *RetryLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *RetryLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
@@ -6556,7 +6358,7 @@ func (s *RetryLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64
 
 }
 
-func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error) {
 
 	tries := 0
 	for {
@@ -6656,11 +6458,11 @@ func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 
 }
 
-func (s *RetryLayerProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Save(tx boil.ContextTransactor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantStore.Save(transaction, variant)
+		result, err := s.ProductVariantStore.Save(tx, variant)
 		if err == nil {
 			return result, nil
 		}
@@ -6676,7 +6478,7 @@ func (s *RetryLayerProductVariantStore) Save(transaction *gorm.DB, variant *mode
 
 }
 
-func (s *RetryLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+func (s *RetryLayerProductVariantStore) ToggleProductVariantRelations(tx boil.ContextTransactor, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
 
 	tries := 0
 	for {
@@ -6696,11 +6498,11 @@ func (s *RetryLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.D
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
+		result, err := s.ProductVariantChannelListingStore.BulkUpsert(tx, variantChannelListings)
 		if err == nil {
 			return result, nil
 		}
@@ -6876,7 +6678,7 @@ func (s *RetryLayerRoleStore) Get(roleID string) (*model.Role, error) {
 
 }
 
-func (s *RetryLayerRoleStore) GetAll() ([]*model.Role, error) {
+func (s *RetryLayerRoleStore) GetAll() (model.RoleSlice, error) {
 
 	tries := 0
 	for {
@@ -6916,7 +6718,7 @@ func (s *RetryLayerRoleStore) GetByName(ctx context.Context, name string) (*mode
 
 }
 
-func (s *RetryLayerRoleStore) GetByNames(names []string) ([]*model.Role, error) {
+func (s *RetryLayerRoleStore) GetByNames(names []string) (model.RoleSlice, error) {
 
 	tries := 0
 	for {
@@ -6956,11 +6758,11 @@ func (s *RetryLayerRoleStore) PermanentDeleteAll() error {
 
 }
 
-func (s *RetryLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
+func (s *RetryLayerRoleStore) Upsert(role model.Role) (*model.Role, error) {
 
 	tries := 0
 	for {
-		result, err := s.RoleStore.Save(role)
+		result, err := s.RoleStore.Upsert(role)
 		if err == nil {
 			return result, nil
 		}
@@ -7022,7 +6824,7 @@ func (s *RetryLayerSessionStore) Get(ctx context.Context, sessionIDOrToken strin
 
 }
 
-func (s *RetryLayerSessionStore) GetSessions(userID string) ([]*model.Session, error) {
+func (s *RetryLayerSessionStore) GetSessions(userID string) (model.SessionSlice, error) {
 
 	tries := 0
 	for {
@@ -7042,7 +6844,7 @@ func (s *RetryLayerSessionStore) GetSessions(userID string) ([]*model.Session, e
 
 }
 
-func (s *RetryLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
+func (s *RetryLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) (model.SessionSlice, error) {
 
 	tries := 0
 	for {
@@ -7062,7 +6864,7 @@ func (s *RetryLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobil
 
 }
 
-func (s *RetryLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error) {
+func (s *RetryLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) (model.SessionSlice, error) {
 
 	tries := 0
 	for {
@@ -7082,11 +6884,11 @@ func (s *RetryLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) (
 
 }
 
-func (s *RetryLayerSessionStore) PermanentDeleteSessionsByUser(teamID string) error {
+func (s *RetryLayerSessionStore) PermanentDeleteSessionsByUser(userID string) error {
 
 	tries := 0
 	for {
-		err := s.SessionStore.PermanentDeleteSessionsByUser(teamID)
+		err := s.SessionStore.PermanentDeleteSessionsByUser(userID)
 		if err == nil {
 			return nil
 		}
@@ -7142,7 +6944,7 @@ func (s *RetryLayerSessionStore) RemoveAllSessions() error {
 
 }
 
-func (s *RetryLayerSessionStore) Save(session *model.Session) (*model.Session, error) {
+func (s *RetryLayerSessionStore) Save(session model.Session) (*model.Session, error) {
 
 	tries := 0
 	for {
@@ -7242,7 +7044,7 @@ func (s *RetryLayerSessionStore) UpdateLastActivityAt(sessionID string, time int
 
 }
 
-func (s *RetryLayerSessionStore) UpdateProps(session *model.Session) error {
+func (s *RetryLayerSessionStore) UpdateProps(session model.Session) error {
 
 	tries := 0
 	for {
@@ -7282,7 +7084,7 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
 
 	tries := 0
 	for {
@@ -7302,11 +7104,11 @@ func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 
 }
 
-func (s *RetryLayerShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *RetryLayerShippingMethodStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 
 	tries := 0
 	for {
-		err := s.ShippingMethodStore.Delete(transaction, ids...)
+		err := s.ShippingMethodStore.Delete(tx, ids...)
 		if err == nil {
 			return nil
 		}
@@ -7322,7 +7124,7 @@ func (s *RetryLayerShippingMethodStore) Delete(transaction *gorm.DB, ids ...stri
 
 }
 
-func (s *RetryLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
 
 	tries := 0
 	for {
@@ -7362,7 +7164,7 @@ func (s *RetryLayerShippingMethodStore) Get(methodID string) (*model.ShippingMet
 
 }
 
-func (s *RetryLayerShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7382,11 +7184,11 @@ func (s *RetryLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 
 }
 
-func (s *RetryLayerShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodStore.Upsert(transaction, method)
+		result, err := s.ShippingMethodStore.Upsert(tx, method)
 		if err == nil {
 			return result, nil
 		}
@@ -7402,11 +7204,11 @@ func (s *RetryLayerShippingMethodStore) Upsert(transaction *gorm.DB, method *mod
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) error {
+func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(tx boil.ContextTransactor, options *model.ShippingMethodChannelListingFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
+		err := s.ShippingMethodChannelListingStore.BulkDelete(tx, options)
 		if err == nil {
 			return nil
 		}
@@ -7422,7 +7224,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction *go
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
 
 	tries := 0
 	for {
@@ -7442,11 +7244,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *mod
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Get(id string) (*model.ShippingMethodChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodChannelListingStore.Get(listingID)
+		result, err := s.ShippingMethodChannelListingStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
@@ -7462,11 +7264,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.ShippingMethodChannelListingSlice) (model.ShippingMethodChannelListingSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
+		result, err := s.ShippingMethodChannelListingStore.Upsert(tx, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -7482,11 +7284,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.D
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 
 	tries := 0
 	for {
-		err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
+		err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids...)
 		if err == nil {
 			return nil
 		}
@@ -7502,7 +7304,7 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.D
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
 
 	tries := 0
 	for {
@@ -7522,11 +7324,11 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(tx boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
+		result, err := s.ShippingMethodPostalCodeRuleStore.Save(tx, rules)
 		if err == nil {
 			return result, nil
 		}
@@ -7542,7 +7344,7 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB,
 
 }
 
-func (s *RetryLayerShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+func (s *RetryLayerShippingZoneStore) CountByOptions(options model.ShippingZoneFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -7562,11 +7364,11 @@ func (s *RetryLayerShippingZoneStore) CountByOptions(options *model.ShippingZone
 
 }
 
-func (s *RetryLayerShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
+func (s *RetryLayerShippingZoneStore) Delete(tx boil.ContextTransactor, conditions model.ShippingZoneFilterOption) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingZoneStore.Delete(transaction, conditions)
+		result, err := s.ShippingZoneStore.Delete(tx, conditions)
 		if err == nil {
 			return result, nil
 		}
@@ -7582,7 +7384,7 @@ func (s *RetryLayerShippingZoneStore) Delete(transaction *gorm.DB, conditions *m
 
 }
 
-func (s *RetryLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) FilterByOption(option model.ShippingZoneFilterOption) (model.ShippingZoneSlice, error) {
 
 	tries := 0
 	for {
@@ -7622,11 +7424,11 @@ func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 
 }
 
-func (s *RetryLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
+func (s *RetryLayerShippingZoneStore) ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds []string, channelIds []string, delete bool) error {
 
 	tries := 0
 	for {
-		err := s.ShippingZoneStore.ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
+		err := s.ShippingZoneStore.ToggleRelations(tx, zones, warehouseIds, channelIds, delete)
 		if err == nil {
 			return nil
 		}
@@ -7642,11 +7444,11 @@ func (s *RetryLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zone
 
 }
 
-func (s *RetryLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) Upsert(tx boil.ContextTransactor, shippingZone model.ShippingZone) (*model.ShippingZone, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
+		result, err := s.ShippingZoneStore.Upsert(tx, shippingZone)
 		if err == nil {
 			return result, nil
 		}
@@ -7662,7 +7464,7 @@ func (s *RetryLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone 
 
 }
 
-func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
+func (s *RetryLayerShopStaffStore) FilterByOptions(options model_helper.ShopStaffFilterOptions) (model.ShopStaffSlice, error) {
 
 	tries := 0
 	for {
@@ -7702,7 +7504,7 @@ func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, er
 
 }
 
-func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
+func (s *RetryLayerShopStaffStore) GetByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {
@@ -7722,11 +7524,11 @@ func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOp
 
 }
 
-func (s *RetryLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
+func (s *RetryLayerShopStaffStore) Upsert(shopStaff model.ShopStaff) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShopStaffStore.Save(shopStaff)
+		result, err := s.ShopStaffStore.Upsert(shopStaff)
 		if err == nil {
 			return result, nil
 		}
@@ -7762,7 +7564,7 @@ func (s *RetryLayerShopTranslationStore) Get(id string) (*model.ShopTranslation,
 
 }
 
-func (s *RetryLayerShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
+func (s *RetryLayerShopTranslationStore) Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) {
 
 	tries := 0
 	for {
@@ -7782,11 +7584,11 @@ func (s *RetryLayerShopTranslationStore) Upsert(translation *model.ShopTranslati
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
+		result, err := s.StaffNotificationRecipientStore.FilterByOptions(options...)
 		if err == nil {
 			return result, nil
 		}
@@ -7802,7 +7604,7 @@ func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options *mod
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
 
 	tries := 0
 	for {
@@ -7842,7 +7644,7 @@ func (s *RetryLayerStatusStore) Get(userID string) (*model.Status, error) {
 
 }
 
-func (s *RetryLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
+func (s *RetryLayerStatusStore) GetByIds(userIds []string) (model.StatusSlice, error) {
 
 	tries := 0
 	for {
@@ -7902,26 +7704,6 @@ func (s *RetryLayerStatusStore) ResetAll() error {
 
 }
 
-func (s *RetryLayerStatusStore) SaveOrUpdate(status *model.Status) error {
-
-	tries := 0
-	for {
-		err := s.StatusStore.SaveOrUpdate(status)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
 func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivityAt int64) error {
 
 	tries := 0
@@ -7942,11 +7724,31 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
-func (s *RetryLayerStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
+func (s *RetryLayerStatusStore) Upsert(status model.Status) (*model.Status, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.BulkUpsert(transaction, stocks)
+		result, err := s.StatusStore.Upsert(status)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.BulkUpsert(tx, stocks)
 		if err == nil {
 			return result, nil
 		}
@@ -7982,7 +7784,7 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+func (s *RetryLayerStockStore) Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -8002,7 +7804,7 @@ func (s *RetryLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOpt
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterByOption(options model.StockFilterOption) (int64, model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -8022,7 +7824,7 @@ func (s *RetryLayerStockStore) FilterByOption(options *model.StockFilterOption) 
 
 }
 
-func (s *RetryLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterForChannel(options model.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -8042,7 +7844,7 @@ func (s *RetryLayerStockStore) FilterForChannel(options *model.StockFilterForCha
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -8062,7 +7864,7 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *model.StockFi
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -8082,7 +7884,7 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -8122,7 +7924,7 @@ func (s *RetryLayerStockStore) Get(stockID string) (*model.Stock, error) {
 
 }
 
-func (s *RetryLayerSystemStore) Get() (model.StringMap, error) {
+func (s *RetryLayerSystemStore) Get() (map[string]string, error) {
 
 	tries := 0
 	for {
@@ -8202,7 +8004,7 @@ func (s *RetryLayerSystemStore) PermanentDeleteByName(name string) (*model.Syste
 
 }
 
-func (s *RetryLayerSystemStore) Save(system *model.System) error {
+func (s *RetryLayerSystemStore) Save(system model.System) error {
 
 	tries := 0
 	for {
@@ -8222,7 +8024,7 @@ func (s *RetryLayerSystemStore) Save(system *model.System) error {
 
 }
 
-func (s *RetryLayerSystemStore) SaveOrUpdate(system *model.System) error {
+func (s *RetryLayerSystemStore) SaveOrUpdate(system model.System) error {
 
 	tries := 0
 	for {
@@ -8262,7 +8064,7 @@ func (s *RetryLayerSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model
 
 }
 
-func (s *RetryLayerSystemStore) Update(system *model.System) error {
+func (s *RetryLayerSystemStore) Update(system model.System) error {
 
 	tries := 0
 	for {
@@ -8322,7 +8124,7 @@ func (s *RetryLayerTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.T
 
 }
 
-func (s *RetryLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+func (s *RetryLayerTermsOfServiceStore) Save(termsOfService model.TermsOfService) (*model.TermsOfService, error) {
 
 	tries := 0
 	for {
@@ -8342,9 +8144,23 @@ func (s *RetryLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfServic
 
 }
 
-func (s *RetryLayerTokenStore) Cleanup() {
+func (s *RetryLayerTokenStore) Cleanup() error {
 
-	s.TokenStore.Cleanup()
+	tries := 0
+	for {
+		err := s.TokenStore.Cleanup()
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
@@ -8368,7 +8184,7 @@ func (s *RetryLayerTokenStore) Delete(token string) error {
 
 }
 
-func (s *RetryLayerTokenStore) GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error) {
+func (s *RetryLayerTokenStore) GetAllTokensByType(tokenType model_helper.TokenType) (model.TokenSlice, error) {
 
 	tries := 0
 	for {
@@ -8408,41 +8224,21 @@ func (s *RetryLayerTokenStore) GetByToken(token string) (*model.Token, error) {
 
 }
 
-func (s *RetryLayerTokenStore) RemoveAllTokensByType(tokenType string) error {
+func (s *RetryLayerTokenStore) Save(token model.Token) (*model.Token, error) {
 
 	tries := 0
 	for {
-		err := s.TokenStore.RemoveAllTokensByType(tokenType)
+		result, err := s.TokenStore.Save(token)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerTokenStore) Save(recovery *model.Token) error {
-
-	tries := 0
-	for {
-		err := s.TokenStore.Save(recovery)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 
@@ -8468,6 +8264,26 @@ func (s *RetryLayerUploadSessionStore) Delete(id string) error {
 
 }
 
+func (s *RetryLayerUploadSessionStore) FindAll(mods ...qm.QueryMod) (model.UploadSessionSlice, error) {
+
+	tries := 0
+	for {
+		result, err := s.UploadSessionStore.FindAll(mods...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 
 	tries := 0
@@ -8488,27 +8304,7 @@ func (s *RetryLayerUploadSessionStore) Get(id string) (*model.UploadSession, err
 
 }
 
-func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
-
-	tries := 0
-	for {
-		result, err := s.UploadSessionStore.GetForUser(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) Save(session model.UploadSession) (*model.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -8528,7 +8324,7 @@ func (s *RetryLayerUploadSessionStore) Save(session *model.UploadSession) (*mode
 
 }
 
-func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) error {
+func (s *RetryLayerUploadSessionStore) Update(session model.UploadSession) error {
 
 	tries := 0
 	for {
@@ -8548,13 +8344,7 @@ func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) erro
 
 }
 
-func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
-
-	return s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
-
-}
-
-func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8574,7 +8364,7 @@ func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.Use
 
 }
 
-func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8700,7 +8490,7 @@ func (s *RetryLayerUserStore) ClearCaches() {
 
 }
 
-func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) Count(options model_helper.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8720,31 +8510,11 @@ func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 
 }
 
-func (s *RetryLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
+func (s *RetryLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.UserStore.FilterByOptions(ctx, options)
-		if err == nil {
-			return result, resultVar1, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetAllProfiles(options)
+		result, err := s.UserStore.Find(conds...)
 		if err == nil {
 			return result, nil
 		}
@@ -8760,11 +8530,31 @@ func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 
 }
 
-func (s *RetryLayerUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
+func (s *RetryLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.GetByOptions(ctx, options)
+		result, err := s.UserStore.Get(conds...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) GetAllProfiles(options model_helper.UserGetOptions) (model.UserSlice, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.GetAllProfiles(options)
 		if err == nil {
 			return result, nil
 		}
@@ -8786,9 +8576,9 @@ func (s *RetryLayerUserStore) GetEtagForAllProfiles() string {
 
 }
 
-func (s *RetryLayerUserStore) GetEtagForProfiles(teamID string) string {
+func (s *RetryLayerUserStore) GetEtagForProfiles() string {
 
-	return s.UserStore.GetEtagForProfiles(teamID)
+	return s.UserStore.GetEtagForProfiles()
 
 }
 
@@ -8812,27 +8602,7 @@ func (s *RetryLayerUserStore) GetForLogin(loginID string, allowSignInWithUsernam
 
 }
 
-func (s *RetryLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetKnownUsers(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error) {
 
 	tries := 0
 	for {
@@ -8872,27 +8642,7 @@ func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, 
 
 }
 
-func (s *RetryLayerUserStore) GetUnreadCount(userID string) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetUnreadCount(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model_helper.UserForIndexing, error) {
 
 	tries := 0
 	for {
@@ -8978,12 +8728,6 @@ func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
-
-	return s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
-
-}
-
 func (s *RetryLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
 
 	tries := 0
@@ -9024,7 +8768,7 @@ func (s *RetryLayerUserStore) ResetLastPictureUpdate(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
+func (s *RetryLayerUserStore) Save(user model.User) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -9044,7 +8788,7 @@ func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (s *RetryLayerUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
 
 	tries := 0
 	for {
@@ -9064,7 +8808,7 @@ func (s *RetryLayerUserStore) Search(term string, options *model.UserSearchOptio
 
 }
 
-func (s *RetryLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
+func (s *RetryLayerUserStore) Update(user model.User, allowRoleUpdate bool) (*model_helper.UserUpdate, error) {
 
 	tries := 0
 	for {
@@ -9124,11 +8868,11 @@ func (s *RetryLayerUserStore) UpdateFailedPasswordAttempts(userID string, attemp
 
 }
 
-func (s *RetryLayerUserStore) UpdateLastPictureUpdate(userID string) error {
+func (s *RetryLayerUserStore) UpdateLastPictureUpdate(userID string, updateMillis int64) error {
 
 	tries := 0
 	for {
-		err := s.UserStore.UpdateLastPictureUpdate(userID)
+		err := s.UserStore.UpdateLastPictureUpdate(userID, updateMillis)
 		if err == nil {
 			return nil
 		}
@@ -9304,11 +9048,11 @@ func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserAccessTokenStore.GetAll(offset, limit)
+		result, err := s.UserAccessTokenStore.GetAll(conds...)
 		if err == nil {
 			return result, nil
 		}
@@ -9344,27 +9088,7 @@ func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserAccessTokenStore.GetByUser(userID, page, perPage)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Save(token model.UserAccessToken) (*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9384,7 +9108,7 @@ func (s *RetryLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*mo
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Search(term string) (model.UserAccessTokenSlice, error) {
 
 	tries := 0
 	for {
@@ -9444,11 +9168,11 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
-func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+func (s *RetryLayerVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.VatStore.FilterByOptions(options)
+		result, err := s.VatStore.FilterByOptions(options...)
 		if err == nil {
 			return result, nil
 		}
@@ -9464,11 +9188,11 @@ func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([
 
 }
 
-func (s *RetryLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error) {
+func (s *RetryLayerVatStore) Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.VatStore.Upsert(transaction, vats)
+		result, err := s.VatStore.Upsert(tx, vats)
 		if err == nil {
 			return result, nil
 		}
@@ -9484,11 +9208,11 @@ func (s *RetryLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+func (s *RetryLayerVoucherChannelListingStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.VoucherChannelListingStore.Delete(transaction, option)
+		err := s.VoucherChannelListingStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -9504,7 +9228,7 @@ func (s *RetryLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, opti
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option model_helper.VoucherChannelListingFilterOption) (model.VoucherChannelListingSlice, error) {
 
 	tries := 0
 	for {
@@ -9544,11 +9268,11 @@ func (s *RetryLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) Upsert(tx boil.ContextTransactor, voucherChannelListings model.VoucherChannelListingSlice) (model.VoucherChannelListingSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherChannelListingStore.Upsert(transaction, voucherChannelListings)
+		result, err := s.VoucherChannelListingStore.Upsert(tx, voucherChannelListings)
 		if err == nil {
 			return result, nil
 		}
@@ -9564,11 +9288,11 @@ func (s *RetryLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, vouc
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
+func (s *RetryLayerVoucherCustomerStore) Delete(ids []string) error {
 
 	tries := 0
 	for {
-		err := s.VoucherCustomerStore.DeleteInBulk(options)
+		err := s.VoucherCustomerStore.Delete(ids)
 		if err == nil {
 			return nil
 		}
@@ -9584,7 +9308,7 @@ func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCust
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options model_helper.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) {
 
 	tries := 0
 	for {
@@ -9604,7 +9328,7 @@ func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherC
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) GetByOption(options model_helper.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
 
 	tries := 0
 	for {
@@ -9624,7 +9348,7 @@ func (s *RetryLayerVoucherCustomerStore) GetByOption(options *model.VoucherCusto
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error) {
 
 	tries := 0
 	for {
@@ -9644,7 +9368,7 @@ func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCust
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) FilterByOption(option model_helper.VoucherTranslationFilterOption) (model.VoucherTranslationSlice, error) {
 
 	tries := 0
 	for {
@@ -9684,7 +9408,7 @@ func (s *RetryLayerVoucherTranslationStore) Get(id string) (*model.VoucherTransl
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) GetByOption(option model_helper.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
@@ -9704,11 +9428,11 @@ func (s *RetryLayerVoucherTranslationStore) GetByOption(option *model.VoucherTra
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) Upsert(translation model.VoucherTranslation) (*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherTranslationStore.Save(translation)
+		result, err := s.VoucherTranslationStore.Upsert(translation)
 		if err == nil {
 			return result, nil
 		}
@@ -9724,7 +9448,7 @@ func (s *RetryLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 
 	tries := 0
 	for {
@@ -9744,7 +9468,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(che
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 
 	tries := 0
 	for {
@@ -9764,7 +9488,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 
 	tries := 0
 	for {
@@ -9784,11 +9508,11 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 
 }
 
-func (s *RetryLayerWarehouseStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *RetryLayerWarehouseStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 
 	tries := 0
 	for {
-		err := s.WarehouseStore.Delete(transaction, ids...)
+		err := s.WarehouseStore.Delete(tx, ids...)
 		if err == nil {
 			return nil
 		}
@@ -9804,7 +9528,7 @@ func (s *RetryLayerWarehouseStore) Delete(transaction *gorm.DB, ids ...string) e
 
 }
 
-func (s *RetryLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) FilterByOprion(option model.WarehouseFilterOption) ([]*model.Warehouse, error) {
 
 	tries := 0
 	for {
@@ -9824,7 +9548,7 @@ func (s *RetryLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterO
 
 }
 
-func (s *RetryLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) GetByOption(option model.WarehouseFilterOption) (*model.Warehouse, error) {
 
 	tries := 0
 	for {
@@ -9844,7 +9568,7 @@ func (s *RetryLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOpti
 
 }
 
-func (s *RetryLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Save(model model.Warehouse) (*model.Warehouse, error) {
 
 	tries := 0
 	for {
@@ -9864,7 +9588,7 @@ func (s *RetryLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHous
 
 }
 
-func (s *RetryLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Update(warehouse model.Warehouse) (*model.Warehouse, error) {
 
 	tries := 0
 	for {
@@ -9884,7 +9608,7 @@ func (s *RetryLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.Wa
 
 }
 
-func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Warehouse, error) {
 
 	tries := 0
 	for {
@@ -9924,7 +9648,7 @@ func (s *RetryLayerWarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelI
 
 }
 
-func (s *RetryLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
+func (s *RetryLayerWishlistStore) GetByOption(option model.WishlistFilterOption) (*model.Wishlist, error) {
 
 	tries := 0
 	for {
@@ -9944,7 +9668,7 @@ func (s *RetryLayerWishlistStore) GetByOption(option *model.WishlistFilterOption
 
 }
 
-func (s *RetryLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
+func (s *RetryLayerWishlistStore) Upsert(wishList model.Wishlist) (*model.Wishlist, error) {
 
 	tries := 0
 	for {
@@ -9964,11 +9688,11 @@ func (s *RetryLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishl
 
 }
 
-func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (s *RetryLayerWishlistItemStore) BulkUpsert(tx boil.ContextTransactor, wishlistItems model.WishlistItemSlice) (model.WishlistItemSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
+		result, err := s.WishlistItemStore.BulkUpsert(tx, wishlistItems)
 		if err == nil {
 			return result, nil
 		}
@@ -9984,11 +9708,11 @@ func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistI
 
 }
 
-func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) {
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(tx boil.ContextTransactor, option model.WishlistItemFilterOption) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
+		result, err := s.WishlistItemStore.DeleteItemsByOption(tx, option)
 		if err == nil {
 			return result, nil
 		}
@@ -10004,7 +9728,7 @@ func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, 
 
 }
 
-func (s *RetryLayerWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) FilterByOption(option model.WishlistItemFilterOption) (model.WishlistItemSlice, error) {
 
 	tries := 0
 	for {
@@ -10044,7 +9768,7 @@ func (s *RetryLayerWishlistItemStore) GetById(id string) (*model.WishlistItem, e
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetByOption(option model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 
 	tries := 0
 	for {

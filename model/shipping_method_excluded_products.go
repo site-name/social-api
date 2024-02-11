@@ -64,15 +64,36 @@ var ShippingMethodExcludedProductWhere = struct {
 
 // ShippingMethodExcludedProductRels is where relationship names are stored.
 var ShippingMethodExcludedProductRels = struct {
-}{}
+	Product        string
+	ShippingMethod string
+}{
+	Product:        "Product",
+	ShippingMethod: "ShippingMethod",
+}
 
 // shippingMethodExcludedProductR is where relationships are stored.
 type shippingMethodExcludedProductR struct {
+	Product        *Product        `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	ShippingMethod *ShippingMethod `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
 }
 
 // NewStruct creates a new relationship struct
 func (*shippingMethodExcludedProductR) NewStruct() *shippingMethodExcludedProductR {
 	return &shippingMethodExcludedProductR{}
+}
+
+func (r *shippingMethodExcludedProductR) GetProduct() *Product {
+	if r == nil {
+		return nil
+	}
+	return r.Product
+}
+
+func (r *shippingMethodExcludedProductR) GetShippingMethod() *ShippingMethod {
+	if r == nil {
+		return nil
+	}
+	return r.ShippingMethod
 }
 
 // shippingMethodExcludedProductL is where Load methods for each relationship are stored.
@@ -175,6 +196,344 @@ func (q shippingMethodExcludedProductQuery) Exists(exec boil.Executor) (bool, er
 	}
 
 	return count > 0, nil
+}
+
+// Product pointed to by the foreign key.
+func (o *ShippingMethodExcludedProduct) Product(mods ...qm.QueryMod) productQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ProductID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Products(queryMods...)
+}
+
+// ShippingMethod pointed to by the foreign key.
+func (o *ShippingMethodExcludedProduct) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ShippingMethods(queryMods...)
+}
+
+// LoadProduct allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+	var slice []*ShippingMethodExcludedProduct
+	var object *ShippingMethodExcludedProduct
+
+	if singular {
+		var ok bool
+		object, ok = maybeShippingMethodExcludedProduct.(*ShippingMethodExcludedProduct)
+		if !ok {
+			object = new(ShippingMethodExcludedProduct)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShippingMethodExcludedProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShippingMethodExcludedProduct))
+			}
+		}
+	} else {
+		s, ok := maybeShippingMethodExcludedProduct.(*[]*ShippingMethodExcludedProduct)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShippingMethodExcludedProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShippingMethodExcludedProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shippingMethodExcludedProductR{}
+		}
+		args[object.ProductID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shippingMethodExcludedProductR{}
+			}
+
+			args[obj.ProductID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`products`),
+		qm.WhereIn(`products.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Product")
+	}
+
+	var resultSlice []*Product
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Product")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for products")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Product = foreign
+		if foreign.R == nil {
+			foreign.R = &productR{}
+		}
+		foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProductID == foreign.ID {
+				local.R.Product = foreign
+				if foreign.R == nil {
+					foreign.R = &productR{}
+				}
+				foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadShippingMethod allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (shippingMethodExcludedProductL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+	var slice []*ShippingMethodExcludedProduct
+	var object *ShippingMethodExcludedProduct
+
+	if singular {
+		var ok bool
+		object, ok = maybeShippingMethodExcludedProduct.(*ShippingMethodExcludedProduct)
+		if !ok {
+			object = new(ShippingMethodExcludedProduct)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeShippingMethodExcludedProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeShippingMethodExcludedProduct))
+			}
+		}
+	} else {
+		s, ok := maybeShippingMethodExcludedProduct.(*[]*ShippingMethodExcludedProduct)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeShippingMethodExcludedProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeShippingMethodExcludedProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &shippingMethodExcludedProductR{}
+		}
+		args[object.ShippingMethodID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &shippingMethodExcludedProductR{}
+			}
+
+			args[obj.ShippingMethodID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`shipping_methods`),
+		qm.WhereIn(`shipping_methods.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ShippingMethod")
+	}
+
+	var resultSlice []*ShippingMethod
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ShippingMethod")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for shipping_methods")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.ShippingMethod = foreign
+		if foreign.R == nil {
+			foreign.R = &shippingMethodR{}
+		}
+		foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ShippingMethodID == foreign.ID {
+				local.R.ShippingMethod = foreign
+				if foreign.R == nil {
+					foreign.R = &shippingMethodR{}
+				}
+				foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetProduct of the shippingMethodExcludedProduct to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ShippingMethodExcludedProducts.
+func (o *ShippingMethodExcludedProduct) SetProduct(exec boil.Executor, insert bool, related *Product) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shipping_method_excluded_products\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProductID = related.ID
+	if o.R == nil {
+		o.R = &shippingMethodExcludedProductR{
+			Product: related,
+		}
+	} else {
+		o.R.Product = related
+	}
+
+	if related.R == nil {
+		related.R = &productR{
+			ShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
+		}
+	} else {
+		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
+	}
+
+	return nil
+}
+
+// SetShippingMethod of the shippingMethodExcludedProduct to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.ShippingMethodExcludedProducts.
+func (o *ShippingMethodExcludedProduct) SetShippingMethod(exec boil.Executor, insert bool, related *ShippingMethod) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"shipping_method_excluded_products\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
+		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ShippingMethodID = related.ID
+	if o.R == nil {
+		o.R = &shippingMethodExcludedProductR{
+			ShippingMethod: related,
+		}
+	} else {
+		o.R.ShippingMethod = related
+	}
+
+	if related.R == nil {
+		related.R = &shippingMethodR{
+			ShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
+		}
+	} else {
+		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
+	}
+
+	return nil
 }
 
 // ShippingMethodExcludedProducts retrieves all the records using an executor.

@@ -11,7 +11,7 @@ var (
 		YD:   "Yard",
 		INCH: "Inch",
 	} // map distance unit alias to their fullnames
-	DISTANCE_UNIT_CONVERSION = map[DistanceUnit]float32{
+	DISTANCE_UNIT_CONVERSION = map[DistanceUnit]float64{
 		CM:   1.0,
 		M:    100.0,
 		KM:   10000.0,

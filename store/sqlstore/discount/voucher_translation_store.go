@@ -1,10 +1,12 @@
 package discount
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlVoucherTranslationStore struct {
@@ -15,61 +17,60 @@ func NewSqlVoucherTranslationStore(sqlStore store.Store) store.VoucherTranslatio
 	return &SqlVoucherTranslationStore{sqlStore}
 }
 
-// Save inserts given translation into database and returns it
-func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
-	err := vts.GetMaster().Create(translation).Error
+func (vts *SqlVoucherTranslationStore) Upsert(translation model.VoucherTranslation) (*model.VoucherTranslation, error) {
+	isSaving := false
+	if translation.ID == "" {
+		isSaving = true
+		model_helper.VoucherTranslationPreSave(&translation)
+	} else {
+		model_helper.VoucherTranslationCommonPre(&translation)
+	}
+
+	if err := model_helper.VoucherTranslationIsValid(translation); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = translation.Insert(vts.GetMaster(), boil.Infer())
+	} else {
+		_, err = translation.Update(vts.GetMaster(), boil.Blacklist(model.VoucherTranslationColumns.CreatedAt))
+	}
+
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to save voucher translation with id=%s", translation.Id)
+		if vts.IsUniqueConstraintError(err, []string{model.VoucherTranslationColumns.VoucherID, "voucher_translations_language_code_voucher_id_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.VoucherTranslations, model.VoucherTranslationColumns.VoucherID+"/"+model.VoucherTranslationColumns.LanguageCode, "unique")
+		}
+		return nil, err
+	}
+
+	return &translation, nil
+}
+
+func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
+	translation, err := model.FindVoucherTranslation(vts.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.VoucherTranslations, id)
+		}
+		return nil, err
 	}
 
 	return translation, nil
 }
 
-// Get finds and returns a voucher translation with given id
-func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
-	var res model.VoucherTranslation
-	err := vts.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find voucher translation with id=%s", id)
-	}
-
-	return &res, nil
+func (vts *SqlVoucherTranslationStore) FilterByOption(option model_helper.VoucherTranslationFilterOption) (model.VoucherTranslationSlice, error) {
+	return model.VoucherTranslations(option.Conditions...).All(vts.GetReplica())
 }
 
-// FilterByOption returns a list of voucher translations filtered using given options
-func (vts *SqlVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
-	args, err := store.BuildSqlizer(option.Conditions, "VoucherTranslation_FilterByOption")
+func (vts *SqlVoucherTranslationStore) GetByOption(option model_helper.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
+	translation, err := model.VoucherTranslations(option.Conditions...).One(vts.GetReplica())
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.VoucherTranslations, "options")
+		}
 		return nil, err
 	}
 
-	var res []*model.VoucherTranslation
-	err = vts.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find voucher translations with given options")
-	}
-
-	return res, nil
-}
-
-// GetByOption finds and returns 1 voucher translation by given options
-func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
-	args, err := store.BuildSqlizer(option.Conditions, "VoucherTranslation_GetByOptions")
-	if err != nil {
-		return nil, err
-	}
-
-	var res model.VoucherTranslation
-	err = vts.GetReplica().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find a voucher translation by given option")
-	}
-
-	return &res, nil
+	return translation, nil
 }

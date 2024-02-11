@@ -991,23 +991,23 @@ type TimerLayerWishlistItemStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model_helper.AppError {
+func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error {
 	start := timemodule.Now()
 
-	result := s.AddressStore.DeleteAddresses(tx, addressIDs)
+	err := s.AddressStore.DeleteAddresses(tx, addressIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if true {
+		if err == nil {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.DeleteAddresses", success, elapsed)
 	}
-	return result
+	return err
 }
 
-func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (s *TimerLayerAddressStore) FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.FilterByOption(option)
@@ -1039,7 +1039,7 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address *model.Address) (*model.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address model.Address) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Upsert(tx, address)
@@ -1055,10 +1055,10 @@ func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address *mode
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
+func (s *TimerLayerAllocationStore) BulkDelete(tx boil.ContextTransactor, allocationIDs []string) error {
 	start := timemodule.Now()
 
-	err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
+	err := s.AllocationStore.BulkDelete(tx, allocationIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1071,10 +1071,10 @@ func (s *TimerLayerAllocationStore) BulkDelete(transaction *gorm.DB, allocationI
 	return err
 }
 
-func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (s *TimerLayerAllocationStore) BulkUpsert(tx boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
+	result, err := s.AllocationStore.BulkUpsert(tx, allocations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1087,7 +1087,7 @@ func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorm.DB, allocations
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
+func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock model.Stock) (int, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.CountAvailableQuantityForStock(stock)
@@ -1103,7 +1103,7 @@ func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *model.
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (s *TimerLayerAllocationStore) FilterByOption(option model.AllocationFilterOption) (model.AllocationSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.FilterByOption(option)
@@ -1135,10 +1135,10 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*model.Allocation,
 	return result, err
 }
 
-func (s *TimerLayerAppStore) Save(app *model.App) (*model.App, error) {
+func (s *TimerLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.AppStore.Save(app)
+	result, err := s.AssignedPageAttributeStore.FilterByOptions(mods...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1146,23 +1146,7 @@ func (s *TimerLayerAppStore) Save(app *model.App) (*model.App, error) {
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AppStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {
-	start := timemodule.Now()
-
-	result, err := s.AppTokenStore.Save(appToken)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AppTokenStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -1183,10 +1167,10 @@ func (s *TimerLayerAssignedPageAttributeStore) Get(id string) (*model.AssignedPa
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
+func (s *TimerLayerAssignedPageAttributeStore) Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
 	start := timemodule.Now()
 
-	result, err := s.AssignedPageAttributeStore.GetByOption(option)
+	result, err := s.AssignedPageAttributeStore.Upsert(assignedPageAttr)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1194,23 +1178,7 @@ func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *model.Assigne
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedPageAttributeStore) Save(assignedPageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedPageAttributeStore.Save(assignedPageAttr)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -1227,22 +1195,6 @@ func (s *TimerLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedPageAttributeValueStore.Save(assignedPageAttrValue)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -1295,7 +1247,23 @@ func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 	return err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeValueStore.Upsert(assignedPageAttrValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
@@ -1327,7 +1295,7 @@ func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*model.Assigne
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.GetWithOption(option)
@@ -1343,7 +1311,7 @@ func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *model.As
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
@@ -1359,7 +1327,7 @@ func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.FilterByOptions(options)
@@ -1391,7 +1359,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
@@ -1407,7 +1375,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1423,7 +1391,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID s
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedProductAttributeValueStore.SelectForSort(assignmentID)
@@ -1439,7 +1407,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
+func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error {
 	start := timemodule.Now()
 
 	err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
@@ -1455,7 +1423,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
@@ -1487,7 +1455,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*model.Assigne
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
@@ -1503,7 +1471,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *model.As
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
@@ -1519,7 +1487,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
@@ -1551,7 +1519,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) Get(id string) (*model.As
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
@@ -1567,7 +1535,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1583,7 +1551,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID s
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedVariantAttributeValueSlice, []*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
@@ -1599,7 +1567,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentI
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
+func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error {
 	start := timemodule.Now()
 
 	err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
@@ -1615,7 +1583,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
-func (s *TimerLayerAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+func (s *TimerLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.CountByOptions(options)
@@ -1647,7 +1615,7 @@ func (s *TimerLayerAttributeStore) Delete(ids ...string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
+func (s *TimerLayerAttributeStore) FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.FilterbyOption(option)
@@ -1663,7 +1631,7 @@ func (s *TimerLayerAttributeStore) FilterbyOption(option *model.AttributeFilterO
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.AttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.GetPageTypeAttributes(pageTypeID, unassigned)
@@ -1679,7 +1647,7 @@ func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
+func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned, filter)
@@ -1695,7 +1663,7 @@ func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
+func (s *TimerLayerAttributeStore) Upsert(attr model.Attribute) (*model.Attribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.Upsert(attr)
@@ -1727,7 +1695,7 @@ func (s *TimerLayerAttributePageStore) Get(pageID string) (*model.AttributePage,
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.GetByOption(option)
@@ -1743,7 +1711,7 @@ func (s *TimerLayerAttributePageStore) GetByOption(option *model.AttributePageFi
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) Save(page *model.AttributePage) (*model.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) Save(page model.AttributePage) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.Save(page)
@@ -1759,7 +1727,7 @@ func (s *TimerLayerAttributePageStore) Save(page *model.AttributePage) (*model.A
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.FilterByOptions(option)
@@ -1791,7 +1759,7 @@ func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*model
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.GetByOption(option)
@@ -1807,7 +1775,7 @@ func (s *TimerLayerAttributeProductStore) GetByOption(option *model.AttributePro
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.Save(attributeProduct)
@@ -1823,10 +1791,10 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *model.Attribute
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) BulkUpsert(tx boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
+	result, err := s.AttributeValueStore.BulkUpsert(tx, values)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1839,7 +1807,7 @@ func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorm.DB, values 
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
+func (s *TimerLayerAttributeValueStore) Count(options model.AttributeValueFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Count(options)
@@ -1855,7 +1823,7 @@ func (s *TimerLayerAttributeValueStore) Count(options *model.AttributeValueFilte
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
+func (s *TimerLayerAttributeValueStore) Delete(tx boil.ContextTransactor, ids ...string) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Delete(tx, ids...)
@@ -1871,7 +1839,7 @@ func (s *TimerLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int6
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.FilterByOptions(options)
@@ -1903,7 +1871,7 @@ func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*model.Attribut
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
+func (s *TimerLayerAttributeValueStore) Upsert(av model.AttributeValue) (*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Upsert(av)
@@ -1919,7 +1887,7 @@ func (s *TimerLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.FilterByOptions(options)
@@ -1951,7 +1919,7 @@ func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*model
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.GetByOption(option)
@@ -1967,7 +1935,7 @@ func (s *TimerLayerAttributeVariantStore) GetByOption(option *model.AttributeVar
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.Save(attributeVariant)
@@ -1983,7 +1951,7 @@ func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *model.Attribute
 	return result, err
 }
 
-func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (model.Audits, error) {
+func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (model.AuditSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AuditStore.Get(userID, offset, limit)
@@ -2015,7 +1983,7 @@ func (s *TimerLayerAuditStore) PermanentDeleteByUser(userID string) error {
 	return err
 }
 
-func (s *TimerLayerAuditStore) Save(audit *model.Audit) error {
+func (s *TimerLayerAuditStore) Save(audit model.Audit) error {
 	start := timemodule.Now()
 
 	err := s.AuditStore.Save(audit)
@@ -2095,10 +2063,10 @@ func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
+func (s *TimerLayerChannelStore) DeleteChannels(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.ChannelStore.DeleteChannels(transaction, ids)
+	err := s.ChannelStore.DeleteChannels(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2111,10 +2079,10 @@ func (s *TimerLayerChannelStore) DeleteChannels(transaction *gorm.DB, ids []stri
 	return err
 }
 
-func (s *TimerLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
+func (s *TimerLayerChannelStore) Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ChannelStore.FilterByOption(option)
+	result, err := s.ChannelStore.Find(conds)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2122,7 +2090,7 @@ func (s *TimerLayerChannelStore) FilterByOption(option *model.ChannelFilterOptio
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.FilterByOption", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Find", success, elapsed)
 	}
 	return result, err
 }
@@ -2143,10 +2111,26 @@ func (s *TimerLayerChannelStore) Get(id string) (*model.Channel, error) {
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
+func (s *TimerLayerChannelStore) GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error) {
 	start := timemodule.Now()
 
-	result, err := s.ChannelStore.Upsert(transaction, channel)
+	result, err := s.ChannelStore.GetByOptions(conds)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelStore) Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.Upsert(tx, channel)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2159,7 +2143,7 @@ func (s *TimerLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Cha
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
+func (s *TimerLayerCheckoutStore) CountCheckouts(options model_helper.CheckoutFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.CountCheckouts(options)
@@ -2175,10 +2159,10 @@ func (s *TimerLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOp
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error {
+func (s *TimerLayerCheckoutStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
+	err := s.CheckoutStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2186,15 +2170,15 @@ func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.DeleteCheckoutsByOption", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Delete", success, elapsed)
 	}
 	return err
 }
 
-func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
+func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout model.Checkout) (model_helper.CheckoutLineInfos, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+	result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(checkout)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2207,10 +2191,10 @@ func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) FilterByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.CheckoutStore.FilterByOption(option)
+	result, err := s.CheckoutStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2220,10 +2204,10 @@ func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOpt
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.FilterByOption", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) GetByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.GetByOption(option)
@@ -2239,10 +2223,10 @@ func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.Upsert(transaction, checkouts)
+	result, err := s.CheckoutStore.Upsert(tx, checkouts)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2255,55 +2239,7 @@ func (s *TimerLayerCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*mode
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
-	start := timemodule.Now()
-
-	result, err := s.CheckoutLineStore.BulkCreate(checkoutLines)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.BulkCreate", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.CheckoutLine) error {
-	start := timemodule.Now()
-
-	err := s.CheckoutLineStore.BulkUpdate(checkoutLines)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.BulkUpdate", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
-	start := timemodule.Now()
-
-	result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch", success, elapsed)
-	}
-	return result, resultVar1, resultVar2, err
-}
-
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option model_helper.CheckoutLineFilterOptions) (model.CheckoutLineSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.CheckoutLinesByOption(option)
@@ -2319,10 +2255,10 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *model.Checko
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction *gorm.DB, checkoutLineIDs []string) error {
+func (s *TimerLayerCheckoutLineStore) DeleteLines(tx boil.ContextTransactor, checkoutLineIDs []string) error {
 	start := timemodule.Now()
 
-	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
+	err := s.CheckoutLineStore.DeleteLines(tx, checkoutLineIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2367,10 +2303,10 @@ func (s *TimerLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineID
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutLineStore.Upsert(checkoutLine)
+	result, err := s.CheckoutLineStore.Upsert(checkoutLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2543,10 +2479,10 @@ func (s *TimerLayerCollectionStore) Upsert(collection *model.Collection) (*model
 	return result, err
 }
 
-func (s *TimerLayerCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
+func (s *TimerLayerCollectionChannelListingStore) Delete(tx boil.ContextTransactor, options *model.CollectionChannelListingFilterOptions) error {
 	start := timemodule.Now()
 
-	err := s.CollectionChannelListingStore.Delete(transaction, options)
+	err := s.CollectionChannelListingStore.Delete(tx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2575,10 +2511,10 @@ func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model
 	return result, err
 }
 
-func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *TimerLayerCollectionChannelListingStore) Upsert(tx boil.ContextTransactor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.CollectionChannelListingStore.Upsert(transaction, relations...)
+	result, err := s.CollectionChannelListingStore.Upsert(tx, relations...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2591,10 +2527,10 @@ func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction *gorm.DB, r
 	return result, err
 }
 
-func (s *TimerLayerCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+func (s *TimerLayerCollectionProductStore) BulkSave(tx boil.ContextTransactor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 	start := timemodule.Now()
 
-	result, err := s.CollectionProductStore.BulkSave(transaction, relations)
+	result, err := s.CollectionProductStore.BulkSave(tx, relations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2607,10 +2543,10 @@ func (s *TimerLayerCollectionProductStore) BulkSave(transaction *gorm.DB, relati
 	return result, err
 }
 
-func (s *TimerLayerCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
+func (s *TimerLayerCollectionProductStore) Delete(tx boil.ContextTransactor, options *model.CollectionProductFilterOptions) error {
 	start := timemodule.Now()
 
-	err := s.CollectionProductStore.Delete(transaction, options)
+	err := s.CollectionProductStore.Delete(tx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2639,7 +2575,7 @@ func (s *TimerLayerCollectionProductStore) FilterByOptions(options *model.Collec
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model.ComplianceExportCursor, limit int) ([]*model.CompliancePost, model.ComplianceExportCursor, error) {
+func (s *TimerLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.ComplianceStore.ComplianceExport(model, cursor, limit)
@@ -2671,7 +2607,7 @@ func (s *TimerLayerComplianceStore) Get(id string) (*model.Compliance, error) {
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (model.Compliances, error) {
+func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (model.ComplianceSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ComplianceStore.GetAll(offset, limit)
@@ -2687,7 +2623,7 @@ func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (model.Complia
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) MessageExport(cursor model.MessageExportCursor, limit int) ([]*model.MessageExport, model.MessageExportCursor, error) {
+func (s *TimerLayerComplianceStore) MessageExport(cursor model_helper.MessageExportCursor, limit int) ([]*model_helper.MessageExport, model_helper.MessageExportCursor, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.ComplianceStore.MessageExport(cursor, limit)
@@ -2703,7 +2639,7 @@ func (s *TimerLayerComplianceStore) MessageExport(cursor model.MessageExportCurs
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerComplianceStore) Save(model *model.Compliance) (*model.Compliance, error) {
+func (s *TimerLayerComplianceStore) Save(model model.Compliance) (*model.Compliance, error) {
 	start := timemodule.Now()
 
 	result, err := s.ComplianceStore.Save(model)
@@ -2719,7 +2655,7 @@ func (s *TimerLayerComplianceStore) Save(model *model.Compliance) (*model.Compli
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) Update(model *model.Compliance) (*model.Compliance, error) {
+func (s *TimerLayerComplianceStore) Update(model model.Compliance) (*model.Compliance, error) {
 	start := timemodule.Now()
 
 	result, err := s.ComplianceStore.Update(model)
@@ -2735,7 +2671,7 @@ func (s *TimerLayerComplianceStore) Update(model *model.Compliance) (*model.Comp
 	return result, err
 }
 
-func (s *TimerLayerCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
+func (s *TimerLayerCsvExportEventStore) FilterByOption(options model_helper.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportEventStore.FilterByOption(options)
@@ -2751,7 +2687,7 @@ func (s *TimerLayerCsvExportEventStore) FilterByOption(options *model.ExportEven
 	return result, err
 }
 
-func (s *TimerLayerCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
+func (s *TimerLayerCsvExportEventStore) Save(event model.ExportEvent) (*model.ExportEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportEventStore.Save(event)
@@ -2783,7 +2719,7 @@ func (s *TimerLayerCsvExportFileStore) Get(id string) (*model.ExportFile, error)
 	return result, err
 }
 
-func (s *TimerLayerCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
+func (s *TimerLayerCsvExportFileStore) Save(file model.ExportFile) (*model.ExportFile, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportFileStore.Save(file)
@@ -2815,10 +2751,10 @@ func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.CustomerEventStore.FilterByOptions(options)
+	result, err := s.CustomerEventStore.FilterByOptions(queryMods...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2847,10 +2783,10 @@ func (s *TimerLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) Upsert(tx boil.ContextTransactor, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.CustomerEventStore.Save(tx, customemrEvent)
+	result, err := s.CustomerEventStore.Upsert(tx, customemrEvent)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2858,7 +2794,7 @@ func (s *TimerLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.C
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -2879,10 +2815,10 @@ func (s *TimerLayerCustomerNoteStore) Get(id string) (*model.CustomerNote, error
 	return result, err
 }
 
-func (s *TimerLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
+func (s *TimerLayerCustomerNoteStore) Upsert(note model.CustomerNote) (*model.CustomerNote, error) {
 	start := timemodule.Now()
 
-	result, err := s.CustomerNoteStore.Save(note)
+	result, err := s.CustomerNoteStore.Upsert(note)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2890,15 +2826,15 @@ func (s *TimerLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CustomerNoteStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerNoteStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error {
+func (s *TimerLayerDigitalContentStore) Delete(tx boil.ContextTransactor, options *model.DigitalContentFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.DigitalContentStore.Delete(transaction, options)
+	err := s.DigitalContentStore.Delete(tx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3007,10 +2943,10 @@ func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalConte
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
+func (s *TimerLayerDiscountSaleStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountSaleStore.Delete(transaction, options)
+	result, err := s.DiscountSaleStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3023,10 +2959,10 @@ func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *mode
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
+func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.DiscountSaleStore.FilterSalesByOption(option)
+	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3036,7 +2972,7 @@ func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilt
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.FilterSalesByOption", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
@@ -3055,26 +2991,10 @@ func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *TimerLayerDiscountSaleStore) Upsert(tx boil.ContextTransactor, sale model.Sale) (*model.Sale, error) {
 	start := timemodule.Now()
 
-	err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.ToggleSaleRelations", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
-	start := timemodule.Now()
-
-	result, err := s.DiscountSaleStore.Upsert(transaction, sale)
+	result, err := s.DiscountSaleStore.Upsert(tx, sale)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3087,10 +3007,10 @@ func (s *TimerLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.S
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+func (s *TimerLayerDiscountSaleChannelListingStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.DiscountSaleChannelListingStore.Delete(transaction, options)
+	err := s.DiscountSaleChannelListingStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3103,10 +3023,26 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB,
 	return err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) FilterByOptions(option model_helper.SaleChannelListingFilterOption) (model.SaleChannelListingSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountSaleChannelListingStore.Get(saleChannelListingID)
+	result, err := s.DiscountSaleChannelListingStore.FilterByOptions(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) Get(id string) (*model.SaleChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleChannelListingStore.Get(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3119,26 +3055,10 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.SaleChannelListingSlice) (model.SaleChannelListingSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountSaleChannelListingStore.SaleChannelListingsWithOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.SaleChannelListingsWithOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
-	start := timemodule.Now()
-
-	result, err := s.DiscountSaleChannelListingStore.Upsert(transaction, listings)
+	result, err := s.DiscountSaleChannelListingStore.Upsert(tx, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3151,10 +3071,10 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+func (s *TimerLayerDiscountVoucherStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountVoucherStore.Delete(transaction, ids)
+	result, err := s.DiscountVoucherStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3167,7 +3087,7 @@ func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []stri
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.ExpiredVouchers(date)
@@ -3183,7 +3103,7 @@ func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (int64, model.VoucherSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
@@ -3199,10 +3119,10 @@ func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.Vo
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) Get(id string) (*model.Voucher, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountVoucherStore.Get(voucherID)
+	result, err := s.DiscountVoucherStore.Get(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3215,23 +3135,7 @@ func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
-	start := timemodule.Now()
-
-	err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.ToggleVoucherRelations", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.Upsert(voucher)
@@ -3294,10 +3198,10 @@ func (s *TimerLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileIn
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(conds ...qm.QueryMod) (model.FileInfoSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.FileInfoStore.GetWithOptions(opt)
+	result, err := s.FileInfoStore.GetWithOptions(conds...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3373,7 +3277,7 @@ func (s *TimerLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Upsert(info model.FileInfo) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Upsert(info)
@@ -3389,10 +3293,10 @@ func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error {
+func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(tx boil.ContextTransactor, fulfillments model.Fulfillments) error {
 	start := timemodule.Now()
 
-	err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
+	err := s.FulfillmentStore.BulkDeleteFulfillments(tx, fulfillments)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3453,10 +3357,10 @@ func (s *TimerLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilter
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Upsert(tx boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
+	result, err := s.FulfillmentStore.Upsert(tx, fulfillment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3469,10 +3373,10 @@ func (s *TimerLayerFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *m
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) BulkUpsert(tx boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
+	result, err := s.FulfillmentLineStore.BulkUpsert(tx, fulfillmentLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3485,10 +3389,10 @@ func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfil
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error {
+func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(tx boil.ContextTransactor, option *model.FulfillmentLineFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
+	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(tx, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3549,10 +3453,10 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+func (s *TimerLayerGiftCardStore) AddRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error {
 	start := timemodule.Now()
 
-	err := s.GiftCardStore.AddRelations(transaction, giftcards, relations)
+	err := s.GiftCardStore.AddRelations(tx, giftcards, relations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3565,10 +3469,10 @@ func (s *TimerLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards m
 	return err
 }
 
-func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) BulkUpsert(tx boil.ContextTransactor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
+	result, err := s.GiftCardStore.BulkUpsert(tx, giftCards...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3581,7 +3485,7 @@ func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
+func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.DeactivateOrderGiftcards(tx, orderID)
@@ -3597,10 +3501,10 @@ func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID 
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
+func (s *TimerLayerGiftCardStore) DeleteGiftcards(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
+	err := s.GiftCardStore.DeleteGiftcards(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3645,10 +3549,10 @@ func (s *TimerLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+func (s *TimerLayerGiftCardStore) RemoveRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error {
 	start := timemodule.Now()
 
-	err := s.GiftCardStore.RemoveRelations(transaction, giftcards, relations)
+	err := s.GiftCardStore.RemoveRelations(tx, giftcards, relations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3661,10 +3565,10 @@ func (s *TimerLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcard
 	return err
 }
 
-func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) BulkUpsert(tx boil.ContextTransactor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
+	result, err := s.GiftcardEventStore.BulkUpsert(tx, events...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3725,10 +3629,10 @@ func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *TimerLayerInvoiceStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 	start := timemodule.Now()
 
-	err := s.InvoiceStore.Delete(transaction, ids...)
+	err := s.InvoiceStore.Delete(tx, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3821,6 +3725,22 @@ func (s *TimerLayerInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (
 	return result, err
 }
 
+func (s *TimerLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.JobStore.Count(mods...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.Count", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerJobStore) Delete(id string) (string, error) {
 	start := timemodule.Now()
 
@@ -3837,10 +3757,26 @@ func (s *TimerLayerJobStore) Delete(id string) (string, error) {
 	return result, err
 }
 
-func (s *TimerLayerJobStore) Get(id string) (*model.Job, error) {
+func (s *TimerLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.Get(id)
+	result, err := s.JobStore.FindAll(mods...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.FindAll", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
+	start := timemodule.Now()
+
+	result, err := s.JobStore.Get(mods...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3853,135 +3789,7 @@ func (s *TimerLayerJobStore) Get(id string) (*model.Job, error) {
 	return result, err
 }
 
-func (s *TimerLayerJobStore) GetAllByStatus(status string) ([]*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetAllByStatus(status)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetAllByStatus", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetAllByType(jobType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetAllByType", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetAllByTypePage(jobType, offset, limit)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetAllByTypePage", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetAllByTypesPage(jobTypes, offset, limit)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetAllByTypesPage", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetAllPage(offset, limit)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetAllPage", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetCountByStatusAndType(status string, jobType string) (int64, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetCountByStatusAndType(status, jobType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetCountByStatusAndType", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetNewestJobByStatusAndType(status string, jobType string) (*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetNewestJobByStatusAndType(status, jobType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetNewestJobByStatusAndType", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
-	start := timemodule.Now()
-
-	result, err := s.JobStore.GetNewestJobByStatusesAndType(statuses, jobType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.GetNewestJobByStatusesAndType", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerJobStore) Save(job *model.Job) (*model.Job, error) {
+func (s *TimerLayerJobStore) Save(job model.Job) (*model.Job, error) {
 	start := timemodule.Now()
 
 	result, err := s.JobStore.Save(job)
@@ -3997,7 +3805,7 @@ func (s *TimerLayerJobStore) Save(job *model.Job) (*model.Job, error) {
 	return result, err
 }
 
-func (s *TimerLayerJobStore) UpdateOptimistically(job *model.Job, currentStatus string) (bool, error) {
+func (s *TimerLayerJobStore) UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.JobStore.UpdateOptimistically(job, currentStatus)
@@ -4013,7 +3821,7 @@ func (s *TimerLayerJobStore) UpdateOptimistically(job *model.Job, currentStatus 
 	return result, err
 }
 
-func (s *TimerLayerJobStore) UpdateStatus(id string, status string) (*model.Job, error) {
+func (s *TimerLayerJobStore) UpdateStatus(id string, status model.JobStatus) (*model.Job, error) {
 	start := timemodule.Now()
 
 	result, err := s.JobStore.UpdateStatus(id, status)
@@ -4029,7 +3837,7 @@ func (s *TimerLayerJobStore) UpdateStatus(id string, status string) (*model.Job,
 	return result, err
 }
 
-func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {
+func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.JobStore.UpdateStatusOptimistically(id, currentStatus, newStatus)
@@ -4045,20 +3853,20 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
-func (s *TimerLayerMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
+func (s *TimerLayerMenuStore) Delete(ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, resultVar1 := s.MenuStore.Delete(ids)
+	result, err := s.MenuStore.Delete(ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if true {
+		if err == nil {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.Delete", success, elapsed)
 	}
-	return result, resultVar1
+	return result, err
 }
 
 func (s *TimerLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
@@ -4109,20 +3917,20 @@ func (s *TimerLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 	return result, err
 }
 
-func (s *TimerLayerMenuItemStore) Delete(ids []string) (int64, *model_helper.AppError) {
+func (s *TimerLayerMenuItemStore) Delete(ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, resultVar1 := s.MenuItemStore.Delete(ids)
+	result, err := s.MenuItemStore.Delete(ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if true {
+		if err == nil {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.Delete", success, elapsed)
 	}
-	return result, resultVar1
+	return result, err
 }
 
 func (s *TimerLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
@@ -4205,10 +4013,10 @@ func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
+func (s *TimerLayerOrderStore) BulkUpsert(tx boil.ContextTransactor, orders []*model.Order) ([]*model.Order, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.BulkUpsert(transaction, orders)
+	result, err := s.OrderStore.BulkUpsert(tx, orders)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4221,10 +4029,10 @@ func (s *TimerLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+func (s *TimerLayerOrderStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.Delete(transaction, ids)
+	result, err := s.OrderStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4317,10 +4125,10 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
+	result, err := s.OrderDiscountStore.Upsert(tx, orderDiscount)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4365,10 +4173,10 @@ func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent,
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) Save(tx boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderEventStore.Save(transaction, orderEvent)
+	result, err := s.OrderEventStore.Save(tx, orderEvent)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4381,7 +4189,7 @@ func (s *TimerLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
+func (s *TimerLayerOrderLineStore) BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.OrderLineStore.BulkDelete(tx, orderLineIDs)
@@ -4397,10 +4205,10 @@ func (s *TimerLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string
 	return err
 }
 
-func (s *TimerLayerOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
+	result, err := s.OrderLineStore.BulkUpsert(tx, orderLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4445,10 +4253,10 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderLineStore.Upsert(transaction, orderLine)
+	result, err := s.OrderLineStore.Upsert(tx, orderLine)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4525,10 +4333,10 @@ func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
+func (s *TimerLayerPaymentStore) Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Save(transaction, model)
+	result, err := s.PaymentStore.Save(tx, model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4541,10 +4349,10 @@ func (s *TimerLayerPaymentStore) Save(transaction *gorm.DB, model *model.Payment
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
+func (s *TimerLayerPaymentStore) Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Update(transaction, model)
+	result, err := s.PaymentStore.Update(tx, model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4557,10 +4365,10 @@ func (s *TimerLayerPaymentStore) Update(transaction *gorm.DB, model *model.Payme
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error {
+func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error {
 	start := timemodule.Now()
 
-	err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+	err := s.PaymentStore.UpdatePaymentsOfCheckout(tx, checkoutToken, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4605,10 +4413,10 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
+	result, err := s.PaymentTransactionStore.Save(tx, paymentTransaction)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4781,7 +4589,7 @@ func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) (model.PluginConfigurationSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.FilterPluginConfigurations(options)
@@ -4813,7 +4621,7 @@ func (s *TimerLayerPluginConfigurationStore) Get(id string) (*model.PluginConfig
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) GetByOptions(options model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.GetByOptions(options)
@@ -4829,7 +4637,7 @@ func (s *TimerLayerPluginConfigurationStore) GetByOptions(options *model.PluginC
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) Upsert(config model.PluginConfiguration) (*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.Upsert(config)
@@ -4940,7 +4748,7 @@ func (s *TimerLayerPreferenceStore) Get(userID string, category string, name str
 	return result, err
 }
 
-func (s *TimerLayerPreferenceStore) GetAll(userID string) (model.Preferences, error) {
+func (s *TimerLayerPreferenceStore) GetAll(userID string) (model.PreferenceSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreferenceStore.GetAll(userID)
@@ -4956,7 +4764,7 @@ func (s *TimerLayerPreferenceStore) GetAll(userID string) (model.Preferences, er
 	return result, err
 }
 
-func (s *TimerLayerPreferenceStore) GetCategory(userID string, category string) (model.Preferences, error) {
+func (s *TimerLayerPreferenceStore) GetCategory(userID string, category string) (model.PreferenceSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreferenceStore.GetCategory(userID, category)
@@ -4988,7 +4796,7 @@ func (s *TimerLayerPreferenceStore) PermanentDeleteByUser(userID string) error {
 	return err
 }
 
-func (s *TimerLayerPreferenceStore) Save(preferences model.Preferences) error {
+func (s *TimerLayerPreferenceStore) Save(preferences model.PreferenceSlice) error {
 	start := timemodule.Now()
 
 	err := s.PreferenceStore.Save(preferences)
@@ -5004,10 +4812,10 @@ func (s *TimerLayerPreferenceStore) Save(preferences model.Preferences) error {
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (s *TimerLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
+	result, err := s.PreorderAllocationStore.BulkCreate(tx, preorderAllocations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5020,10 +4828,10 @@ func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction *gorm.DB, pre
 	return result, err
 }
 
-func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error {
+func (s *TimerLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error {
 	start := timemodule.Now()
 
-	err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
+	err := s.PreorderAllocationStore.Delete(tx, preorderAllocationIDs...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5036,7 +4844,7 @@ func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorm.DB, preorde
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
+func (s *TimerLayerPreorderAllocationStore) FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreorderAllocationStore.FilterByOption(options)
@@ -5084,7 +4892,7 @@ func (s *TimerLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*mo
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.FilterByOption(option)
@@ -5148,7 +4956,7 @@ func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) (model.P
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.PublishedProducts(channelSlug)
@@ -5180,7 +4988,7 @@ func (s *TimerLayerProductStore) PublishedWithVariants(channelIdOrSlug string) s
 	return result
 }
 
-func (s *TimerLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+func (s *TimerLayerProductStore) Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.Save(tx, product)
@@ -5196,10 +5004,10 @@ func (s *TimerLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*mod
 	return result, err
 }
 
-func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
+	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5228,10 +5036,10 @@ func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug stri
 	return result
 }
 
-func (s *TimerLayerProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
+	result, err := s.ProductChannelListingStore.BulkUpsert(tx, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5276,7 +5084,7 @@ func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*mo
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *TimerLayerProductMediaStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductMediaStore.Delete(tx, ids)
@@ -5324,7 +5132,7 @@ func (s *TimerLayerProductMediaStore) Get(id string) (*model.ProductMedia, error
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
+func (s *TimerLayerProductMediaStore) Upsert(tx boil.ContextTransactor, medias model.ProductMedias) (model.ProductMedias, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductMediaStore.Upsert(tx, medias)
@@ -5388,7 +5196,7 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *model.ProductTra
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *TimerLayerProductTypeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.Delete(tx, ids)
@@ -5484,7 +5292,7 @@ func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
+func (s *TimerLayerProductTypeStore) Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.Save(tx, productType)
@@ -5500,7 +5308,7 @@ func (s *TimerLayerProductTypeStore) Save(tx *gorm.DB, productType *model.Produc
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes model.Attributes, variantAttributes model.Attributes, isDelete bool) error {
+func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes model.AttributeSlice, variantAttributes model.AttributeSlice, isDelete bool) error {
 	start := timemodule.Now()
 
 	err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
@@ -5516,7 +5324,7 @@ func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 	return err
 }
 
-func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *TimerLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Delete(tx, ids)
@@ -5532,7 +5340,7 @@ func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.FilterByOption(option)
@@ -5612,10 +5420,10 @@ func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Save(tx boil.ContextTransactor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantStore.Save(transaction, variant)
+	result, err := s.ProductVariantStore.Save(tx, variant)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5628,7 +5436,7 @@ func (s *TimerLayerProductVariantStore) Save(transaction *gorm.DB, variant *mode
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+func (s *TimerLayerProductVariantStore) ToggleProductVariantRelations(tx boil.ContextTransactor, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
 	start := timemodule.Now()
 
 	err := s.ProductVariantStore.ToggleProductVariantRelations(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
@@ -5644,10 +5452,10 @@ func (s *TimerLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.D
 	return err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
+	result, err := s.ProductVariantChannelListingStore.BulkUpsert(tx, variantChannelListings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5788,7 +5596,7 @@ func (s *TimerLayerRoleStore) Get(roleID string) (*model.Role, error) {
 	return result, err
 }
 
-func (s *TimerLayerRoleStore) GetAll() ([]*model.Role, error) {
+func (s *TimerLayerRoleStore) GetAll() (model.RoleSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.RoleStore.GetAll()
@@ -5820,7 +5628,7 @@ func (s *TimerLayerRoleStore) GetByName(ctx context.Context, name string) (*mode
 	return result, err
 }
 
-func (s *TimerLayerRoleStore) GetByNames(names []string) ([]*model.Role, error) {
+func (s *TimerLayerRoleStore) GetByNames(names []string) (model.RoleSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.RoleStore.GetByNames(names)
@@ -5852,10 +5660,10 @@ func (s *TimerLayerRoleStore) PermanentDeleteAll() error {
 	return err
 }
 
-func (s *TimerLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
+func (s *TimerLayerRoleStore) Upsert(role model.Role) (*model.Role, error) {
 	start := timemodule.Now()
 
-	result, err := s.RoleStore.Save(role)
+	result, err := s.RoleStore.Upsert(role)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5863,7 +5671,7 @@ func (s *TimerLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("RoleStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("RoleStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -5915,7 +5723,7 @@ func (s *TimerLayerSessionStore) Get(ctx context.Context, sessionIDOrToken strin
 	return result, err
 }
 
-func (s *TimerLayerSessionStore) GetSessions(userID string) ([]*model.Session, error) {
+func (s *TimerLayerSessionStore) GetSessions(userID string) (model.SessionSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.SessionStore.GetSessions(userID)
@@ -5931,7 +5739,7 @@ func (s *TimerLayerSessionStore) GetSessions(userID string) ([]*model.Session, e
 	return result, err
 }
 
-func (s *TimerLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
+func (s *TimerLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) (model.SessionSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.SessionStore.GetSessionsExpired(thresholdMillis, mobileOnly, unnotifiedOnly)
@@ -5947,7 +5755,7 @@ func (s *TimerLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobil
 	return result, err
 }
 
-func (s *TimerLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error) {
+func (s *TimerLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) (model.SessionSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.SessionStore.GetSessionsWithActiveDeviceIds(userID)
@@ -5963,10 +5771,10 @@ func (s *TimerLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) (
 	return result, err
 }
 
-func (s *TimerLayerSessionStore) PermanentDeleteSessionsByUser(teamID string) error {
+func (s *TimerLayerSessionStore) PermanentDeleteSessionsByUser(userID string) error {
 	start := timemodule.Now()
 
-	err := s.SessionStore.PermanentDeleteSessionsByUser(teamID)
+	err := s.SessionStore.PermanentDeleteSessionsByUser(userID)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6011,7 +5819,7 @@ func (s *TimerLayerSessionStore) RemoveAllSessions() error {
 	return err
 }
 
-func (s *TimerLayerSessionStore) Save(session *model.Session) (*model.Session, error) {
+func (s *TimerLayerSessionStore) Save(session model.Session) (*model.Session, error) {
 	start := timemodule.Now()
 
 	result, err := s.SessionStore.Save(session)
@@ -6091,7 +5899,7 @@ func (s *TimerLayerSessionStore) UpdateLastActivityAt(sessionID string, time int
 	return err
 }
 
-func (s *TimerLayerSessionStore) UpdateProps(session *model.Session) error {
+func (s *TimerLayerSessionStore) UpdateProps(session model.Session) error {
 	start := timemodule.Now()
 
 	err := s.SessionStore.UpdateProps(session)
@@ -6123,7 +5931,7 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
@@ -6139,10 +5947,10 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *TimerLayerShippingMethodStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 	start := timemodule.Now()
 
-	err := s.ShippingMethodStore.Delete(transaction, ids...)
+	err := s.ShippingMethodStore.Delete(tx, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6155,7 +5963,7 @@ func (s *TimerLayerShippingMethodStore) Delete(transaction *gorm.DB, ids ...stri
 	return err
 }
 
-func (s *TimerLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.FilterByOptions(options)
@@ -6187,7 +5995,7 @@ func (s *TimerLayerShippingMethodStore) Get(methodID string) (*model.ShippingMet
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.GetbyOption(options)
@@ -6203,10 +6011,10 @@ func (s *TimerLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodStore.Upsert(transaction, method)
+	result, err := s.ShippingMethodStore.Upsert(tx, method)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6219,10 +6027,10 @@ func (s *TimerLayerShippingMethodStore) Upsert(transaction *gorm.DB, method *mod
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) error {
+func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(tx boil.ContextTransactor, options *model.ShippingMethodChannelListingFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
+	err := s.ShippingMethodChannelListingStore.BulkDelete(tx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6235,7 +6043,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction *go
 	return err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.FilterByOption(option)
@@ -6251,10 +6059,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *mod
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Get(id string) (*model.ShippingMethodChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodChannelListingStore.Get(listingID)
+	result, err := s.ShippingMethodChannelListingStore.Get(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6267,10 +6075,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.ShippingMethodChannelListingSlice) (model.ShippingMethodChannelListingSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
+	result, err := s.ShippingMethodChannelListingStore.Upsert(tx, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6283,10 +6091,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.D
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 	start := timemodule.Now()
 
-	err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
+	err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6299,7 +6107,7 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.D
 	return err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
@@ -6315,10 +6123,10 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(tx boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
+	result, err := s.ShippingMethodPostalCodeRuleStore.Save(tx, rules)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6331,7 +6139,7 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB,
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+func (s *TimerLayerShippingZoneStore) CountByOptions(options model.ShippingZoneFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.CountByOptions(options)
@@ -6347,10 +6155,10 @@ func (s *TimerLayerShippingZoneStore) CountByOptions(options *model.ShippingZone
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
+func (s *TimerLayerShippingZoneStore) Delete(tx boil.ContextTransactor, conditions model.ShippingZoneFilterOption) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingZoneStore.Delete(transaction, conditions)
+	result, err := s.ShippingZoneStore.Delete(tx, conditions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6363,7 +6171,7 @@ func (s *TimerLayerShippingZoneStore) Delete(transaction *gorm.DB, conditions *m
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) FilterByOption(option model.ShippingZoneFilterOption) (model.ShippingZoneSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.FilterByOption(option)
@@ -6395,10 +6203,10 @@ func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
+func (s *TimerLayerShippingZoneStore) ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds []string, channelIds []string, delete bool) error {
 	start := timemodule.Now()
 
-	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
+	err := s.ShippingZoneStore.ToggleRelations(tx, zones, warehouseIds, channelIds, delete)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6411,10 +6219,10 @@ func (s *TimerLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zone
 	return err
 }
 
-func (s *TimerLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) Upsert(tx boil.ContextTransactor, shippingZone model.ShippingZone) (*model.ShippingZone, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
+	result, err := s.ShippingZoneStore.Upsert(tx, shippingZone)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6427,7 +6235,7 @@ func (s *TimerLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone 
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
+func (s *TimerLayerShopStaffStore) FilterByOptions(options model_helper.ShopStaffFilterOptions) (model.ShopStaffSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.FilterByOptions(options)
@@ -6459,7 +6267,7 @@ func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, er
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
+func (s *TimerLayerShopStaffStore) GetByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.GetByOptions(options)
@@ -6475,10 +6283,10 @@ func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOp
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
+func (s *TimerLayerShopStaffStore) Upsert(shopStaff model.ShopStaff) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShopStaffStore.Save(shopStaff)
+	result, err := s.ShopStaffStore.Upsert(shopStaff)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6486,7 +6294,7 @@ func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.Shop
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -6507,7 +6315,7 @@ func (s *TimerLayerShopTranslationStore) Get(id string) (*model.ShopTranslation,
 	return result, err
 }
 
-func (s *TimerLayerShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
+func (s *TimerLayerShopTranslationStore) Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopTranslationStore.Upsert(translation)
@@ -6523,10 +6331,10 @@ func (s *TimerLayerShopTranslationStore) Upsert(translation *model.ShopTranslati
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
+	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6539,7 +6347,7 @@ func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options *mod
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
 	start := timemodule.Now()
 
 	result, err := s.StaffNotificationRecipientStore.Save(notificationRecipient)
@@ -6571,7 +6379,7 @@ func (s *TimerLayerStatusStore) Get(userID string) (*model.Status, error) {
 	return result, err
 }
 
-func (s *TimerLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
+func (s *TimerLayerStatusStore) GetByIds(userIds []string) (model.StatusSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StatusStore.GetByIds(userIds)
@@ -6619,22 +6427,6 @@ func (s *TimerLayerStatusStore) ResetAll() error {
 	return err
 }
 
-func (s *TimerLayerStatusStore) SaveOrUpdate(status *model.Status) error {
-	start := timemodule.Now()
-
-	err := s.StatusStore.SaveOrUpdate(status)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StatusStore.SaveOrUpdate", success, elapsed)
-	}
-	return err
-}
-
 func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivityAt int64) error {
 	start := timemodule.Now()
 
@@ -6651,10 +6443,26 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 	return err
 }
 
-func (s *TimerLayerStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
+func (s *TimerLayerStatusStore) Upsert(status model.Status) (*model.Status, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.BulkUpsert(transaction, stocks)
+	result, err := s.StatusStore.Upsert(status)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StatusStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStockStore) BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.BulkUpsert(tx, stocks)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6683,7 +6491,7 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+func (s *TimerLayerStockStore) Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.Delete(tx, options)
@@ -6699,7 +6507,7 @@ func (s *TimerLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterByOption(options model.StockFilterOption) (int64, model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.StockStore.FilterByOption(options)
@@ -6715,7 +6523,7 @@ func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) 
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterForChannel(options model.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.StockStore.FilterForChannel(options)
@@ -6731,7 +6539,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForCha
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterForCountryAndChannel(options)
@@ -6747,7 +6555,7 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFi
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
@@ -6763,7 +6571,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(options)
@@ -6795,7 +6603,7 @@ func (s *TimerLayerStockStore) Get(stockID string) (*model.Stock, error) {
 	return result, err
 }
 
-func (s *TimerLayerSystemStore) Get() (model.StringMap, error) {
+func (s *TimerLayerSystemStore) Get() (map[string]string, error) {
 	start := timemodule.Now()
 
 	result, err := s.SystemStore.Get()
@@ -6859,7 +6667,7 @@ func (s *TimerLayerSystemStore) PermanentDeleteByName(name string) (*model.Syste
 	return result, err
 }
 
-func (s *TimerLayerSystemStore) Save(system *model.System) error {
+func (s *TimerLayerSystemStore) Save(system model.System) error {
 	start := timemodule.Now()
 
 	err := s.SystemStore.Save(system)
@@ -6875,7 +6683,7 @@ func (s *TimerLayerSystemStore) Save(system *model.System) error {
 	return err
 }
 
-func (s *TimerLayerSystemStore) SaveOrUpdate(system *model.System) error {
+func (s *TimerLayerSystemStore) SaveOrUpdate(system model.System) error {
 	start := timemodule.Now()
 
 	err := s.SystemStore.SaveOrUpdate(system)
@@ -6907,7 +6715,7 @@ func (s *TimerLayerSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model
 	return err
 }
 
-func (s *TimerLayerSystemStore) Update(system *model.System) error {
+func (s *TimerLayerSystemStore) Update(system model.System) error {
 	start := timemodule.Now()
 
 	err := s.SystemStore.Update(system)
@@ -6955,7 +6763,7 @@ func (s *TimerLayerTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.T
 	return result, err
 }
 
-func (s *TimerLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+func (s *TimerLayerTermsOfServiceStore) Save(termsOfService model.TermsOfService) (*model.TermsOfService, error) {
 	start := timemodule.Now()
 
 	result, err := s.TermsOfServiceStore.Save(termsOfService)
@@ -6971,19 +6779,20 @@ func (s *TimerLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfServic
 	return result, err
 }
 
-func (s *TimerLayerTokenStore) Cleanup() {
+func (s *TimerLayerTokenStore) Cleanup() error {
 	start := timemodule.Now()
 
-	s.TokenStore.Cleanup()
+	err := s.TokenStore.Cleanup()
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if true {
+		if err == nil {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.Cleanup", success, elapsed)
 	}
+	return err
 }
 
 func (s *TimerLayerTokenStore) Delete(token string) error {
@@ -7002,7 +6811,7 @@ func (s *TimerLayerTokenStore) Delete(token string) error {
 	return err
 }
 
-func (s *TimerLayerTokenStore) GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error) {
+func (s *TimerLayerTokenStore) GetAllTokensByType(tokenType model_helper.TokenType) (model.TokenSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.TokenStore.GetAllTokensByType(tokenType)
@@ -7034,26 +6843,10 @@ func (s *TimerLayerTokenStore) GetByToken(token string) (*model.Token, error) {
 	return result, err
 }
 
-func (s *TimerLayerTokenStore) RemoveAllTokensByType(tokenType string) error {
+func (s *TimerLayerTokenStore) Save(token model.Token) (*model.Token, error) {
 	start := timemodule.Now()
 
-	err := s.TokenStore.RemoveAllTokensByType(tokenType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.RemoveAllTokensByType", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerTokenStore) Save(recovery *model.Token) error {
-	start := timemodule.Now()
-
-	err := s.TokenStore.Save(recovery)
+	result, err := s.TokenStore.Save(token)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7063,7 +6856,7 @@ func (s *TimerLayerTokenStore) Save(recovery *model.Token) error {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.Save", success, elapsed)
 	}
-	return err
+	return result, err
 }
 
 func (s *TimerLayerUploadSessionStore) Delete(id string) error {
@@ -7082,6 +6875,22 @@ func (s *TimerLayerUploadSessionStore) Delete(id string) error {
 	return err
 }
 
+func (s *TimerLayerUploadSessionStore) FindAll(mods ...qm.QueryMod) (model.UploadSessionSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.UploadSessionStore.FindAll(mods...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UploadSessionStore.FindAll", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	start := timemodule.Now()
 
@@ -7098,23 +6907,7 @@ func (s *TimerLayerUploadSessionStore) Get(id string) (*model.UploadSession, err
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
-	start := timemodule.Now()
-
-	result, err := s.UploadSessionStore.GetForUser(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UploadSessionStore.GetForUser", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) Save(session model.UploadSession) (*model.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.Save(session)
@@ -7130,7 +6923,7 @@ func (s *TimerLayerUploadSessionStore) Save(session *model.UploadSession) (*mode
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) error {
+func (s *TimerLayerUploadSessionStore) Update(session model.UploadSession) error {
 	start := timemodule.Now()
 
 	err := s.UploadSessionStore.Update(session)
@@ -7146,23 +6939,7 @@ func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) erro
 	return err
 }
 
-func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
-	start := timemodule.Now()
-
-	result := s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.AddRelations", success, elapsed)
-	}
-	return result
-}
-
-func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCount(time, options)
@@ -7178,7 +6955,7 @@ func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.Use
 	return result, err
 }
 
-func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCountForPeriod(startTime, endTime, options)
@@ -7289,7 +7066,7 @@ func (s *TimerLayerUserStore) ClearCaches() {
 	}
 }
 
-func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) Count(options model_helper.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Count(options)
@@ -7305,10 +7082,10 @@ func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 	return result, err
 }
 
-func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
+func (s *TimerLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.UserStore.FilterByOptions(ctx, options)
+	result, err := s.UserStore.Find(conds...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7316,12 +7093,28 @@ func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *mode
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.FilterByOptions", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Find", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+func (s *TimerLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.Get(conds...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) GetAllProfiles(options model_helper.UserGetOptions) (model.UserSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllProfiles(options)
@@ -7333,22 +7126,6 @@ func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllProfiles", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetByOptions(ctx, options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -7369,10 +7146,10 @@ func (s *TimerLayerUserStore) GetEtagForAllProfiles() string {
 	return result
 }
 
-func (s *TimerLayerUserStore) GetEtagForProfiles(teamID string) string {
+func (s *TimerLayerUserStore) GetEtagForProfiles() string {
 	start := timemodule.Now()
 
-	result := s.UserStore.GetEtagForProfiles(teamID)
+	result := s.UserStore.GetEtagForProfiles()
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7401,23 +7178,7 @@ func (s *TimerLayerUserStore) GetForLogin(loginID string, allowSignInWithUsernam
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetKnownUsers(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetKnownUsers", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
@@ -7449,23 +7210,7 @@ func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, 
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetUnreadCount(userID string) (int64, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetUnreadCount(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetUnreadCount", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model_helper.UserForIndexing, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetUsersBatchForIndexing(startTime, endTime, limit)
@@ -7544,22 +7289,6 @@ func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
-	start := timemodule.Now()
-
-	result := s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.RemoveRelations", success, elapsed)
-	}
-	return result
-}
-
 func (s *TimerLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
 	start := timemodule.Now()
 
@@ -7592,7 +7321,7 @@ func (s *TimerLayerUserStore) ResetLastPictureUpdate(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
+func (s *TimerLayerUserStore) Save(user model.User) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Save(user)
@@ -7608,7 +7337,7 @@ func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (s *TimerLayerUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Search(term, options)
@@ -7624,7 +7353,7 @@ func (s *TimerLayerUserStore) Search(term string, options *model.UserSearchOptio
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
+func (s *TimerLayerUserStore) Update(user model.User, allowRoleUpdate bool) (*model_helper.UserUpdate, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Update(user, allowRoleUpdate)
@@ -7672,10 +7401,10 @@ func (s *TimerLayerUserStore) UpdateFailedPasswordAttempts(userID string, attemp
 	return err
 }
 
-func (s *TimerLayerUserStore) UpdateLastPictureUpdate(userID string) error {
+func (s *TimerLayerUserStore) UpdateLastPictureUpdate(userID string, updateMillis int64) error {
 	start := timemodule.Now()
 
-	err := s.UserStore.UpdateLastPictureUpdate(userID)
+	err := s.UserStore.UpdateLastPictureUpdate(userID, updateMillis)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7816,10 +7545,10 @@ func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserAccessTokenStore.GetAll(offset, limit)
+	result, err := s.UserAccessTokenStore.GetAll(conds...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7848,23 +7577,7 @@ func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserAccessTokenStore.GetByUser(userID, page, perPage)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAccessTokenStore.GetByUser", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Save(token model.UserAccessToken) (*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Save(token)
@@ -7880,7 +7593,7 @@ func (s *TimerLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*mo
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Search(term string) (model.UserAccessTokenSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Search(term)
@@ -7928,10 +7641,10 @@ func (s *TimerLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 	return err
 }
 
-func (s *TimerLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+func (s *TimerLayerVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.VatStore.FilterByOptions(options)
+	result, err := s.VatStore.FilterByOptions(options...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7944,10 +7657,10 @@ func (s *TimerLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([
 	return result, err
 }
 
-func (s *TimerLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error) {
+func (s *TimerLayerVatStore) Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.VatStore.Upsert(transaction, vats)
+	result, err := s.VatStore.Upsert(tx, vats)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7960,10 +7673,10 @@ func (s *TimerLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+func (s *TimerLayerVoucherChannelListingStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.VoucherChannelListingStore.Delete(transaction, option)
+	err := s.VoucherChannelListingStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7976,7 +7689,7 @@ func (s *TimerLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, opti
 	return err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option model_helper.VoucherChannelListingFilterOption) (model.VoucherChannelListingSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherChannelListingStore.FilterbyOption(option)
@@ -8008,10 +7721,10 @@ func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) Upsert(tx boil.ContextTransactor, voucherChannelListings model.VoucherChannelListingSlice) (model.VoucherChannelListingSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherChannelListingStore.Upsert(transaction, voucherChannelListings)
+	result, err := s.VoucherChannelListingStore.Upsert(tx, voucherChannelListings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8024,10 +7737,10 @@ func (s *TimerLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, vouc
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
+func (s *TimerLayerVoucherCustomerStore) Delete(ids []string) error {
 	start := timemodule.Now()
 
-	err := s.VoucherCustomerStore.DeleteInBulk(options)
+	err := s.VoucherCustomerStore.Delete(ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8035,12 +7748,12 @@ func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCust
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.DeleteInBulk", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.Delete", success, elapsed)
 	}
 	return err
 }
 
-func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options model_helper.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.FilterByOptions(options)
@@ -8056,7 +7769,7 @@ func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherC
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) GetByOption(options model_helper.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.GetByOption(options)
@@ -8072,7 +7785,7 @@ func (s *TimerLayerVoucherCustomerStore) GetByOption(options *model.VoucherCusto
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.Save(voucherCustomer)
@@ -8088,7 +7801,7 @@ func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCust
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) FilterByOption(option model_helper.VoucherTranslationFilterOption) (model.VoucherTranslationSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.FilterByOption(option)
@@ -8120,7 +7833,7 @@ func (s *TimerLayerVoucherTranslationStore) Get(id string) (*model.VoucherTransl
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) GetByOption(option model_helper.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.GetByOption(option)
@@ -8136,10 +7849,10 @@ func (s *TimerLayerVoucherTranslationStore) GetByOption(option *model.VoucherTra
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) Upsert(translation model.VoucherTranslation) (*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherTranslationStore.Save(translation)
+	result, err := s.VoucherTranslationStore.Upsert(translation)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8147,12 +7860,12 @@ func (s *TimerLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectCheckoutLines(checkoutLines, country)
@@ -8168,7 +7881,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(che
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
@@ -8184,7 +7897,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectOrderLines(orderLines, country)
@@ -8200,10 +7913,10 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *TimerLayerWarehouseStore) Delete(tx boil.ContextTransactor, ids ...string) error {
 	start := timemodule.Now()
 
-	err := s.WarehouseStore.Delete(transaction, ids...)
+	err := s.WarehouseStore.Delete(tx, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8216,7 +7929,7 @@ func (s *TimerLayerWarehouseStore) Delete(transaction *gorm.DB, ids ...string) e
 	return err
 }
 
-func (s *TimerLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) FilterByOprion(option model.WarehouseFilterOption) ([]*model.Warehouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.FilterByOprion(option)
@@ -8232,7 +7945,7 @@ func (s *TimerLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterO
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) GetByOption(option model.WarehouseFilterOption) (*model.Warehouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.GetByOption(option)
@@ -8248,7 +7961,7 @@ func (s *TimerLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOpti
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Save(model model.Warehouse) (*model.Warehouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.Save(model)
@@ -8264,7 +7977,7 @@ func (s *TimerLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHous
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Update(warehouse model.Warehouse) (*model.Warehouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.Update(warehouse)
@@ -8280,7 +7993,7 @@ func (s *TimerLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.Wa
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Warehouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.WarehouseByStockID(stockID)
@@ -8312,7 +8025,7 @@ func (s *TimerLayerWarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelI
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
+func (s *TimerLayerWishlistStore) GetByOption(option model.WishlistFilterOption) (*model.Wishlist, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistStore.GetByOption(option)
@@ -8328,7 +8041,7 @@ func (s *TimerLayerWishlistStore) GetByOption(option *model.WishlistFilterOption
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
+func (s *TimerLayerWishlistStore) Upsert(wishList model.Wishlist) (*model.Wishlist, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistStore.Upsert(wishList)
@@ -8344,10 +8057,10 @@ func (s *TimerLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishl
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (s *TimerLayerWishlistItemStore) BulkUpsert(tx boil.ContextTransactor, wishlistItems model.WishlistItemSlice) (model.WishlistItemSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
+	result, err := s.WishlistItemStore.BulkUpsert(tx, wishlistItems)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8360,10 +8073,10 @@ func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistI
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) {
+func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(tx boil.ContextTransactor, option model.WishlistItemFilterOption) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
+	result, err := s.WishlistItemStore.DeleteItemsByOption(tx, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8376,7 +8089,7 @@ func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, 
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) FilterByOption(option model.WishlistItemFilterOption) (model.WishlistItemSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.FilterByOption(option)
@@ -8408,7 +8121,7 @@ func (s *TimerLayerWishlistItemStore) GetById(id string) (*model.WishlistItem, e
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetByOption(option model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.GetByOption(option)
