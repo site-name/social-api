@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
   mfa_secret varchar(128) NOT NULL,
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL,
-  delete_at bigint,
+  delete_at bigint NOT NULL,
   is_active boolean NOT NULL,
   note text,
   jwt_token_key text NOT NULL,

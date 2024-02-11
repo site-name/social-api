@@ -782,9 +782,9 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		Upsert(tx boil.ContextTransactor, address model.Address) (*model.Address, error)
-		Get(addressID string) (*model.Address, error)                                        // Get returns an Address with given addressID is exist
-		DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error                // DeleteAddress deletes given address and returns an error
-		FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) // FilterByOption finds and returns a list of address(es) filtered by given option
+		Get(addressID string) (*model.Address, error)                         // Get returns an Address with given addressID is exist
+		DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) error // DeleteAddress deletes given address and returns an error
+		FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error)
 	}
 	UserStore interface {
 		ClearCaches()

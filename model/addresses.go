@@ -233,6 +233,7 @@ var AddressWhere = struct {
 
 // AddressRels is where relationship names are stored.
 var AddressRels = struct {
+	User                        string
 	BillingAddressCheckouts     string
 	BillingAddressOrders        string
 	Shops                       string
@@ -240,6 +241,7 @@ var AddressRels = struct {
 	DefaultShippingAddressUsers string
 	Warehouses                  string
 }{
+	User:                        "User",
 	BillingAddressCheckouts:     "BillingAddressCheckouts",
 	BillingAddressOrders:        "BillingAddressOrders",
 	Shops:                       "Shops",
@@ -250,6 +252,7 @@ var AddressRels = struct {
 
 // addressR is where relationships are stored.
 type addressR struct {
+	User                        *User          `boil:"User" json:"User" toml:"User" yaml:"User"`
 	BillingAddressCheckouts     CheckoutSlice  `boil:"BillingAddressCheckouts" json:"BillingAddressCheckouts" toml:"BillingAddressCheckouts" yaml:"BillingAddressCheckouts"`
 	BillingAddressOrders        OrderSlice     `boil:"BillingAddressOrders" json:"BillingAddressOrders" toml:"BillingAddressOrders" yaml:"BillingAddressOrders"`
 	Shops                       ShopSlice      `boil:"Shops" json:"Shops" toml:"Shops" yaml:"Shops"`
@@ -261,6 +264,13 @@ type addressR struct {
 // NewStruct creates a new relationship struct
 func (*addressR) NewStruct() *addressR {
 	return &addressR{}
+}
+
+func (r *addressR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
 }
 
 func (r *addressR) GetBillingAddressCheckouts() CheckoutSlice {
@@ -407,6 +417,17 @@ func (q addressQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
+// User pointed to by the foreign key.
+func (o *Address) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
 // BillingAddressCheckouts retrieves all the checkout's Checkouts with an executor via billing_address_id column.
 func (o *Address) BillingAddressCheckouts(mods ...qm.QueryMod) checkoutQuery {
 	var queryMods []qm.QueryMod
@@ -489,6 +510,118 @@ func (o *Address) Warehouses(mods ...qm.QueryMod) warehouseQuery {
 	)
 
 	return Warehouses(queryMods...)
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+	var slice []*Address
+	var object *Address
+
+	if singular {
+		var ok bool
+		object, ok = maybeAddress.(*Address)
+		if !ok {
+			object = new(Address)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAddress)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAddress))
+			}
+		}
+	} else {
+		s, ok := maybeAddress.(*[]*Address)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAddress)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAddress))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &addressR{}
+		}
+		args[object.UserID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &addressR{}
+			}
+
+			args[obj.UserID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.Addresses = append(foreign.R.Addresses, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.UserID == foreign.ID {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.Addresses = append(foreign.R.Addresses, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadBillingAddressCheckouts allows an eager lookup of values, cached into the
@@ -1122,6 +1255,52 @@ func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress inte
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetUser of the address to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.Addresses.
+func (o *Address) SetUser(exec boil.Executor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"addresses\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+		strmangle.WhereClause("\"", "\"", 2, addressPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.UserID = related.ID
+	if o.R == nil {
+		o.R = &addressR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			Addresses: AddressSlice{o},
+		}
+	} else {
+		related.R.Addresses = append(related.R.Addresses, o)
 	}
 
 	return nil

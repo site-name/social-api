@@ -2,13 +2,11 @@ package account
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAddressStore struct {
@@ -20,33 +18,19 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	return &SqlAddressStore{Store: sqlStore}
 }
 
-func (as *SqlAddressStore) ScanFields(addr *model.Address) []any {
-	return []any{
-		&addr.ID,
-		&addr.FirstName,
-		&addr.LastName,
-		&addr.CompanyName,
-		&addr.StreetAddress1,
-		&addr.StreetAddress2,
-		&addr.City,
-		&addr.CityArea,
-		&addr.PostalCode,
-		&addr.Country,
-		&addr.CountryArea,
-		&addr.Phone,
-		&addr.CreatedAt,
-		&addr.UpdatedAt,
-	}
-}
-
 func (as *SqlAddressStore) Upsert(transaction boil.ContextTransactor, address model.Address) (*model.Address, error) {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 
-	isSaving := address.ID == ""
+	isSaving := false
+	if address.ID == "" {
+		isSaving = true
+		model_helper.AddressPreSave(&address)
+	} else {
+		model_helper.AddressPreUpdate(&address)
+	}
 
-	model_helper.AddressCommonPre(&address)
 	if err := model_helper.AddressIsValid(address); err != nil {
 		return nil, err
 	}
@@ -57,6 +41,7 @@ func (as *SqlAddressStore) Upsert(transaction boil.ContextTransactor, address mo
 	} else {
 		_, err = address.Update(transaction, boil.Blacklist(model.AddressColumns.CreatedAt))
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -75,25 +60,8 @@ func (as *SqlAddressStore) Get(id string) (*model.Address, error) {
 	return address, nil
 }
 
-// FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) {
-	queryMods := option.Conditions
-	if option.UserID != nil {
-		queryMods = append(queryMods,
-			qm.InnerJoin(
-				fmt.Sprintf(
-					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-					model.TableNames.UserAddresses,     // 1
-					model.TableNames.Addresses,         // 2
-					model.UserAddressColumns.AddressID, // 3
-					model.AddressColumns.ID,            // 4
-				),
-			),
-			option.UserID,
-		)
-	}
-
-	return model.Addresses(queryMods...).All(as.GetReplica())
+	return model.Addresses(option.Conditions...).All(as.GetReplica())
 }
 
 func (as *SqlAddressStore) DeleteAddresses(transaction boil.ContextTransactor, addressIDs []string) error {

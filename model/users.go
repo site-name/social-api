@@ -47,7 +47,7 @@ type User struct {
 	MfaSecret                string                 `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
 	CreatedAt                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt                int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeleteAt                 model_types.NullInt64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
+	DeleteAt                 int64                  `boil:"delete_at" json:"delete_at" toml:"delete_at" yaml:"delete_at"`
 	IsActive                 bool                   `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Note                     model_types.NullString `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
 	JWTTokenKey              string                 `boil:"jwt_token_key" json:"jwt_token_key" toml:"jwt_token_key" yaml:"jwt_token_key"`
@@ -233,7 +233,7 @@ var UserWhere = struct {
 	MfaSecret                whereHelperstring
 	CreatedAt                whereHelperint64
 	UpdatedAt                whereHelperint64
-	DeleteAt                 whereHelpermodel_types_NullInt64
+	DeleteAt                 whereHelperint64
 	IsActive                 whereHelperbool
 	Note                     whereHelpermodel_types_NullString
 	JWTTokenKey              whereHelperstring
@@ -268,7 +268,7 @@ var UserWhere = struct {
 	MfaSecret:                whereHelperstring{field: "\"users\".\"mfa_secret\""},
 	CreatedAt:                whereHelperint64{field: "\"users\".\"created_at\""},
 	UpdatedAt:                whereHelperint64{field: "\"users\".\"updated_at\""},
-	DeleteAt:                 whereHelpermodel_types_NullInt64{field: "\"users\".\"delete_at\""},
+	DeleteAt:                 whereHelperint64{field: "\"users\".\"delete_at\""},
 	IsActive:                 whereHelperbool{field: "\"users\".\"is_active\""},
 	Note:                     whereHelpermodel_types_NullString{field: "\"users\".\"note\""},
 	JWTTokenKey:              whereHelperstring{field: "\"users\".\"jwt_token_key\""},
@@ -286,6 +286,7 @@ var UserRels = struct {
 	DefaultShippingAddress      string
 	StaffShopStaff              string
 	Wishlist                    string
+	Addresses                   string
 	Checkouts                   string
 	Compliances                 string
 	CustomerEvents              string
@@ -305,6 +306,7 @@ var UserRels = struct {
 	DefaultShippingAddress:      "DefaultShippingAddress",
 	StaffShopStaff:              "StaffShopStaff",
 	Wishlist:                    "Wishlist",
+	Addresses:                   "Addresses",
 	Checkouts:                   "Checkouts",
 	Compliances:                 "Compliances",
 	CustomerEvents:              "CustomerEvents",
@@ -327,6 +329,7 @@ type userR struct {
 	DefaultShippingAddress      *Address                        `boil:"DefaultShippingAddress" json:"DefaultShippingAddress" toml:"DefaultShippingAddress" yaml:"DefaultShippingAddress"`
 	StaffShopStaff              *ShopStaff                      `boil:"StaffShopStaff" json:"StaffShopStaff" toml:"StaffShopStaff" yaml:"StaffShopStaff"`
 	Wishlist                    *Wishlist                       `boil:"Wishlist" json:"Wishlist" toml:"Wishlist" yaml:"Wishlist"`
+	Addresses                   AddressSlice                    `boil:"Addresses" json:"Addresses" toml:"Addresses" yaml:"Addresses"`
 	Checkouts                   CheckoutSlice                   `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
 	Compliances                 ComplianceSlice                 `boil:"Compliances" json:"Compliances" toml:"Compliances" yaml:"Compliances"`
 	CustomerEvents              CustomerEventSlice              `boil:"CustomerEvents" json:"CustomerEvents" toml:"CustomerEvents" yaml:"CustomerEvents"`
@@ -374,6 +377,13 @@ func (r *userR) GetWishlist() *Wishlist {
 		return nil
 	}
 	return r.Wishlist
+}
+
+func (r *userR) GetAddresses() AddressSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Addresses
 }
 
 func (r *userR) GetCheckouts() CheckoutSlice {
@@ -479,8 +489,8 @@ type userL struct{}
 
 var (
 	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "note", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email", "metadata", "private_metadata"}
-	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email"}
-	userColumnsWithDefault    = []string{"id", "default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "delete_at", "note", "metadata", "private_metadata"}
+	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email"}
+	userColumnsWithDefault    = []string{"id", "default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "note", "metadata", "private_metadata"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -618,6 +628,20 @@ func (o *User) Wishlist(mods ...qm.QueryMod) wishlistQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Wishlists(queryMods...)
+}
+
+// Addresses retrieves all the address's Addresses with an executor.
+func (o *User) Addresses(mods ...qm.QueryMod) addressQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"addresses\".\"user_id\"=?", o.ID),
+	)
+
+	return Addresses(queryMods...)
 }
 
 // Checkouts retrieves all the checkout's Checkouts with an executor.
@@ -1256,6 +1280,112 @@ func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{},
 				local.R.Wishlist = foreign
 				if foreign.R == nil {
 					foreign.R = &wishlistR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadAddresses allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`addresses`),
+		qm.WhereIn(`addresses.user_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load addresses")
+	}
+
+	var resultSlice []*Address
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice addresses")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on addresses")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
+	}
+
+	if singular {
+		object.R.Addresses = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &addressR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.Addresses = append(local.R.Addresses, foreign)
+				if foreign.R == nil {
+					foreign.R = &addressR{}
 				}
 				foreign.R.User = local
 				break
@@ -3002,6 +3132,58 @@ func (o *User) SetWishlist(exec boil.Executor, insert bool, related *Wishlist) e
 		}
 	} else {
 		related.R.User = o
+	}
+	return nil
+}
+
+// AddAddresses adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.Addresses.
+// Sets related.R.User appropriately.
+func (o *User) AddAddresses(exec boil.Executor, insert bool, related ...*Address) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"addresses\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+				strmangle.WhereClause("\"", "\"", 2, addressPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			Addresses: related,
+		}
+	} else {
+		o.R.Addresses = append(o.R.Addresses, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &addressR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
 	}
 	return nil
 }

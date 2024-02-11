@@ -4077,10 +4077,10 @@ func (s *TimerLayerOrderStore) Get(id string) (*model.Order, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+func (s *TimerLayerOrderDiscountStore) BulkDelete(ids []string) error {
 	start := timemodule.Now()
 
-	err := s.OrderDiscountStore.BulkDelete(orderDiscountIDs)
+	err := s.OrderDiscountStore.BulkDelete(ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4093,7 +4093,7 @@ func (s *TimerLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) err
 	return err
 }
 
-func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) FilterbyOption(option model_helper.OrderDiscountFilterOption) (model.OrderDiscountSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.FilterbyOption(option)
@@ -4125,7 +4125,7 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount model.OrderDiscount) (*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Upsert(tx, orderDiscount)

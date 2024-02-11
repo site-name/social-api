@@ -4834,11 +4834,11 @@ func (s *RetryLayerOrderStore) Get(id string) (*model.Order, error) {
 
 }
 
-func (s *RetryLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+func (s *RetryLayerOrderDiscountStore) BulkDelete(ids []string) error {
 
 	tries := 0
 	for {
-		err := s.OrderDiscountStore.BulkDelete(orderDiscountIDs)
+		err := s.OrderDiscountStore.BulkDelete(ids)
 		if err == nil {
 			return nil
 		}
@@ -4854,7 +4854,7 @@ func (s *RetryLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) err
 
 }
 
-func (s *RetryLayerOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) FilterbyOption(option model_helper.OrderDiscountFilterOption) (model.OrderDiscountSlice, error) {
 
 	tries := 0
 	for {
@@ -4894,7 +4894,7 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDiscount model.OrderDiscount) (*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
