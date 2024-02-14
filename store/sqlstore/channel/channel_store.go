@@ -57,18 +57,38 @@ func (s *SqlChannelStore) GetByOptions(conds model_helper.ChannelFilterOptions) 
 }
 
 func (s *SqlChannelStore) Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error) {
-	var isSaving bool
-	if !model_helper.IsValidId(channel.ID) {
-		isSaving = true
+	isSaving := channel.ID == ""
+	if isSaving {
+		model_helper.ChannelPreSave(&channel)
 	} else {
-
+		model_helper.ChannelCommonPre(&channel)
 	}
+
+	if err := model_helper.ChannelIsValid(channel); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = channel.Insert(tx, boil.Infer())
+	} else {
+		_, err = channel.Update(tx, boil.Infer())
+	}
+
+	if err != nil {
+		if s.IsUniqueConstraintError(err, []string{model.ChannelColumns.Slug, "channels_slug_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Channels, model.ChannelColumns.Slug, channel.Slug)
+		}
+		return nil, err
+	}
+
+	return &channel, nil
 }
 
 func commonQueryBuilder(conds model_helper.ChannelFilterOptions) []qm.QueryMod {
 	res := []qm.QueryMod{}
 
-	for _, cond := range conds.Conds {
+	for _, cond := range conds.Conditions {
 		if cond != nil {
 			res = append(res, cond)
 		}
@@ -89,42 +109,6 @@ func commonQueryBuilder(conds model_helper.ChannelFilterOptions) []qm.QueryMod {
 
 	return res
 }
-
-// func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
-// 	return []interface{}{
-// 		&ch.ID,
-// 		&ch.Name,
-// 		&ch.IsActive,
-// 		&ch.Slug,
-// 		&ch.Currency,
-// 		&ch.DefaultCountry,
-// 	}
-// }
-
-// func (s *SqlChannelStore) Upsert(tx store.ContextRunner, channel *model.Channel) (*model.Channel, error) {
-// 	err := transaction.Save(channel).Error
-// 	if err != nil {
-// 		if s.IsUniqueConstraintError(err, []string{"slug", "slug_unique_key", "idx_channels_slug_unique"}) {
-// 			return nil, store.NewErrInvalidInput(model.ChannelTableName, "Slug", channel.Slug)
-// 		}
-// 		return nil, errors.Wrap(err, "failed to upsert channel")
-// 	}
-// 	return channel, nil
-// }
-
-// func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
-// 	var channel model.Channel
-
-// 	err := cs.GetReplica().First(&channel, "Id = ?", id).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return nil, store.NewErrNotFound(model.ChannelTableName, id)
-// 		}
-// 		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
-// 	}
-
-// 	return &channel, nil
-// }
 
 // // FilterByOption returns a list of channels with given option
 // func (cs *SqlChannelStore) Find(option model_helper.ChannelFilterOption) (model.ChannelSlice, error) {
@@ -188,11 +172,4 @@ func commonQueryBuilder(conds model_helper.ChannelFilterOptions) []qm.QueryMod {
 // 	}
 
 // 	return res, nil
-// }
-
-// func (s *SqlChannelStore) DeleteChannels(tx store.ContextRunner, ids []string) error {
-// 	if transaction == nil {
-// 		transaction = s.GetMaster()
-// 	}
-// 	return transaction.Raw("DELETE FROM "+model.ChannelTableName+" WHERE Id IN ?", ids).Error
 // }

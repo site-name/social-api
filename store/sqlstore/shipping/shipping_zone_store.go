@@ -1,14 +1,14 @@
 package shipping
 
 import (
-	"strings"
+	"database/sql"
+	"fmt"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlShippingZoneStore struct {
@@ -19,180 +19,118 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	return &SqlShippingZoneStore{s}
 }
 
-// Upsert depends on given shipping zone's Id to decide update or insert the zone
-func (s *SqlShippingZoneStore) Upsert(tran *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *SqlShippingZoneStore) Upsert(tran boil.ContextTransactor, shippingZone model.ShippingZone) (*model.ShippingZone, error) {
 	if tran == nil {
 		tran = s.GetMaster()
 	}
 
-	err := tran.Save(shippingZone).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert shipping zone")
+	isSaving := shippingZone.ID == ""
+	if isSaving {
+		model_helper.ShippingZonePreSave(&shippingZone)
+	} else {
+		model_helper.ShippingZoneCommonPre(&shippingZone)
 	}
-	return shippingZone, nil
+
+	if err := model_helper.ShippingZoneIsValid(shippingZone); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = shippingZone.Insert(tran, boil.Infer())
+	} else {
+		_, err = shippingZone.Update(tran, boil.Blacklist(model.ShippingZoneColumns.CreatedAt))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &shippingZone, nil
 }
 
-// Get finds 1 shipping zone for given shippingZoneID
 func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
-	var res model.ShippingZone
-	err := s.GetReplica().First(&res, "Id = ?", shippingZoneID).Error
+	zone, err := model.FindShippingZone(s.GetReplica(), shippingZoneID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ShippingZoneTableName, shippingZoneID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ShippingZones, shippingZoneID)
 		}
-		return nil, errors.Wrapf(err, "failed to find shipping zone with id=%s", shippingZoneID)
+		return nil, err
 	}
 
-	return &res, nil
+	return zone, nil
 }
 
-// FilterByOption finds a list of shipping zones based on given option
-func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
-	selectFields := []string{model.ShippingZoneTableName + ".*"}
-	if option.SelectRelatedWarehouses {
-		selectFields = append(selectFields, model.WarehouseTableName+".*")
-	}
-
-	query := s.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.ShippingZoneTableName)
-
-	// parse options
-	for _, opt := range []squirrel.Sqlizer{
-		option.Conditions,
-		option.WarehouseID,
-		option.ChannelID,
-	} {
-		query = query.Where(opt)
-	}
-
-	if option.WarehouseID != nil || option.SelectRelatedWarehouses {
-		query = query.InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+func (s *SqlShippingZoneStore) commonQueryConditionBuilder(option model_helper.ShippingZoneFilterOption) []qm.QueryMod {
+	result := option.Conditions
+	if option.WarehouseID != nil {
+		result = append(
+			result,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.WarehouseShippingZones, model.WarehouseShippingZoneTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)),
+			option.WarehouseID,
+		)
 	}
 	if option.ChannelID != nil {
-		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
-	}
-	defer rows.Close()
-
-	var (
-		returningShippingZones model.ShippingZones
-		shippingZonesMap       = map[string]*model.ShippingZone{} // keys are shipping zones' ids
-	)
-
-	for rows.Next() {
-		var (
-			shippingZone model.ShippingZone
-			warehouse    model.WareHouse
-			scanFields   = s.ScanFields(&shippingZone)
+		result = append(
+			result,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)),
+			option.ChannelID,
 		)
-		if option.SelectRelatedWarehouses {
-			scanFields = append(scanFields, s.Warehouse().ScanFields(&warehouse)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to to scan a row contains shipping zones")
-		}
-
-		if _, met := shippingZonesMap[shippingZone.Id]; !met {
-			returningShippingZones = append(returningShippingZones, &shippingZone)
-			shippingZonesMap[shippingZone.Id] = &shippingZone
-		}
-		if option.SelectRelatedWarehouses {
-			shippingZonesMap[shippingZone.Id].Warehouses = append(shippingZonesMap[shippingZone.Id].Warehouses, &warehouse)
-		}
 	}
 
-	return returningShippingZones, nil
+	return result
 }
 
-func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
-	query := s.GetQueryBuilder().Select("COUNT( DISTINCT ShippingZones.Id)").From(model.ShippingZoneTableName)
+func (s *SqlShippingZoneStore) FilterByOption(option model_helper.ShippingZoneFilterOption) (model.ShippingZoneSlice, error) {
+	conditions := s.commonQueryConditionBuilder(option)
+	return model.ShippingZones(conditions...).All(s.GetReplica())
+}
 
-	// parse options
-	for _, opt := range []squirrel.Sqlizer{
-		options.Conditions,
-		options.WarehouseID,
-		options.ChannelID,
-	} {
-		query = query.Where(opt)
+func (s *SqlShippingZoneStore) CountByOptions(options model_helper.ShippingZoneFilterOption) (int64, error) {
+	conditions := s.commonQueryConditionBuilder(options)
+	return model.ShippingZones(conditions...).Count(s.GetReplica())
+}
+
+func (s *SqlShippingZoneStore) Delete(transaction boil.ContextTransactor, ids []string) (int64, error) {
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
-	if options.WarehouseID != nil {
-		query = query.InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
-	}
-	if options.ChannelID != nil {
-		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
-	}
-
-	queryStr, args, err := query.ToSql()
+	res, err := model.ShippingZones(model.ShippingZoneWhere.ID.IN(ids)).DeleteAll(transaction)
 	if err != nil {
-		return 0, errors.Wrap(err, "CountByOptions_ToSql")
-	}
-
-	var res int64
-	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of shipping zone by given options")
+		return 0, err
 	}
 
 	return res, nil
 }
 
-func (s *SqlShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
-	query, args, err := s.GetQueryBuilder().Delete(model.ShippingZoneTableName).Where(conditions.Conditions).ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "Delete_ToSql")
-	}
+// func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) error {
+// 	if transaction == nil {
+// 		transaction = s.GetMaster()
+// 	}
 
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
+// 	var relationsMap = map[string]any{
+// 		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} }),
+// 		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} }),
+// 	}
 
-	result := transaction.Raw(query, args...)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete shipping zones by given options")
-	}
+// 	for _, shippingZone := range zones {
+// 		if shippingZone != nil {
+// 			for assoName, relations := range relationsMap {
+// 				association := transaction.Model(shippingZone).Association(assoName)
+// 				var err error
+// 				switch {
+// 				case delete:
+// 					err = association.Delete(relations)
+// 				default:
+// 					err = association.Append(relations)
+// 				}
+// 				if err != nil {
+// 					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+shippingZone.Id)
+// 				}
+// 			}
+// 		}
+// 	}
 
-	return result.RowsAffected, nil
-}
-
-func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) error {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-
-	var relationsMap = map[string]any{
-		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} }),
-		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} }),
-	}
-
-	for _, shippingZone := range zones {
-		if shippingZone != nil {
-			for assoName, relations := range relationsMap {
-				association := transaction.Model(shippingZone).Association(assoName)
-				var err error
-				switch {
-				case delete:
-					err = association.Delete(relations)
-				default:
-					err = association.Append(relations)
-				}
-				if err != nil {
-					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+shippingZone.Id)
-				}
-			}
-		}
-	}
-
-	return nil
-}
+// 	return nil
+// }

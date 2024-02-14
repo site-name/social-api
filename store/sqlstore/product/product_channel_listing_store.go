@@ -18,21 +18,6 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 	return &SqlProductChannelListingStore{s}
 }
 
-func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelListing) []interface{} {
-	return []interface{}{
-		&prd.Id,
-		&prd.ProductID,
-		&prd.ChannelID,
-		&prd.VisibleInListings,
-		&prd.AvailableForPurchase,
-		&prd.Currency,
-		&prd.DiscountedPriceAmount,
-		&prd.CreateAt,
-		&prd.PublicationDate,
-		&prd.IsPublished,
-	}
-}
-
 // BulkUpsert performs bulk upsert on given product channel listings
 func (ps *SqlProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	if transaction == nil {

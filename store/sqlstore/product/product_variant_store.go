@@ -22,24 +22,6 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	return &SqlProductVariantStore{s}
 }
 
-func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []interface{} {
-	return []interface{}{
-		&variant.Id,
-		&variant.Name,
-		&variant.ProductID,
-		&variant.Sku,
-		&variant.Weight,
-		&variant.WeightUnit,
-		&variant.TrackInventory,
-		&variant.IsPreOrder,
-		&variant.PreorderEndDate,
-		&variant.PreOrderGlobalThreshold,
-		&variant.SortOrder,
-		&variant.Metadata,
-		&variant.PrivateMetadata,
-	}
-}
-
 func (ps *SqlProductVariantStore) Save(tx *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	if tx == nil {
 		tx = ps.GetMaster()

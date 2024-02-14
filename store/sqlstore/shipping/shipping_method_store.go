@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -20,23 +21,6 @@ type SqlShippingMethodStore struct {
 
 func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	return &SqlShippingMethodStore{s}
-}
-
-func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod) []interface{} {
-	return []interface{}{
-		&shippingMethod.Id,
-		&shippingMethod.Name,
-		&shippingMethod.Type,
-		&shippingMethod.ShippingZoneID,
-		&shippingMethod.MinimumOrderWeight,
-		&shippingMethod.MaximumOrderWeight,
-		&shippingMethod.WeightUnit,
-		&shippingMethod.MaximumDeliveryDays,
-		&shippingMethod.MinimumDeliveryDays,
-		&shippingMethod.Description,
-		&shippingMethod.Metadata,
-		&shippingMethod.PrivateMetadata,
-	}
 }
 
 // Upsert bases on given method's Id to decide update or insert it
@@ -339,15 +323,11 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 	return lo.Values(shippingMethodMap), nil
 }
 
-func (s *SqlShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (s *SqlShippingMethodStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.ShippingMethodTableName+" WHERE Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete shipping methods")
-	}
-
-	return nil
+	_, err := model.ShippingMethods(model.ShippingMethodWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

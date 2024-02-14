@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS channels (
   name varchar(250) NOT NULL,
   is_active boolean NOT NULL,
   slug varchar(255) NOT NULL,
-  currency text NOT NULL,
+  currency Currency NOT NULL,
   default_country country_code NOT NULL
 );
 

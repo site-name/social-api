@@ -17,22 +17,6 @@ func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	return &SqlAttributeValueStore{s}
 }
 
-func (as *SqlAttributeValueStore) ScanFields(attributeValue *model.AttributeValue) []interface{} {
-	return []interface{}{
-		&attributeValue.Id,
-		&attributeValue.Name,
-		&attributeValue.Value,
-		&attributeValue.Slug,
-		&attributeValue.FileUrl,
-		&attributeValue.ContentType,
-		&attributeValue.AttributeID,
-		&attributeValue.RichText,
-		&attributeValue.Boolean,
-		&attributeValue.Datetime,
-		&attributeValue.SortOrder,
-	}
-}
-
 func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
 	err := as.GetMaster().Save(av).Error
 	if err != nil {

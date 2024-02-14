@@ -1,18 +1,16 @@
 package discount
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlVoucherChannelListingStore struct {
 	store.Store
-}
-
-var voucherChannelListingDuplicateList = []string{
-	"VoucherID", "ChannelID", "voucherid_channelid_key",
 }
 
 func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannelListingStore {
@@ -20,26 +18,38 @@ func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannel
 }
 
 // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
-func (vcls *SqlVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
+func (vcls *SqlVoucherChannelListingStore) Upsert(transaction boil.ContextTransactor, voucherChannelListings model.VoucherChannelListingSlice) (model.VoucherChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = vcls.GetMaster()
 	}
 
 	for _, listing := range voucherChannelListings {
-		var err error
-		if listing.Id == "" {
-			err = transaction.Create(listing).Error
-		} else {
-			// keep non-editable fields intact
-			// Refer to https://gorm.io/docs/update.html#Updates-multiple-columns
-			listing.CreateAt = 0
-			err = transaction.Model(listing).Updates(listing).Error
+		if listing == nil {
+			continue
 		}
+
+		isSaving := false
+		if listing.ID == "" {
+			isSaving = true
+			model_helper.VoucherChannelListingPreSave(listing)
+		}
+
+		if err := model_helper.VoucherChannelListingIsValid(*listing); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = listing.Insert(transaction, boil.Infer())
+		} else {
+			_, err = listing.Update(transaction, boil.Blacklist(model.VoucherChannelListingColumns.CreatedAt))
+		}
+
 		if err != nil {
-			if vcls.IsUniqueConstraintError(err, voucherChannelListingDuplicateList) {
-				return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
+			if vcls.IsUniqueConstraintError(err, []string{model.VoucherChannelListingColumns.VoucherID, model.VoucherChannelListingColumns.ChannelID, "voucher_channel_listings_voucher_id_channel_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.VoucherChannelListings, "voucherid_channelid_key", "unique")
 			}
-			return nil, errors.Wrap(err, "failed to upsert voucher channel listing")
+			return nil, err
 		}
 	}
 
@@ -48,47 +58,26 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherC
 
 // Get finds a listing with given id, then returns it with an error
 func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
-	var res model.VoucherChannelListing
-	err := vcls.GetReplica().First(&res, "Id = ?", voucherChannelListingID).Error
+	record, err := model.FindVoucherChannelListing(vcls.GetReplica(), voucherChannelListingID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.VoucherChannelListingTableName, voucherChannelListingID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.VoucherChannelListings, voucherChannelListingID)
 		}
-		return nil, errors.Wrapf(err, "failed to find voucher channel listing with id=%s", voucherChannelListingID)
+		return nil, err
 	}
 
-	res.PopulateNonDbFields()
-	return &res, nil
+	return record, nil
 }
 
 // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
-func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
-	args, err := store.BuildSqlizer(option.Conditions, "VoucherChannelListingsByOptions")
-	if err != nil {
-		return nil, err
-	}
-	var res []*model.VoucherChannelListing
-	err = vcls.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")
-	}
-
-	return res, nil
+func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option model_helper.VoucherChannelListingFilterOption) (model.VoucherChannelListingSlice, error) {
+	return model.VoucherChannelListings(option.Conditions...).All(vcls.GetReplica())
 }
 
-func (s *SqlVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+func (s *SqlVoucherChannelListingStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
-
-	args, err := store.BuildSqlizer(option.Conditions, "VoucherChannelListingDelete")
-	if err != nil {
-		return err
-	}
-
-	err = transaction.Delete(model.VoucherChannelListingTableName, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete voucher channel listing")
-	}
-	return nil
+	_, err := model.VoucherChannelListings(model.VoucherChannelListingWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

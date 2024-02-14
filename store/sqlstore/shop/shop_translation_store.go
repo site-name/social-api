@@ -1,10 +1,10 @@
 package shop
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
 )
 
 type SqlShopTranslationStore struct {
@@ -17,27 +17,18 @@ func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
 
 // Upsert depends on translation's Id then decides to update or insert
 func (sts *SqlShopTranslationStore) Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) {
-	err := sts.GetMaster().Save(translation).Error
-	if err != nil {
-		if sts.IsUniqueConstraintError(err, []string{"LanguageCode", "shoptranslations_languagecode_shopid_key"}) {
-			return nil, store.NewErrInvalidInput(model.ShopTranslationTableName, "LanguageCode/ShopID", "duplicate value")
-		}
-		return nil, errors.Wrapf(err, "failed to upsert shop translation with id=%s", translation.Id)
-	}
-
-	return translation, nil
+	panic("not implemented")
 }
 
 // Get finds a shop translation with given id then return it with an error
 func (sts *SqlShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
-	var res model.ShopTranslation
-	err := sts.GetReplica().First(&res, "Id = ?", id).Error
+	record, err := model.FindShopTranslation(sts.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ShopTranslationTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ShopTranslations, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find shop translation with id=%s", id)
+		return nil, err
 	}
 
-	return &res, nil
+	return record, nil
 }

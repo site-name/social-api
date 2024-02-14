@@ -8,7 +8,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -20,41 +22,33 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 	return &SqlWareHouseStore{s}
 }
 
-func (ws *SqlWareHouseStore) ScanFields(wareHouse *model.WareHouse) []interface{} {
-	return []interface{}{
-		&wareHouse.Id,
-		&wareHouse.Name,
-		&wareHouse.Slug,
-		&wareHouse.AddressID,
-		&wareHouse.Email,
-		&wareHouse.ClickAndCollectOption,
-		&wareHouse.IsPrivate,
-		&wareHouse.Metadata,
-		&wareHouse.PrivateMetadata,
-	}
-}
-
-func (ws *SqlWareHouseStore) Save(wh *model.WareHouse) (*model.WareHouse, error) {
-	if err := ws.GetMaster().Create(wh).Error; err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Warehouses", "Slug", wh.Slug)
-		}
-		return nil, errors.Wrap(err, "failed to save Warehouse")
+func (ws *SqlWareHouseStore) Upsert(wh model.Warehouse) (*model.Warehouse, error) {
+	isSaving := wh.ID == ""
+	if isSaving {
+		model_helper.WarehousePreSave(&wh)
+	} else {
+		model_helper.WarehousePreUpdate(&wh)
 	}
 
-	return wh, nil
-}
+	if err := model_helper.WarehouseIsValid(wh); err != nil {
+		return nil, err
+	}
 
-func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
-	err := ws.GetMaster().Model(warehouse).Updates(warehouse).Error
+	var err error
+	if isSaving {
+		err = wh.Insert(ws.GetMaster(), boil.Infer())
+	} else {
+		_, err = wh.Update(ws.GetMaster(), boil.Blacklist(model.WarehouseColumns.CreatedAt))
+	}
+
 	if err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"Slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Warehouses", "Slug", warehouse.Slug)
+		if ws.IsUniqueConstraintError(err, []string{model.WarehouseColumns.Slug, "warehouses_slug_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Warehouses, model.WarehouseColumns.Slug, wh.Slug)
 		}
-		return nil, errors.Wrap(err, "failed to update warehouse")
+		return nil, err
 	}
 
-	return warehouse, nil
+	return &wh, nil
 }
 
 // NOTE: if option is nil, all warehouses query is returned.
@@ -108,13 +102,13 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *model.WarehouseFilterOpt
 }
 
 // GetByOption finds and returns a warehouse filtered given option
-func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
+func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.Warehouse, error) {
 	query, args, err := ws.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 	var (
-		res        model.WareHouse
+		res        model.Warehouse
 		address    model.Address
 		scanFields = ws.ScanFields(&res)
 	)
@@ -133,6 +127,9 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	if option.SelectRelatedAddress {
 		res.SetAddress(&address)
 	}
+
+	var a model.Warehouse
+	a.R.GetWarehouseShippingZones()
 
 	// check if we need to prefetch shipping zones:
 	// 1) prefetching shipping zones is required
@@ -162,7 +159,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 }
 
 // FilterByOprion returns a slice of warehouses with given option
-func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
+func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.Warehouse, error) {
 	query, args, err := wh.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
@@ -177,7 +174,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 
 	for rows.Next() {
 		var (
-			wareHouse  model.WareHouse
+			wareHouse  model.Warehouse
 			address    model.Address
 			scanFields = wh.ScanFields(&wareHouse)
 		)
@@ -214,7 +211,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
 		defer rows.Close()
-		var warehousesMap = lo.SliceToMap(returningWarehouses, func(w *model.WareHouse) (string, *model.WareHouse) { return w.Id, w })
+		var warehousesMap = lo.SliceToMap(returningWarehouses, func(w *model.Warehouse) (string, *model.Warehouse) { return w.Id, w })
 
 		for rows.Next() {
 			var (
@@ -238,8 +235,8 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 }
 
 // WarehouseByStockID returns 1 warehouse by given stock id
-func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
-	var res model.WareHouse
+func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.Warehouse, error) {
+	var res model.Warehouse
 	err := ws.GetReplica().Raw(
 		`SELECT `+model.WarehouseTableName+".*"+`
 		FROM `+model.WarehouseTableName+`
@@ -258,7 +255,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 	return &res, nil
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.Warehouses, error) {
 	_, stocks, err := ws.Stock().FilterByOption(&model.StockFilterOption{
 		SelectRelatedProductVariant: true,
 		Conditions:                  squirrel.Eq{model.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
@@ -271,17 +268,13 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (w *SqlWareHouseStore) Delete(transaction *gorm.DB, ids ...string) error {
+func (w *SqlWareHouseStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = w.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.WarehouseTableName+" WHERE Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete warehouse(s) by given ids")
-	}
-
-	return nil
+	_, err := model.Warehouses(model.WarehouseWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }
 
 func (s *SqlWareHouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error) {
@@ -343,14 +336,14 @@ func (s *SqlWareHouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(count
 	return res, nil
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	panic("not implemented")
 }
 
-func (s *SqlWareHouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
+func (s *SqlWareHouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	panic("not implemented")
 }
 
-func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country model.CountryCode) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLineSlice, stocks model.StockSlice, country model.CountryCode) (model.WarehouseSlice, error) {
 	panic("not implemented")
 }

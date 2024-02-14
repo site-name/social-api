@@ -1,9 +1,10 @@
 package external_services
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlOpenExchangeRateStore struct {
@@ -15,11 +16,34 @@ func NewSqlOpenExchangeRateStore(s store.Store) store.OpenExchangeRateStore {
 }
 
 // BulkUpsert performs bulk update/insert to given exchange rates
-func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
+func (os *SqlOpenExchangeRateStore) BulkUpsert(rates model.OpenExchangeRateSlice) (model.OpenExchangeRateSlice, error) {
 	for _, rate := range rates {
-		err := os.GetMaster().Save(rate).Error
+		if rate == nil {
+			continue
+		}
+
+		isSaving := false
+		if rate.ID == "" {
+			isSaving = true
+		}
+		model_helper.OpenExchangeRateCommonPre(rate)
+
+		if err := model_helper.OpenExchangeRateIsValid(*rate); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = rate.Insert(os.GetMaster(), boil.Infer())
+		} else {
+			_, err = rate.Update(os.GetMaster(), boil.Blacklist(model.OpenExchangeRateColumns.CreatedAt))
+		}
+
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to upsert exchange rate with ToCurrency=%s", rate.ToCurrency)
+			if os.IsUniqueConstraintError(err, []string{model.OpenExchangeRateColumns.ToCurrency, "open_exchange_rates_to_currency_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.OpenExchangeRates, model.OpenExchangeRateColumns.ToCurrency, "unique")
+			}
+			return nil, err
 		}
 	}
 
@@ -27,12 +51,6 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 }
 
 // GetAll returns all exchange currency rates
-func (os *SqlOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
-	var res []*model.OpenExchangeRate
-	err := os.GetReplica().Order("ToCurrency ASC").Find(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get all exchange rates")
-	}
-
-	return res, nil
+func (os *SqlOpenExchangeRateStore) GetAll() (model.OpenExchangeRateSlice, error) {
+	return model.OpenExchangeRates().All(os.GetReplica())
 }

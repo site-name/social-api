@@ -15,19 +15,6 @@ func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariant
 	return &SqlProductVariantChannelListingStore{s}
 }
 
-func (ps *SqlProductVariantChannelListingStore) ScanFields(listing *model.ProductVariantChannelListing) []interface{} {
-	return []interface{}{
-		&listing.Id,
-		&listing.VariantID,
-		&listing.ChannelID,
-		&listing.Currency,
-		&listing.PriceAmount,
-		&listing.CostPriceAmount,
-		&listing.PreorderQuantityThreshold,
-		&listing.CreateAt,
-	}
-}
-
 // Save insert given value into database then returns it with an error
 func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
 	err := ps.GetMaster().Create(variantChannelListing).Error

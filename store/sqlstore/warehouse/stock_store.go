@@ -1,6 +1,8 @@
 package warehouse
 
 import (
+	"database/sql"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -14,16 +16,6 @@ type SqlStockStore struct {
 
 func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
-}
-
-func (ss *SqlStockStore) ScanFields(stock *model.Stock) []any {
-	return []any{
-		&stock.Id,
-		&stock.CreateAt,
-		&stock.WarehouseID,
-		&stock.ProductVariantID,
-		&stock.Quantity,
-	}
 }
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
@@ -46,14 +38,15 @@ func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock)
 }
 
 func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
-	var res model.Stock
-	if err := ss.GetReplica().First(&res, "Id = ?", stockID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.StockTableName, stockID)
+	stock, err := model.FindStock(ss.GetReplica(), stockID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Stocks, stockID)
 		}
-		return nil, errors.Wrapf(err, "failed to find stock with id=%s", stockID)
+		return nil, err
 	}
-	return &res, nil
+
+	return stock, nil
 }
 
 // FilterForChannel finds and returns stocks that satisfy given options

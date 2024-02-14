@@ -3,10 +3,10 @@ package shop
 import (
 	"database/sql"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlShopStaffStore struct {
@@ -18,11 +18,32 @@ func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
 }
 
 func (sss *SqlShopStaffStore) Upsert(shopStaff model.ShopStaff) (*model.ShopStaff, error) {
-	if err := sss.GetMaster().Create(shopStaff).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to save shop-staff relation with id=%s", shopStaff.ID)
+	isSaving := shopStaff.ID != ""
+	if isSaving {
+		model_helper.ShopStaffPreSave(&shopStaff)
+	} else {
+		model_helper.ShopStaffCommonPre(&shopStaff)
 	}
 
-	return shopStaff, nil
+	if err := model_helper.ShopStaffIsValid(shopStaff); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = shopStaff.Insert(sss.GetMaster(), boil.Infer())
+	} else {
+		_, err = shopStaff.Update(sss.GetMaster(), boil.Blacklist(model.ShopStaffColumns.CreatedAt))
+	}
+
+	if err != nil {
+		if sss.IsUniqueConstraintError(err, []string{"shop_staff_staff_id_unique_idx"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.ShopStaffs, model.ShopStaffColumns.StaffID, shopStaff.StaffID)
+		}
+		return nil, err
+	}
+
+	return &shopStaff, nil
 }
 
 // Get finds a shop staff with given id then returns it with an error
@@ -39,11 +60,11 @@ func (s *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 }
 
 func (s *SqlShopStaffStore) FilterByOptions(options model_helper.ShopStaffFilterOptions) (model.ShopStaffSlice, error) {
-	return model.ShopStaffs(options.Conds...).All(s.GetReplica())
+	return model.ShopStaffs(options.Conditions...).All(s.GetReplica())
 }
 
 func (s *SqlShopStaffStore) GetByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, error) {
-	record, err := model.ShopStaffs(options.Conds...).One(s.GetReplica())
+	record, err := model.ShopStaffs(options.Conditions...).One(s.GetReplica())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.ShopStaffs, "options")

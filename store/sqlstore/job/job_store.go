@@ -25,7 +25,7 @@ func (jss SqlJobStore) Save(job model.Job) (*model.Job, error) {
 	if appErr != nil {
 		return nil, appErr
 	}
-	err := job.Insert(jss.Context(), jss.GetMaster(), boil.Infer())
+	err := job.Insert(jss.GetMaster(), boil.Infer())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create job")
 	}
@@ -33,16 +33,16 @@ func (jss SqlJobStore) Save(job model.Job) (*model.Job, error) {
 }
 
 func (j SqlJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
-	return model.Jobs(mods...).All(j.Context(), j.GetReplica())
+	return model.Jobs(mods...).All(j.GetReplica())
 }
 
-func (jss SqlJobStore) UpdateOptimistically(job model.Job, currentStatus model.Jobstatus) (bool, error) {
+func (jss SqlJobStore) UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error) {
 	_, err := model.
 		Jobs(
 			model.JobWhere.ID.EQ(job.ID),
 			model.JobWhere.Status.EQ(currentStatus),
 		).
-		UpdateAll(jss.Context(), jss.GetMaster(), model.M{
+		UpdateAll(jss.GetMaster(), model.M{
 			model.JobColumns.LastActivityAt: job.LastActivityAt,
 			model.JobColumns.Status:         job.Status,
 			model.JobColumns.Data:           job.Data,
@@ -55,10 +55,10 @@ func (jss SqlJobStore) UpdateOptimistically(job model.Job, currentStatus model.J
 	return true, nil
 }
 
-func (jss SqlJobStore) UpdateStatus(id string, status model.Jobstatus) (*model.Job, error) {
+func (jss SqlJobStore) UpdateStatus(id string, status model.JobStatus) (*model.Job, error) {
 	_, err := model.
 		Jobs(model.JobWhere.ID.EQ(id)).
-		UpdateAll(jss.Context(), jss.GetMaster(), model.M{
+		UpdateAll(jss.GetMaster(), model.M{
 			model.JobColumns.Status: status,
 		})
 	if err != nil {
@@ -71,13 +71,13 @@ func (jss SqlJobStore) UpdateStatus(id string, status model.Jobstatus) (*model.J
 	}, nil
 }
 
-func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model.Jobstatus, newStatus model.Jobstatus) (bool, error) {
+func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) {
 	_, err := model.
 		Jobs(
 			model.JobWhere.ID.EQ(id),
 			model.JobWhere.Status.EQ(currentStatus),
 		).
-		UpdateAll(jss.Context(), jss.GetMaster(), model.M{
+		UpdateAll(jss.GetMaster(), model.M{
 			model.JobColumns.Status: newStatus,
 		})
 	if err != nil {
@@ -88,7 +88,7 @@ func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model
 }
 
 func (jss SqlJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
-	job, err := model.Jobs(mods...).One(jss.Context(), jss.GetReplica())
+	job, err := model.Jobs(mods...).One(jss.GetReplica())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Jobs, "mods")
@@ -99,11 +99,11 @@ func (jss SqlJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
 }
 
 func (j SqlJobStore) Count(mods ...qm.QueryMod) (int64, error) {
-	return model.Jobs(mods...).Count(j.Context(), j.GetReplica())
+	return model.Jobs(mods...).Count(j.GetReplica())
 }
 
 func (jss SqlJobStore) Delete(id string) (string, error) {
-	_, err := (&model.Job{ID: id}).Delete(jss.Context(), jss.GetMaster())
+	_, err := (&model.Job{ID: id}).Delete(jss.GetMaster())
 	if err != nil {
 		return "", err
 	}

@@ -302,28 +302,26 @@ type PluginConfigurationStore interface {
 // model
 type (
 	WishlistStore interface {
-		Upsert(wishList model.Wishlist) (*model.Wishlist, error)                // Upsert inserts or update given model and returns it
-		GetByOption(option model.WishlistFilterOption) (*model.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
+		Upsert(wishList model.Wishlist) (*model.Wishlist, error)                       // Upsert inserts or update given model and returns it
+		GetByOption(option model_helper.WishlistFilterOption) (*model.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
 	}
 	WishlistItemStore interface {
 		GetById(id string) (*model.WishlistItem, error)                                                               // GetById returns a model item wish given id
 		BulkUpsert(tx boil.ContextTransactor, wishlistItems model.WishlistItemSlice) (model.WishlistItemSlice, error) // Upsert inserts or updates given model item then returns it
-		FilterByOption(option model.WishlistItemFilterOption) (model.WishlistItemSlice, error)                        // FilterByOption finds and returns a slice of model items filtered using given options
-		GetByOption(option model.WishlistItemFilterOption) (*model.WishlistItem, error)                               // GetByOption finds and returns a model item filtered by given option
-		DeleteItemsByOption(tx boil.ContextTransactor, option model.WishlistItemFilterOption) (int64, error)          // DeleteItemsByOption finds and deletes model items that satisfy given filtering options and returns number of items deleted
+		FilterByOption(option model_helper.WishlistItemFilterOption) (model.WishlistItemSlice, error)                 // FilterByOption finds and returns a slice of model items filtered using given options
+		GetByOption(option model_helper.WishlistItemFilterOption) (*model.WishlistItem, error)                        // GetByOption finds and returns a model item filtered by given option
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)                                                // DeleteItemsByOption finds and deletes model items that satisfy given filtering options and returns number of items deleted
 	}
 )
 
-// model
 type (
 	WarehouseStore interface {
-		WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
-		Delete(tx boil.ContextTransactor, ids ...string) error
-		Update(warehouse model.Warehouse) (*model.Warehouse, error)
-		Save(model model.Warehouse) (*model.Warehouse, error)                          // Save inserts given model into database then returns it.
-		FilterByOprion(option model.WarehouseFilterOption) ([]*model.Warehouse, error) // FilterByOprion returns a slice of warehouses with given option
-		GetByOption(option model.WarehouseFilterOption) (*model.Warehouse, error)      // GetByOption finds and returns a model filtered given option
-		WarehouseByStockID(stockID string) (*model.Warehouse, error)                   // WarehouseByStockID returns 1 model by given stock id
+		WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) (model.WarehouseShippingZoneSlice, error)
+		Delete(tx boil.ContextTransactor, ids []string) error
+		Upsert(model model.Warehouse) (*model.Warehouse, error)                                 // Save inserts given model into database then returns it.
+		FilterByOprion(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, error) // FilterByOprion returns a slice of warehouses with given option
+		GetByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, error)        // GetByOption finds and returns a model filtered given option
+		WarehouseByStockID(stockID string) (*model.Warehouse, error)                            // WarehouseByStockID returns 1 model by given stock id
 		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
 		ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
 		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
@@ -341,9 +339,9 @@ type (
 	}
 	AllocationStore interface {
 		BulkUpsert(tx boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) // BulkUpsert performs update, insert given allocations then returns them afterward
-		Get(allocationID string) (*model.Allocation, error)                                                     // Get find and returns allocation with given id
-		FilterByOption(option model.AllocationFilterOption) (model.AllocationSlice, error)                      // FilterbyOption finds and returns a list of allocations based on given option
-		BulkDelete(tx boil.ContextTransactor, allocationIDs []string) error                                     // BulkDelete perform bulk deletes given allocations.
+		Get(id string) (*model.Allocation, error)                                                               // Get find and returns allocation with given id
+		FilterByOption(option model_helper.AllocationFilterOption) (model.AllocationSlice, error)               // FilterbyOption finds and returns a list of allocations based on given option
+		Delete(tx boil.ContextTransactor, ids []string) error                                                   // BulkDelete perform bulk deletes given allocations.
 		CountAvailableQuantityForStock(stock model.Stock) (int, error)                                          // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	PreorderAllocationStore interface {
@@ -353,15 +351,14 @@ type (
 	}
 )
 
-// model
 type (
 	ShippingZoneStore interface {
-		ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds, channelIds []string, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
-		Delete(tx boil.ContextTransactor, conditions model.ShippingZoneFilterOption) (int64, error)
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		Upsert(tx boil.ContextTransactor, shippingZone model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone
-		Get(shippingZoneID string) (*model.ShippingZone, error)                                         // Get finds 1 model zone for given shippingZoneID
-		FilterByOption(option model.ShippingZoneFilterOption) (model.ShippingZoneSlice, error)          // FilterByOption finds a list of model zones based on given option
-		CountByOptions(options model.ShippingZoneFilterOption) (int64, error)
+		Get(id string) (*model.ShippingZone, error)                                                     // Get finds 1 model zone for given shippingZoneID
+		FilterByOption(option model_helper.ShippingZoneFilterOption) (model.ShippingZoneSlice, error)   // FilterByOption finds a list of model zones based on given option
+		CountByOptions(options model_helper.ShippingZoneFilterOption) (int64, error)
+		// ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds, channelIds []string, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
 	}
 	ShippingMethodStore interface {
 		Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error)                                                                                         // Upsert bases on given method's Id to decide update or insert it
@@ -377,7 +374,7 @@ type (
 		FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error)
 	}
 	ShippingMethodChannelListingStore interface {
-		BulkDelete(tx boil.ContextTransactor, options *model.ShippingMethodChannelListingFilterOption) error
+		Delete(tx boil.ContextTransactor, ids []string) error
 		Upsert(tx boil.ContextTransactor, listings model.ShippingMethodChannelListingSlice) (model.ShippingMethodChannelListingSlice, error) // Upsert depends on given listing's Id to decide whether to save or update the listing
 		Get(id string) (*model.ShippingMethodChannelListing, error)                                                                          // Get finds a model method channel listing with given listingID
 		FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error)               // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
@@ -889,8 +886,8 @@ type SystemStore interface {
 	Get() (map[string]string, error)
 	GetByName(name string) (*model.System, error)
 	PermanentDeleteByName(name string) (*model.System, error)
-	InsertIfExists(system *model.System) (*model.System, error)
-	SaveOrUpdateWithWarnMetricHandling(system *model.System) error
+	InsertIfExists(system model.System) (*model.System, error)
+	SaveOrUpdateWithWarnMetricHandling(system model.System) error
 }
 
 type RoleStore interface {
@@ -911,8 +908,8 @@ type RoleStore interface {
 }
 
 type OpenExchangeRateStore interface {
-	BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) // BulkUpsert performs bulk update/insert to given exchange rates
-	GetAll() ([]*model.OpenExchangeRate, error)                                    // GetAll returns all exchange currency rates
+	BulkUpsert(rates model.OpenExchangeRateSlice) (model.OpenExchangeRateSlice, error) // BulkUpsert performs bulk update/insert to given exchange rates
+	GetAll() (model.OpenExchangeRateSlice, error)                                      // GetAll returns all exchange currency rates
 }
 
 type UserGetByIdsOpts struct {

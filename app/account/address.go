@@ -48,7 +48,7 @@ func (a *ServiceAccount) UpsertAddress(transaction store.ContextRunner, address 
 
 func (a *ServiceAccount) AddressesByUserId(userID string) (model.AddressSlice, *model_helper.AppError) {
 	return a.AddressesByOption(model_helper.AddressFilterOptions{
-		UserID: model.UserAddressWhere.UserID.EQ(userID),
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.ID.EQ(userID)),
 	})
 }
 

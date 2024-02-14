@@ -1,10 +1,15 @@
 package warehouse
 
 import (
+	"database/sql"
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAllocationStore struct {
@@ -15,52 +20,57 @@ func NewSqlAllocationStore(s store.Store) store.AllocationStore {
 	return &SqlAllocationStore{s}
 }
 
-func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interface{} {
-	return []interface{}{
-		&allocation.Id,
-		&allocation.CreateAt,
-		&allocation.OrderLineID,
-		&allocation.StockID,
-		&allocation.QuantityAllocated,
-	}
-}
-
-// BulkUpsert performs update, insert given allocations then returns them afterward
-func (as *SqlAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (as *SqlAllocationStore) BulkUpsert(transaction boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 
 	for _, allocation := range allocations {
-		err := transaction.Save(allocation).Error
+		if allocation == nil {
+			continue
+		}
+
+		isSaving := allocation.ID == ""
+		if isSaving {
+			model_helper.AllocationPreSave(allocation)
+		}
+
+		if err := model_helper.AllocationIsValid(*allocation); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = allocation.Insert(transaction, boil.Infer())
+		} else {
+			_, err = allocation.Update(transaction, boil.Blacklist(model.AllocationColumns.CreatedAt))
+		}
 
 		if err != nil {
-			if as.IsUniqueConstraintError(err, []string{"OrderLineID", "StockID", "allocations_orderlineid_stockid_key"}) {
-				return nil, store.NewErrInvalidInput(model.AllocationTableName, "OrderLineID/StockID", "duplicate")
+			if as.IsUniqueConstraintError(err, []string{model.AllocationColumns.OrderLineID, model.AllocationColumns.StockID, "allocations_order_line_id_stock_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.Allocations, "OrderLineID/StockID", "unique")
 			}
-			return nil, errors.Wrapf(err, "failed to upsert allocation with id=%s", allocation.Id)
+			return nil, err
 		}
+
+		return allocations, nil
 	}
 
 	return allocations, nil
 }
 
-// Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
-	var res model.Allocation
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
+	allocation, err := model.FindAllocation(as.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AllocationTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Allocations, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)
+		return nil, err
 	}
-
-	return &res, nil
+	return allocation, nil
 }
 
-// FilterByOption finds and returns a list of allocation based on given option
-func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (as *SqlAllocationStore) FilterByOption(option model_helper.AllocationFilterOption) (model.AllocationSlice, error) {
 	// define fields to select:
 	selectFields := []string{model.AllocationTableName + ".*"}
 	if option.SelectedRelatedStock {
@@ -157,42 +167,25 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 	return returnAllocations, nil
 }
 
-// BulkDelete perform bulk deletes given allocations.
-func (as *SqlAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
+func (as *SqlAllocationStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.AllocationTableName+" WHERE Id IN ?", allocationIDs).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete allocations")
-	}
-
-	return nil
+	_, err := model.Allocations(model.AllocationWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }
 
-// CountAvailableQuantityForStock counts and returns available quantity of given stock
-func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
+func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock model.Stock) (int, error) {
 	var count int
-	err := as.GetReplica().Raw(
-		`SELECT COALESCE(
-			SUM (
-				Allocations.QuantityAllocated
-			), 0
-		)
-		FROM 
-			Allocations 
-		WHERE StockID = ?`,
-		stock.Id,
-	).
-		Scan(&count).
-		Error
+
+	err := model.Allocations(
+		qm.Select(fmt.Sprintf("COALESCE(SUM(%s), 0) AS QuantityAllocated", model.AllocationTableColumns.QuantityAllocated)),
+		model.AllocationWhere.StockID.EQ(stock.ID),
+	).QueryRow(as.GetReplica()).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrapf(err, "failed to count allocated quantity of stock with id=%s", stock.Id)
+		return 0, err
 	}
 
-	if sub := stock.Quantity - count; sub > 0 {
-		return sub, nil
-	}
-	return 0, nil
+	return max(0, stock.Quantity-count), nil
 }

@@ -18,14 +18,6 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 	return &SqlAssignedPageAttributeValueStore{s}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue *model.AssignedPageAttributeValue) []interface{} {
-	return []interface{}{
-		&attributeValue.ValueID,
-		&attributeValue.AssignmentID,
-		&attributeValue.SortOrder,
-	}
-}
-
 func (as *SqlAssignedPageAttributeValueStore) Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
 	if err := as.GetMaster().Create(assignedPageAttrValue).Error; err != nil {
 		if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {

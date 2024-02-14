@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -41,7 +42,6 @@ type VoucherFilterOption struct {
 
 	Annotate_MinDiscountValue bool
 	Annotate_MinSpentAmount   bool
-	Filter_channelIsActive    qm.QueryMod
 	ChannelIdOrSlug           string
 }
 
@@ -251,6 +251,30 @@ func VoucherChannelListingIsValid(v model.VoucherChannelListing) *AppError {
 		return NewAppError("VoucherChannelListingIsValid", "model.voucher_channel_listing.is_valid.currency.app_error", nil, "invalid currency", http.StatusBadRequest)
 	}
 	return nil
+}
+
+func VoucherChannelListingGetDiscount(v model.VoucherChannelListing) goprices.Money {
+	return goprices.Money{
+		Amount:   v.DiscountValue,
+		Currency: v.Currency.String(),
+	}
+}
+
+func VoucherChannelListingGetMinSpent(v model.VoucherChannelListing) goprices.Money {
+	return goprices.Money{
+		Amount:   v.MinSpendAmount,
+		Currency: v.Currency.String(),
+	}
+}
+
+func VoucherChannelListingSetDiscount(v *model.VoucherChannelListing, discount goprices.Money) {
+	v.DiscountValue = discount.Amount
+	v.Currency = model.Currency(discount.Currency)
+}
+
+func VoucherChannelListingSetMinSpent(v *model.VoucherChannelListing, minSpent goprices.Money) {
+	v.MinSpendAmount = minSpent.Amount
+	v.Currency = model.Currency(minSpent.Currency)
 }
 
 type SaleTranslationFilterOption struct {

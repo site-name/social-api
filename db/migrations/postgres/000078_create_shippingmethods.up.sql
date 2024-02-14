@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS shipping_methods (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar(100) NOT NULL,
-  type varchar(30) NOT NULL,
+  type shipping_method_type NOT NULL,
   shipping_zone_id uuid NOT NULL,
   minimum_order_weight real,
   maximum_order_weight real,

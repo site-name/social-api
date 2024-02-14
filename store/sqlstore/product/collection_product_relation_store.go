@@ -15,15 +15,6 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	return &SqlCollectionProductStore{s}
 }
 
-func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []interface{} {
-	return []interface{}{
-		&rel.Id,
-		&rel.CollectionID,
-		&rel.ProductID,
-		&rel.SortOrder,
-	}
-}
-
 func (ps *SqlCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 	if transaction == nil {
 		transaction = ps.GetMaster()

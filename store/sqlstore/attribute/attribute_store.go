@@ -21,27 +21,6 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return &SqlAttributeStore{s}
 }
 
-func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []any {
-	return []any{
-		&v.ID,
-		&v.Slug,
-		&v.Name,
-		&v.Type,
-		&v.InputType,
-		&v.EntityType,
-		&v.Unit,
-		&v.ValueRequired,
-		&v.IsVariantOnly,
-		&v.VisibleInStorefront,
-		&v.FilterableInStorefront,
-		&v.FilterableInDashboard,
-		&v.StorefrontSearchPosition,
-		&v.AvailableInGrid,
-		&v.Metadata,
-		&v.PrivateMetadata,
-	}
-}
-
 // Upsert inserts or updates given attribute then returns it
 func (as *SqlAttributeStore) Upsert(attr model.Attribute) (*model.Attribute, error) {
 	isSaving := attr.ID == ""

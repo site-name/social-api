@@ -17,21 +17,6 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	return &SqlCollectionStore{s}
 }
 
-func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
-	return []interface{}{
-		&col.Id,
-		&col.Name,
-		&col.Slug,
-		&col.BackgroundImage,
-		&col.BackgroundImageAlt,
-		&col.Description,
-		&col.Metadata,
-		&col.PrivateMetadata,
-		&col.SeoTitle,
-		&col.SeoDescription,
-	}
-}
-
 // Upsert depends on given collection's Id property to decide update or insert the collection
 func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
 	err := cs.GetMaster().Save(collection).Error

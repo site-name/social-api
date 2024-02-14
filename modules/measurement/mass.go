@@ -7,6 +7,10 @@ import (
 
 type WeightUnit string
 
+func (w WeightUnit) String() string {
+	return string(w)
+}
+
 var (
 	WEIGHT_UNIT_STRINGS = map[WeightUnit]string{
 		G:     "Gram",

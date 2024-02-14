@@ -21,29 +21,6 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return &SqlProductStore{s}
 }
 
-func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
-	return []interface{}{
-		&prd.Id,
-		&prd.ProductTypeID,
-		&prd.Name,
-		&prd.Slug,
-		&prd.Description,
-		&prd.DescriptionPlainText,
-		&prd.CategoryID,
-		&prd.CreateAt,
-		&prd.UpdateAt,
-		&prd.ChargeTaxes,
-		&prd.Weight,
-		&prd.WeightUnit,
-		&prd.DefaultVariantID,
-		&prd.Rating,
-		&prd.Metadata,
-		&prd.PrivateMetadata,
-		&prd.SeoTitle,
-		&prd.SeoDescription,
-	}
-}
-
 // Save inserts given product into database then returns it
 func (ps *SqlProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
 	if tx == nil {

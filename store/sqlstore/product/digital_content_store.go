@@ -15,21 +15,6 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	return &SqlDigitalContentStore{s}
 }
 
-func (ds *SqlDigitalContentStore) ScanFields(content *model.DigitalContent) []interface{} {
-	return []interface{}{
-		&content.Id,
-		&content.UseDefaultSettings,
-		&content.AutomaticFulfillment,
-		&content.ContentType,
-		&content.ProductVariantID,
-		&content.ContentFile,
-		&content.MaxDownloads,
-		&content.UrlValidDays,
-		&content.Metadata,
-		&content.PrivateMetadata,
-	}
-}
-
 // Save inserts given digital content into database then returns it
 func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.DigitalContent, error) {
 	err := ds.GetMaster().Create(content).Error

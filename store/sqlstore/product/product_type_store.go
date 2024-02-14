@@ -18,22 +18,6 @@ func NewSqlProductTypeStore(s store.Store) store.ProductTypeStore {
 	return &SqlProductTypeStore{s}
 }
 
-func (ps *SqlProductTypeStore) ScanFields(productType *model.ProductType) []interface{} {
-	return []interface{}{
-		&productType.Id,
-		&productType.Name,
-		&productType.Slug,
-		&productType.Kind,
-		&productType.HasVariants,
-		&productType.IsShippingRequired,
-		&productType.IsDigital,
-		&productType.Weight,
-		&productType.WeightUnit,
-		&productType.Metadata,
-		&productType.PrivateMetadata,
-	}
-}
-
 func (ps *SqlProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
 	if tx == nil {
 		tx = ps.GetMaster()

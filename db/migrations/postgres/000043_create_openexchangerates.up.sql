@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS open_exchange_rates (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  to_currency varchar(3) NOT NULL,
-  rate decimal(3,2)
+  to_currency Currency NOT NULL,
+  rate decimal(3,2),
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY open_exchange_rates

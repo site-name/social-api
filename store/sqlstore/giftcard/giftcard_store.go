@@ -19,29 +19,6 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	return &SqlGiftCardStore{sqlStore}
 }
 
-func (s *SqlGiftCardStore) ScanFields(g *model.GiftCard) []any {
-	return []any{
-		&g.Id,
-		&g.Code,
-		&g.CreatedByID,
-		&g.UsedByID,
-		&g.CreatedByEmail,
-		&g.UsedByEmail,
-		&g.CreateAt,
-		&g.StartDate,
-		&g.Tag,
-		&g.ProductID,
-		&g.LastUsedOn,
-		&g.IsActive,
-		&g.Currency,
-		&g.InitialBalanceAmount,
-		&g.CurrentBalanceAmount,
-		&g.Metadata,
-		&g.PrivateMetadata,
-	}
-}
-
-// BulkUpsert depends on given giftcards's Id properties then perform according operation
 func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	if transaction == nil {
 		transaction = gcs.GetMaster()
@@ -71,7 +48,6 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	return &res, nil
 }
 
-// FilterByOption finds giftcards wth option
 func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 	query := gs.
 		GetQueryBuilder().
@@ -183,7 +159,6 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 	return totalCount, res, nil
 }
 
-// GetGiftcardLines returns a list of order lines
 func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.OrderLines, error) {
 	/*
 	   -- sample query for demonstration (Produced with django)
@@ -326,7 +301,6 @@ func (s *SqlGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) e
 	return nil
 }
 
-// relations must be either []*Order or []*Checkout
 func (s *SqlGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
@@ -355,7 +329,6 @@ func (s *SqlGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Gi
 	return nil
 }
 
-// relations must be either []*Order or []*Checkout
 func (s *SqlGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
 	if transaction == nil {
 		transaction = s.GetMaster()

@@ -22,7 +22,6 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 	return &SqlVoucherStore{sqlStore}
 }
 
-// Upsert saves or updates given voucher then returns it with an error
 func (vs *SqlVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error) {
 	isSaving := false
 	if voucher.ID == "" {
@@ -53,7 +52,6 @@ func (vs *SqlVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error)
 	return &voucher, nil
 }
 
-// Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	voucher, err := model.FindVoucher(vs.GetReplica(), voucherID)
 	if err != nil {
@@ -109,25 +107,13 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option model_helper.VoucherFil
 			)
 			selectColumns = append(selectColumns, minSpentAmountColumn)
 		}
-	} else if option.Filter_channelIsActive != nil {
-		conds = append(conds,
-			qm.InnerJoin(
-				fmt.Sprintf("%s ON %s = %s", model.TableNames.VoucherChannelListings, model.VoucherChannelListingTableColumns.VoucherID, model.VoucherTableColumns.ID),
-			),
-			qm.InnerJoin(
-				fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.VoucherChannelListingTableColumns.ChannelID),
-			),
-			option.Filter_channelIsActive,
-		)
 	}
-
 	conds = append(conds, qm.Select(selectColumns...))
 
 	var result model_helper.CustomVoucherSlice
 	return result, model.Vouchers(conds...).Bind(nil, vs.GetReplica(), &result)
 }
 
-// ExpiredVouchers finds and returns vouchers that are expired before given date
 func (vs *SqlVoucherStore) ExpiredVouchers(date time.Time) (model.VoucherSlice, error) {
 	milisecond := util.MillisFromTime(date)
 

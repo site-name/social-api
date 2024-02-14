@@ -15,15 +15,6 @@ func NewSqlPreorderAllocationStore(s store.Store) store.PreorderAllocationStore 
 	return &SqlPreorderAllocationStore{s}
 }
 
-func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation *model.PreorderAllocation) []interface{} {
-	return []interface{}{
-		&preorderAllocation.Id,
-		&preorderAllocation.OrderLineID,
-		&preorderAllocation.Quantity,
-		&preorderAllocation.ProductVariantChannelListingID,
-	}
-}
-
 // BulkCreate bulk inserts given preorderAllocations and returns them
 func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 	if transaction == nil {

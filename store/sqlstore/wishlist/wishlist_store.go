@@ -1,10 +1,12 @@
 package wishlist
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlWishlistStore struct {
@@ -15,33 +17,42 @@ func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 	return &SqlWishlistStore{s}
 }
 
-// Upsert inserts or update given wishlist and returns it
-func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
-	err := ws.GetMaster().Save(wishList).Error
+func (ws *SqlWishlistStore) Upsert(wishList model.Wishlist) (*model.Wishlist, error) {
+	isSaving := false
+	if wishList.ID == "" {
+		isSaving = true
+		model_helper.WishlistPreSave(&wishList)
+	}
+
+	if err := model_helper.WishlistIsValid(wishList); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = wishList.Insert(ws.GetMaster(), boil.Infer())
+	} else {
+		_, err = wishList.Update(ws.GetMaster(), boil.Blacklist(model.WishlistColumns.Token, model.WishlistColumns.CreatedAt))
+	}
+
 	if err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"UserID", "wishlists_userid_key"}) {
-			return nil, store.NewErrInvalidInput(model.WishlistTableName, "UserID", wishList.UserID)
+		if ws.IsUniqueConstraintError(err, []string{model.WishlistColumns.Token, "wishlists_token_key", "wishlists_user_id_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Wishlists, model.WishlistColumns.Token+"/"+model.WishlistColumns.UserID, "unique")
 		}
-		return nil, errors.Wrapf(err, "failed to upsert wishlist with id=%s", wishList.Id)
+		return nil, err
+	}
+
+	return &wishList, nil
+}
+
+func (ws *SqlWishlistStore) GetByOption(option model_helper.WishlistFilterOption) (*model.Wishlist, error) {
+	wishList, err := model.Wishlists(option.Conditions...).One(ws.GetReplica())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Wishlists, "options")
+		}
+		return nil, err
 	}
 
 	return wishList, nil
-}
-
-// GetByOption finds and returns a slice of wishlists by given option
-func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
-	var res model.Wishlist
-	args, err := store.BuildSqlizer(option.Conditions, "WishlistGetByOptions")
-	if err != nil {
-		return nil, err
-	}
-	err = ws.GetReplica().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.WishlistTableName, "option")
-		}
-		return nil, errors.Wrap(err, "failed to find a wishlist by given options")
-	}
-
-	return &res, nil
 }

@@ -18,21 +18,6 @@ func NewSqlInvoiceStore(s store.Store) store.InvoiceStore {
 	return &SqlInvoiceStore{s}
 }
 
-func (s *SqlInvoiceStore) ScanFields(iv *model.Invoice) []any {
-	return []any{
-		&iv.Id,
-		&iv.OrderID,
-		&iv.Number,
-		&iv.CreateAt,
-		&iv.ExternalUrl,
-		&iv.Status,
-		&iv.Message,
-		&iv.UpdateAt,
-		&iv.Metadata,
-		&iv.PrivateMetadata,
-	}
-}
-
 // Upsert depends on given invoice's Id to decide update or delete it
 func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
 	err := is.GetMaster().Save(invoice).Error

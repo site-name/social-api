@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (
@@ -77,5 +76,32 @@ func NewToken(tokentype TokenType, extra string) *model.Token {
 }
 
 type ExportEventFilterOption struct {
-	Conds []qm.QueryMod
+	CommonQueryOptions
+}
+
+func OpenExchangeRateCommonPre(rate *model.OpenExchangeRate) {
+	if rate == nil {
+		return
+	}
+	rate.CreatedAt = GetMillis()
+	if rate.ID == "" {
+		rate.ID = NewId()
+	}
+	if rate.ToCurrency.IsValid() != nil {
+		rate.ToCurrency = DEFAULT_CURRENCY
+	}
+}
+
+func OpenExchangeRateIsValid(r model.OpenExchangeRate) *AppError {
+	if r.ID == "" {
+		return NewAppError("OpenExchangeRate.IsValid", "model.open_exchange_rate.is_valid.id.expiry", nil, "id must be set", http.StatusInternalServerError)
+	}
+	if r.CreatedAt <= 0 {
+		return NewAppError("OpenExchangeRate.IsValid", "model.open_exchange_rate.is_valid.created_at.expiry", nil, "created at must be set", http.StatusInternalServerError)
+	}
+	if r.ToCurrency.IsValid() != nil {
+		return NewAppError("OpenExchangeRate.IsValid", "model.open_exchange_rate.is_valid.to_currency.expiry", nil, "to currency must be set", http.StatusInternalServerError)
+	}
+
+	return nil
 }

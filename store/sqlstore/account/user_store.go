@@ -50,45 +50,6 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 
 func (us *SqlUserStore) ClearCaches() {}
 
-func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
-	return []interface{}{
-		&user.ID,
-		&user.Email,
-		&user.Username,
-		&user.FirstName,
-		&user.LastName,
-		&user.DefaultShippingAddressID,
-		&user.DefaultBillingAddressID,
-		&user.Password,
-		&user.AuthData,
-		&user.AuthService,
-		&user.EmailVerified,
-		&user.Nickname,
-		&user.Roles,
-		&user.Props,
-		&user.NotifyProps,
-		&user.LastPasswordUpdate,
-		&user.LastPictureUpdate,
-		&user.FailedAttempts,
-		&user.Locale,
-		&user.Timezone,
-		&user.MfaActive,
-		&user.MfaSecret,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-		&user.DeleteAt,
-		&user.IsActive,
-		&user.Note,
-		&user.JWTTokenKey,
-		&user.LastActivityAt,
-		&user.TermsOfServiceID,
-		&user.TermsOfServiceCreatedAt,
-		&user.DisableWelcomeEmail,
-		&user.Metadata,
-		&user.PrivateMetadata,
-	}
-}
-
 func (us *SqlUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
 	user, err := model.Users(conds...).One(us.GetReplica())
 	if err != nil {
