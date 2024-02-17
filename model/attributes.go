@@ -340,8 +340,8 @@ type attributeL struct{}
 
 var (
 	attributeAllColumns            = []string{"id", "slug", "name", "type", "input_type", "entity_type", "unit", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid", "metadata", "private_metadata"}
-	attributeColumnsWithoutDefault = []string{"slug", "name", "type", "input_type", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid"}
-	attributeColumnsWithDefault    = []string{"id", "entity_type", "unit", "metadata", "private_metadata"}
+	attributeColumnsWithoutDefault = []string{"id", "slug", "name", "type", "input_type", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid"}
+	attributeColumnsWithDefault    = []string{"entity_type", "unit", "metadata", "private_metadata"}
 	attributePrimaryKeyColumns     = []string{"id"}
 	attributeGeneratedColumns      = []string{}
 )

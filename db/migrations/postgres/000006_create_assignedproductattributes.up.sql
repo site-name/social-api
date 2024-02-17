@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS assigned_product_attributes (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL,
-  assignment_id uuid NOT NULL
+  id varchar(36) NOT NULL PRIMARY KEY,
+  product_id varchar(36) NOT NULL,
+  assignment_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY assigned_product_attributes

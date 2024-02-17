@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS voucher_collections (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id uuid NOT NULL,
-  collection_id uuid NOT NULL
+  id varchar(36) NOT NULL PRIMARY KEY,
+  voucher_id varchar(36) NOT NULL,
+  collection_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY voucher_collections

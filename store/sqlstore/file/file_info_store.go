@@ -1,161 +1,113 @@
 package file
 
 import (
+	"database/sql"
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 )
 
 type SqlFileInfoStore struct {
 	store.Store
-	metrics     einterfaces.MetricsInterface
-	queryFields util.AnyArray[string]
+	metrics einterfaces.MetricsInterface
 }
 
 func (fs *SqlFileInfoStore) ClearCaches() {}
 
 func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterface) store.FileInfoStore {
-	s := &SqlFileInfoStore{
+	return &SqlFileInfoStore{
 		Store:   sqlStore,
 		metrics: metrics,
 	}
-
-	s.queryFields = util.AnyArray[string]{
-		"FileInfos.Id",
-		"FileInfos.CreatorId",
-		"FileInfos.ParentID",
-		"FileInfos.CreateAt",
-		"FileInfos.UpdateAt",
-		"FileInfos.DeleteAt",
-		"FileInfos.Path",
-		"FileInfos.ThumbnailPath",
-		"FileInfos.PreviewPath",
-		"FileInfos.Name",
-		"FileInfos.Extension",
-		"FileInfos.Size",
-		"FileInfos.MimeType",
-		"FileInfos.Width",
-		"FileInfos.Height",
-		"FileInfos.HasPreviewImage",
-		"FileInfos.MiniPreview",
-		"Coalesce(FileInfos.Content, '') AS Content",
-		"Coalesce(FileInfos.RemoteId, '') AS RemoteId",
-	}
-
-	return s
 }
 
 func (fs *SqlFileInfoStore) Upsert(info model.FileInfo) (*model.FileInfo, error) {
-	err := fs.GetMaster().Save(info).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert file info")
-	}
-	return info, nil
-}
-
-func (fs *SqlFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, error) {
-	info := model.FileInfo{}
-	var db *gorm.DB
-	switch {
-	case fromMaster:
-		db = fs.GetMaster()
-	default:
-		db = fs.GetReplica()
+	isSaving := info.ID == ""
+	if isSaving {
+		model_helper.FileInfoPreSave(&info)
+	} else {
+		model_helper.FileInfoPreUpdate(&info)
 	}
 
-	err := db.First(&info, "Id = ? AND DeleteAt = 0").Error
+	if err := model_helper.FileInfoIsValid(info); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = info.Insert(fs.GetMaster(), boil.Infer())
+	} else {
+		_, err = info.Update(fs.GetMaster(), boil.Blacklist(model.FileInfoColumns.CreatedAt))
+	}
+
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("FileInfos", id)
-		}
-		return nil, errors.Wrapf(err, "failed to get FileInfo with id=%s", id)
+		return nil, err
 	}
 
 	return &info, nil
 }
 
-// GetWithOptions finds and returns fileinfos with given options.
-// Leave page, perPage nil to get all result.
-func (fs *SqlFileInfoStore) GetWithOptions(conds ...qm.QueryMod) (model.FileInfoSlice, error) {
-	query := fs.GetQueryBuilder().
-		Select(fs.queryFields...).
-		From(model.FileInfoTableName).
-		Where(opt.Conditions)
-
-	if opt.Limit > 0 {
-		query = query.Limit(opt.Limit)
-	}
-	if opt.Offset > 0 {
-		query = query.Offset(opt.Offset)
-	}
-	if len(opt.OrderBy) > 0 {
-		query = query.OrderBy(opt.OrderBy)
+func (fs *SqlFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, error) {
+	db := fs.GetReplica()
+	if fromMaster {
+		db = fs.GetMaster()
 	}
 
-	queryString, args, err := query.ToSql()
+	fileInfo, err := model.FileInfos(
+		model.FileInfoWhere.ID.EQ(id),
+		model.FileInfoWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+	).One(db)
 	if err != nil {
-		return nil, errors.Wrap(err, "file_info_tosql")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.FileInfos, id)
+		}
+		return nil, err
 	}
-	var infos []*model.FileInfo
-	if err := fs.GetReplica().Raw(queryString, args...).Scan(&infos).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find FileInfos")
-	}
-	return infos, nil
+
+	return fileInfo, nil
+}
+
+func (fs *SqlFileInfoStore) GetWithOptions(options model_helper.FileInfoFilterOption) (model.FileInfoSlice, error) {
+	return model.FileInfos(options.Conditions...).All(fs.GetReplica())
 }
 
 func (fs *SqlFileInfoStore) InvalidateFileInfosForPostCache(postId string, deleted bool) {
 }
 
 func (fs *SqlFileInfoStore) PermanentDelete(fileId string) error {
-	if err := fs.GetMaster().Raw(`DELETE FROM FileInfos WHERE Id = ?`, fileId).Error; err != nil {
-		return errors.Wrapf(err, "failed to delete FileInfos with id=%s", fileId)
-	}
-	return nil
+	_, err := model.FileInfos(model.FileInfoWhere.ID.EQ(fileId)).DeleteAll(fs.GetMaster())
+	return err
 }
 
 func (fs *SqlFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (int64, error) {
-	result := fs.GetMaster().Raw(
-		`DELETE FROM 
-			FileInfos 
-		WHERE Id = any (
-			array (
-				SELECT 
-					Id 
-				FROM 
-					FileInfos 
-				WHERE 
-					CreateAt < ? 
-				LIMIT ?
-			)
-		)`,
+	result, err := queries.Raw(
+		fmt.Sprintf(
+			`DELETE FROM %[1]s WHERE %[2]s = any (array (SELECT %[2]s FROM %[1]s WHERE %[3]s < $1 LIMIT $2))`,
+			model.TableNames.FileInfos,      // 1
+			model.FileInfoColumns.ID,        // 2
+			model.FileInfoColumns.CreatedAt, // 3
+		),
 		endTime,
 		limit,
-	)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete FileInfos in batch")
+	).Exec(fs.GetMaster())
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to delete FileInfos in batch")
 	}
 
-	return result.RowsAffected, nil
+	return result.RowsAffected()
 }
 
 func (fs SqlFileInfoStore) PermanentDeleteByUser(userId string) (int64, error) {
-	sqlResult := fs.GetMaster().Raw("DELETE FROM FileInfos WHERE CreatorId = ?", userId)
-	if sqlResult.Error != nil {
-		return 0, errors.Wrapf(sqlResult.Error, "failed to delete FileInfos with creatorId=%s", userId)
-	}
-
-	return sqlResult.RowsAffected, nil
+	return model.FileInfos(model.FileInfoWhere.CreatorID.EQ(userId)).DeleteAll(fs.GetMaster())
 }
 
 func (fs *SqlFileInfoStore) CountAll() (int64, error) {
-	var count int64
-	err := fs.GetReplica().Raw("SELECT COUNT(*) FROM " + model.FileInfoTableName + " WHERE DeleteAt = 0").Scan(&count).Error
-	if err != nil {
-		return int64(0), errors.Wrap(err, "failed to count Files")
-	}
-	return count, nil
+	return model.FileInfos(model.FileInfoWhere.DeleteAt.EQ(model_types.NewNullInt64(0))).Count(fs.GetReplica())
 }

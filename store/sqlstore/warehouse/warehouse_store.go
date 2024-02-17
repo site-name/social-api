@@ -128,9 +128,6 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 		res.SetAddress(&address)
 	}
 
-	var a model.Warehouse
-	a.R.GetWarehouseShippingZones()
-
 	// check if we need to prefetch shipping zones:
 	// 1) prefetching shipping zones is required
 	// 2) returning warehouse is valid

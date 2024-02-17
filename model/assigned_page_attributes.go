@@ -111,8 +111,8 @@ type assignedPageAttributeL struct{}
 
 var (
 	assignedPageAttributeAllColumns            = []string{"id", "page_id", "assignment_id"}
-	assignedPageAttributeColumnsWithoutDefault = []string{"page_id", "assignment_id"}
-	assignedPageAttributeColumnsWithDefault    = []string{"id"}
+	assignedPageAttributeColumnsWithoutDefault = []string{"id", "page_id", "assignment_id"}
+	assignedPageAttributeColumnsWithDefault    = []string{}
 	assignedPageAttributePrimaryKeyColumns     = []string{"id"}
 	assignedPageAttributeGeneratedColumns      = []string{}
 )

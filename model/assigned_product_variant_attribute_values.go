@@ -101,8 +101,8 @@ type assignedProductVariantAttributeValueL struct{}
 
 var (
 	assignedProductVariantAttributeValueAllColumns            = []string{"id", "attribute_value_id", "variant_id"}
-	assignedProductVariantAttributeValueColumnsWithoutDefault = []string{"attribute_value_id", "variant_id"}
-	assignedProductVariantAttributeValueColumnsWithDefault    = []string{"id"}
+	assignedProductVariantAttributeValueColumnsWithoutDefault = []string{"id", "attribute_value_id", "variant_id"}
+	assignedProductVariantAttributeValueColumnsWithDefault    = []string{}
 	assignedProductVariantAttributeValuePrimaryKeyColumns     = []string{"id"}
 	assignedProductVariantAttributeValueGeneratedColumns      = []string{}
 )

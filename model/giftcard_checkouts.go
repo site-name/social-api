@@ -101,8 +101,8 @@ type giftcardCheckoutL struct{}
 
 var (
 	giftcardCheckoutAllColumns            = []string{"id", "giftcard_id", "checkout_id"}
-	giftcardCheckoutColumnsWithoutDefault = []string{"giftcard_id", "checkout_id"}
-	giftcardCheckoutColumnsWithDefault    = []string{"id"}
+	giftcardCheckoutColumnsWithoutDefault = []string{"id", "giftcard_id", "checkout_id"}
+	giftcardCheckoutColumnsWithDefault    = []string{}
 	giftcardCheckoutPrimaryKeyColumns     = []string{"id"}
 	giftcardCheckoutGeneratedColumns      = []string{}
 )

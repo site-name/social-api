@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS cluster_discoveries (
-    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+    id varchar(36) NOT NULL PRIMARY KEY,
     type varchar(64) NOT NULL,
     cluster_name varchar(64) NOT NULL,
     host_name varchar(512) NOT NULL,

@@ -216,8 +216,8 @@ type warehouseL struct{}
 
 var (
 	warehouseAllColumns            = []string{"id", "name", "slug", "address_id", "email", "click_and_collect_option", "is_private", "created_at", "metadata", "private_metadata"}
-	warehouseColumnsWithoutDefault = []string{"name", "slug", "email", "click_and_collect_option", "created_at"}
-	warehouseColumnsWithDefault    = []string{"id", "address_id", "is_private", "metadata", "private_metadata"}
+	warehouseColumnsWithoutDefault = []string{"id", "name", "slug", "email", "click_and_collect_option", "created_at"}
+	warehouseColumnsWithDefault    = []string{"address_id", "is_private", "metadata", "private_metadata"}
 	warehousePrimaryKeyColumns     = []string{"id"}
 	warehouseGeneratedColumns      = []string{}
 )

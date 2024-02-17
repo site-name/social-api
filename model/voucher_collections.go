@@ -101,8 +101,8 @@ type voucherCollectionL struct{}
 
 var (
 	voucherCollectionAllColumns            = []string{"id", "voucher_id", "collection_id"}
-	voucherCollectionColumnsWithoutDefault = []string{"voucher_id", "collection_id"}
-	voucherCollectionColumnsWithDefault    = []string{"id"}
+	voucherCollectionColumnsWithoutDefault = []string{"id", "voucher_id", "collection_id"}
+	voucherCollectionColumnsWithDefault    = []string{}
 	voucherCollectionPrimaryKeyColumns     = []string{"id"}
 	voucherCollectionGeneratedColumns      = []string{}
 )

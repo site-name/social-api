@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS addresses (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   first_name varchar(64) NOT NULL,
   last_name varchar(64) NOT NULL,
   company_name varchar(256) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS addresses (
   country country_code NOT NULL, -- enum
   country_area varchar(128) NOT NULL,
   phone varchar(11) NOT NULL,
-  user_id uuid NOT NULL,
+  user_id varchar(36) NOT NULL,
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL
 );

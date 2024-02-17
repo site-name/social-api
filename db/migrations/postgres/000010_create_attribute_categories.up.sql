@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS category_attributes (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  attribute_id uuid NOT NULL,
-  category_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  attribute_id varchar(36) NOT NULL,
+  category_id varchar(36) NOT NULL,
   sort_order integer
 );
 

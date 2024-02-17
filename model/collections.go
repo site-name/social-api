@@ -191,8 +191,8 @@ type collectionL struct{}
 
 var (
 	collectionAllColumns            = []string{"id", "name", "slug", "background_image", "background_image_alt", "description", "metadata", "private_metadata", "seo_title", "seo_description"}
-	collectionColumnsWithoutDefault = []string{"name", "slug", "background_image_alt", "seo_title", "seo_description"}
-	collectionColumnsWithDefault    = []string{"id", "background_image", "description", "metadata", "private_metadata"}
+	collectionColumnsWithoutDefault = []string{"id", "name", "slug", "background_image_alt", "seo_title", "seo_description"}
+	collectionColumnsWithDefault    = []string{"background_image", "description", "metadata", "private_metadata"}
 	collectionPrimaryKeyColumns     = []string{"id"}
 	collectionGeneratedColumns      = []string{}
 )

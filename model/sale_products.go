@@ -108,8 +108,8 @@ type saleProductL struct{}
 
 var (
 	saleProductAllColumns            = []string{"id", "sale_id", "product_id", "created_at"}
-	saleProductColumnsWithoutDefault = []string{"sale_id", "product_id", "created_at"}
-	saleProductColumnsWithDefault    = []string{"id"}
+	saleProductColumnsWithoutDefault = []string{"id", "sale_id", "product_id", "created_at"}
+	saleProductColumnsWithDefault    = []string{}
 	saleProductPrimaryKeyColumns     = []string{"id"}
 	saleProductGeneratedColumns      = []string{}
 )

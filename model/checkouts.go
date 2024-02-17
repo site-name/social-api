@@ -324,8 +324,8 @@ type checkoutL struct{}
 
 var (
 	checkoutAllColumns            = []string{"token", "created_at", "updated_at", "user_id", "email", "quantity", "channel_id", "billing_address_id", "shipping_address_id", "shipping_method_id", "collection_point_id", "note", "currency", "country", "discount_amount", "discount_name", "translated_discount_name", "voucher_code", "redirect_url", "tracking_code", "language_code", "metadata", "private_metadata"}
-	checkoutColumnsWithoutDefault = []string{"created_at", "updated_at", "email", "quantity", "channel_id", "note", "currency", "country", "language_code"}
-	checkoutColumnsWithDefault    = []string{"token", "user_id", "billing_address_id", "shipping_address_id", "shipping_method_id", "collection_point_id", "discount_amount", "discount_name", "translated_discount_name", "voucher_code", "redirect_url", "tracking_code", "metadata", "private_metadata"}
+	checkoutColumnsWithoutDefault = []string{"token", "created_at", "updated_at", "email", "quantity", "channel_id", "note", "currency", "country", "language_code"}
+	checkoutColumnsWithDefault    = []string{"user_id", "billing_address_id", "shipping_address_id", "shipping_method_id", "collection_point_id", "discount_amount", "discount_name", "translated_discount_name", "voucher_code", "redirect_url", "tracking_code", "metadata", "private_metadata"}
 	checkoutPrimaryKeyColumns     = []string{"token"}
 	checkoutGeneratedColumns      = []string{}
 )

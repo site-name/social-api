@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS allocations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  order_line_id uuid NOT NULL,
-  stock_id uuid NOT NULL,
+  order_line_id varchar(36) NOT NULL,
+  stock_id varchar(36) NOT NULL,
   quantity_allocated integer NOT NULL
 );
 

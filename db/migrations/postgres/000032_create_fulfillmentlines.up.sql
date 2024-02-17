@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS fulfillment_lines (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_line_id uuid NOT NULL,
-  fulfillment_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  order_line_id varchar(36) NOT NULL,
+  fulfillment_id varchar(36) NOT NULL,
   quantity integer NOT NULL,
-  stock_id uuid
+  stock_id varchar(36)
 );

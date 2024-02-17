@@ -290,8 +290,8 @@ type productL struct{}
 
 var (
 	productAllColumns            = []string{"id", "name", "slug", "description", "description_plain_text", "category_id", "created_at", "updated_at", "charge_taxes", "weight", "weight_unit", "default_variant_id", "rating", "metadata", "private_metadata", "seo_title", "seo_description"}
-	productColumnsWithoutDefault = []string{"name", "slug", "description_plain_text", "category_id", "created_at", "updated_at", "weight_unit", "seo_title", "seo_description"}
-	productColumnsWithDefault    = []string{"id", "description", "charge_taxes", "weight", "default_variant_id", "rating", "metadata", "private_metadata"}
+	productColumnsWithoutDefault = []string{"id", "name", "slug", "description_plain_text", "category_id", "created_at", "updated_at", "weight_unit", "seo_title", "seo_description"}
+	productColumnsWithDefault    = []string{"description", "charge_taxes", "weight", "default_variant_id", "rating", "metadata", "private_metadata"}
 	productPrimaryKeyColumns     = []string{"id"}
 	productGeneratedColumns      = []string{}
 )

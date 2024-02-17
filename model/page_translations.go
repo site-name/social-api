@@ -120,8 +120,8 @@ type pageTranslationL struct{}
 
 var (
 	pageTranslationAllColumns            = []string{"id", "language_code", "page_id", "title", "content", "seo_title", "seo_description"}
-	pageTranslationColumnsWithoutDefault = []string{"language_code", "page_id", "title"}
-	pageTranslationColumnsWithDefault    = []string{"id", "content", "seo_title", "seo_description"}
+	pageTranslationColumnsWithoutDefault = []string{"id", "language_code", "page_id", "title"}
+	pageTranslationColumnsWithDefault    = []string{"content", "seo_title", "seo_description"}
 	pageTranslationPrimaryKeyColumns     = []string{"id"}
 	pageTranslationGeneratedColumns      = []string{}
 )

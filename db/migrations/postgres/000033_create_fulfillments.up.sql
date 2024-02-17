@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS fulfillments (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   fulfillment_order integer NOT NULL,
-  order_id uuid NOT NULL,
+  order_id varchar(36) NOT NULL,
   status fulfillment_status NOT NULL,
   tracking_number varchar(255) NOT NULL,
   created_at bigint NOT NULL,

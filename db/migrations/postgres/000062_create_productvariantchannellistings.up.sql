@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS product_variant_channel_listings (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  variant_id uuid NOT NULL,
-  channel_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  variant_id varchar(36) NOT NULL,
+  channel_id varchar(36) NOT NULL,
   currency Currency,
   price_amount decimal(12,3),
   cost_price_amount decimal(12,3),

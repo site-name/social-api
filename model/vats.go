@@ -81,8 +81,8 @@ type vatL struct{}
 
 var (
 	vatAllColumns            = []string{"id", "country_code", "data"}
-	vatColumnsWithoutDefault = []string{"country_code"}
-	vatColumnsWithDefault    = []string{"id", "data"}
+	vatColumnsWithoutDefault = []string{"id", "country_code"}
+	vatColumnsWithDefault    = []string{"data"}
 	vatPrimaryKeyColumns     = []string{"id"}
 	vatGeneratedColumns      = []string{}
 )

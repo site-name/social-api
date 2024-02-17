@@ -148,8 +148,8 @@ type giftcardEventL struct{}
 
 var (
 	giftcardEventAllColumns            = []string{"id", "date", "type", "parameters", "user_id", "giftcard_id"}
-	giftcardEventColumnsWithoutDefault = []string{"date", "type", "giftcard_id"}
-	giftcardEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
+	giftcardEventColumnsWithoutDefault = []string{"id", "date", "type", "giftcard_id"}
+	giftcardEventColumnsWithDefault    = []string{"parameters", "user_id"}
 	giftcardEventPrimaryKeyColumns     = []string{"id"}
 	giftcardEventGeneratedColumns      = []string{}
 )

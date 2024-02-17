@@ -17,48 +17,6 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 	return &SqlPaymentStore{s}
 }
 
-func (ps *SqlPaymentStore) ScanFields(payMent *model.Payment) []interface{} {
-	return []interface{}{
-		&payMent.Id,
-		&payMent.GateWay,
-		&payMent.IsActive,
-		&payMent.ToConfirm,
-		&payMent.CreateAt,
-		&payMent.UpdateAt,
-		&payMent.ChargeStatus,
-		&payMent.Token,
-		&payMent.Total,
-		&payMent.CapturedAmount,
-		&payMent.Currency,
-		&payMent.CheckoutID,
-		&payMent.OrderID,
-		&payMent.BillingEmail,
-		&payMent.BillingFirstName,
-		&payMent.BillingLastName,
-		&payMent.BillingCompanyName,
-		&payMent.BillingAddress1,
-		&payMent.BillingAddress2,
-		&payMent.BillingCity,
-		&payMent.BillingCityArea,
-		&payMent.BillingPostalCode,
-		&payMent.BillingCountryCode,
-		&payMent.BillingCountryArea,
-		&payMent.CcFirstDigits,
-		&payMent.CcLastDigits,
-		&payMent.CcBrand,
-		&payMent.CcExpMonth,
-		&payMent.CcExpYear,
-		&payMent.PaymentMethodType,
-		&payMent.CustomerIpAddress,
-		&payMent.ExtraData,
-		&payMent.ReturnUrl,
-		&payMent.PspReference,
-		&payMent.StorePaymentMethod,
-		&payMent.Metadata,
-		&payMent.PrivateMetadata,
-	}
-}
-
 // Save inserts given payment into database then returns it
 func (ps *SqlPaymentStore) Save(transaction *gorm.DB, payment *model.Payment) (*model.Payment, error) {
 	if transaction == nil {

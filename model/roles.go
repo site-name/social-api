@@ -130,8 +130,8 @@ type roleL struct{}
 
 var (
 	roleAllColumns            = []string{"id", "name", "display_name", "description", "created_at", "updated_at", "delete_at", "permissions", "scheme_managed", "built_in"}
-	roleColumnsWithoutDefault = []string{"name", "display_name", "description", "created_at", "updated_at", "permissions", "scheme_managed", "built_in"}
-	roleColumnsWithDefault    = []string{"id", "delete_at"}
+	roleColumnsWithoutDefault = []string{"id", "name", "display_name", "description", "created_at", "updated_at", "permissions", "scheme_managed", "built_in"}
+	roleColumnsWithDefault    = []string{"delete_at"}
 	rolePrimaryKeyColumns     = []string{"id"}
 	roleGeneratedColumns      = []string{}
 )

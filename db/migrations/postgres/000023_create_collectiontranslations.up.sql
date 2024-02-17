@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS collection_translations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   language_code language_code NOT NULL,
-  collection_id uuid NOT NULL,
+  collection_id varchar(36) NOT NULL,
   name varchar(250) NOT NULL,
   description text NOT NULL,
   seo_title varchar(70),

@@ -101,8 +101,8 @@ type productCollectionL struct{}
 
 var (
 	productCollectionAllColumns            = []string{"id", "collection_id", "product_id"}
-	productCollectionColumnsWithoutDefault = []string{"collection_id", "product_id"}
-	productCollectionColumnsWithDefault    = []string{"id"}
+	productCollectionColumnsWithoutDefault = []string{"id", "collection_id", "product_id"}
+	productCollectionColumnsWithDefault    = []string{}
 	productCollectionPrimaryKeyColumns     = []string{"id"}
 	productCollectionGeneratedColumns      = []string{}
 )

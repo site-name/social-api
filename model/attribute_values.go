@@ -220,8 +220,8 @@ type attributeValueL struct{}
 
 var (
 	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
-	attributeValueColumnsWithoutDefault = []string{"name", "value", "slug", "attribute_id"}
-	attributeValueColumnsWithDefault    = []string{"id", "file_url", "content_type", "rich_text", "boolean", "datetime", "sort_order"}
+	attributeValueColumnsWithoutDefault = []string{"id", "name", "value", "slug", "attribute_id"}
+	attributeValueColumnsWithDefault    = []string{"file_url", "content_type", "rich_text", "boolean", "datetime", "sort_order"}
 	attributeValuePrimaryKeyColumns     = []string{"id"}
 	attributeValueGeneratedColumns      = []string{}
 )

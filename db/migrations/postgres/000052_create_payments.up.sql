@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS payments (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   gateway varchar(255) NOT NULL,
   is_active boolean,
   to_confirm boolean NOT NULL,
@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS payments (
   total decimal(12,3) NOT NULL DEFAULT 0.00,
   captured_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   currency Currency NOT NULL,
-  checkout_id uuid,
-  order_id uuid,
+  checkout_id varchar(36),
+  order_id varchar(36),
   billing_email varchar(128) NOT NULL,
   billing_first_name varchar(256) NOT NULL,
   billing_last_name varchar(256) NOT NULL,

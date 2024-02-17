@@ -101,8 +101,8 @@ type shippingZoneChannelL struct{}
 
 var (
 	shippingZoneChannelAllColumns            = []string{"id", "shipping_zone_id", "channel_id"}
-	shippingZoneChannelColumnsWithoutDefault = []string{"shipping_zone_id", "channel_id"}
-	shippingZoneChannelColumnsWithDefault    = []string{"id"}
+	shippingZoneChannelColumnsWithoutDefault = []string{"id", "shipping_zone_id", "channel_id"}
+	shippingZoneChannelColumnsWithDefault    = []string{}
 	shippingZoneChannelPrimaryKeyColumns     = []string{"id"}
 	shippingZoneChannelGeneratedColumns      = []string{}
 )

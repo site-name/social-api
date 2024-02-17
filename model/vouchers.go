@@ -292,8 +292,8 @@ type voucherL struct{}
 
 var (
 	voucherAllColumns            = []string{"id", "type", "name", "code", "usage_limit", "used", "start_date", "end_date", "apply_once_per_order", "apply_once_per_customer", "only_for_staff", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at", "metadata", "private_metadata"}
-	voucherColumnsWithoutDefault = []string{"type", "code", "usage_limit", "used", "start_date", "apply_once_per_order", "apply_once_per_customer", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at"}
-	voucherColumnsWithDefault    = []string{"id", "name", "end_date", "only_for_staff", "metadata", "private_metadata"}
+	voucherColumnsWithoutDefault = []string{"id", "type", "code", "usage_limit", "used", "start_date", "apply_once_per_order", "apply_once_per_customer", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at"}
+	voucherColumnsWithDefault    = []string{"name", "end_date", "only_for_staff", "metadata", "private_metadata"}
 	voucherPrimaryKeyColumns     = []string{"id"}
 	voucherGeneratedColumns      = []string{}
 )

@@ -101,8 +101,8 @@ type variantMediumL struct{}
 
 var (
 	variantMediumAllColumns            = []string{"id", "variant_id", "media_id"}
-	variantMediumColumnsWithoutDefault = []string{"variant_id", "media_id"}
-	variantMediumColumnsWithDefault    = []string{"id"}
+	variantMediumColumnsWithoutDefault = []string{"id", "variant_id", "media_id"}
+	variantMediumColumnsWithDefault    = []string{}
 	variantMediumPrimaryKeyColumns     = []string{"id"}
 	variantMediumGeneratedColumns      = []string{}
 )

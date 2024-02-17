@@ -65,6 +65,10 @@ func NewNullInt64(value int64) NullInt64 {
 	return NullInt64{&value}
 }
 
+func (n NullInt64) IsZero() bool {
+	return n.IsNil()
+}
+
 func (n *NullInt64) Scan(value any) error {
 	if value == nil {
 		n.Int64 = nil
@@ -153,6 +157,10 @@ func (n *NullInt) Scan(value any) error {
 	}
 }
 
+func (n NullInt) IsZero() bool {
+	return n.IsNil()
+}
+
 func (n NullInt) Value() (driver.Value, error) {
 	if n.Int == nil {
 		return nil, nil
@@ -177,6 +185,10 @@ func (n *NullInt) UnmarshalJSON(data []byte) error {
 
 type NullDecimal struct {
 	Decimal *decimal.Decimal
+}
+
+func (n NullDecimal) IsZero() bool {
+	return n.IsNil()
 }
 
 func NewNullDecimal(value decimal.Decimal) NullDecimal {
@@ -282,6 +294,10 @@ func NewNullString(value string) NullString {
 	return NullString{&value}
 }
 
+func (n NullString) IsZero() bool {
+	return n.IsNil()
+}
+
 func (n *NullString) Scan(value any) error {
 	if value == nil {
 		n.String = nil
@@ -325,6 +341,10 @@ func (n *NullString) UnmarshalJSON(data []byte) error {
 
 type NullFloat32 struct {
 	Float32 *float32
+}
+
+func (n NullFloat32) IsZero() bool {
+	return n.IsNil()
 }
 
 func (f NullFloat32) IsNil() bool {
@@ -387,6 +407,10 @@ func (n *NullFloat32) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &n.Float32)
 }
 
+func (n NullBool) IsZero() bool {
+	return n.IsNil()
+}
+
 type NullBool struct {
 	Bool *bool
 }
@@ -446,6 +470,10 @@ func (n *NullBool) UnmarshalJSON(data []byte) error {
 
 type NullTime struct {
 	Time *time.Time
+}
+
+func (n NullTime) IsZero() bool {
+	return n.IsNil()
 }
 
 func (n NullTime) IsNil() bool {

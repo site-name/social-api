@@ -22,15 +22,6 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 	return &SqlAssignedProductAttributeValueStore{s}
 }
 
-func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{} {
-	return []interface{}{
-		&assignedProductAttributeValue.Id,
-		&assignedProductAttributeValue.ValueID,
-		&assignedProductAttributeValue.AssignmentID,
-		&assignedProductAttributeValue.SortOrder,
-	}
-}
-
 func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 	if err := as.GetMaster().Create(assignedProductAttrValue).Error; err != nil {
 		if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {

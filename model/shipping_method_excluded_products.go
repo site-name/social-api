@@ -101,8 +101,8 @@ type shippingMethodExcludedProductL struct{}
 
 var (
 	shippingMethodExcludedProductAllColumns            = []string{"id", "shipping_method_id", "product_id"}
-	shippingMethodExcludedProductColumnsWithoutDefault = []string{"shipping_method_id", "product_id"}
-	shippingMethodExcludedProductColumnsWithDefault    = []string{"id"}
+	shippingMethodExcludedProductColumnsWithoutDefault = []string{"id", "shipping_method_id", "product_id"}
+	shippingMethodExcludedProductColumnsWithDefault    = []string{}
 	shippingMethodExcludedProductPrimaryKeyColumns     = []string{"id"}
 	shippingMethodExcludedProductGeneratedColumns      = []string{}
 )

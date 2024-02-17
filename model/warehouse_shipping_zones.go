@@ -101,8 +101,8 @@ type warehouseShippingZoneL struct{}
 
 var (
 	warehouseShippingZoneAllColumns            = []string{"id", "warehouse_id", "shipping_zone_id"}
-	warehouseShippingZoneColumnsWithoutDefault = []string{"warehouse_id", "shipping_zone_id"}
-	warehouseShippingZoneColumnsWithDefault    = []string{"id"}
+	warehouseShippingZoneColumnsWithoutDefault = []string{"id", "warehouse_id", "shipping_zone_id"}
+	warehouseShippingZoneColumnsWithDefault    = []string{}
 	warehouseShippingZonePrimaryKeyColumns     = []string{"id"}
 	warehouseShippingZoneGeneratedColumns      = []string{}
 )

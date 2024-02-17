@@ -187,8 +187,8 @@ type jobL struct{}
 
 var (
 	jobAllColumns            = []string{"id", "type", "priority", "created_at", "start_at", "last_activity_at", "status", "progress", "data"}
-	jobColumnsWithoutDefault = []string{"type", "priority", "created_at", "start_at", "last_activity_at", "status", "progress"}
-	jobColumnsWithDefault    = []string{"id", "data"}
+	jobColumnsWithoutDefault = []string{"id", "type", "priority", "created_at", "start_at", "last_activity_at", "status", "progress"}
+	jobColumnsWithDefault    = []string{"data"}
 	jobPrimaryKeyColumns     = []string{"id"}
 	jobGeneratedColumns      = []string{}
 )

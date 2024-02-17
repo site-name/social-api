@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS product_variants (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   name varchar(255) NOT NULL,
-  product_id uuid NOT NULL,
+  product_id varchar(36) NOT NULL,
   sku varchar(255) NOT NULL,
   weight real,
   weight_unit text NOT NULL,

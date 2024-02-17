@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS preorder_allocations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_line_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  order_line_id varchar(36) NOT NULL,
   quantity SMALLINT NOT NULL,
-  product_variant_channel_listing_id uuid NOT NULL
+  product_variant_channel_listing_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY preorder_allocations

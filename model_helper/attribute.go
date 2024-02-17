@@ -34,6 +34,12 @@ func AssignedPageAttributeValueIsValid(a model.AssignedPageAttributeValue) *AppE
 	return nil
 }
 
+func AssignedPageAttributeValuePreSave(a *model.AssignedPageAttributeValue) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
+}
+
 func AssignedPageAttributeIsValid(a model.AssignedPageAttribute) *AppError {
 	if !IsValidId(a.ID) {
 		return NewAppError("AssignedPageAttributeIsValid", "model.assigned_page_attribute.is_valid.id.app_error", nil, "", http.StatusBadRequest)
@@ -94,6 +100,9 @@ func AttributeValueCommonPre(a *model.AttributeValue) {
 }
 
 func AttributeValuePreSave(a *model.AttributeValue) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
 	AttributeValueCommonPre(a)
 	a.Slug = slug.Make(a.Name)
 }
@@ -154,4 +163,8 @@ func AttributeIsValid(a model.Attribute) *AppError {
 	}
 
 	return nil
+}
+
+type AttributeValueFilterOptions struct {
+	CommonQueryOptions
 }

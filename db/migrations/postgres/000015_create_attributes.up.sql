@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS attributes (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   slug varchar(255) NOT NULL,
   name varchar(250) NOT NULL,
   type attribute_type NOT NULL, -- enum

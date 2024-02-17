@@ -123,8 +123,8 @@ type customerNoteL struct{}
 
 var (
 	customerNoteAllColumns            = []string{"id", "user_id", "date", "content", "is_public", "customer_id"}
-	customerNoteColumnsWithoutDefault = []string{"date", "customer_id"}
-	customerNoteColumnsWithDefault    = []string{"id", "user_id", "content", "is_public"}
+	customerNoteColumnsWithoutDefault = []string{"id", "date", "customer_id"}
+	customerNoteColumnsWithDefault    = []string{"user_id", "content", "is_public"}
 	customerNotePrimaryKeyColumns     = []string{"id"}
 	customerNoteGeneratedColumns      = []string{}
 )

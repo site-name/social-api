@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS sale_channel_listings (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_id uuid NOT NULL,
-  channel_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  sale_id varchar(36) NOT NULL,
+  channel_id varchar(36) NOT NULL,
   discount_value decimal(12,3) DEFAULT 0.00,
   currency Currency NOT NULL,
   created_at bigint NOT NULL

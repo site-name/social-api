@@ -101,8 +101,8 @@ type customProductAttributeValueL struct{}
 
 var (
 	customProductAttributeValueAllColumns            = []string{"id", "value", "attribute_id"}
-	customProductAttributeValueColumnsWithoutDefault = []string{"value", "attribute_id"}
-	customProductAttributeValueColumnsWithDefault    = []string{"id"}
+	customProductAttributeValueColumnsWithoutDefault = []string{"id", "value", "attribute_id"}
+	customProductAttributeValueColumnsWithDefault    = []string{}
 	customProductAttributeValuePrimaryKeyColumns     = []string{"id"}
 	customProductAttributeValueGeneratedColumns      = []string{}
 )

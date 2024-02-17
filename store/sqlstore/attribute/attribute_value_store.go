@@ -1,12 +1,12 @@
 package attribute
 
 import (
-	"strings"
+	"database/sql"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlAttributeValueStore struct {
@@ -17,137 +17,68 @@ func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	return &SqlAttributeValueStore{s}
 }
 
-func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
-	err := as.GetMaster().Save(av).Error
+func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
+	av, err := model.FindAttributeValue(as.GetReplica(), id)
 	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", "attributevalues_slug_attributeid_key"}) {
-			return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AttributeValues, id)
 		}
-		return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", av.Id)
+		return nil, err
 	}
 
 	return av, nil
 }
 
-func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
-	var res model.AttributeValue
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AttributeValueTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find attribute value with id=%s", id)
-	}
-
-	return &res, nil
-}
-
 // FilterByOptions finds and returns all matched attribute values based on given options
-func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
-	selectFields := []string{model.AttributeValueTableName + ".*"}
-	if options.SelectRelatedAttribute {
-		selectFields = append(selectFields, model.AttributeTableName+".*")
-	}
-
-	query := as.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.AttributeValueTableName).Where(options.Conditions)
-
-	if options.SelectForUpdate && options.Transaction != nil {
-		query = query.Suffix("FOR UPDATE")
-	}
-	if options.Ordering != "" {
-		query = query.OrderBy(options.Ordering)
-	}
-	if options.SelectRelatedAttribute {
-		query = query.InnerJoin(model.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	runner := as.GetReplica()
-	if options.Transaction != nil {
-		runner = options.Transaction
-	}
-	rows, err := runner.Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find attribute values")
-	}
-	defer rows.Close()
-
-	var res model.AttributeValues
-
-	for rows.Next() {
-		var (
-			attributeValue model.AttributeValue
-			attribute      model.Attribute
-			scanFields     = as.ScanFields(&attributeValue)
-		)
-		if options.SelectRelatedAttribute {
-			scanFields = append(scanFields, as.Attribute().ScanFields(&attribute)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of attribute value")
-		}
-
-		if options.SelectRelatedAttribute {
-			attributeValue.Attribute = &attribute
-		}
-
-		res = append(res, &attributeValue)
-	}
-
-	return res, nil
+func (as *SqlAttributeValueStore) FilterByOptions(option model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, error) {
+	return model.AttributeValues(option.Conditions...).All(as.GetReplica())
 }
 
-func (as *SqlAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
+func (as *SqlAttributeValueStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	if tx == nil {
 		tx = as.GetMaster()
 	}
-	result := tx.Raw("DELETE FROM "+model.AttributeValueTableName+" WHERE Id IN ?", ids)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete attribute values")
-	}
-
-	return result.RowsAffected, nil
+	return model.AttributeValues(model.AttributeValueWhere.ID.IN(ids)).DeleteAll(tx)
 }
 
-func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error) {
+func (as *SqlAttributeValueStore) Upsert(transaction boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error) {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 
 	for _, value := range values {
-		err := transaction.Save(value).Error
+		if value == nil {
+			continue
+		}
+
+		isSaving := value.ID == ""
+		if isSaving {
+			model_helper.AttributeValuePreSave(value)
+		} else {
+			model_helper.AttributeValueCommonPre(value)
+		}
+
+		if err := model_helper.AttributeValueIsValid(*value); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = value.Insert(transaction, boil.Infer())
+		} else {
+			_, err = value.Update(transaction, boil.Infer())
+		}
 		if err != nil {
-			if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(model.AttributeValueTableName) + "_slug_attributeid_key"}) {
-				return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+value.AttributeID)
+			if as.IsUniqueConstraintError(err, []string{"attribute_values_slug_attribute_id_key", model.AttributeValueColumns.AttributeID, model.AttributeValueColumns.Slug}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.AttributeValues, model.AttributeValueColumns.Slug+"/"+model.AttributeValueColumns.AttributeID, "unique")
 			}
-			return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", value.Id)
+			return nil, err
 		}
 	}
 
 	return values, nil
 }
 
-func (as *SqlAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
-	query, args, err := as.GetQueryBuilder().
-		Select("COUNT (*)").
-		From(model.AttributeValueTableName).Where(options.Conditions).ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "AttributeValue.Count.ToSql")
-	}
-
-	var count int64
-	err = as.GetReplica().Raw(query, args...).Scan(&count).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of attribute value with given options")
-	}
-
-	return count, nil
+func (as *SqlAttributeValueStore) Count(options model_helper.AttributeValueFilterOptions) (int64, error) {
+	return model.AttributeValues(options.Conditions...).Count(as.GetReplica())
 }

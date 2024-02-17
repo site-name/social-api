@@ -87,8 +87,8 @@ type voucherproductVariantL struct{}
 
 var (
 	voucherproductVariantAllColumns            = []string{"id", "voucher_id", "product_variant_id", "created_at"}
-	voucherproductVariantColumnsWithoutDefault = []string{"voucher_id", "product_variant_id", "created_at"}
-	voucherproductVariantColumnsWithDefault    = []string{"id"}
+	voucherproductVariantColumnsWithoutDefault = []string{"id", "voucher_id", "product_variant_id", "created_at"}
+	voucherproductVariantColumnsWithDefault    = []string{}
 	voucherproductVariantPrimaryKeyColumns     = []string{"id"}
 	voucherproductVariantGeneratedColumns      = []string{}
 )

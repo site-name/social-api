@@ -174,8 +174,8 @@ type saleL struct{}
 
 var (
 	saleAllColumns            = []string{"id", "name", "type", "start_date", "end_date", "created_at", "updated_at", "metadata", "private_metadata"}
-	saleColumnsWithoutDefault = []string{"name", "type", "start_date", "created_at", "updated_at"}
-	saleColumnsWithDefault    = []string{"id", "end_date", "metadata", "private_metadata"}
+	saleColumnsWithoutDefault = []string{"id", "name", "type", "start_date", "created_at", "updated_at"}
+	saleColumnsWithDefault    = []string{"end_date", "metadata", "private_metadata"}
 	salePrimaryKeyColumns     = []string{"id"}
 	saleGeneratedColumns      = []string{}
 )

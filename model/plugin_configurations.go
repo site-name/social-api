@@ -109,8 +109,8 @@ type pluginConfigurationL struct{}
 
 var (
 	pluginConfigurationAllColumns            = []string{"id", "identifier", "name", "channel_id", "description", "active", "configuration"}
-	pluginConfigurationColumnsWithoutDefault = []string{"identifier", "name", "channel_id", "description", "active"}
-	pluginConfigurationColumnsWithDefault    = []string{"id", "configuration"}
+	pluginConfigurationColumnsWithoutDefault = []string{"id", "identifier", "name", "channel_id", "description", "active"}
+	pluginConfigurationColumnsWithDefault    = []string{"configuration"}
 	pluginConfigurationPrimaryKeyColumns     = []string{"id"}
 	pluginConfigurationGeneratedColumns      = []string{}
 )

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS shipping_method_postal_code_rules (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipping_method_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  shipping_method_id varchar(36) NOT NULL,
   "start" varchar(32) NOT NULL,
   "end" varchar(32) NOT NULL,
   inclusion_type varchar(32) NOT NULL

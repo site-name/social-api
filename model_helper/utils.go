@@ -91,6 +91,10 @@ func GetMillis() int64 {
 	return time.Now().UnixMilli()
 }
 
+func GetTimeUTCNow() time.Time {
+	return time.Now().UTC()
+}
+
 // GetTimeForMillis is a convenience method to get time.Time for milliseconds since epoch.
 func GetTimeForMillis(millis int64) time.Time {
 	return time.Unix(0, millis*int64(time.Millisecond))

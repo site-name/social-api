@@ -109,8 +109,8 @@ type attributePageL struct{}
 
 var (
 	attributePageAllColumns            = []string{"id", "attribute_id", "page_type_id", "sort_order"}
-	attributePageColumnsWithoutDefault = []string{"attribute_id", "page_type_id"}
-	attributePageColumnsWithDefault    = []string{"id", "sort_order"}
+	attributePageColumnsWithoutDefault = []string{"id", "attribute_id", "page_type_id"}
+	attributePageColumnsWithDefault    = []string{"sort_order"}
 	attributePagePrimaryKeyColumns     = []string{"id"}
 	attributePageGeneratedColumns      = []string{}
 )

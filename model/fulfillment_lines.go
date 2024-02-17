@@ -116,8 +116,8 @@ type fulfillmentLineL struct{}
 
 var (
 	fulfillmentLineAllColumns            = []string{"id", "order_line_id", "fulfillment_id", "quantity", "stock_id"}
-	fulfillmentLineColumnsWithoutDefault = []string{"order_line_id", "fulfillment_id", "quantity"}
-	fulfillmentLineColumnsWithDefault    = []string{"id", "stock_id"}
+	fulfillmentLineColumnsWithoutDefault = []string{"id", "order_line_id", "fulfillment_id", "quantity"}
+	fulfillmentLineColumnsWithDefault    = []string{"stock_id"}
 	fulfillmentLinePrimaryKeyColumns     = []string{"id"}
 	fulfillmentLineGeneratedColumns      = []string{}
 )

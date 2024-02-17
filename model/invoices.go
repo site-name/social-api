@@ -158,8 +158,8 @@ type invoiceL struct{}
 
 var (
 	invoiceAllColumns            = []string{"id", "order_id", "number", "created_at", "external_url", "status", "message", "updated_at", "invoice_file", "metadata", "private_metadata"}
-	invoiceColumnsWithoutDefault = []string{"number", "created_at", "external_url", "status", "message", "updated_at"}
-	invoiceColumnsWithDefault    = []string{"id", "order_id", "invoice_file", "metadata", "private_metadata"}
+	invoiceColumnsWithoutDefault = []string{"id", "number", "created_at", "external_url", "status", "message", "updated_at"}
+	invoiceColumnsWithDefault    = []string{"order_id", "invoice_file", "metadata", "private_metadata"}
 	invoicePrimaryKeyColumns     = []string{"id"}
 	invoiceGeneratedColumns      = []string{}
 )

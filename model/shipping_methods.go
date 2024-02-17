@@ -240,8 +240,8 @@ type shippingMethodL struct{}
 
 var (
 	shippingMethodAllColumns            = []string{"id", "name", "type", "shipping_zone_id", "minimum_order_weight", "maximum_order_weight", "weight_unit", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
-	shippingMethodColumnsWithoutDefault = []string{"name", "type", "shipping_zone_id", "weight_unit"}
-	shippingMethodColumnsWithDefault    = []string{"id", "minimum_order_weight", "maximum_order_weight", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
+	shippingMethodColumnsWithoutDefault = []string{"id", "name", "type", "shipping_zone_id", "weight_unit"}
+	shippingMethodColumnsWithDefault    = []string{"minimum_order_weight", "maximum_order_weight", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
 	shippingMethodPrimaryKeyColumns     = []string{"id"}
 	shippingMethodGeneratedColumns      = []string{}
 )

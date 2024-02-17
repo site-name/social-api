@@ -208,8 +208,8 @@ type menuItemL struct{}
 
 var (
 	menuItemAllColumns            = []string{"id", "menu_id", "name", "parent_id", "url", "category_id", "collection_id", "page_id", "metadata", "private_metadata", "sort_order"}
-	menuItemColumnsWithoutDefault = []string{"menu_id", "name"}
-	menuItemColumnsWithDefault    = []string{"id", "parent_id", "url", "category_id", "collection_id", "page_id", "metadata", "private_metadata", "sort_order"}
+	menuItemColumnsWithoutDefault = []string{"id", "menu_id", "name"}
+	menuItemColumnsWithDefault    = []string{"parent_id", "url", "category_id", "collection_id", "page_id", "metadata", "private_metadata", "sort_order"}
 	menuItemPrimaryKeyColumns     = []string{"id"}
 	menuItemGeneratedColumns      = []string{}
 )

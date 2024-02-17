@@ -99,8 +99,8 @@ type staffNotificationRecipientL struct{}
 
 var (
 	staffNotificationRecipientAllColumns            = []string{"id", "user_id", "staff_email", "active"}
-	staffNotificationRecipientColumnsWithoutDefault = []string{"active"}
-	staffNotificationRecipientColumnsWithDefault    = []string{"id", "user_id", "staff_email"}
+	staffNotificationRecipientColumnsWithoutDefault = []string{"id", "active"}
+	staffNotificationRecipientColumnsWithDefault    = []string{"user_id", "staff_email"}
 	staffNotificationRecipientPrimaryKeyColumns     = []string{"id"}
 	staffNotificationRecipientGeneratedColumns      = []string{}
 )

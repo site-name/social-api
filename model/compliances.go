@@ -217,8 +217,8 @@ type complianceL struct{}
 
 var (
 	complianceAllColumns            = []string{"id", "created_at", "user_id", "status", "count", "desc", "type", "start_at", "end_at", "keywords", "emails"}
-	complianceColumnsWithoutDefault = []string{"created_at", "user_id", "status", "count", "desc", "type", "start_at", "end_at", "keywords", "emails"}
-	complianceColumnsWithDefault    = []string{"id"}
+	complianceColumnsWithoutDefault = []string{"id", "created_at", "user_id", "status", "count", "desc", "type", "start_at", "end_at", "keywords", "emails"}
+	complianceColumnsWithDefault    = []string{}
 	compliancePrimaryKeyColumns     = []string{"id"}
 	complianceGeneratedColumns      = []string{}
 )

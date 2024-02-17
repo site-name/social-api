@@ -158,8 +158,8 @@ type customerEventL struct{}
 
 var (
 	customerEventAllColumns            = []string{"id", "date", "type", "order_id", "user_id", "parameters"}
-	customerEventColumnsWithoutDefault = []string{"date", "type"}
-	customerEventColumnsWithDefault    = []string{"id", "order_id", "user_id", "parameters"}
+	customerEventColumnsWithoutDefault = []string{"id", "date", "type"}
+	customerEventColumnsWithDefault    = []string{"order_id", "user_id", "parameters"}
 	customerEventPrimaryKeyColumns     = []string{"id"}
 	customerEventGeneratedColumns      = []string{}
 )

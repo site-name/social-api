@@ -116,8 +116,8 @@ type pageTypeL struct{}
 
 var (
 	pageTypeAllColumns            = []string{"id", "name", "slug", "metadata", "private_metadata"}
-	pageTypeColumnsWithoutDefault = []string{"name", "slug"}
-	pageTypeColumnsWithDefault    = []string{"id", "metadata", "private_metadata"}
+	pageTypeColumnsWithoutDefault = []string{"id", "name", "slug"}
+	pageTypeColumnsWithDefault    = []string{"metadata", "private_metadata"}
 	pageTypePrimaryKeyColumns     = []string{"id"}
 	pageTypeGeneratedColumns      = []string{}
 )

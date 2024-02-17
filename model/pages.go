@@ -207,8 +207,8 @@ type pageL struct{}
 
 var (
 	pageAllColumns            = []string{"id", "title", "slug", "page_type_id", "content", "created_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
-	pageColumnsWithoutDefault = []string{"title", "slug", "page_type_id", "content", "created_at", "is_published", "seo_title", "seo_description"}
-	pageColumnsWithDefault    = []string{"id", "metadata", "private_metadata", "publication_date"}
+	pageColumnsWithoutDefault = []string{"id", "title", "slug", "page_type_id", "content", "created_at", "is_published", "seo_title", "seo_description"}
+	pageColumnsWithDefault    = []string{"metadata", "private_metadata", "publication_date"}
 	pagePrimaryKeyColumns     = []string{"id"}
 	pageGeneratedColumns      = []string{}
 )

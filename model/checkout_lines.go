@@ -115,8 +115,8 @@ type checkoutLineL struct{}
 
 var (
 	checkoutLineAllColumns            = []string{"id", "created_at", "checkout_id", "variant_id", "quantity"}
-	checkoutLineColumnsWithoutDefault = []string{"created_at", "checkout_id", "variant_id", "quantity"}
-	checkoutLineColumnsWithDefault    = []string{"id"}
+	checkoutLineColumnsWithoutDefault = []string{"id", "created_at", "checkout_id", "variant_id", "quantity"}
+	checkoutLineColumnsWithDefault    = []string{}
 	checkoutLinePrimaryKeyColumns     = []string{"id"}
 	checkoutLineGeneratedColumns      = []string{}
 )

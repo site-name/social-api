@@ -116,8 +116,8 @@ type exportFileL struct{}
 
 var (
 	exportFileAllColumns            = []string{"id", "user_id", "content_file", "created_at", "updated_at"}
-	exportFileColumnsWithoutDefault = []string{"created_at", "updated_at"}
-	exportFileColumnsWithDefault    = []string{"id", "user_id", "content_file"}
+	exportFileColumnsWithoutDefault = []string{"id", "created_at", "updated_at"}
+	exportFileColumnsWithDefault    = []string{"user_id", "content_file"}
 	exportFilePrimaryKeyColumns     = []string{"id"}
 	exportFileGeneratedColumns      = []string{}
 )

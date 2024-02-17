@@ -22,15 +22,6 @@ func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVaria
 	return &SqlAssignedVariantAttributeValueStore{s}
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{} {
-	return []interface{}{
-		&assignedVariantAttributeValue.Id,
-		&assignedVariantAttributeValue.ValueID,
-		&assignedVariantAttributeValue.AssignmentID,
-		&assignedVariantAttributeValue.SortOrder,
-	}
-}
-
 func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 	err := as.GetMaster().Create(assignedVariantAttrValue).Error
 	if err != nil {

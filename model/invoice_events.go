@@ -175,8 +175,8 @@ type invoiceEventL struct{}
 
 var (
 	invoiceEventAllColumns            = []string{"id", "created_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
-	invoiceEventColumnsWithoutDefault = []string{"created_at", "type"}
-	invoiceEventColumnsWithDefault    = []string{"id", "invoice_id", "order_id", "user_id", "parameters"}
+	invoiceEventColumnsWithoutDefault = []string{"id", "created_at", "type"}
+	invoiceEventColumnsWithDefault    = []string{"invoice_id", "order_id", "user_id", "parameters"}
 	invoiceEventPrimaryKeyColumns     = []string{"id"}
 	invoiceEventGeneratedColumns      = []string{}
 )

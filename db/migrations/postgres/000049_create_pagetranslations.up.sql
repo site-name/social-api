@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS page_translations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   language_code language_code NOT NULL,
-  page_id uuid NOT NULL,
+  page_id varchar(36) NOT NULL,
   title varchar(250) NOT NULL,
   content text,
   seo_title varchar(70),

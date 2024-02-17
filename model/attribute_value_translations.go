@@ -121,8 +121,8 @@ type attributeValueTranslationL struct{}
 
 var (
 	attributeValueTranslationAllColumns            = []string{"id", "language_code", "attribute_value_id", "name", "rich_text"}
-	attributeValueTranslationColumnsWithoutDefault = []string{"language_code", "attribute_value_id", "name"}
-	attributeValueTranslationColumnsWithDefault    = []string{"id", "rich_text"}
+	attributeValueTranslationColumnsWithoutDefault = []string{"id", "language_code", "attribute_value_id", "name"}
+	attributeValueTranslationColumnsWithDefault    = []string{"rich_text"}
 	attributeValueTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeValueTranslationGeneratedColumns      = []string{}
 )

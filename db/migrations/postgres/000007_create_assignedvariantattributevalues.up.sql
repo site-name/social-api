@@ -1,7 +1,7 @@
 -- CREATE TABLE IF NOT EXISTS assigned_variant_attribute_values (
---   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
---   value_id uuid NOT NULL,
---   assignment_id uuid NOT NULL,
+--   id varchar(36) NOT NULL PRIMARY KEY,
+--   value_id varchar(36) NOT NULL,
+--   assignment_id varchar(36) NOT NULL,
 --   sort_order integer
 -- );
 

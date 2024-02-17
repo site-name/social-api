@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS invoice_events (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
   type invoice_event_type NOT NULL,
-  invoice_id uuid,
-  order_id uuid,
-  user_id uuid,
+  invoice_id varchar(36),
+  order_id varchar(36),
+  user_id varchar(36),
   parameters jsonb
 );

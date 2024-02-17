@@ -151,8 +151,8 @@ type productChannelListingL struct{}
 
 var (
 	productChannelListingAllColumns            = []string{"id", "product_id", "channel_id", "visible_in_listings", "available_for_purchase", "currency", "discounted_price_amount", "created_at", "publication_date", "is_published"}
-	productChannelListingColumnsWithoutDefault = []string{"product_id", "channel_id", "visible_in_listings", "currency", "created_at", "is_published"}
-	productChannelListingColumnsWithDefault    = []string{"id", "available_for_purchase", "discounted_price_amount", "publication_date"}
+	productChannelListingColumnsWithoutDefault = []string{"id", "product_id", "channel_id", "visible_in_listings", "currency", "created_at", "is_published"}
+	productChannelListingColumnsWithDefault    = []string{"available_for_purchase", "discounted_price_amount", "publication_date"}
 	productChannelListingPrimaryKeyColumns     = []string{"id"}
 	productChannelListingGeneratedColumns      = []string{}
 )

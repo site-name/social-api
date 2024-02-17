@@ -123,8 +123,8 @@ type digitalContentURLL struct{}
 
 var (
 	digitalContentURLAllColumns            = []string{"id", "token", "content_id", "created_at", "download_num", "line_id"}
-	digitalContentURLColumnsWithoutDefault = []string{"token", "content_id", "created_at", "download_num"}
-	digitalContentURLColumnsWithDefault    = []string{"id", "line_id"}
+	digitalContentURLColumnsWithoutDefault = []string{"id", "token", "content_id", "created_at", "download_num"}
+	digitalContentURLColumnsWithDefault    = []string{"line_id"}
 	digitalContentURLPrimaryKeyColumns     = []string{"id"}
 	digitalContentURLGeneratedColumns      = []string{}
 )

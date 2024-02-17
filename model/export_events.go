@@ -158,8 +158,8 @@ type exportEventL struct{}
 
 var (
 	exportEventAllColumns            = []string{"id", "date", "type", "parameters", "export_file_id", "user_id"}
-	exportEventColumnsWithoutDefault = []string{"date", "type", "export_file_id"}
-	exportEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
+	exportEventColumnsWithoutDefault = []string{"id", "date", "type", "export_file_id"}
+	exportEventColumnsWithDefault    = []string{"parameters", "user_id"}
 	exportEventPrimaryKeyColumns     = []string{"id"}
 	exportEventGeneratedColumns      = []string{}
 )

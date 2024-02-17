@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS voucherproduct_variants (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id uuid NOT NULL,
-  product_variant_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  voucher_id varchar(36) NOT NULL,
+  product_variant_id varchar(36) NOT NULL,
   created_at bigint NOT NULL
 );
 

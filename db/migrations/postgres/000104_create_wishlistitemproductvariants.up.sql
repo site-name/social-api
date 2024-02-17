@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS wishlist_item_product_variants (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  wishlist_item_id uuid NOT NULL,
-  product_variant_id uuid NOT NULL
+  id varchar(36) NOT NULL PRIMARY KEY,
+  wishlist_item_id varchar(36) NOT NULL,
+  product_variant_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY wishlist_item_product_variants

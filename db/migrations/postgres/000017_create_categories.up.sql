@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS categories (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   name varchar(250) NOT NULL,
   slug varchar(255) NOT NULL,
   description jsonb,
-  parent_id uuid,
+  parent_id varchar(36),
   level smallint NOT NULL,
   background_image varchar(200),
   background_image_alt varchar(128) NOT NULL,

@@ -118,8 +118,8 @@ type wishlistItemL struct{}
 
 var (
 	wishlistItemAllColumns            = []string{"id", "wishlist_id", "product_id", "created_at"}
-	wishlistItemColumnsWithoutDefault = []string{"wishlist_id", "product_id", "created_at"}
-	wishlistItemColumnsWithDefault    = []string{"id"}
+	wishlistItemColumnsWithoutDefault = []string{"id", "wishlist_id", "product_id", "created_at"}
+	wishlistItemColumnsWithDefault    = []string{}
 	wishlistItemPrimaryKeyColumns     = []string{"id"}
 	wishlistItemGeneratedColumns      = []string{}
 )

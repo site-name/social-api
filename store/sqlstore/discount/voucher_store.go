@@ -23,9 +23,8 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 }
 
 func (vs *SqlVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error) {
-	isSaving := false
-	if voucher.ID == "" {
-		isSaving = true
+	isSaving := voucher.ID == ""
+	if isSaving {
 		model_helper.VoucherPreSave(&voucher)
 	} else {
 		model_helper.VoucherPreUpdate(&voucher)

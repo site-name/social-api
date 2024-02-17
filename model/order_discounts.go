@@ -212,8 +212,8 @@ type orderDiscountL struct{}
 
 var (
 	orderDiscountAllColumns            = []string{"id", "order_id", "type", "value_type", "value", "amount_value", "currency", "name", "translated_name", "reason"}
-	orderDiscountColumnsWithoutDefault = []string{"type", "value_type", "currency"}
-	orderDiscountColumnsWithDefault    = []string{"id", "order_id", "value", "amount_value", "name", "translated_name", "reason"}
+	orderDiscountColumnsWithoutDefault = []string{"id", "type", "value_type", "currency"}
+	orderDiscountColumnsWithDefault    = []string{"order_id", "value", "amount_value", "name", "translated_name", "reason"}
 	orderDiscountPrimaryKeyColumns     = []string{"id"}
 	orderDiscountGeneratedColumns      = []string{}
 )

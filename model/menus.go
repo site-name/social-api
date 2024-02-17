@@ -123,8 +123,8 @@ type menuL struct{}
 
 var (
 	menuAllColumns            = []string{"id", "name", "slug", "created_at", "metadata", "private_metadata"}
-	menuColumnsWithoutDefault = []string{"name", "slug", "created_at"}
-	menuColumnsWithDefault    = []string{"id", "metadata", "private_metadata"}
+	menuColumnsWithoutDefault = []string{"id", "name", "slug", "created_at"}
+	menuColumnsWithDefault    = []string{"metadata", "private_metadata"}
 	menuPrimaryKeyColumns     = []string{"id"}
 	menuGeneratedColumns      = []string{}
 )

@@ -108,8 +108,8 @@ type saleCollectionL struct{}
 
 var (
 	saleCollectionAllColumns            = []string{"id", "sale_id", "collection_id", "created_at"}
-	saleCollectionColumnsWithoutDefault = []string{"sale_id", "collection_id", "created_at"}
-	saleCollectionColumnsWithDefault    = []string{"id"}
+	saleCollectionColumnsWithoutDefault = []string{"id", "sale_id", "collection_id", "created_at"}
+	saleCollectionColumnsWithDefault    = []string{}
 	saleCollectionPrimaryKeyColumns     = []string{"id"}
 	saleCollectionGeneratedColumns      = []string{}
 )

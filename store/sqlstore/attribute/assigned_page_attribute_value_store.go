@@ -1,61 +1,72 @@
 package attribute
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlAssignedPageAttributeValueStore struct {
 	store.Store
 }
 
-var assignedPageAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", "valueid_assignmentid_key"}
-
 func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttributeValueStore {
 	return &SqlAssignedPageAttributeValueStore{s}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
-	if err := as.GetMaster().Create(assignedPageAttrValue).Error; err != nil {
-		if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
-			return nil, store.NewErrInvalidInput(model.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", assignedPageAttrValue.ValueID+"/"+assignedPageAttrValue.AssignmentID)
+func (as *SqlAssignedPageAttributeValueStore) Upsert(tx boil.ContextTransactor, assignedPageAttrValue model.AssignedPageAttributeValueSlice) (model.AssignedPageAttributeValueSlice, error) {
+	if tx == nil {
+		tx = as.GetMaster()
+	}
+
+	for _, value := range assignedPageAttrValue {
+		if value == nil {
+			continue
 		}
-		return nil, errors.Wrap(err, "failed to save assigned page attribute value with")
+
+		isSaving := value.ID == ""
+		if isSaving {
+			model_helper.AssignedPageAttributeValuePreSave(value)
+		}
+
+		if err := model_helper.AssignedPageAttributeValueIsValid(*value); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = value.Insert(tx, boil.Infer())
+		} else {
+			_, err = value.Update(tx, boil.Infer())
+		}
+
+		if err != nil {
+			if as.IsUniqueConstraintError(err, []string{"assigned_page_attributes_page_id_assignment_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.AssignedPageAttributeValues, model.AssignedPageAttributeColumns.PageID+"/"+model.AssignedPageAttributeColumns.AssignmentID, "unique")
+			}
+			return nil, err
+		}
 	}
 
 	return assignedPageAttrValue, nil
 }
 
 func (as *SqlAssignedPageAttributeValueStore) Get(id string) (*model.AssignedPageAttributeValue, error) {
-	var res model.AssignedPageAttributeValue
-
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
+	value, err := model.FindAssignedPageAttributeValue(as.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AssignedPageAttributeValueTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AssignedPageAttributeValues, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find assigned page attribute value with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
-	relations := lo.Map(attributeValueIDs, func(item string, _ int) *model.AssignedPageAttributeValue {
-		return &model.AssignedPageAttributeValue{AssignmentID: assignmentID, ValueID: item}
-	})
-
-	err := as.GetMaster().Create(relations).Error
-	if err != nil {
 		return nil, err
 	}
-	return relations, nil
+	return value, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
+func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedPageAttributeValueSlice, model.AttributeValueSlice, error) {
 	rows, err := as.GetReplica().
 		Raw("SELECT AssignedPageAttributeValues.*, AttributeValues.* FROM "+
 			model.AssignedPageAttributeValueTableName+
@@ -88,15 +99,4 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 	}
 
 	return assignedPageAttributeValues, attributeValues, nil
-}
-
-func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
-	for _, value := range attributeValues {
-		err := as.GetMaster().Raw("UPDATE "+model.AssignedPageAttributeValueTableName+" SET SortOrder = ? WHERE ValueID = ? AND AssignmentID = ?", value.SortOrder, value.ValueID, value.AssignmentID).Error
-		if err != nil {
-			return errors.Wrapf(err, "failed to update AssignedPageAttributeValue with ValueID = %s and AssignmentID = %s", value.ValueID, value.AssignmentID)
-		}
-	}
-
-	return nil
 }

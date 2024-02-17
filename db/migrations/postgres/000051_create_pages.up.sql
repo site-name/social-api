@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS pages (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   title varchar(250) NOT NULL,
   slug varchar(255) NOT NULL,
-  page_type_id uuid NOT NULL,
+  page_type_id varchar(36) NOT NULL,
   content jsonb NOT NULL,
   created_at bigint NOT NULL,
   metadata jsonb,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS vats (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   country_code country_code NOT NULL,
   data jsonb
 );

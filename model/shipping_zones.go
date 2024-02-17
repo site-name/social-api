@@ -147,8 +147,8 @@ type shippingZoneL struct{}
 
 var (
 	shippingZoneAllColumns            = []string{"id", "name", "countries", "default_flag", "description", "created_at", "metadata", "private_metadata"}
-	shippingZoneColumnsWithoutDefault = []string{"name", "countries", "description", "created_at"}
-	shippingZoneColumnsWithDefault    = []string{"id", "default_flag", "metadata", "private_metadata"}
+	shippingZoneColumnsWithoutDefault = []string{"id", "name", "countries", "description", "created_at"}
+	shippingZoneColumnsWithDefault    = []string{"default_flag", "metadata", "private_metadata"}
 	shippingZonePrimaryKeyColumns     = []string{"id"}
 	shippingZoneGeneratedColumns      = []string{}
 )

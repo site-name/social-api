@@ -115,8 +115,8 @@ type clusterDiscoveryL struct{}
 
 var (
 	clusterDiscoveryAllColumns            = []string{"id", "type", "cluster_name", "host_name", "gossip_port", "port", "created_at", "last_ping_at"}
-	clusterDiscoveryColumnsWithoutDefault = []string{"type", "cluster_name", "host_name", "gossip_port", "port", "created_at", "last_ping_at"}
-	clusterDiscoveryColumnsWithDefault    = []string{"id"}
+	clusterDiscoveryColumnsWithoutDefault = []string{"id", "type", "cluster_name", "host_name", "gossip_port", "port", "created_at", "last_ping_at"}
+	clusterDiscoveryColumnsWithDefault    = []string{}
 	clusterDiscoveryPrimaryKeyColumns     = []string{"id"}
 	clusterDiscoveryGeneratedColumns      = []string{}
 )

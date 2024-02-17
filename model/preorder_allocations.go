@@ -87,8 +87,8 @@ type preorderAllocationL struct{}
 
 var (
 	preorderAllocationAllColumns            = []string{"id", "order_line_id", "quantity", "product_variant_channel_listing_id"}
-	preorderAllocationColumnsWithoutDefault = []string{"order_line_id", "quantity", "product_variant_channel_listing_id"}
-	preorderAllocationColumnsWithDefault    = []string{"id"}
+	preorderAllocationColumnsWithoutDefault = []string{"id", "order_line_id", "quantity", "product_variant_channel_listing_id"}
+	preorderAllocationColumnsWithDefault    = []string{}
 	preorderAllocationPrimaryKeyColumns     = []string{"id"}
 	preorderAllocationGeneratedColumns      = []string{}
 )

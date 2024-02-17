@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS category_translations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   language_code language_code NOT NULL,
-  category_id uuid NOT NULL,
+  category_id varchar(36) NOT NULL,
   name varchar(250) NOT NULL,
   description text NOT NULL,
   seo_title varchar(70),

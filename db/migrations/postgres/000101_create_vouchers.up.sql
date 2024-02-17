@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS vouchers (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   type voucher_type NOT NULL,
   name varchar(255),
   code varchar(16) NOT NULL,

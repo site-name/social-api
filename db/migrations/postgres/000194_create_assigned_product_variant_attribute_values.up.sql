@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS assigned_product_variant_attribute_values (
-    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-    attribute_value_id uuid NOT NULL,
-    variant_id uuid NOT NULL
+    id varchar(36) NOT NULL PRIMARY KEY,
+    attribute_value_id varchar(36) NOT NULL,
+    variant_id varchar(36) NOT NULL
 );
 
 ALTER TABLE assigned_product_variant_attribute_values

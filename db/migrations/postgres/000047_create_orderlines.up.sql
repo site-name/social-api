@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS order_lines (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  order_id uuid NOT NULL,
-  variant_id uuid,
+  order_id varchar(36) NOT NULL,
+  variant_id varchar(36),
   product_name varchar(386) NOT NULL,
   variant_name varchar(255) NOT NULL,
   translated_product_name varchar(386) NOT NULL,

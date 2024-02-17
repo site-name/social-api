@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS warehouses (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   name varchar(250) NOT NULL,
   slug varchar(255) NOT NULL,
-  address_id uuid,
+  address_id varchar(36),
   email varchar(128) NOT NULL,
   click_and_collect_option warehouse_click_and_collect_option NOT NULL,
   is_private boolean,

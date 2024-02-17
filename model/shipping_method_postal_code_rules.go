@@ -105,8 +105,8 @@ type shippingMethodPostalCodeRuleL struct{}
 
 var (
 	shippingMethodPostalCodeRuleAllColumns            = []string{"id", "shipping_method_id", "start", "end", "inclusion_type"}
-	shippingMethodPostalCodeRuleColumnsWithoutDefault = []string{"shipping_method_id", "start", "end", "inclusion_type"}
-	shippingMethodPostalCodeRuleColumnsWithDefault    = []string{"id"}
+	shippingMethodPostalCodeRuleColumnsWithoutDefault = []string{"id", "shipping_method_id", "start", "end", "inclusion_type"}
+	shippingMethodPostalCodeRuleColumnsWithDefault    = []string{}
 	shippingMethodPostalCodeRulePrimaryKeyColumns     = []string{"id"}
 	shippingMethodPostalCodeRuleGeneratedColumns      = []string{}
 )

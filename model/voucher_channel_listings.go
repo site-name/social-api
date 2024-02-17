@@ -130,8 +130,8 @@ type voucherChannelListingL struct{}
 
 var (
 	voucherChannelListingAllColumns            = []string{"id", "created_at", "voucher_id", "channel_id", "discount_value", "currency", "min_spend_amount"}
-	voucherChannelListingColumnsWithoutDefault = []string{"created_at", "voucher_id", "channel_id", "currency"}
-	voucherChannelListingColumnsWithDefault    = []string{"id", "discount_value", "min_spend_amount"}
+	voucherChannelListingColumnsWithoutDefault = []string{"id", "created_at", "voucher_id", "channel_id", "currency"}
+	voucherChannelListingColumnsWithDefault    = []string{"discount_value", "min_spend_amount"}
 	voucherChannelListingPrimaryKeyColumns     = []string{"id"}
 	voucherChannelListingGeneratedColumns      = []string{}
 )

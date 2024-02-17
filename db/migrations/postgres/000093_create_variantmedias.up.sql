@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS variant_media (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  variant_id uuid NOT NULL,
-  media_id uuid NOT NULL
+  id varchar(36) NOT NULL PRIMARY KEY,
+  variant_id varchar(36) NOT NULL,
+  media_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY variant_media

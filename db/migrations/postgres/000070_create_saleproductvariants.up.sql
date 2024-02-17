@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS sale_product_variants (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_id uuid NOT NULL,
-  product_variant_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  sale_id varchar(36) NOT NULL,
+  product_variant_id varchar(36) NOT NULL,
   created_at bigint NOT NULL
 );
 

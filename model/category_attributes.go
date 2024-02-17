@@ -119,8 +119,8 @@ type categoryAttributeL struct{}
 
 var (
 	categoryAttributeAllColumns            = []string{"id", "attribute_id", "category_id", "sort_order"}
-	categoryAttributeColumnsWithoutDefault = []string{"attribute_id", "category_id"}
-	categoryAttributeColumnsWithDefault    = []string{"id", "sort_order"}
+	categoryAttributeColumnsWithoutDefault = []string{"id", "attribute_id", "category_id"}
+	categoryAttributeColumnsWithDefault    = []string{"sort_order"}
 	categoryAttributePrimaryKeyColumns     = []string{"id"}
 	categoryAttributeGeneratedColumns      = []string{}
 )

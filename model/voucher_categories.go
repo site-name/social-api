@@ -108,8 +108,8 @@ type voucherCategoryL struct{}
 
 var (
 	voucherCategoryAllColumns            = []string{"id", "voucher_id", "category_id", "created_at"}
-	voucherCategoryColumnsWithoutDefault = []string{"voucher_id", "category_id", "created_at"}
-	voucherCategoryColumnsWithDefault    = []string{"id"}
+	voucherCategoryColumnsWithoutDefault = []string{"id", "voucher_id", "category_id", "created_at"}
+	voucherCategoryColumnsWithDefault    = []string{}
 	voucherCategoryPrimaryKeyColumns     = []string{"id"}
 	voucherCategoryGeneratedColumns      = []string{}
 )

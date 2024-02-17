@@ -158,8 +158,8 @@ type orderEventL struct{}
 
 var (
 	orderEventAllColumns            = []string{"id", "created_at", "type", "order_id", "parameters", "user_id"}
-	orderEventColumnsWithoutDefault = []string{"created_at", "type", "order_id"}
-	orderEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
+	orderEventColumnsWithoutDefault = []string{"id", "created_at", "type", "order_id"}
+	orderEventColumnsWithDefault    = []string{"parameters", "user_id"}
 	orderEventPrimaryKeyColumns     = []string{"id"}
 	orderEventGeneratedColumns      = []string{}
 )

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS shop_staffs (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  staff_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  staff_id varchar(36) NOT NULL,
   created_at bigint NOT NULL,
   end_at bigint,
   salary_period staff_salary_period NOT NULL,

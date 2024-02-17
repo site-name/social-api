@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS customer_events (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   date bigint NOT NULL,
   type customer_event_type NOT NULL,
-  order_id uuid,
-  user_id uuid,
+  order_id varchar(36),
+  user_id varchar(36),
   parameters jsonb
 );

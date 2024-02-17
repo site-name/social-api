@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS transactions (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  payment_id uuid NOT NULL,
+  payment_id varchar(36) NOT NULL,
   token varchar(512) NOT NULL,
   kind transaction_kind NOT NULL,
   is_success boolean NOT NULL,

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS shipping_method_excluded_products (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipping_method_id uuid NOT NULL,
-  product_id uuid NOT NULL
+  id varchar(36) NOT NULL PRIMARY KEY,
+  shipping_method_id varchar(36) NOT NULL,
+  product_id varchar(36) NOT NULL
 );
 
 ALTER TABLE ONLY shipping_method_excluded_products

@@ -123,8 +123,8 @@ type saleChannelListingL struct{}
 
 var (
 	saleChannelListingAllColumns            = []string{"id", "sale_id", "channel_id", "discount_value", "currency", "created_at"}
-	saleChannelListingColumnsWithoutDefault = []string{"sale_id", "channel_id", "currency", "created_at"}
-	saleChannelListingColumnsWithDefault    = []string{"id", "discount_value"}
+	saleChannelListingColumnsWithoutDefault = []string{"id", "sale_id", "channel_id", "currency", "created_at"}
+	saleChannelListingColumnsWithDefault    = []string{"discount_value"}
 	saleChannelListingPrimaryKeyColumns     = []string{"id"}
 	saleChannelListingGeneratedColumns      = []string{}
 )

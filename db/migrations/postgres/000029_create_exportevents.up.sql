@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS export_events (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   date bigint NOT NULL,
   type export_event_type NOT NULL,
   parameters text,
-  export_file_id uuid NOT NULL,
-  user_id uuid
+  export_file_id varchar(36) NOT NULL,
+  user_id varchar(36)
 );

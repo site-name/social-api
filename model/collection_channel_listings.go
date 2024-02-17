@@ -123,8 +123,8 @@ type collectionChannelListingL struct{}
 
 var (
 	collectionChannelListingAllColumns            = []string{"id", "created_at", "collection_id", "channel_id", "publication_date", "is_published"}
-	collectionChannelListingColumnsWithoutDefault = []string{"created_at", "collection_id"}
-	collectionChannelListingColumnsWithDefault    = []string{"id", "channel_id", "publication_date", "is_published"}
+	collectionChannelListingColumnsWithoutDefault = []string{"id", "created_at", "collection_id"}
+	collectionChannelListingColumnsWithDefault    = []string{"channel_id", "publication_date", "is_published"}
 	collectionChannelListingPrimaryKeyColumns     = []string{"id"}
 	collectionChannelListingGeneratedColumns      = []string{}
 )

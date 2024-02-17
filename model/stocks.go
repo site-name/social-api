@@ -135,8 +135,8 @@ type stockL struct{}
 
 var (
 	stockAllColumns            = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity"}
-	stockColumnsWithoutDefault = []string{"created_at", "warehouse_id", "product_variant_id", "quantity"}
-	stockColumnsWithDefault    = []string{"id"}
+	stockColumnsWithoutDefault = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity"}
+	stockColumnsWithDefault    = []string{}
 	stockPrimaryKeyColumns     = []string{"id"}
 	stockGeneratedColumns      = []string{}
 )

@@ -227,8 +227,8 @@ type channelL struct{}
 
 var (
 	channelAllColumns            = []string{"id", "name", "is_active", "slug", "currency", "default_country"}
-	channelColumnsWithoutDefault = []string{"name", "is_active", "slug", "currency", "default_country"}
-	channelColumnsWithDefault    = []string{"id"}
+	channelColumnsWithoutDefault = []string{"id", "name", "is_active", "slug", "currency", "default_country"}
+	channelColumnsWithDefault    = []string{}
 	channelPrimaryKeyColumns     = []string{"id"}
 	channelGeneratedColumns      = []string{}
 )

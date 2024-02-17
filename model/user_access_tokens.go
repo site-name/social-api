@@ -105,8 +105,8 @@ type userAccessTokenL struct{}
 
 var (
 	userAccessTokenAllColumns            = []string{"id", "token", "user_id", "description", "is_active"}
-	userAccessTokenColumnsWithoutDefault = []string{"token", "user_id", "description"}
-	userAccessTokenColumnsWithDefault    = []string{"id", "is_active"}
+	userAccessTokenColumnsWithoutDefault = []string{"id", "token", "user_id", "description"}
+	userAccessTokenColumnsWithDefault    = []string{"is_active"}
 	userAccessTokenPrimaryKeyColumns     = []string{"id"}
 	userAccessTokenGeneratedColumns      = []string{}
 )

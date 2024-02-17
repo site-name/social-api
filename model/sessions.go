@@ -144,8 +144,8 @@ type sessionL struct{}
 
 var (
 	sessionAllColumns            = []string{"id", "token", "created_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
-	sessionColumnsWithoutDefault = []string{"created_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "local"}
-	sessionColumnsWithDefault    = []string{"id", "token", "props"}
+	sessionColumnsWithoutDefault = []string{"id", "token", "created_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "local"}
+	sessionColumnsWithDefault    = []string{"props"}
 	sessionPrimaryKeyColumns     = []string{"id"}
 	sessionGeneratedColumns      = []string{}
 )

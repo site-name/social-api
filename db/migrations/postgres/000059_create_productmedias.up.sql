@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS product_media (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  product_id uuid NOT NULL,
+  product_id varchar(36) NOT NULL,
   ppoi varchar(20) NOT NULL,
   image varchar(200) NOT NULL,
   alt varchar(128) NOT NULL,

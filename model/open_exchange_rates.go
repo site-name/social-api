@@ -88,8 +88,8 @@ type openExchangeRateL struct{}
 
 var (
 	openExchangeRateAllColumns            = []string{"id", "to_currency", "rate", "created_at"}
-	openExchangeRateColumnsWithoutDefault = []string{"to_currency", "created_at"}
-	openExchangeRateColumnsWithDefault    = []string{"id", "rate"}
+	openExchangeRateColumnsWithoutDefault = []string{"id", "to_currency", "created_at"}
+	openExchangeRateColumnsWithDefault    = []string{"rate"}
 	openExchangeRatePrimaryKeyColumns     = []string{"id"}
 	openExchangeRateGeneratedColumns      = []string{}
 )

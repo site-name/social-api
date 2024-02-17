@@ -1,13 +1,15 @@
 package giftcard
 
 import (
+	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -19,36 +21,58 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	return &SqlGiftCardStore{sqlStore}
 }
 
-func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction boil.ContextTransactor, giftCards model.GiftcardSlice) (model.GiftcardSlice, error) {
 	if transaction == nil {
 		transaction = gcs.GetMaster()
 	}
 
 	for _, giftCard := range giftCards {
-		err := transaction.Save(giftCard).Error
+		if giftCard == nil {
+			continue
+		}
+
+		isSaving := giftCard.ID == ""
+		if isSaving {
+			model_helper.GiftcardPreSave(giftCard)
+		} else {
+			model_helper.GiftcardCommonPre(giftCard)
+		}
+
+		if err := model_helper.GiftcardIsValid(*giftCard); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = giftCard.Insert(transaction, boil.Infer())
+		} else {
+			_, err = giftCard.Update(transaction, boil.Blacklist(model.GiftcardColumns.CreatedAt))
+		}
+
 		if err != nil {
-			if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
-				return nil, store.NewErrInvalidInput(model.GiftcardTableName, "Code", giftCard.Code)
+			if gcs.IsUniqueConstraintError(err, []string{model.GiftcardColumns.Code, "giftcards_code_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.Giftcards, model.GiftcardColumns.Code, giftCard.Code)
 			}
-			return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
+			return nil, err
 		}
 	}
 
 	return giftCards, nil
 }
 
-func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
-	var res model.GiftCard
-	if err := gcs.GetReplica().First(&res, "Id = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.GiftcardTableName, id)
+func (gcs *SqlGiftCardStore) GetById(id string) (*model.Giftcard, error) {
+	giftcard, err := model.FindGiftcard(gcs.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Giftcards, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)
+		return nil, err
 	}
-	return &res, nil
+
+	return giftcard, nil
 }
 
-func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
+func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
 	query := gs.
 		GetQueryBuilder().
 		Select(model.GiftcardTableName + ".*").
@@ -132,7 +156,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 
 	var res model.Giftcards
 	for rows.Next() {
-		var gc model.GiftCard
+		var gc model.Giftcard
 		var scanFields = gs.ScanFields(&gc)
 
 		if option.AnnotateRelatedProductName {
@@ -159,7 +183,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 	return totalCount, res, nil
 }
 
-func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.OrderLines, error) {
+func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.OrderLineSlice, error) {
 	/*
 	   -- sample query for demonstration (Produced with django)
 
@@ -289,70 +313,67 @@ WHERE (
 	return giftcardIDs, nil
 }
 
-func (s *SqlGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-	err := transaction.Delete(&model.GiftCard{}, "Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete gift cards")
-	}
-
-	return nil
-}
-
-func (s *SqlGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+func (s *SqlGiftCardStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	var association string
-	switch relations.(type) {
-	case []*model.Order: // model.Orders ok also
-		association = "Orders"
-	case []*model.Checkout:
-		association = "Checkouts"
-
-	default:
-		return store.NewErrInvalidInput("Giftcard.AddRelations", "relations", fmt.Sprintf("%T", relations))
-	}
-
-	for _, giftcard := range giftcards {
-		if giftcard != nil && giftcard.Id != "" {
-			err := transaction.Model(giftcard).Association(association).Append(relations)
-			if err != nil {
-				return errors.Wrapf(err, "failed to create giftcard-%s relations with giftcard id = %s", strings.ToLower(association), giftcard.Id)
-			}
-		}
-	}
-
-	return nil
+	_, err := model.Giftcards(model.GiftcardWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }
 
-func (s *SqlGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
+// func (s *SqlGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+// 	if transaction == nil {
+// 		transaction = s.GetMaster()
+// 	}
 
-	var association string
-	switch relations.(type) {
-	case []*model.Order: // model.Orders ok also
-		association = "Orders"
-	case []*model.Checkout:
-		association = "Checkouts"
+// 	var association string
+// 	switch relations.(type) {
+// 	case []*model.Order: // model.Orders ok also
+// 		association = "Orders"
+// 	case []*model.Checkout:
+// 		association = "Checkouts"
 
-	default:
-		return store.NewErrInvalidInput("Giftcard.AddRelations", "relations", fmt.Sprintf("%T", relations))
-	}
+// 	default:
+// 		return store.NewErrInvalidInput("Giftcard.AddRelations", "relations", fmt.Sprintf("%T", relations))
+// 	}
 
-	for _, giftcard := range giftcards {
-		if giftcard != nil && giftcard.Id != "" {
-			err := transaction.Model(giftcard).Association(association).Delete(relations)
-			if err != nil {
-				return errors.Wrapf(err, "failed to delete giftcard-%s relations with giftcard id = %s", strings.ToLower(association), giftcard.Id)
-			}
-		}
-	}
+// 	for _, giftcard := range giftcards {
+// 		if giftcard != nil && giftcard.Id != "" {
+// 			err := transaction.Model(giftcard).Association(association).Append(relations)
+// 			if err != nil {
+// 				return errors.Wrapf(err, "failed to create giftcard-%s relations with giftcard id = %s", strings.ToLower(association), giftcard.Id)
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
+
+// func (s *SqlGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+// 	if transaction == nil {
+// 		transaction = s.GetMaster()
+// 	}
+
+// 	var association string
+// 	switch relations.(type) {
+// 	case []*model.Order: // model.Orders ok also
+// 		association = "Orders"
+// 	case []*model.Checkout:
+// 		association = "Checkouts"
+
+// 	default:
+// 		return store.NewErrInvalidInput("Giftcard.AddRelations", "relations", fmt.Sprintf("%T", relations))
+// 	}
+
+// 	for _, giftcard := range giftcards {
+// 		if giftcard != nil && giftcard.Id != "" {
+// 			err := transaction.Model(giftcard).Association(association).Delete(relations)
+// 			if err != nil {
+// 				return errors.Wrapf(err, "failed to delete giftcard-%s relations with giftcard id = %s", strings.ToLower(association), giftcard.Id)
+// 			}
+// 		}
+// 	}
+
+// 	return nil
+// }

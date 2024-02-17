@@ -98,8 +98,8 @@ type menuItemTranslationL struct{}
 
 var (
 	menuItemTranslationAllColumns            = []string{"id", "language_code", "menu_item_id", "name"}
-	menuItemTranslationColumnsWithoutDefault = []string{"language_code", "menu_item_id", "name"}
-	menuItemTranslationColumnsWithDefault    = []string{"id"}
+	menuItemTranslationColumnsWithoutDefault = []string{"id", "language_code", "menu_item_id", "name"}
+	menuItemTranslationColumnsWithDefault    = []string{}
 	menuItemTranslationPrimaryKeyColumns     = []string{"id"}
 	menuItemTranslationGeneratedColumns      = []string{}
 )

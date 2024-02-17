@@ -204,8 +204,8 @@ type fulfillmentL struct{}
 
 var (
 	fulfillmentAllColumns            = []string{"id", "fulfillment_order", "order_id", "status", "tracking_number", "created_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
-	fulfillmentColumnsWithoutDefault = []string{"fulfillment_order", "order_id", "status", "tracking_number", "created_at"}
-	fulfillmentColumnsWithDefault    = []string{"id", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
+	fulfillmentColumnsWithoutDefault = []string{"id", "fulfillment_order", "order_id", "status", "tracking_number", "created_at"}
+	fulfillmentColumnsWithDefault    = []string{"shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
 	fulfillmentPrimaryKeyColumns     = []string{"id"}
 	fulfillmentGeneratedColumns      = []string{}
 )

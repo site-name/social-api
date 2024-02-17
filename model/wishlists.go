@@ -108,8 +108,8 @@ type wishlistL struct{}
 
 var (
 	wishlistAllColumns            = []string{"id", "token", "user_id", "created_at"}
-	wishlistColumnsWithoutDefault = []string{"token", "user_id", "created_at"}
-	wishlistColumnsWithDefault    = []string{"id"}
+	wishlistColumnsWithoutDefault = []string{"id", "token", "user_id", "created_at"}
+	wishlistColumnsWithDefault    = []string{}
 	wishlistPrimaryKeyColumns     = []string{"id"}
 	wishlistGeneratedColumns      = []string{}
 )

@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS stocks (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  warehouse_id uuid NOT NULL,
-  product_variant_id uuid NOT NULL,
+  warehouse_id varchar(36) NOT NULL,
+  product_variant_id varchar(36) NOT NULL,
   quantity integer NOT NULL
 );
 

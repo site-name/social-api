@@ -91,8 +91,8 @@ type voucherCustomerL struct{}
 
 var (
 	voucherCustomerAllColumns            = []string{"id", "voucher_id", "customer_email"}
-	voucherCustomerColumnsWithoutDefault = []string{"voucher_id", "customer_email"}
-	voucherCustomerColumnsWithDefault    = []string{"id"}
+	voucherCustomerColumnsWithoutDefault = []string{"id", "voucher_id", "customer_email"}
+	voucherCustomerColumnsWithDefault    = []string{}
 	voucherCustomerPrimaryKeyColumns     = []string{"id"}
 	voucherCustomerGeneratedColumns      = []string{}
 )

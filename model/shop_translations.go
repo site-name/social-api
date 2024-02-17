@@ -101,8 +101,8 @@ type shopTranslationL struct{}
 
 var (
 	shopTranslationAllColumns            = []string{"id", "language_code", "name", "description", "created_at", "updated_at"}
-	shopTranslationColumnsWithoutDefault = []string{"language_code", "name", "description", "created_at", "updated_at"}
-	shopTranslationColumnsWithDefault    = []string{"id"}
+	shopTranslationColumnsWithoutDefault = []string{"id", "language_code", "name", "description", "created_at", "updated_at"}
+	shopTranslationColumnsWithDefault    = []string{}
 	shopTranslationPrimaryKeyColumns     = []string{"id"}
 	shopTranslationGeneratedColumns      = []string{}
 )

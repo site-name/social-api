@@ -320,8 +320,8 @@ type addressL struct{}
 
 var (
 	addressAllColumns            = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "user_id", "created_at", "updated_at"}
-	addressColumnsWithoutDefault = []string{"first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "user_id", "created_at", "updated_at"}
-	addressColumnsWithDefault    = []string{"id"}
+	addressColumnsWithoutDefault = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "user_id", "created_at", "updated_at"}
+	addressColumnsWithDefault    = []string{}
 	addressPrimaryKeyColumns     = []string{"id"}
 	addressGeneratedColumns      = []string{}
 )

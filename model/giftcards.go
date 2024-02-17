@@ -247,8 +247,8 @@ type giftcardL struct{}
 
 var (
 	giftcardAllColumns            = []string{"id", "code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "created_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
-	giftcardColumnsWithoutDefault = []string{"code", "created_at", "currency"}
-	giftcardColumnsWithDefault    = []string{"id", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
+	giftcardColumnsWithoutDefault = []string{"id", "code", "created_at", "currency"}
+	giftcardColumnsWithDefault    = []string{"created_by_id", "used_by_id", "created_by_email", "used_by_email", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
 	giftcardPrimaryKeyColumns     = []string{"id"}
 	giftcardGeneratedColumns      = []string{}
 )

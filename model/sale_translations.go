@@ -98,8 +98,8 @@ type saleTranslationL struct{}
 
 var (
 	saleTranslationAllColumns            = []string{"id", "language_code", "name", "sale_id"}
-	saleTranslationColumnsWithoutDefault = []string{"language_code", "name", "sale_id"}
-	saleTranslationColumnsWithDefault    = []string{"id"}
+	saleTranslationColumnsWithoutDefault = []string{"id", "language_code", "name", "sale_id"}
+	saleTranslationColumnsWithDefault    = []string{}
 	saleTranslationPrimaryKeyColumns     = []string{"id"}
 	saleTranslationGeneratedColumns      = []string{}
 )

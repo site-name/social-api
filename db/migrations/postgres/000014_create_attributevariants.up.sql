@@ -1,7 +1,7 @@
 -- CREATE TABLE IF NOT EXISTS attribute_variants (
---   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
---   attribute_id uuid NOT NULL,
---   product_type_id uuid NOT NULL,
+--   id varchar(36) NOT NULL PRIMARY KEY,
+--   attribute_id varchar(36) NOT NULL,
+--   product_type_id varchar(36) NOT NULL,
 --   variant_selection boolean NOT NULL DEFAULT false,
 --   sort_order integer
 -- );

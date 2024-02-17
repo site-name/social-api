@@ -87,8 +87,8 @@ type preferenceL struct{}
 
 var (
 	preferenceAllColumns            = []string{"user_id", "category", "name", "value"}
-	preferenceColumnsWithoutDefault = []string{"category", "name", "value"}
-	preferenceColumnsWithDefault    = []string{"user_id"}
+	preferenceColumnsWithoutDefault = []string{"user_id", "category", "name", "value"}
+	preferenceColumnsWithDefault    = []string{}
 	preferencePrimaryKeyColumns     = []string{"user_id"}
 	preferenceGeneratedColumns      = []string{}
 )

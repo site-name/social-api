@@ -105,8 +105,8 @@ type voucherTranslationL struct{}
 
 var (
 	voucherTranslationAllColumns            = []string{"id", "language_code", "name", "voucher_id", "created_at"}
-	voucherTranslationColumnsWithoutDefault = []string{"language_code", "name", "voucher_id", "created_at"}
-	voucherTranslationColumnsWithDefault    = []string{"id"}
+	voucherTranslationColumnsWithoutDefault = []string{"id", "language_code", "name", "voucher_id", "created_at"}
+	voucherTranslationColumnsWithDefault    = []string{}
 	voucherTranslationPrimaryKeyColumns     = []string{"id"}
 	voucherTranslationGeneratedColumns      = []string{}
 )

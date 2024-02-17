@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS digital_content_urls (
-    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-    token uuid NOT NULL,
-    content_id uuid NOT NULL,
+    id varchar(36) NOT NULL PRIMARY KEY,
+    token varchar(36) NOT NULL,
+    content_id varchar(36) NOT NULL,
     created_at bigint NOT NULL,
     download_num integer NOT NULL,
-    line_id uuid
+    line_id varchar(36)
 );
 
 ALTER TABLE ONLY digital_content_urls

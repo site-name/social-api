@@ -181,13 +181,11 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 	return attributes, nil
 }
 
-func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	result := as.GetMaster().Raw("DELETE FROM "+model.AttributeTableName+" WHERE Id IN ?", ids)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete attributes")
+func (as *SqlAttributeStore) Delete(tx boil.ContextTransactor, ids ...string) (int64, error) {
+	if tx == nil {
+		tx = as.GetMaster()
 	}
-
-	return result.RowsAffected, nil
+	return model.Attributes(model.AttributeWhere.ID.IN(ids)).DeleteAll(tx)
 }
 
 func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {

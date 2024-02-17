@@ -242,8 +242,8 @@ type categoryL struct{}
 
 var (
 	categoryAllColumns            = []string{"id", "name", "slug", "description", "parent_id", "level", "background_image", "background_image_alt", "images", "seo_title", "seo_description", "name_translation", "metadata", "private_metadata"}
-	categoryColumnsWithoutDefault = []string{"name", "slug", "level", "background_image_alt", "seo_title", "seo_description"}
-	categoryColumnsWithDefault    = []string{"id", "description", "parent_id", "background_image", "images", "name_translation", "metadata", "private_metadata"}
+	categoryColumnsWithoutDefault = []string{"id", "name", "slug", "level", "background_image_alt", "seo_title", "seo_description"}
+	categoryColumnsWithDefault    = []string{"description", "parent_id", "background_image", "images", "name_translation", "metadata", "private_metadata"}
 	categoryPrimaryKeyColumns     = []string{"id"}
 	categoryGeneratedColumns      = []string{}
 )

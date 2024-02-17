@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS open_exchange_rates (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   to_currency Currency NOT NULL,
   rate decimal(3,2),
   created_at bigint NOT NULL

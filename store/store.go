@@ -74,7 +74,7 @@ type Store interface {
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore       //
 	OrderDiscount() OrderDiscountStore                                 //
 	VoucherCustomer() VoucherCustomerStore                             //
-	GiftCard() GiftCardStore                                           // giftcard
+	Giftcard() GiftCardStore                                           // giftcard
 	GiftcardEvent() GiftcardEventStore                                 //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
 	Invoice() InvoiceStore                                             //
@@ -174,10 +174,9 @@ type PluginStore interface {
 }
 
 type UploadSessionStore interface {
-	Save(session model.UploadSession) (*model.UploadSession, error)
-	Update(session model.UploadSession) error
+	Upsert(session model.UploadSession) (*model.UploadSession, error)
 	Get(id string) (*model.UploadSession, error)
-	FindAll(mods ...qm.QueryMod) (model.UploadSessionSlice, error)
+	FindAll(options model_helper.UploadSessionFilterOption) (model.UploadSessionSlice, error)
 	Delete(id string) error
 }
 
@@ -185,7 +184,7 @@ type UploadSessionStore interface {
 type FileInfoStore interface {
 	Upsert(info model.FileInfo) (*model.FileInfo, error)
 	Get(id string, fromMaster bool) (*model.FileInfo, error)
-	GetWithOptions(conds ...qm.QueryMod) (model.FileInfoSlice, error) // Leave perPage and page nil to get all result
+	GetWithOptions(options model_helper.FileInfoFilterOption) (model.FileInfoSlice, error) // Leave perPage and page nil to get all result
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
@@ -200,10 +199,9 @@ type FileInfoStore interface {
 	// GetForPost(postID string, readFromMaster, includeDeleted, allowFromCache bool) ([]*model.FileInfo, error)
 }
 
-// model
 type (
 	AttributeStore interface {
-		Delete(ids ...string) (int64, error)
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		Upsert(attr model.Attribute) (*model.Attribute, error)                           // Upsert inserts or updates given model then returns it
 		FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) // FilterbyOption returns a list of attributes by given option
 		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error)
@@ -213,21 +211,18 @@ type (
 	AttributeTranslationStore interface {
 	}
 	AttributeValueStore interface {
-		Count(options model.AttributeValueFilterOptions) (int64, error)
-		Delete(tx boil.ContextTransactor, ids ...string) (int64, error)
-		Upsert(av model.AttributeValue) (*model.AttributeValue, error)
-		BulkUpsert(tx boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error)
-		Get(attributeID string) (*model.AttributeValue, error)                                        // Get finds an model value with given id then returns it with an error
-		FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValueSlice, error) // FilterByOptions finds and returns all matched model values based on given options
+		Count(options model_helper.AttributeValueFilterOptions) (int64, error)
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		Upsert(tx boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error)
+		Get(attributeID string) (*model.AttributeValue, error)                                               // Get finds an model value with given id then returns it with an error
+		FilterByOptions(options model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, error) // FilterByOptions finds and returns all matched model values based on given options
 	}
 	AttributeValueTranslationStore interface {
 	}
 	AssignedPageAttributeValueStore interface {
-		Upsert(assignedPageAttrValue model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error)                                                // Save insert given value into database then returns it with an error
-		Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error)                                                                           // Get try finding an value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error)                                                 // SaveInBulk inserts multiple values into database then returns them with an error
-		SelectForSort(assignmentID string) (assignedPageAttributeValues []*model.AssignedPageAttributeValue, attributeValues []*model.AttributeValue, err error) // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
-		UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error                                                                                  // UpdateInBulk use transaction to update all given assigned page model values
+		Upsert(tx boil.ContextTransactor, assignedPageAttrValue model.AssignedPageAttributeValueSlice) (model.AssignedPageAttributeValueSlice, error) // Save insert given value into database then returns it with an error
+		Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error)                                                                // Get try finding an value with given id then returns it with an error
+		SelectForSort(assignmentID string) (model.AssignedPageAttributeValueSlice, model.AttributeValueSlice, error)                                  // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
 	}
 	AssignedPageAttributeStore interface {
 		Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) // Save inserts given assigned page model into database and returns it with an error
@@ -362,11 +357,11 @@ type (
 	}
 	ShippingMethodStore interface {
 		Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error)                                                                                         // Upsert bases on given method's Id to decide update or insert it
-		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                                   // Get finds and returns a model method with given id
+		Get(id string) (*model.ShippingMethod, error)                                                                                                                                         // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) // ApplicableShippingMethods finds all model methods with given conditions
 		GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                                  // GetbyOption finds and returns a model method that satisfy given options
 		FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error)
-		Delete(tx boil.ContextTransactor, ids ...string) error
+		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		Delete(tx boil.ContextTransactor, ids ...string) error
@@ -562,52 +557,48 @@ type (
 	MenuItemTranslationStore interface {
 	}
 	MenuStore interface {
-		Delete(ids []string) (int64, error)
-		Save(menu *model.Menu) (*model.Menu, error) // Save insert given menu into database and returns it
-		GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error)
-		FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error)
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		Upsert(menu model.Menu) (*model.Menu, error)
+		GetByOptions(options model_helper.MenuFilterOptions) (*model.Menu, error)
+		FilterByOptions(options model_helper.MenuFilterOptions) (model.MenuSlice, error)
 	}
 	MenuItemStore interface {
 		Delete(ids []string) (int64, error)
-		Save(menuItem *model.MenuItem) (*model.MenuItem, error) // Save insert given menu item into database and returns it
-		GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error)
-		FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error)
+		Upsert(menuItem model.MenuItem) (*model.MenuItem, error) // Save insert given menu item into database and returns it
+		GetByOptions(options model_helper.MenuItemFilterOptions) (*model.MenuItem, error)
+		FilterByOptions(options model_helper.MenuItemFilterOptions) (model.MenuItemSlice, error)
 	}
 )
 
 // invoice
 type (
 	InvoiceEventStore interface {
-		Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) // Upsert depends on given invoice event's Id to update/insert it
-		Get(invoiceEventID string) (*model.InvoiceEvent, error)               // Get finds and returns 1 invoice event
+		Upsert(invoiceEvent model.InvoiceEvent) (*model.InvoiceEvent, error) // Upsert depends on given invoice event's Id to update/insert it
+		Get(id string) (*model.InvoiceEvent, error)                          // Get finds and returns 1 invoice event
 	}
 	InvoiceStore interface {
-		Upsert(invoice *model.Invoice) (*model.Invoice, error)                    // Upsert depends on given invoice Id to update/insert it
-		GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) // Get finds and returns 1 invoice
-		FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error)
-		Delete(tx boil.ContextTransactor, ids ...string) error
+		Upsert(invoice model.Invoice) (*model.Invoice, error)                          // Upsert depends on given invoice Id to update/insert it
+		GetbyOptions(options model_helper.InvoiceFilterOption) (*model.Invoice, error) // Get finds and returns 1 invoice
+		FilterByOptions(options model_helper.InvoiceFilterOption) (model.InvoiceSlice, error)
+		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 )
 
 // giftcard related stores
 type (
 	GiftCardStore interface {
-		DeleteGiftcards(tx boil.ContextTransactor, ids []string) error
-		BulkUpsert(tx boil.ContextTransactor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
-		GetById(id string) (*model.GiftCard, error)                                                    // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error)           // FilterByOption finds giftcards wth option
-		// DeactivateOrderGiftcards update giftcards
-		// which have giftcard events with type == 'bought', parameters.order_id == given order id
-		// by setting their IsActive model to false
+		Delete(tx boil.ContextTransactor, ids []string) error
+		BulkUpsert(tx boil.ContextTransactor, giftCards model.GiftcardSlice) (model.GiftcardSlice, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
+		GetById(id string) (*model.Giftcard, error)                                                       // GetById returns a giftcard instance that has id of given id
+		FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error)            // FilterByOption finds giftcards wth option
 		DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error)
-		AddRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error    // relations must be either []*Order or []*Checkout
-		RemoveRelations(tx boil.ContextTransactor, giftcards model.Giftcards, relations any) error // relations must be either []*Order or []*Checkout
+		// AddRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error    // relations must be either []*Order or []*Checkout
+		// RemoveRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error // relations must be either []*Order or []*Checkout
 	}
 	GiftcardEventStore interface {
-		Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error)                                        // Save insdert given giftcard event into database then returns it
-		Get(id string) (*model.GiftCardEvent, error)                                                          // Get finds and returns a giftcard event found by given id
-		BulkUpsert(tx boil.ContextTransactor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
-		FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error)             // FilterByOptions finds and returns a list of giftcard events with given options
+		Get(id string) (*model.GiftcardEvent, error)                                                         // Get finds and returns a giftcard event found by given id
+		Upsert(tx boil.ContextTransactor, events model.GiftcardEventSlice) (model.GiftcardEventSlice, error) // BulkUpsert upserts and returns given giftcard events
+		FilterByOptions(options model_helper.GiftCardEventFilterOption) (model.GiftcardEventSlice, error)    // FilterByOptions finds and returns a list of giftcard events with given options
 	}
 )
 
@@ -646,10 +637,10 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	DiscountVoucherStore interface {
-		Upsert(voucher model.Voucher) (*model.Voucher, error)                                              // Upsert saves or updates given voucher then returns it with an error
-		Get(id string) (*model.Voucher, error)                                                             // Get finds a voucher with given id, then returns it with an error
-		FilterVouchersByOption(option model_helper.VoucherFilterOption) (int64, model.VoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
-		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                                  // ExpiredVouchers finds and returns vouchers that are expired before given date
+		Upsert(voucher model.Voucher) (*model.Voucher, error)                                       // Upsert saves or updates given voucher then returns it with an error
+		Get(id string) (*model.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
+		FilterVouchersByOption(option model_helper.VoucherFilterOption) (model.VoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
+		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                           // ExpiredVouchers finds and returns vouchers that are expired before given date
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		// ToggleVoucherRelations(tx boil.ContextTransactor, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
 		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options

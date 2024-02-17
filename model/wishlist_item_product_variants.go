@@ -101,8 +101,8 @@ type wishlistItemProductVariantL struct{}
 
 var (
 	wishlistItemProductVariantAllColumns            = []string{"id", "wishlist_item_id", "product_variant_id"}
-	wishlistItemProductVariantColumnsWithoutDefault = []string{"wishlist_item_id", "product_variant_id"}
-	wishlistItemProductVariantColumnsWithDefault    = []string{"id"}
+	wishlistItemProductVariantColumnsWithoutDefault = []string{"id", "wishlist_item_id", "product_variant_id"}
+	wishlistItemProductVariantColumnsWithDefault    = []string{}
 	wishlistItemProductVariantPrimaryKeyColumns     = []string{"id"}
 	wishlistItemProductVariantGeneratedColumns      = []string{}
 )

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS wishlist_items (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  wishlist_id uuid NOT NULL,
-  product_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  wishlist_id varchar(36) NOT NULL,
+  product_id varchar(36) NOT NULL,
   created_at bigint NOT NULL
 );
 

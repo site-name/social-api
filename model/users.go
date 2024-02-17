@@ -489,8 +489,8 @@ type userL struct{}
 
 var (
 	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "note", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email", "metadata", "private_metadata"}
-	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email"}
-	userColumnsWithDefault    = []string{"id", "default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "note", "metadata", "private_metadata"}
+	userColumnsWithoutDefault = []string{"id", "email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email"}
+	userColumnsWithDefault    = []string{"default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "note", "metadata", "private_metadata"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )

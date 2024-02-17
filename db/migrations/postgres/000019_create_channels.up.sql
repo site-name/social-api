@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS channels (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   name varchar(250) NOT NULL,
   is_active boolean NOT NULL,
   slug varchar(255) NOT NULL,

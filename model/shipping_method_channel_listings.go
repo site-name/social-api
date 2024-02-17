@@ -138,8 +138,8 @@ type shippingMethodChannelListingL struct{}
 
 var (
 	shippingMethodChannelListingAllColumns            = []string{"id", "shipping_method_id", "channel_id", "minimum_order_price_amount", "currency", "maximum_order_price_amount", "price_amount", "created_at"}
-	shippingMethodChannelListingColumnsWithoutDefault = []string{"shipping_method_id", "channel_id", "currency", "created_at"}
-	shippingMethodChannelListingColumnsWithDefault    = []string{"id", "minimum_order_price_amount", "maximum_order_price_amount", "price_amount"}
+	shippingMethodChannelListingColumnsWithoutDefault = []string{"id", "shipping_method_id", "channel_id", "currency", "created_at"}
+	shippingMethodChannelListingColumnsWithDefault    = []string{"minimum_order_price_amount", "maximum_order_price_amount", "price_amount"}
 	shippingMethodChannelListingPrimaryKeyColumns     = []string{"id"}
 	shippingMethodChannelListingGeneratedColumns      = []string{}
 )

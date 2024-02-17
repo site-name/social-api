@@ -1,13 +1,12 @@
 package menu
 
 import (
-	"net/http"
+	"database/sql"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlMenuStore struct {
@@ -18,57 +17,49 @@ func NewSqlMenuStore(sqlStore store.Store) store.MenuStore {
 	return &SqlMenuStore{sqlStore}
 }
 
-func (ms *SqlMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
-	if err := ms.GetMaster().Save(menu).Error; err != nil {
-		if ms.IsUniqueConstraintError(err, []string{"Name", "name_unique_key"}) {
-			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", menu.Name)
-		}
-		if ms.IsUniqueConstraintError(err, []string{"Slug", "slug_unique_key"}) {
-			return nil, store.NewErrInvalidInput(model.MenuTableName, "Slug", menu.Slug)
-		}
-		return nil, errors.Wrapf(err, "failed to save menu with id=%s", menu.Id)
+func (ms *SqlMenuStore) Upsert(menu model.Menu) (*model.Menu, error) {
+	isSaving := menu.ID == ""
+	if isSaving {
+		model_helper.MenuPreSave(&menu)
+	} else {
+		model_helper.MenuCommonPre(&menu)
 	}
 
+	if err := model_helper.MenuIsValid(menu); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = menu.Insert(ms.GetMaster(), boil.Infer())
+	} else {
+		_, err = menu.Update(ms.GetMaster(), boil.Blacklist(model.MenuColumns.CreatedAt))
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &menu, nil
+}
+
+func (ms *SqlMenuStore) GetByOptions(options model_helper.MenuFilterOptions) (*model.Menu, error) {
+	menu, err := model.Menus(options.Conditions...).One(ms.GetReplica())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Menus, "options")
+		}
+		return nil, err
+	}
 	return menu, nil
 }
 
-func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "Menu_GetByOptions")
-	if err != nil {
-		return nil, err
-	}
-
-	var res model.Menu
-	err = ms.GetReplica().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.MenuTableName, "")
-		}
-		return nil, errors.Wrap(err, "failed to find menu with given options")
-	}
-
-	return &res, nil
+func (ms *SqlMenuStore) FilterByOptions(options model_helper.MenuFilterOptions) (model.MenuSlice, error) {
+	return model.Menus(options.Conditions...).All(ms.GetReplica())
 }
 
-func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "Menu_FilterByOptions")
-	if err != nil {
-		return nil, err
+func (s *SqlMenuStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	if tx == nil {
+		tx = s.GetMaster()
 	}
-
-	var res []*model.Menu
-	err = ms.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find menus with given options")
-	}
-
-	return res, nil
-}
-
-func (s *SqlMenuStore) Delete(ids []string) (int64, *model_helper.AppError) {
-	result := s.GetMaster().Raw("DELETE FROM "+model.MenuTableName+" WHERE Id IN ?", ids)
-	if result.Error != nil {
-		return 0, model_helper.NewAppError("DeleteMenu", "app.menu.delete_menus.app_error", nil, result.Error.Error(), http.StatusInternalServerError)
-	}
-	return result.RowsAffected, nil
+	return model.Menus(model.MenuWhere.ID.IN(ids)).DeleteAll(tx)
 }

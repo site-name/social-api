@@ -101,8 +101,8 @@ type orderGiftcardL struct{}
 
 var (
 	orderGiftcardAllColumns            = []string{"id", "giftcard_id", "order_id"}
-	orderGiftcardColumnsWithoutDefault = []string{"giftcard_id", "order_id"}
-	orderGiftcardColumnsWithDefault    = []string{"id"}
+	orderGiftcardColumnsWithoutDefault = []string{"id", "giftcard_id", "order_id"}
+	orderGiftcardColumnsWithDefault    = []string{}
 	orderGiftcardPrimaryKeyColumns     = []string{"id"}
 	orderGiftcardGeneratedColumns      = []string{}
 )

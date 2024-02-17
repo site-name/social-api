@@ -205,8 +205,8 @@ type transactionL struct{}
 
 var (
 	transactionAllColumns            = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "amount", "error", "customer_id", "gateway_response", "already_processed"}
-	transactionColumnsWithoutDefault = []string{"created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "gateway_response", "already_processed"}
-	transactionColumnsWithDefault    = []string{"id", "amount", "error", "customer_id"}
+	transactionColumnsWithoutDefault = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "gateway_response", "already_processed"}
+	transactionColumnsWithDefault    = []string{"amount", "error", "customer_id"}
 	transactionPrimaryKeyColumns     = []string{"id"}
 	transactionGeneratedColumns      = []string{}
 )

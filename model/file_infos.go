@@ -244,8 +244,8 @@ type fileInfoL struct{}
 
 var (
 	fileInfoAllColumns            = []string{"id", "creator_id", "parent_id", "created_at", "updated_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
-	fileInfoColumnsWithoutDefault = []string{"creator_id", "parent_id", "created_at", "updated_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "has_preview_image", "content"}
-	fileInfoColumnsWithDefault    = []string{"id", "delete_at", "width", "height", "mini_preview", "remote_id"}
+	fileInfoColumnsWithoutDefault = []string{"id", "creator_id", "parent_id", "created_at", "updated_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "has_preview_image", "content"}
+	fileInfoColumnsWithDefault    = []string{"delete_at", "width", "height", "mini_preview", "remote_id"}
 	fileInfoPrimaryKeyColumns     = []string{"id"}
 	fileInfoGeneratedColumns      = []string{}
 )

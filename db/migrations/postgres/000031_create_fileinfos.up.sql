@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS file_infos (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  creator_id uuid NOT NULL,
-  parent_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  creator_id varchar(36) NOT NULL,
+  parent_id varchar(36) NOT NULL,
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL,
   delete_at bigint,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS file_infos (
   has_preview_image boolean NOT NULL,
   mini_preview bytea,
   content text NOT NULL,
-  remote_id uuid
+  remote_id varchar(36)
 );
 
 CREATE INDEX idx_fileinfo_content_txt ON file_infos USING gin (to_tsvector('english'::regconfig, content));

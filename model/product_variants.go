@@ -290,8 +290,8 @@ type productVariantL struct{}
 
 var (
 	productVariantAllColumns            = []string{"id", "name", "product_id", "sku", "weight", "weight_unit", "track_inventory", "is_preorder", "preorder_end_date", "preorder_global_threshold", "sort_order", "metadata", "private_metadata"}
-	productVariantColumnsWithoutDefault = []string{"name", "product_id", "sku", "weight_unit", "is_preorder"}
-	productVariantColumnsWithDefault    = []string{"id", "weight", "track_inventory", "preorder_end_date", "preorder_global_threshold", "sort_order", "metadata", "private_metadata"}
+	productVariantColumnsWithoutDefault = []string{"id", "name", "product_id", "sku", "weight_unit", "is_preorder"}
+	productVariantColumnsWithDefault    = []string{"weight", "track_inventory", "preorder_end_date", "preorder_global_threshold", "sort_order", "metadata", "private_metadata"}
 	productVariantPrimaryKeyColumns     = []string{"id"}
 	productVariantGeneratedColumns      = []string{}
 )

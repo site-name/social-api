@@ -109,8 +109,8 @@ type categoryTranslationL struct{}
 
 var (
 	categoryTranslationAllColumns            = []string{"id", "language_code", "category_id", "name", "description", "seo_title", "seo_description"}
-	categoryTranslationColumnsWithoutDefault = []string{"language_code", "category_id", "name", "description"}
-	categoryTranslationColumnsWithDefault    = []string{"id", "seo_title", "seo_description"}
+	categoryTranslationColumnsWithoutDefault = []string{"id", "language_code", "category_id", "name", "description"}
+	categoryTranslationColumnsWithDefault    = []string{"seo_title", "seo_description"}
 	categoryTranslationPrimaryKeyColumns     = []string{"id"}
 	categoryTranslationGeneratedColumns      = []string{}
 )

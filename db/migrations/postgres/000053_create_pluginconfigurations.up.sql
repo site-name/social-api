@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS plugin_configurations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   identifier varchar(128) NOT NULL,
   name varchar(128) NOT NULL,
-  channel_id uuid nOT NULL,
+  channel_id varchar(36) nOT NULL,
   description varchar(1000) NOT NULL,
   active boolean NOT NULL,
   configuration jsonb

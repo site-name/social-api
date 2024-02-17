@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS collection_channel_listings (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
-  collection_id uuid NOT NULL,
-  channel_id uuid,
+  collection_id varchar(36) NOT NULL,
+  channel_id varchar(36),
   publication_date timestamp with time zone,
   is_published boolean
 );

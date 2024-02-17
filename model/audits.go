@@ -108,8 +108,8 @@ type auditL struct{}
 
 var (
 	auditAllColumns            = []string{"id", "created_at", "user_id", "action", "extra_info", "ip_address", "session_id"}
-	auditColumnsWithoutDefault = []string{"created_at", "user_id", "action", "extra_info", "ip_address", "session_id"}
-	auditColumnsWithDefault    = []string{"id"}
+	auditColumnsWithoutDefault = []string{"id", "created_at", "user_id", "action", "extra_info", "ip_address", "session_id"}
+	auditColumnsWithDefault    = []string{}
 	auditPrimaryKeyColumns     = []string{"id"}
 	auditGeneratedColumns      = []string{}
 )

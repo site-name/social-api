@@ -151,8 +151,8 @@ type productMediumL struct{}
 
 var (
 	productMediumAllColumns            = []string{"id", "created_at", "product_id", "ppoi", "image", "alt", "type", "external_url", "oembed_data", "sort_order"}
-	productMediumColumnsWithoutDefault = []string{"created_at", "product_id", "ppoi", "image", "alt", "type"}
-	productMediumColumnsWithDefault    = []string{"id", "external_url", "oembed_data", "sort_order"}
+	productMediumColumnsWithoutDefault = []string{"id", "created_at", "product_id", "ppoi", "image", "alt", "type"}
+	productMediumColumnsWithDefault    = []string{"external_url", "oembed_data", "sort_order"}
 	productMediumPrimaryKeyColumns     = []string{"id"}
 	productMediumGeneratedColumns      = []string{}
 )

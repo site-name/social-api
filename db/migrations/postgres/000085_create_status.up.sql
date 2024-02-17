@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS status (
-  user_id uuid NOT NULL PRIMARY KEY,
+  user_id varchar(36) NOT NULL PRIMARY KEY,
   status varchar(32) NOT NULL,
   manual boolean NOT NULL,
   last_activity_at bigint NOT NULL

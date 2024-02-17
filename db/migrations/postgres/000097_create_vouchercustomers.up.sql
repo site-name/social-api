@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS voucher_customers (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  voucher_id varchar(36) NOT NULL,
   customer_email varchar(128) NOT NULL
 );
 

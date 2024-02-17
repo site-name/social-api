@@ -120,8 +120,8 @@ type productTranslationL struct{}
 
 var (
 	productTranslationAllColumns            = []string{"id", "language_code", "product_id", "name", "description", "seo_title", "seo_description"}
-	productTranslationColumnsWithoutDefault = []string{"language_code", "product_id", "name", "description"}
-	productTranslationColumnsWithDefault    = []string{"id", "seo_title", "seo_description"}
+	productTranslationColumnsWithoutDefault = []string{"id", "language_code", "product_id", "name", "description"}
+	productTranslationColumnsWithDefault    = []string{"seo_title", "seo_description"}
 	productTranslationPrimaryKeyColumns     = []string{"id"}
 	productTranslationGeneratedColumns      = []string{}
 )

@@ -3,11 +3,10 @@ package invoice
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlInvoiceStore struct {
@@ -18,106 +17,52 @@ func NewSqlInvoiceStore(s store.Store) store.InvoiceStore {
 	return &SqlInvoiceStore{s}
 }
 
-// Upsert depends on given invoice's Id to decide update or delete it
-func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
-	err := is.GetMaster().Save(invoice).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert invoice")
+func (is *SqlInvoiceStore) Upsert(invoice model.Invoice) (*model.Invoice, error) {
+	isSaving := invoice.ID == ""
+	if isSaving {
+		model_helper.InvoicePreSave(&invoice)
+	} else {
+		model_helper.InvoicePreUpdate(&invoice)
 	}
+
+	if err := model_helper.InvoiceIsValid(invoice); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = invoice.Insert(is.GetMaster(), boil.Infer())
+	} else {
+		_, err = invoice.Update(is.GetMaster(), boil.Blacklist(model.InvoiceColumns.CreatedAt))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &invoice, nil
+}
+
+func (is *SqlInvoiceStore) GetbyOptions(options model_helper.InvoiceFilterOption) (*model.Invoice, error) {
+	invoice, err := model.Invoices(options.Conditions...).One(is.GetReplica())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Invoices, "options")
+		}
+		return nil, err
+	}
+
 	return invoice, nil
 }
 
-func (s *SqlInvoiceStore) commonQueryBuilder(options *model.InvoiceFilterOptions) squirrel.SelectBuilder {
-	selectFields := []string{model.InvoiceTableName + ".*"}
-	if options.SelectRelatedOrder {
-		selectFields = append(selectFields, model.OrderTableName+".*")
-	}
-
-	query := s.GetQueryBuilder().Select(selectFields...).From(model.InvoiceTableName).Where(options.Conditions)
-
-	if options.SelectRelatedOrder {
-		query = query.InnerJoin(model.OrderTableName + " ON Orders.Id = Invoices.OrderID")
-	}
-	if options.Limit > 0 {
-		query = query.Limit(options.Limit)
-	}
-
-	return query
+func (is *SqlInvoiceStore) FilterByOptions(options model_helper.InvoiceFilterOption) (model.InvoiceSlice, error) {
+	return model.Invoices(options.Conditions...).All(is.GetReplica())
 }
 
-// Get finds and returns an invoice with given id
-func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) {
-	options.Limit = 0
-	query, args, err := is.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOptions_ToSql")
+func (s *SqlInvoiceStore) Delete(transaction boil.ContextTransactor, ids []string) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
-
-	var res model.Invoice
-	var order model.Order
-
-	scanFields := is.ScanFields(&res)
-	if options.SelectRelatedOrder {
-		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
-	}
-
-	err = is.GetReplica().Raw(query, args...).Row().Scan(scanFields...)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(model.InvoiceTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find invoice with given options")
-	}
-
-	if options.SelectRelatedOrder {
-		res.SetOrder(&order)
-	}
-
-	return &res, nil
-}
-
-func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
-	queryStr, args, err := is.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	rows, err := is.GetReplica().Raw(queryStr, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find invoices by given options")
-	}
-	defer rows.Close()
-
-	var res []*model.Invoice
-
-	for rows.Next() {
-		var (
-			invoice    model.Invoice
-			order      model.Order
-			scanFields = is.ScanFields(&invoice)
-		)
-		if options.SelectRelatedOrder {
-			scanFields = append(scanFields, is.Order().ScanFields(&order)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan an invoice row")
-		}
-
-		if options.SelectRelatedOrder {
-			invoice.SetOrder(&order)
-		}
-		res = append(res, &invoice)
-	}
-
-	return res, nil
-}
-
-func (s *SqlInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
-	err := transaction.Raw("DELETE FROM "+model.InvoiceTableName+" WHERE Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete invoice by given ids")
-	}
-	return nil
+	_, err := model.Invoices(model.InvoiceWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

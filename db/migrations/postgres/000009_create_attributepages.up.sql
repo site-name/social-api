@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS attribute_pages (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  attribute_id uuid NOT NULL,
-  page_type_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  attribute_id varchar(36) NOT NULL,
+  page_type_id varchar(36) NOT NULL,
   sort_order integer
 );
 

@@ -1,10 +1,12 @@
 package invoice
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlInvoiceEventStore struct {
@@ -15,25 +17,38 @@ func NewSqlInvoiceEventStore(sqlStore store.Store) store.InvoiceEventStore {
 	return &SqlInvoiceEventStore{sqlStore}
 }
 
-// Upsert depends on given invoice event's Id to update/insert it
-func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
-	err := ies.GetMaster().Save(invoiceEvent).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert invoice event")
+func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*model.InvoiceEvent, error) {
+	isSaving := invoiceEvent.ID == ""
+	if isSaving {
+		model_helper.InvoiceEventPreSave(&invoiceEvent)
 	}
-	return invoiceEvent, nil
+
+	if err := model_helper.InvoiceEventIsValid(invoiceEvent); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = invoiceEvent.Insert(ies.GetMaster(), boil.Infer())
+	} else {
+		_, err = invoiceEvent.Update(ies.GetMaster(), boil.Blacklist(model.InvoiceEventColumns.CreatedAt))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &invoiceEvent, nil
 }
 
-// Get finds and returns 1 invoice event
-func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
-	var res model.InvoiceEvent
-	err := ies.GetReplica().First(&res, "Id = ?", invoiceEventID).Error
+func (ies *SqlInvoiceEventStore) Get(id string) (*model.InvoiceEvent, error) {
+	invoiceEvent, err := model.FindInvoiceEvent(ies.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.InvoiceEventTableName, invoiceEventID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.InvoiceEvents, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find invoice event with id=%s", invoiceEventID)
+		return nil, err
 	}
 
-	return &res, nil
+	return invoiceEvent, nil
 }

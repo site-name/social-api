@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user_access_tokens (
-    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-    token uuid NOT NULL,
-    user_id uuid NOT NULL,
+    id varchar(36) NOT NULL PRIMARY KEY,
+    token varchar(36) NOT NULL,
+    user_id varchar(36) NOT NULL,
     description varchar(255) NOT NULL,
     is_active boolean NOT NULL DEFAULT true
 );

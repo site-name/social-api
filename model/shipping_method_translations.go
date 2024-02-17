@@ -94,8 +94,8 @@ type shippingMethodTranslationL struct{}
 
 var (
 	shippingMethodTranslationAllColumns            = []string{"id", "shipping_method_id", "language_code", "name", "description"}
-	shippingMethodTranslationColumnsWithoutDefault = []string{"shipping_method_id", "language_code", "name", "description"}
-	shippingMethodTranslationColumnsWithDefault    = []string{"id"}
+	shippingMethodTranslationColumnsWithoutDefault = []string{"id", "shipping_method_id", "language_code", "name", "description"}
+	shippingMethodTranslationColumnsWithDefault    = []string{}
 	shippingMethodTranslationPrimaryKeyColumns     = []string{"id"}
 	shippingMethodTranslationGeneratedColumns      = []string{}
 )

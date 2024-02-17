@@ -175,8 +175,8 @@ type productVariantChannelListingL struct{}
 
 var (
 	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "created_at"}
-	productVariantChannelListingColumnsWithoutDefault = []string{"variant_id", "channel_id", "created_at"}
-	productVariantChannelListingColumnsWithDefault    = []string{"id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold"}
+	productVariantChannelListingColumnsWithoutDefault = []string{"id", "variant_id", "channel_id", "created_at"}
+	productVariantChannelListingColumnsWithDefault    = []string{"currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold"}
 	productVariantChannelListingPrimaryKeyColumns     = []string{"id"}
 	productVariantChannelListingGeneratedColumns      = []string{}
 )

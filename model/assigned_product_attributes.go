@@ -111,8 +111,8 @@ type assignedProductAttributeL struct{}
 
 var (
 	assignedProductAttributeAllColumns            = []string{"id", "product_id", "assignment_id"}
-	assignedProductAttributeColumnsWithoutDefault = []string{"product_id", "assignment_id"}
-	assignedProductAttributeColumnsWithDefault    = []string{"id"}
+	assignedProductAttributeColumnsWithoutDefault = []string{"id", "product_id", "assignment_id"}
+	assignedProductAttributeColumnsWithDefault    = []string{}
 	assignedProductAttributePrimaryKeyColumns     = []string{"id"}
 	assignedProductAttributeGeneratedColumns      = []string{}
 )

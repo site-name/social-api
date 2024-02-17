@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS product_channel_listings (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL,
-  channel_id uuid NOT NULL,
+  id varchar(36) NOT NULL PRIMARY KEY,
+  product_id varchar(36) NOT NULL,
+  channel_id varchar(36) NOT NULL,
   visible_in_listings boolean NOT NULL,
   available_for_purchase bigint, -- future time in milliseconds
   currency Currency NOT NULL,

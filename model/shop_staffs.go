@@ -156,8 +156,8 @@ type shopStaffL struct{}
 
 var (
 	shopStaffAllColumns            = []string{"id", "staff_id", "created_at", "end_at", "salary_period", "salary", "salary_currency"}
-	shopStaffColumnsWithoutDefault = []string{"staff_id", "created_at", "salary_period", "salary_currency"}
-	shopStaffColumnsWithDefault    = []string{"id", "end_at", "salary"}
+	shopStaffColumnsWithoutDefault = []string{"id", "staff_id", "created_at", "salary_period", "salary_currency"}
+	shopStaffColumnsWithDefault    = []string{"end_at", "salary"}
 	shopStaffPrimaryKeyColumns     = []string{"id"}
 	shopStaffGeneratedColumns      = []string{}
 )

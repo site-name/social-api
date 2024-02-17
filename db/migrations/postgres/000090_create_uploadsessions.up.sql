@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS upload_sessions (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   type upload_type NOT NULL,
   created_at bigint NOT NULL,
-  user_id uuid NOT NULL,
+  user_id varchar(36) NOT NULL,
   file_name varchar(256) NOT NULL,
   path varchar(512) NOT NULL,
   file_size bigint NOT NULL,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS jobs (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   type job_type NOT NULL,
   priority bigint NOT NULL,
   created_at bigint NOT NULL,

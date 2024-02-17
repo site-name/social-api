@@ -14,14 +14,6 @@ type SqlAssignedProductAttributeStore struct {
 	store.Store
 }
 
-func (s *SqlAssignedProductAttributeStore) ScanFields(prdAttr *model.AssignedProductAttribute) []any {
-	return []any{
-		&prdAttr.Id,
-		&prdAttr.ProductID,
-		&prdAttr.AssignmentID,
-	}
-}
-
 func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAttributeStore {
 	return &SqlAssignedProductAttributeStore{s}
 }

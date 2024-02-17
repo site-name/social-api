@@ -1,10 +1,12 @@
 package giftcard
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlGiftcardEventStore struct {
@@ -15,54 +17,51 @@ func NewSqlGiftcardEventStore(s store.Store) store.GiftcardEventStore {
 	return &SqlGiftcardEventStore{s}
 }
 
-// BulkUpsert upserts and returns given giftcard events
-func (gs *SqlGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+func (gs *SqlGiftcardEventStore) Upsert(transaction boil.ContextTransactor, events model.GiftcardEventSlice) (model.GiftcardEventSlice, error) {
 	if transaction == nil {
 		transaction = gs.GetMaster()
 	}
 
 	for _, event := range events {
-		err := transaction.Save(event).Error
+		if event == nil {
+			continue
+		}
+
+		isSaving := event.ID == ""
+		if isSaving {
+			model_helper.GiftCardEventPreSave(event)
+		}
+
+		if err := model_helper.GiftcardEventIsValid(*event); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = event.Insert(transaction, boil.Infer())
+		} else {
+			_, err = event.Update(transaction, boil.Blacklist(model.GiftcardEventColumns.Date))
+		}
+
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to upsert giftcard event with")
+
 		}
 	}
 	return events, nil
 }
 
-func (gs *SqlGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error) {
-	err := gs.GetMaster().Create(event).Error
+func (gs *SqlGiftcardEventStore) Get(id string) (*model.GiftcardEvent, error) {
+	event, err := model.FindGiftcardEvent(gs.GetReplica(), id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to save giftcard event with id=%s", event.Id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.GiftcardEvents, id)
+		}
+		return nil, err
 	}
 
 	return event, nil
 }
 
-func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, error) {
-	var res model.GiftCardEvent
-	err := gs.GetReplica().First(&res, "Id = ?", eventId).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.GiftcardEventTableName, eventId)
-		}
-		return nil, errors.Wrapf(err, "failed to find giftcard event with id=%s", eventId)
-	}
-
-	return &res, nil
-}
-
-// FilterByOptions finds and returns a list of giftcard events with given options
-func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "GiftCardEvent_FilterByOption")
-	if err != nil {
-		return nil, err
-	}
-	var res []*model.GiftCardEvent
-	err = gs.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find giftcard events with given options")
-	}
-
-	return res, nil
+func (gs *SqlGiftcardEventStore) FilterByOptions(options model_helper.GiftCardEventFilterOption) (model.GiftcardEventSlice, error) {
+	return model.GiftcardEvents(options.Conditions...).All(gs.GetReplica())
 }

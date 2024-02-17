@@ -87,8 +87,8 @@ type termsOfServiceL struct{}
 
 var (
 	termsOfServiceAllColumns            = []string{"id", "created_at", "user_id", "text"}
-	termsOfServiceColumnsWithoutDefault = []string{"created_at", "user_id", "text"}
-	termsOfServiceColumnsWithDefault    = []string{"id"}
+	termsOfServiceColumnsWithoutDefault = []string{"id", "created_at", "user_id", "text"}
+	termsOfServiceColumnsWithDefault    = []string{}
 	termsOfServicePrimaryKeyColumns     = []string{"id"}
 	termsOfServiceGeneratedColumns      = []string{}
 )

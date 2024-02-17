@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS shop_translations (
-  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id varchar(36) NOT NULL PRIMARY KEY,
   language_code language_code NOT NULL,
   name varchar(110) NOT NULL,
   description varchar(110) NOT NULL,

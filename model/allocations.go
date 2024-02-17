@@ -138,8 +138,8 @@ type allocationL struct{}
 
 var (
 	allocationAllColumns            = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
-	allocationColumnsWithoutDefault = []string{"created_at", "order_line_id", "stock_id", "quantity_allocated"}
-	allocationColumnsWithDefault    = []string{"id"}
+	allocationColumnsWithoutDefault = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
+	allocationColumnsWithDefault    = []string{}
 	allocationPrimaryKeyColumns     = []string{"id"}
 	allocationGeneratedColumns      = []string{}
 )

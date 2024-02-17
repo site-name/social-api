@@ -120,8 +120,8 @@ type collectionTranslationL struct{}
 
 var (
 	collectionTranslationAllColumns            = []string{"id", "language_code", "collection_id", "name", "description", "seo_title", "seo_description"}
-	collectionTranslationColumnsWithoutDefault = []string{"language_code", "collection_id", "name", "description"}
-	collectionTranslationColumnsWithDefault    = []string{"id", "seo_title", "seo_description"}
+	collectionTranslationColumnsWithoutDefault = []string{"id", "language_code", "collection_id", "name", "description"}
+	collectionTranslationColumnsWithDefault    = []string{"seo_title", "seo_description"}
 	collectionTranslationPrimaryKeyColumns     = []string{"id"}
 	collectionTranslationGeneratedColumns      = []string{}
 )

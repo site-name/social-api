@@ -150,8 +150,8 @@ type uploadSessionL struct{}
 
 var (
 	uploadSessionAllColumns            = []string{"id", "type", "created_at", "user_id", "file_name", "path", "file_size", "file_offset"}
-	uploadSessionColumnsWithoutDefault = []string{"type", "created_at", "user_id", "file_name", "path", "file_size", "file_offset"}
-	uploadSessionColumnsWithDefault    = []string{"id"}
+	uploadSessionColumnsWithoutDefault = []string{"id", "type", "created_at", "user_id", "file_name", "path", "file_size", "file_offset"}
+	uploadSessionColumnsWithDefault    = []string{}
 	uploadSessionPrimaryKeyColumns     = []string{"id"}
 	uploadSessionGeneratedColumns      = []string{}
 )

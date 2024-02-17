@@ -186,8 +186,8 @@ type digitalContentL struct{}
 
 var (
 	digitalContentAllColumns            = []string{"id", "use_default_settings", "automatic_fulfillment", "content_type", "product_variant_id", "content_file", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
-	digitalContentColumnsWithoutDefault = []string{"content_type", "product_variant_id", "content_file"}
-	digitalContentColumnsWithDefault    = []string{"id", "use_default_settings", "automatic_fulfillment", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
+	digitalContentColumnsWithoutDefault = []string{"id", "content_type", "product_variant_id", "content_file"}
+	digitalContentColumnsWithDefault    = []string{"use_default_settings", "automatic_fulfillment", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
 	digitalContentPrimaryKeyColumns     = []string{"id"}
 	digitalContentGeneratedColumns      = []string{}
 )

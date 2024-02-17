@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS custom_product_attribute_values (
-    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+    id varchar(36) NOT NULL PRIMARY KEY,
     value VARCHAR(250) NOT NULL,
-    attribute_id uuid NOT NULL
+    attribute_id varchar(36) NOT NULL
 );
 
 DO $$
