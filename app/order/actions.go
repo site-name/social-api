@@ -189,7 +189,7 @@ func (a *ServiceOrder) CancelOrder(transaction *gorm.DB, order *model.Order, use
 // OrderRefunded
 func (a *ServiceOrder) OrderRefunded(order model.Order, user *model.User, _ interface{}, amount decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
@@ -213,7 +213,7 @@ func (a *ServiceOrder) OrderRefunded(order model.Order, user *model.User, _ inte
 // OrderVoided
 func (a *ServiceOrder) OrderVoided(order model.Order, user *model.User, _ interface{}, payMent *model.Payment, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -234,7 +234,7 @@ func (a *ServiceOrder) OrderVoided(order model.Order, user *model.User, _ interf
 // OrderReturned
 func (a *ServiceOrder) OrderReturned(transaction *gorm.DB, order model.Order, user *model.User, _ interface{}, returnedLines []*model.QuantityOrderLine) *model_helper.AppError {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -371,7 +371,7 @@ func (a *ServiceOrder) OrderShippingUpdated(order model.Order, manager interface
 // OrderAuthorized
 func (a *ServiceOrder) OrderAuthorized(order model.Order, user *model.User, _ interface{}, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -391,7 +391,7 @@ func (a *ServiceOrder) OrderAuthorized(order model.Order, user *model.User, _ in
 // OrderCaptured
 func (a *ServiceOrder) OrderCaptured(order model.Order, user *model.User, _ interface{}, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -456,11 +456,11 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *mo
 			return nil, appErr
 		}
 		// if error is not found error, this mean given `fulfillment` is not valid
-		return nil, model_helper.NewAppError("CancelFulfillment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fulfillment"}, appErr.DetailedError, http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CancelFulfillment", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fulfillment"}, appErr.DetailedError, http.StatusBadRequest)
 	}
 
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 	_, appErr = a.FulfillmentCanceledEvent(transaction, fulfillment_.GetOrder(), user, nil, fulfillment_)
@@ -2225,7 +2225,7 @@ func (a *ServiceOrder) processRefund(
 	}
 
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 

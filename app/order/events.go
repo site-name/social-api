@@ -102,7 +102,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.
 
 func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user == nil || !model.IsValidId(user.Id) {
+	if user == nil || !model_helper.IsValidId(user.Id) {
 		userID = nil
 	} else {
 		userID = model.GetPointerOfValue(user.Id)
@@ -128,7 +128,7 @@ func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]i
 
 func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user != nil || model.IsValidId(user.Id) {
+	if user != nil || model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 	discountParameters := map[string]interface{}{
@@ -206,7 +206,7 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ 
 			return nil, appErr
 		}
 	}
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -219,7 +219,7 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ 
 
 func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -232,7 +232,7 @@ func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user 
 
 func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -248,7 +248,7 @@ func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDe
 
 func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -268,7 +268,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDe
 		userID     *string
 		parameters = model.StringInterface{}
 	)
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 	if transactionReference != "" {
@@ -285,7 +285,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDe
 
 func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -303,7 +303,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, d
 func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -320,7 +320,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer mode
 func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
@@ -344,7 +344,7 @@ func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilte
 }
 
 func (s *ServiceOrder) OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model_helper.AppError) {
-	if user != nil && model.IsValidId(user.Id) {
+	if user != nil && model_helper.IsValidId(user.Id) {
 		if order.UserID != nil && *order.UserID == user.Id {
 			_, appErr := s.srv.AccountService().CommonCustomerCreateEvent(tx, &user.Id, &order.Id, model.CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER, model.StringInterface{"message": message})
 			if appErr != nil {

@@ -1298,7 +1298,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
+func (s *TimerLayerAttributeStore) CountByOptions(options model_helper.AttributeFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.CountByOptions(options)
@@ -1330,7 +1330,7 @@ func (s *TimerLayerAttributeStore) Delete(tx boil.ContextTransactor, ids []strin
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *TimerLayerAttributeStore) FilterbyOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.FilterbyOption(option)
@@ -1362,7 +1362,7 @@ func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned, filter)
@@ -1410,7 +1410,7 @@ func (s *TimerLayerAttributePageStore) Get(pageID string) (*model.AttributePage,
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.GetByOption(option)
@@ -1906,7 +1906,7 @@ func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
 	return err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Delete(discovery model.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Delete(discovery)
@@ -1922,7 +1922,7 @@ func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscove
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Exists(discovery model.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Exists(discovery)
@@ -1938,7 +1938,7 @@ func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscove
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) (model.ClusterDiscoverySlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.GetAll(discoveryType, clusterName)
@@ -1954,7 +1954,7 @@ func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) Save(discovery model.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.Save(discovery)
@@ -1970,7 +1970,7 @@ func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery
 	return err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery model.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.SetLastPingAt(discovery)
@@ -2146,7 +2146,7 @@ func (s *TimerLayerCollectionProductStore) FilterByOptions(options *model.Collec
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
+func (s *TimerLayerComplianceStore) ComplianceExport(model model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.ComplianceStore.ComplianceExport(model, cursor, limit)
@@ -2210,10 +2210,10 @@ func (s *TimerLayerComplianceStore) MessageExport(cursor model_helper.MessageExp
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerComplianceStore) Save(model model.Compliance) (*model.Compliance, error) {
+func (s *TimerLayerComplianceStore) Upsert(model model.Compliance) (*model.Compliance, error) {
 	start := timemodule.Now()
 
-	result, err := s.ComplianceStore.Save(model)
+	result, err := s.ComplianceStore.Upsert(model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2221,23 +2221,7 @@ func (s *TimerLayerComplianceStore) Save(model model.Compliance) (*model.Complia
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerComplianceStore) Update(model model.Compliance) (*model.Compliance, error) {
-	start := timemodule.Now()
-
-	result, err := s.ComplianceStore.Update(model)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Update", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -3840,7 +3824,7 @@ func (s *TimerLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine *
 	return result, err
 }
 
-func (s *TimerLayerPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
+func (s *TimerLayerPageStore) FilterByOptions(options model_helper.PageFilterOptions) (model.PageSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PageStore.FilterByOptions(options)

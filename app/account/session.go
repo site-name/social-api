@@ -396,7 +396,7 @@ func (a *ServiceAccount) CreateUserAccessToken(token model.UserAccessToken) (*mo
 	}
 
 	// Don't send emails to bot users.
-	if err := a.srv.EmailService.SendUserAccessTokenAddedEmail(user.Email, user.Locale, a.srv.GetSiteURL()); err != nil {
+	if err := a.srv.EmailService.SendUserAccessTokenAddedEmail(user.Email, user.Locale.String(), a.srv.GetSiteURL()); err != nil {
 		a.srv.Log.Error("Unable to send user access token added email", slog.Err(err), slog.String("user_id", user.ID))
 	}
 

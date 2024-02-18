@@ -31,7 +31,7 @@ func (r *Resolver) ShopSettingsUpdate(ctx context.Context, args struct{ Input Sh
 
 		urlParse, err := url.Parse(*inputUrl)
 		if err != nil || !lo.Contains(allowedClientHosts, urlParse.Host) {
-			return nil, model_helper.NewAppError("ShopSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ShopSettingsUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
 		}
 	}
 
@@ -208,7 +208,7 @@ func (r *Resolver) GiftCardSettingsUpdate(ctx context.Context, args struct {
 	}
 
 	if *expiryType == model.EXPIRY_PERIOD && args.Input.ExpiryPeriod == nil {
-		return nil, model_helper.NewAppError("GiftCardSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryPeriod"}, "expiry period settings are reuired for expiry period", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftCardSettingsUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryPeriod"}, "expiry period settings are reuired for expiry period", http.StatusBadRequest)
 	} else if *expiryType == model.NEVER_EXPIRE {
 		args.Input.ExpiryPeriod = nil
 	}

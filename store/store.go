@@ -226,9 +226,9 @@ type (
 		SelectForSort(assignmentID string) (model.AssignedPageAttributeValueSlice, model.AttributeValueSlice, error)                                  // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
 	}
 	AssignedPageAttributeStore interface {
-		Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) // Save inserts given assigned page model into database and returns it with an error
-		Get(id string) (*model.AssignedPageAttribute, error)                                       // Get returns an assigned page model with an error
-		FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error)             // GetByOption try to find an assigned page model with given option. If nothing found, creats new instance with that option and returns such value with an error
+		Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error)                        // Save inserts given assigned page model into database and returns it with an error
+		Get(id string) (*model.AssignedPageAttribute, error)                                                              // Get returns an assigned page model with an error
+		FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) // GetByOption try to find an assigned page model with given option. If nothing found, creats new instance with that option and returns such value with an error
 	}
 	AttributePageStore interface {
 		Save(page model.AttributePage) (*model.AttributePage, error)

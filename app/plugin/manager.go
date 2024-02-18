@@ -1474,7 +1474,7 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode strin
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model_helper.NewAppError("AssignTaxCodeToObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AssignTaxCodeToObjectMeta", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
@@ -1508,7 +1508,7 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxTyp
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model_helper.NewAppError("GetTaxCodeFromObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetTaxCodeFromObjectMeta", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
@@ -1541,7 +1541,7 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model_helper.NewAppError("GetTaxRatePercentageValue", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetTaxRatePercentageValue", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	defaultValue := decimal.Zero.Round(0)
@@ -1566,8 +1566,8 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 }
 
 func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*model.PluginConfiguration, *model_helper.AppError) {
-	if !model.IsValidId(channelID) {
-		return nil, model_helper.NewAppError("SavePluginConfiguration", model.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
+	if !model_helper.IsValidId(channelID) {
+		return nil, model_helper.NewAppError("SavePluginConfiguration", model_helper.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
 	}
 
 	var pluginList []interfaces.BasePluginInterface

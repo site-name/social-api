@@ -27,7 +27,7 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *model.Checkout
 func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	// validate input arguments
 	if checkoutInfo == nil {
-		return nil, model_helper.NewAppError("CalculatePriceForShippingMethod", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutInfo"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CalculatePriceForShippingMethod", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutInfo"}, "", http.StatusBadRequest)
 	}
 
 	var (
@@ -46,7 +46,7 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model.Ch
 		return nil, appErr
 	}
 
-	if !model.IsValidId(shippingMethod.Id) || !shippingRequired {
+	if !model_helper.IsValidId(shippingMethod.Id) || !shippingRequired {
 		zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
 		return zeroTaxedMoney, nil
 	}
@@ -77,7 +77,7 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shipp
 	switch discount.(type) {
 	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
 	default:
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
 	}
 
 	// this method reqires all values's currencies are uppoer-cased and supported by system
@@ -89,7 +89,7 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shipp
 	currencyMap[currency] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
 	}
 
 	total, _ := subTotal.Add(shippingPrice)
@@ -142,7 +142,7 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *model.OrderLine) (*gopri
 		return unitPrice, nil
 	}
 
-	return nil, model_helper.NewAppError("BaseOrderLineTotal", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "", http.StatusBadRequest)
+	return nil, model_helper.NewAppError("BaseOrderLineTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "", http.StatusBadRequest)
 }
 
 func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {

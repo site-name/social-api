@@ -255,11 +255,11 @@ func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturn
 		}
 
 		if orderLine.Quantity < quantity {
-			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
 		}
 
 		if unfulfilledQuantity := orderLine.QuantityUnFulfilled(); unfulfilledQuantity < quantity {
-			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
 		}
 
 		if lineData.getReplace() && orderLine.VariantID == nil {
@@ -308,7 +308,7 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 		}
 
 		if fulfillmentLine.Quantity < quantity {
-			return nil, model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
 		}
 
 		if !lo.Contains(whitelistedStatuses, fulfillmentLine.Fulfillment.Status) {

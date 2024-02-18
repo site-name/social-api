@@ -29,7 +29,7 @@ func (s *ServicePlugin) UpsertPluginConfiguration(config *model.PluginConfigurat
 // FilterPluginConfigurations returns a list of plugin configurations filtered using given options
 func (s *ServicePlugin) FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model_helper.AppError) {
 	if options == nil {
-		return nil, model_helper.NewAppError("FilterPluginConfigurations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "options"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("FilterPluginConfigurations", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "options"}, "", http.StatusBadRequest)
 	}
 
 	configs, err := s.srv.Store.PluginConfiguration().FilterPluginConfigurations(*options)

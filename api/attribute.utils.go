@@ -331,54 +331,54 @@ func isValueRequired(attribute *model.Attribute, variantValidation bool) bool {
 func validateFileAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model_helper.AppError {
 	if (attributeValues.FileUrl == nil || *attributeValues.FileUrl == "") &&
 		isValueRequired(attribute, variantValidation) {
-		return model_helper.NewAppError("validateFileAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "FileUrl"}, "please provide file", http.StatusBadRequest)
+		return model_helper.NewAppError("validateFileAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "FileUrl"}, "please provide file", http.StatusBadRequest)
 	}
 	return nil
 }
 
 func validateReferenceAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValiation bool) *model_helper.AppError {
 	if len(attributeValues.References) == 0 && isValueRequired(attribute, variantValiation) {
-		return model_helper.NewAppError("validateReferenceAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "References"}, "please provide references", http.StatusBadRequest)
+		return model_helper.NewAppError("validateReferenceAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "References"}, "please provide references", http.StatusBadRequest)
 	}
 	return nil
 }
 
 func validateBooleanInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model_helper.AppError {
 	if attribute.ValueRequired && attributeValues.Boolean == nil {
-		return model_helper.NewAppError("validateBooleanInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Boolean"}, "please provide boolean value", http.StatusBadRequest)
+		return model_helper.NewAppError("validateBooleanInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Boolean"}, "please provide boolean value", http.StatusBadRequest)
 	}
 	return nil
 }
 
 func validateRichTextAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model_helper.AppError {
 	if (attributeValues.RichText == nil || len(attributeValues.RichText) == 0) && attribute.ValueRequired {
-		return model_helper.NewAppError("validateRichTextAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RichText"}, "please provide rich text", http.StatusBadRequest)
+		return model_helper.NewAppError("validateRichTextAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RichText"}, "please provide rich text", http.StatusBadRequest)
 	}
 	return nil
 }
 
 func validateStandardAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model_helper.AppError {
 	if len(attributeValues.Values) == 0 && isValueRequired(attribute, variantValidation) {
-		return model_helper.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide values", http.StatusBadRequest)
+		return model_helper.NewAppError("validateStandardAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide values", http.StatusBadRequest)
 	}
 	if attribute.InputType != model.AttributeInputTypeMultiSelect && len(attributeValues.Values) != 1 {
-		return model_helper.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "only 1 value allowed", http.StatusBadRequest)
+		return model_helper.NewAppError("validateStandardAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "only 1 value allowed", http.StatusBadRequest)
 	}
 
 	isNumeric := attribute.InputType == model.AttributeInputTypeNumeric
 
 	for _, value := range attributeValues.Values {
 		if !isNumeric && strings.TrimSpace(value) == "" {
-			return model_helper.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide non empty values", http.StatusBadRequest)
+			return model_helper.NewAppError("validateStandardAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide non empty values", http.StatusBadRequest)
 		}
 		if !isNumeric && len(value) > model.AttributeValueNameMaxLength {
-			return model_helper.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, fmt.Sprintf("some value has length exceeds allowed (%d)", model.AttributeValueNameMaxLength), http.StatusBadRequest)
+			return model_helper.NewAppError("validateStandardAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, fmt.Sprintf("some value has length exceeds allowed (%d)", model.AttributeValueNameMaxLength), http.StatusBadRequest)
 		}
 
 		if isNumeric {
 			_, err := strconv.ParseFloat(value, 64)
 			if err != nil {
-				return model_helper.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide numeric values. err: "+err.Error(), http.StatusBadRequest)
+				return model_helper.NewAppError("validateStandardAttributesInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide numeric values. err: "+err.Error(), http.StatusBadRequest)
 			}
 		}
 	}
@@ -391,7 +391,7 @@ func validateDatetimeInput(attribute *model.Attribute, attributeValues AttrValue
 	isBlankDatetime := attribute.InputType == model.AttributeInputTypeDateTime && attributeValues.DateTime == nil
 
 	if attribute.ValueRequired && (isBlankDate || isBlankDatetime) {
-		return model_helper.NewAppError("validateDatetimeInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "date/datetime"}, "please provide date or datetime value", http.StatusBadRequest)
+		return model_helper.NewAppError("validateDatetimeInput", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "date/datetime"}, "please provide date or datetime value", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -407,7 +407,7 @@ func validateRequiredAttributes(inputData []attributeInput, attributes []*model.
 	if lo.SomeBy(attributes, func(item *model.Attribute) bool {
 		return item.ValueRequired && !providedAttributeIdsMap[item.Id]
 	}) {
-		return model_helper.NewAppError("validateRequiredAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "All attributes flagged as having a value required must be supplied.", http.StatusBadRequest)
+		return model_helper.NewAppError("validateRequiredAttributes", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "All attributes flagged as having a value required must be supplied.", http.StatusBadRequest)
 	}
 
 	return nil

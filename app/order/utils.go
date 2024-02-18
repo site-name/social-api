@@ -326,7 +326,7 @@ func (a *ServiceOrder) UpdateOrderPrices(tx *gorm.DB, order model.Order, manager
 		return appErr
 	}
 
-	if order.ShippingMethodID != nil && model.IsValidId(*order.ShippingMethodID) {
+	if order.ShippingMethodID != nil && model_helper.IsValidId(*order.ShippingMethodID) {
 		shippingPrice, appErr := manager.CalculateOrderShipping(order)
 		if appErr != nil {
 			return appErr
@@ -1260,7 +1260,7 @@ func (a *ServiceOrder) SumOrderTotals(orders []*model.Order, currencyCode string
 	// validate given `currencyCode` is valid
 	currencyCode = strings.ToUpper(currencyCode)
 	if _, err := goprices.GetCurrencyPrecision(currencyCode); err != nil || currencyCode != orders[0].Currency {
-		return nil, model_helper.NewAppError("SumOrderTotals", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SumOrderTotals", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, order := range orders {

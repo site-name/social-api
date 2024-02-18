@@ -45,12 +45,12 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	Input []*OrderLineCreateInput
 }) (*OrderLinesCreate, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("OrderLinesCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
 	}
 	args.Input = lo.Filter(args.Input, func(item *OrderLineCreateInput, _ int) bool { return item != nil })
 	if len(args.Input) == 0 {
-		return nil, model_helper.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide variants to add", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLinesCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide variants to add", http.StatusBadRequest)
 	}
 
 	variantIds := make([]string, len(args.Input))
@@ -161,8 +161,8 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 // NOTE: please refer to ./graphql/schemas/order_line.graphqls for details on directives used.
 func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }) (*OrderLineDelete, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("OrderLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("OrderLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -277,11 +277,11 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 	Id    string
 	Input OrderLineInput
 }) (*OrderLineUpdate, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("OrderLineUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 	if args.Input.Quantity < 0 {
-		return nil, model_helper.NewAppError("OrderLineUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, "quantity must be greater than or equal to 0", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderLineUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, "quantity must be greater than or equal to 0", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -367,8 +367,8 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 
 // NOTE: please refer to ./graphql/schemas/order_line.graphqls for details on directives used.
 func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ DiscountID string }) (*OrderDiscountDelete, error) {
-	if !model.IsValidId(args.DiscountID) {
-		return nil, model_helper.NewAppError("OrderDiscountDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid discount id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.DiscountID) {
+		return nil, model_helper.NewAppError("OrderDiscountDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid discount id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -436,8 +436,8 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 	Input       OrderDiscountCommonInput
 	OrderLineID string
 }) (*OrderLineDiscountUpdate, error) {
-	if !model.IsValidId(args.OrderLineID) {
-		return nil, model_helper.NewAppError("OrderLineDiscountUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.OrderLineID) {
+		return nil, model_helper.NewAppError("OrderLineDiscountUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -536,8 +536,8 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 
 // NOTE: please refer to ./graphql/schemas/order_line.graphqls for details on directives used.
 func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ OrderLineID string }) (*OrderLineDiscountRemove, error) {
-	if !model.IsValidId(args.OrderLineID) {
-		return nil, model_helper.NewAppError("OrderLineDiscountRemove", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.OrderLineID) {
+		return nil, model_helper.NewAppError("OrderLineDiscountRemove", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "OrderLineID"}, "please provide valid order line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

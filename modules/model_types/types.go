@@ -47,6 +47,19 @@ func (j JsonMap) Value() (driver.Value, error) {
 	return string(data), err
 }
 
+func (j JsonMap) Get(key string, defaultValue ...any) any {
+	value, exist := j[key]
+	if exist {
+		return value
+	}
+
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+
+	return nil
+}
+
 type NullInt64 struct {
 	Int64 *int64
 }

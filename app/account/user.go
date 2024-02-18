@@ -112,7 +112,7 @@ func (a *ServiceAccount) CreateUserFromSignup(c request.Context, user model.User
 			ruser.Email,
 			ruser.EmailVerified,
 			ruser.DisableWelcomeEmail,
-			ruser.Locale,
+			ruser.Locale.String(),
 			a.srv.GetSiteURL(),
 			redirect,
 		); err != nil {
@@ -142,7 +142,7 @@ func (a *ServiceAccount) CreateUser(c request.Context, user model.User) (*model.
 		user.Roles = model_helper.SystemAdminRoleId + " " + model_helper.SystemUserRoleId + " " + model_helper.ShopAdminRoleId
 	}
 
-	if _, ok := i18n.GetSupportedLocales()[user.Locale]; !ok {
+	if _, ok := i18n.GetSupportedLocales()[user.Locale.String()]; !ok {
 		user.Locale = *a.srv.Config().LocalizationSettings.DefaultClientLocale
 	}
 
@@ -261,7 +261,7 @@ func (a *ServiceAccount) CreateUserAsAdmin(c request.Context, user model.User, r
 		return nil, err
 	}
 
-	if err := a.srv.EmailService.SendWelcomeEmail(ruser.ID, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale, a.srv.GetSiteURL(), redirect); err != nil {
+	if err := a.srv.EmailService.SendWelcomeEmail(ruser.ID, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale.String(), a.srv.GetSiteURL(), redirect); err != nil {
 		slog.Warn("Failed to send welcome email to the new user, created by system admin", slog.Err(err))
 	}
 
@@ -306,7 +306,7 @@ func (a *ServiceAccount) VerifyEmailFromToken(userSuppliedTokenString string) *m
 
 	if user.Email != tokenData.Email {
 		a.srv.Go(func() {
-			if err := a.srv.EmailService.SendEmailChangeEmail(user.Email, tokenData.Email, user.Locale, a.srv.GetSiteURL()); err != nil {
+			if err := a.srv.EmailService.SendEmailChangeEmail(user.Email, tokenData.Email, user.Locale.String(), a.srv.GetSiteURL()); err != nil {
 				slog.Error("Failed to send email change email", slog.Err(err))
 			}
 		})
@@ -777,7 +777,7 @@ func (a *ServiceAccount) UpdateUser(user model.User, sendNotifications bool) (*m
 				})
 			} else {
 				a.srv.Go(func() {
-					if err := a.srv.EmailService.SendEmailChangeEmail(userUpdate.Old.Email, userUpdate.New.Email, userUpdate.New.Locale, a.srv.GetSiteURL()); err != nil {
+					if err := a.srv.EmailService.SendEmailChangeEmail(userUpdate.Old.Email, userUpdate.New.Email, userUpdate.New.Locale.String(), a.srv.GetSiteURL()); err != nil {
 						slog.Error("Failed to send email change email", slog.Err(err))
 					}
 				})
@@ -786,7 +786,7 @@ func (a *ServiceAccount) UpdateUser(user model.User, sendNotifications bool) (*m
 
 		if userUpdate.New.Username != userUpdate.Old.Username {
 			a.srv.Go(func() {
-				if err := a.srv.EmailService.SendChangeUsernameEmail(userUpdate.New.Username, userUpdate.New.Email, userUpdate.New.Locale, a.srv.GetSiteURL()); err != nil {
+				if err := a.srv.EmailService.SendChangeUsernameEmail(userUpdate.New.Username, userUpdate.New.Email, userUpdate.New.Locale.String(), a.srv.GetSiteURL()); err != nil {
 					slog.Error("Failed to send change username email", slog.Err(err))
 				}
 			})
@@ -811,13 +811,13 @@ func (a *ServiceAccount) SendEmailVerification(user *model.User, newEmail, redir
 	}
 
 	if _, err := a.GetStatus(user.ID); err != nil {
-		eErr := a.srv.EmailService.SendVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token, redirect)
+		eErr := a.srv.EmailService.SendVerifyEmail(newEmail, user.Locale.String(), a.srv.GetSiteURL(), token.Token, redirect)
 		if eErr != nil {
 			return model_helper.NewAppError("SendVerifyEmail", "api.user.send_verify_email_and_forget.failed.error", nil, eErr.Error(), http.StatusInternalServerError)
 		}
 		return nil
 	}
-	if err := a.srv.EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token); err != nil {
+	if err := a.srv.EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale.String(), a.srv.GetSiteURL(), token.Token); err != nil {
 		return model_helper.NewAppError("sendEmailChangeVerifyEmail", "api.user.send_email_change_verify_email_and_forget.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -964,7 +964,7 @@ func (a *ServiceAccount) UpdatePasswordAsUser(userID, currentPassword, newPasswo
 		return err
 	}
 
-	T := i18n.GetUserTranslations(user.Locale)
+	T := i18n.GetUserTranslations(user.Locale.String())
 
 	return a.UpdatePasswordSendEmail(user, newPassword, T("api.user.update_password.menu"))
 }
@@ -990,7 +990,7 @@ func (a *ServiceAccount) UpdatePasswordSendEmail(user *model.User, newPassword, 
 	}
 
 	a.srv.Go(func() {
-		if err := a.srv.EmailService.SendPasswordChangeEmail(user.Email, method, user.Locale, a.srv.GetSiteURL()); err != nil {
+		if err := a.srv.EmailService.SendPasswordChangeEmail(user.Email, method, user.Locale.String(), a.srv.GetSiteURL()); err != nil {
 			slog.Error("Failed to send password change email", slog.Err(err))
 		}
 	})
@@ -1046,7 +1046,7 @@ func (a *ServiceAccount) ResetPasswordFromToken(userSuppliedTokenString, newPass
 		return model_helper.NewAppError("ResetPasswordFromCode", "api.user.reset_password.sso.app_error", nil, "userId="+user.ID, http.StatusBadRequest)
 	}
 
-	T := i18n.GetUserTranslations(user.Locale)
+	T := i18n.GetUserTranslations(user.Locale.String())
 
 	if err := a.UpdatePasswordSendEmail(user, newPassword, T("api.user.reset_password.method")); err != nil {
 		return err
@@ -1131,7 +1131,7 @@ func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, 
 		return false, err
 	}
 
-	result, eErr := a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
+	result, eErr := a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale.String(), siteURL)
 	if eErr != nil {
 		return result, model_helper.NewAppError("SendPasswordReset", "api.user.send_password_reset.send.app_error", nil, "err="+eErr.Error(), http.StatusInternalServerError)
 	}
@@ -1216,7 +1216,7 @@ func (a *ServiceAccount) UpdateMfa(activate bool, userID, token string) *model_h
 			return
 		}
 
-		if err := a.srv.EmailService.SendMfaChangeEmail(user.Email, activate, user.Locale, a.srv.GetSiteURL()); err != nil {
+		if err := a.srv.EmailService.SendMfaChangeEmail(user.Email, activate, user.Locale.String(), a.srv.GetSiteURL()); err != nil {
 			slog.Error("Failed to send mfa change email", slog.Err(err))
 		}
 	})

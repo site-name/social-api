@@ -141,7 +141,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model_he
 func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model_helper.AppError) {
 	var err error
 
-	if !model.IsValidId(payMent.Id) {
+	if !model_helper.IsValidId(payMent.Id) {
 		payMent, err = a.srv.Store.Payment().Save(transaction, payMent)
 	} else {
 		payMent, err = a.srv.Store.Payment().Update(transaction, payMent)

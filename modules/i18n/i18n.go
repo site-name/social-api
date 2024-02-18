@@ -3,8 +3,8 @@ package i18n
 import (
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -58,7 +58,7 @@ func InitTranslations(serverLocale, clientLocale string) error {
 }
 
 func initTranslationsWithDir(dir string) error {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}

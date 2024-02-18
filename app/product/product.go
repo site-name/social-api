@@ -162,7 +162,7 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 	}
 
 	if variant.ProductID != productID {
-		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
 	}
 
 	// begin tx

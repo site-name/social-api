@@ -10,17 +10,23 @@ import (
 )
 
 // AssignedPageAttributeByOption returns 1 assigned page attribute
-func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError) {
-	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().GetByOption(option)
+func (a *ServiceAttribute) AssignedPageAttributeByOption(option model_helper.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError) {
+	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().FilterByOptions(option)
+
+	var statusCode int
+	var errMsg string
+
 	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model_helper.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, err.Error(), statusCode)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(assignedPageAttr) == 0 {
+		statusCode = http.StatusNotFound
+	}
+	if statusCode > 0 {
+		return nil, model_helper.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, errMsg, statusCode)
 	}
 
-	return assignedPageAttr, nil
+	return assignedPageAttr[0], nil
 }
 
 // GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it

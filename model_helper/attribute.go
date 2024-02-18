@@ -252,3 +252,7 @@ type AssignedProductAttributeFilterOption struct {
 	CommonQueryOptions
 	AttributeProduct_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeCategory ON ... INNER JOIN Attributes ON ... WHERE Attributes.VisibleInStoreFront ...
 }
+
+type AssignedPageAttributeFilterOption struct {
+	CommonQueryOptions
+}

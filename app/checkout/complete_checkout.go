@@ -850,7 +850,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 		if appErr != nil {
 			return nil, false, nil, nil, appErr
 		}
-		if model.IsValidId(uuid) {
+		if model_helper.IsValidId(uuid) {
 			customerID = &uuid
 		}
 	}

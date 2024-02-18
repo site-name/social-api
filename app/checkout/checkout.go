@@ -247,7 +247,7 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*
 func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.CheckoutLineInfo) (*measurement.Weight, *model_helper.AppError) {
 	checkoutLineIDs := []string{}
 	for _, lineInfo := range checkoutLineInfos {
-		if !model.IsValidId(lineInfo.Line.Id) {
+		if !model_helper.IsValidId(lineInfo.Line.Id) {
 			checkoutLineIDs = append(checkoutLineIDs, lineInfo.Line.Id)
 		}
 	}

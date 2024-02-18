@@ -19,8 +19,8 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	OrderID string
 }) (*InvoiceRequest, error) {
 	// validate params
-	if !model.IsValidId(args.OrderID) {
-		return nil, model_helper.NewAppError("InvoiceRequest", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.OrderID) {
+		return nil, model_helper.NewAppError("InvoiceRequest", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -93,8 +93,8 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("InvoiceRequestDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("InvoiceRequestDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -155,8 +155,8 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	OrderID string
 }) (*InvoiceCreate, error) {
 	// validate args
-	if !model.IsValidId(args.OrderID) {
-		return nil, model_helper.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.OrderID) {
+		return nil, model_helper.NewAppError("InvoiceCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -174,7 +174,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 
 	// clean input
 	if args.Input.Number == "" || args.Input.URL == "" {
-		return nil, model_helper.NewAppError("InvoiceCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "url or number"}, "url and number input cannot be empty", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("InvoiceCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "url or number"}, "url and number input cannot be empty", http.StatusBadRequest)
 	}
 
 	newInvoice := &model.Invoice{
@@ -222,8 +222,8 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("InvoiceDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("InvoiceDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -256,8 +256,8 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 }) (*InvoiceUpdate, error) {
 
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("InvoiceUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -281,7 +281,7 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	}
 
 	if number == "" || anUrl == "" {
-		return nil, model_helper.NewAppError("InvoiceUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "number/url"}, "number and url must be set after update operation", http.StatusNotAcceptable)
+		return nil, model_helper.NewAppError("InvoiceUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "number/url"}, "number and url must be set after update operation", http.StatusNotAcceptable)
 	}
 
 	invoice.Number = number
@@ -317,8 +317,8 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("InvoiceSendNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("InvoiceSendNotification", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

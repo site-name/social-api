@@ -42,7 +42,7 @@ func (s *ServiceShipping) ToggleShippingZoneRelations(transaction *gorm.DB, zone
 	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 	if err != nil {
 		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return model_helper.NewAppError("ToggleShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
+			return model_helper.NewAppError("ToggleShippingZoneRelations", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
 		}
 		return model_helper.NewAppError("ToggleShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

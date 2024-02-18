@@ -24,8 +24,8 @@ func (r *Resolver) CheckoutAddPromoCode(ctx context.Context, args struct {
 	Token     string
 }) (*CheckoutAddPromoCode, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutAddPromoCode", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutAddPromoCode", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -58,7 +58,7 @@ func (r *Resolver) CheckoutAddPromoCode(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if invalidPromoCodeErr != nil {
-		return nil, model_helper.NewAppError("CheckoutAddPromoCode", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PromoCode"}, args.PromoCode+" is not a valid promocde", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutAddPromoCode", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PromoCode"}, args.PromoCode+" is not a valid promocde", http.StatusBadRequest)
 	}
 
 	checkoutInfo.ValidShippingMethods, appErr = embedCtx.App.Srv().Checkout.GetValidShippingMethodListForCheckoutInfo(*checkoutInfo, checkoutInfo.ShippingAddress, lines, discountInfos, pluginMng)
@@ -87,8 +87,8 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	Token          string
 }) (*CheckoutBillingAddressUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutBillingAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutBillingAddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if appErr := args.BillingAddress.validate("CheckoutBillingAddressUpdate"); appErr != nil {
 		return nil, appErr
@@ -148,8 +148,8 @@ func (r *Resolver) CheckoutComplete(ctx context.Context, args struct {
 	Token       string
 }) (*CheckoutComplete, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutComplete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutComplete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if args.PaymentData == nil {
 		args.PaymentData = JSONString{}
@@ -276,8 +276,8 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 	)
 
 	// validate channel-slug is valid
-	if c.ChannelID != nil && !model.IsValidId(*c.ChannelID) {
-		return nil, model_helper.NewAppError("CheckoutCreate.CheckoutCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, "please provide valid channel id", http.StatusBadRequest)
+	if c.ChannelID != nil && !model_helper.IsValidId(*c.ChannelID) {
+		return nil, model_helper.NewAppError("CheckoutCreate.CheckoutCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 	channel, appErr := embedCtx.App.Srv().ChannelService().CleanChannel(c.ChannelID)
 	if appErr != nil {
@@ -336,7 +336,7 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 	// validate email
 	if c.Email != nil {
 		if !model.IsValidEmail(*c.Email) {
-			return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide valid email", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide valid email", http.StatusBadRequest)
 		}
 		checkout.Email = *c.Email
 	} else if user != nil {
@@ -346,7 +346,7 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 	// validate language code
 	if c.LanguageCode != nil {
 		if !c.LanguageCode.IsValid() {
-			return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "languageCode"}, "please provide valid language code", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "languageCode"}, "please provide valid language code", http.StatusBadRequest)
 		}
 		checkout.LanguageCode = *c.LanguageCode
 	} else {
@@ -363,8 +363,8 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 		variantIds[idx] = line.VariantID
 		quantities[idx] = *(*int)(unsafe.Pointer(&line.Quantity))
 	}
-	if !lo.EveryBy(variantIds, model.IsValidId) {
-		return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lines"}, "please provide valid variant ids", http.StatusBadRequest)
+	if !lo.EveryBy(variantIds, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("CheckoutCreateInput.validate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lines"}, "please provide valid variant ids", http.StatusBadRequest)
 	}
 
 	appErr = embedCtx.App.Srv().ProductService().ValidateVariantsAvailableForPurchase(variantIds, channel.Id)
@@ -433,11 +433,11 @@ func (r *Resolver) CheckoutCustomerAttach(ctx context.Context, args struct {
 	Token      string
 }) (*CheckoutCustomerAttach, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutCustomerAttach", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutCustomerAttach", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
-	if args.CustomerID != nil && !model.IsValidId(*args.CustomerID) {
-		return nil, model_helper.NewAppError("CheckoutCustomerAttach", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CustomerID"}, "please provide valid customer id", http.StatusBadRequest)
+	if args.CustomerID != nil && !model_helper.IsValidId(*args.CustomerID) {
+		return nil, model_helper.NewAppError("CheckoutCustomerAttach", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CustomerID"}, "please provide valid customer id", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -481,8 +481,8 @@ func (r *Resolver) CheckoutCustomerAttach(ctx context.Context, args struct {
 // NOTE: please refer to ./schemas/checkout.graphqls for details on directives used
 func (r *Resolver) CheckoutCustomerDetach(ctx context.Context, args struct{ Token string }) (*CheckoutCustomerDetach, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutCustomerDetach", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutCustomerDetach", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -522,11 +522,11 @@ func (r *Resolver) CheckoutEmailUpdate(ctx context.Context, args struct {
 	Token string
 }) (*CheckoutEmailUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutEmailUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutEmailUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if !model.IsValidEmail(args.Email) {
-		return nil, model_helper.NewAppError("CheckoutEmailUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Email"}, "please provide valid email", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutEmailUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Email"}, "please provide valid email", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -562,8 +562,8 @@ func (r *Resolver) CheckoutRemovePromoCode(ctx context.Context, args struct {
 	Token     string
 }) (*CheckoutRemovePromoCode, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutCustomerDetach", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutCustomerDetach", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -605,8 +605,8 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 	Token string
 }) (*CheckoutPaymentCreate, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -663,7 +663,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 	}
 	var inputToken string
 	if args.Input.Token == nil && tokenRequired {
-		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Token"}, "please provide token for "+args.Input.Gateway, http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Token"}, "please provide token for "+args.Input.Gateway, http.StatusBadRequest)
 	}
 	if args.Input.Token != nil {
 		inputToken = *args.Input.Token
@@ -701,7 +701,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 		amount = &checkoutTotal.Gross.Amount
 	}
 	if !amount.Equal(checkoutTotal.Gross.Amount) {
-		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Amount"}, "partial payments are not allowed, amount should be equal checkout's total", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutPaymentCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Amount"}, "partial payments are not allowed, amount should be equal checkout's total", http.StatusBadRequest)
 	}
 
 	appErr = embedCtx.App.Srv().CheckoutService().CancelActivePayments(checkout)
@@ -714,7 +714,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 	for _, meta := range args.Input.Metadata {
 		if meta != nil {
 			if strings.TrimSpace(meta.Key) == "" {
-				return nil, model_helper.NewAppError("CheckoutPaymentCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Metadata"}, "please provide valid metadata list", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("CheckoutPaymentCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input.Metadata"}, "please provide valid metadata list", http.StatusBadRequest)
 			}
 
 			metaData[meta.Key] = meta.Value
@@ -765,8 +765,8 @@ func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struc
 	Token           string
 }) (*CheckoutShippingAddressUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutShippingAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutShippingAddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -879,8 +879,8 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 	Token            string
 }) (*CheckoutDeliveryMethodUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -892,8 +892,8 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 
 	// check DeliveryMethodID is warehouse's id or shipping method's id
 	if args.DeliveryMethodID != nil {
-		if !model.IsValidId(*args.DeliveryMethodID) {
-			return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DeliverymethodID"}, "please provide valid delivery method id", http.StatusBadRequest)
+		if !model_helper.IsValidId(*args.DeliveryMethodID) {
+			return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DeliverymethodID"}, "please provide valid delivery method id", http.StatusBadRequest)
 		}
 
 		// check if delivery method is warehouse
@@ -920,7 +920,7 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 
 	// raie error if given delivery method id is not belong to any warehouse nor shipping method
 	if warehouse == nil && shippingMethod == nil {
-		return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DeliverymethodID"}, "delivery method must be warehouse id or shipping method id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutDeliveryMethodUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DeliverymethodID"}, "delivery method must be warehouse id or shipping method id", http.StatusBadRequest)
 	}
 
 	checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
@@ -999,11 +999,11 @@ func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 	Token        string
 }) (*CheckoutLanguageCodeUpdate, error) {
 	// validate arguments
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutLanguageCodeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("CheckoutLanguageCodeUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid token", http.StatusBadRequest)
 	}
 	if !args.LanguageCode.IsValid() {
-		return nil, model_helper.NewAppError("CheckoutLanguageCodeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "language code"}, "please provide valid language code", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLanguageCodeUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "language code"}, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -1025,8 +1025,8 @@ func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) Checkout(ctx context.Context, args struct{ Token string }) (*Checkout, error) {
-	if !model.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("Checkout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Token) {
+		return nil, model_helper.NewAppError("Checkout", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	checkout, err := CheckoutByTokenLoader.Load(ctx, args.Token)()
@@ -1044,7 +1044,7 @@ func (r *Resolver) Checkouts(ctx context.Context, args struct {
 	GraphqlParams
 }) (*CheckoutCountableConnection, error) {
 	if args.Channel != nil && !slug.IsSlug(*args.Channel) {
-		return nil, model_helper.NewAppError("Checkouts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, *args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Checkouts", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, *args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 
 	paginationValues, appErr := args.GraphqlParams.Parse("Checkouts")

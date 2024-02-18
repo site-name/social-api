@@ -38,7 +38,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	default:
-		return nil, model_helper.NewAppError("GetDeliveryMethodInfo", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetDeliveryMethodInfo", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 	}
 }
 
@@ -57,7 +57,7 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) (model.Ch
 func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model_helper.AppError) {
 	// validate arguments:
 	if checkOut == nil {
-		return nil, model_helper.NewAppError("FetchCheckoutInfo", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("FetchCheckoutInfo", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
 	}
 
 	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -262,7 +262,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.Ch
 		switch deliveryMethod.(type) {
 		case *model.WareHouse, *model.ShippingMethod:
 		default:
-			return model_helper.NewAppError("UpdateCheckoutInfoDeliveryMethod", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+			return model_helper.NewAppError("UpdateCheckoutInfoDeliveryMethod", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 		}
 	}
 

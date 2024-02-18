@@ -366,7 +366,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	} else {
 		// validate given `orderLine` has VariantID property not nil
 		if orderLine.VariantID == nil {
-			return model_helper.NewAppError("IncreaseStock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
+			return model_helper.NewAppError("IncreaseStock", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
 		}
 
 		stock = &model.Stock{
@@ -424,7 +424,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
 	// validate lineInfos is not nil nor empty
 	if len(lineInfos) == 0 {
-		return nil, model_helper.NewAppError("IncreaseAllocations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("IncreaseAllocations", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
 	}
 
 	// start a transaction
@@ -526,7 +526,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*model.OrderLineData,
 func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*model.InsufficientStock, *model_helper.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if len(orderLineInfos) == 0 {
-		return nil, model_helper.NewAppError("DecreaseStock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DecreaseStock", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
 	}
 
 	transaction := a.srv.Store.GetMaster().Begin()
@@ -907,7 +907,7 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *model.OrderLineDat
 		invalidParams = append(invalidParams, "lineInfo.Variant")
 	}
 	if len(invalidParams) > 0 {
-		return nil, nil, model_helper.NewAppError("createPreorderAllocation", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidParams, ", ")}, "", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("createPreorderAllocation", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidParams, ", ")}, "", http.StatusBadRequest)
 	}
 
 	var (
@@ -989,7 +989,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 		if preorderAllocationErr != nil || appErr != nil {
 			return preorderAllocationErr, appErr
 		}
-		if !model.IsValidId(stock.Id) {
+		if !model_helper.IsValidId(stock.Id) {
 			stocksToCreate = append(stocksToCreate, stock)
 		}
 		allocationsToCreate = append(allocationsToCreate, &model.Allocation{
@@ -1064,7 +1064,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
 func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorm.DB, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model_helper.AppError) {
 	if transaction == nil {
-		return nil, nil, model_helper.NewAppError("getStockForPreorderAllocation", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("getStockForPreorderAllocation", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
 	}
 
 	var order *model.Order

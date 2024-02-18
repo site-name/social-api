@@ -320,6 +320,15 @@ func (sa AnyArray[T]) Contains(input T) bool {
 	return false
 }
 
+func (sa AnyArray[T]) ContainsAny(input ...T) bool {
+	for _, item := range input {
+		if sa.Contains(item) {
+			return true
+		}
+	}
+	return false
+}
+
 // Equals checks if two arrays of strings have same length and contains the same elements at each index
 func (sa AnyArray[T]) Equals(input []T) bool {
 	if len(sa) != len(input) {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -124,7 +125,7 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checko
 	if model.IsValidEmail(option.BillingEmail) {
 		query = query.Set("BillingEmail", option.BillingEmail)
 	}
-	if model.IsValidId(option.OrderID) {
+	if model_helper.IsValidId(option.OrderID) {
 		query = query.Set("OrderID", option.OrderID)
 	}
 

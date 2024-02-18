@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_password_update bigint NOT NULL,
   last_picture_update bigint NOT NULL,
   failed_attempts integer NOT NULL,
-  locale varchar(5) NOT NULL,
+  locale language_code NOT NULL,
   timezone jsonb,
   mfa_active boolean NOT NULL,
   mfa_secret varchar(128) NOT NULL,

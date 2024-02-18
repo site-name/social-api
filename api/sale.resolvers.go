@@ -81,8 +81,8 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 
 // NOTE: Refer to ./schemas/sale.graphqls for details on directives used.
 func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*SaleDelete, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("SaleDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -133,8 +133,8 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 // NOTE: Refer to ./schemas/sale.graphqls for details on directives used.
 func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []string }) (*SaleBulkDelete, error) {
 	// validate params
-	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model_helper.NewAppError("SaleBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("SaleBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -218,8 +218,8 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	Id    string
 	Input CatalogueInput
 }) (*SaleAddCatalogues, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleCataloguesAdd", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("SaleCataloguesAdd", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("SaleCataloguesAdd")
 	if appErr != nil {
@@ -298,8 +298,8 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	Input CatalogueInput
 }) (*SaleRemoveCatalogues, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleCataloguesRemove", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("SaleCataloguesRemove", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("SaleCataloguesRemove")
 	if appErr != nil {
@@ -371,8 +371,8 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	Input SaleChannelListingInput
 }) (*SaleChannelListingUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate()
 	if appErr != nil {
@@ -412,7 +412,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
 			if decimal.Decimal(addChannelObj.DiscountValue).GreaterThan(decimal.NewFromInt(100)) {
 				// discount can't > 100%
-				return nil, model_helper.NewAppError("SaleChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
 			}
 		}
 	}
@@ -475,8 +475,8 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 	Channel *string // TODO: Consider removing this field
 }) (*Sale, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Resolve.Sale", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("Resolve.Sale", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -508,10 +508,10 @@ func (a *SalesArgs) parse() (*model.SaleFilterOption, *model_helper.AppError) {
 		}
 	}
 	if a.SortBy != nil && !a.SortBy.Field.IsValid() {
-		return nil, model_helper.NewAppError("SalesArgs.SortBy", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Field"}, "please provide valid field to sort", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SalesArgs.SortBy", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Field"}, "please provide valid field to sort", http.StatusBadRequest)
 	}
 	if a.Channel != nil && !slug.IsSlug(*a.Channel) {
-		return nil, model_helper.NewAppError("SalesArgs.Channel", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, *a.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SalesArgs.Channel", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, *a.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 
 	paginationValues, appErr := a.GraphqlParams.Parse("SalesArgs")

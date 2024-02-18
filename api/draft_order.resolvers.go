@@ -15,8 +15,8 @@ import (
 
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id string }) (*DraftOrderComplete, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderComplete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid order id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("DraftOrderComplete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -146,8 +146,8 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string }) (*DraftOrderDelete, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("DraftOrderDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
 	}
 
 	// find order:
@@ -192,8 +192,8 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []string }) (*DraftOrderBulkDelete, error) {
 	// validate params
-	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Ids"}, "please provide valid draft order ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Ids"}, "please provide valid draft order ids", http.StatusBadRequest)
 	}
 
 	// validate all orders are draft
@@ -284,8 +284,8 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 	Input DraftOrderInput
 }) (*DraftOrderUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("DraftOrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

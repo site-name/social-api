@@ -25,7 +25,7 @@ func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*m
 
 func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
 	if saleChannelListing == nil {
-		return nil, model_helper.NewAppError("GetSaleDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetSaleDiscount", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == model.DISCOUNT_VALUE_TYPE_FIXED {
@@ -122,7 +122,7 @@ func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID strin
 func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleCollectionsByOptions")
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCollectionsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCollectionsByOptions", model_helper.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 
 	var res []*model.SaleCollection
@@ -138,7 +138,7 @@ func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]
 func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(option, "SaleCategoriesByOption")
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCategoriesByOption", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCategoriesByOption", model_helper.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 
 	var res []*model.SaleCategory
@@ -154,7 +154,7 @@ func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*mo
 func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleProductsByOptions")
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleProductsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleProductsByOptions", model_helper.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 	var res []*model.SaleProduct
 	err = s.srv.Store.GetReplica().Table(model.SaleProductTableName).Find(&res, args...).Error
@@ -169,7 +169,7 @@ func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*mo
 func (s *ServiceDiscount) SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(options, "SaleProductVariantsByOptions")
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleProductVariantsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleProductVariantsByOptions", model_helper.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
 	}
 	var res []*model.SaleProductVariant
 	err = s.srv.Store.GetReplica().Table(model.SaleProductVariantTableName).Find(&res, args...).Error

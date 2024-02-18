@@ -175,7 +175,7 @@ func (a *ServicePayment) CreatePayment(
 ) (*model.Payment, *model.PaymentError, *model_helper.AppError) {
 	// must at least provide either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
-		return nil, nil, model_helper.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("CreatePayment", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
 	}
 
 	if extraData == nil {

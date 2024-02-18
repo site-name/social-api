@@ -69,8 +69,8 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Input AddressInput
 }) (*AddressUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("AddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	appErr := args.Input.validate("AddressUpdate")
@@ -123,8 +123,8 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
 	// validate id input
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AddressDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("AddressDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
@@ -166,11 +166,11 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	Type      model.AddressTypeEnum
 }) (*AddressSetDefault, error) {
 	// validate params
-	if !model.IsValidId(args.AddressID) {
-		return nil, model_helper.NewAppError("AddressSetDefault", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.AddressID) {
+		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
-		return nil, model_helper.NewAppError("AddressSetDefault", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -222,7 +222,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 	}
 	validationRules, err := i18naddress.GetValidationRules(addressParam)
 	if err != nil {
-		return nil, model_helper.NewAppError("AddressValidationRules", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AddressValidationRules", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
 	}
 
 	return &AddressValidationData{
@@ -249,8 +249,8 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	// validate params:
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Address", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("Address", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

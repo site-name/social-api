@@ -200,7 +200,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	)
 
 	for _, lineInfo := range existingLines {
-		if lineInfo != nil && model.IsValidId(lineInfo.Variant.Id) {
+		if lineInfo != nil && model_helper.IsValidId(lineInfo.Variant.Id) {
 			variantsQuantities[lineInfo.Variant.Id] = lineInfo.Line.Quantity
 		}
 	}

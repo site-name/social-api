@@ -80,7 +80,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_
 
 // FulfillNonShippableGiftcards
 func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
-	if user != nil && !model.IsValidId(user.Id) {
+	if user != nil && !model_helper.IsValidId(user.Id) {
 		user = nil
 	}
 
@@ -224,7 +224,7 @@ func GetGiftcardLines(lines model.OrderLines) model.OrderLines {
 
 func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
 	if len(giftcardLines) == 0 {
-		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
 	}
 
 	// check if we need to prefetch related values for given order lines:

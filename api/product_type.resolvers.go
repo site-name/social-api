@@ -54,7 +54,7 @@ func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input Pro
 
 			// check if there are some attribute(s) that is not product type
 			if attributes[idx] != nil && lo.SomeBy(attributes[idx], func(item *model.Attribute) bool { return item.Type != model.PRODUCT_TYPE }) {
-				return nil, model_helper.NewAppError("ProductTypeCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("ProductTypeCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
 			}
 		}
 	}
@@ -181,7 +181,7 @@ func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 
 			// check if there are some attribute(s) that is not product type
 			if attributes[idx] != nil && lo.SomeBy(attributes[idx], func(item *model.Attribute) bool { return item.Type != model.PRODUCT_TYPE }) {
-				return nil, model_helper.NewAppError("ProductTypeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("ProductTypeUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
 			}
 		}
 	}
@@ -205,7 +205,7 @@ func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct
 }) (*ProductTypeReorderAttributes, error) {
 	// validate params
 	// if !args.Type.IsValid() {
-	// 	return nil, model_helper.NewAppError("ProductTypeReorderAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Type"}, "please provide valid product attribute type", http.StatusBadRequest)
+	// 	return nil, model_helper.NewAppError("ProductTypeReorderAttributes", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Type"}, "please provide valid product attribute type", http.StatusBadRequest)
 	// }
 
 	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

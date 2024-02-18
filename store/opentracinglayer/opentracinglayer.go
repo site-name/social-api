@@ -1341,7 +1341,7 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) SelectForSort(assig
 	return result, resultVar1, err
 }
 
-func (s *OpenTracingLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
+func (s *OpenTracingLayerAttributeStore) CountByOptions(options model_helper.AttributeFilterOption) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.CountByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -1377,7 +1377,7 @@ func (s *OpenTracingLayerAttributeStore) Delete(tx boil.ContextTransactor, ids [
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *OpenTracingLayerAttributeStore) FilterbyOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1413,7 +1413,7 @@ func (s *OpenTracingLayerAttributeStore) GetPageTypeAttributes(pageTypeID string
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetProductTypeAttributes")
 	s.Root.Store.SetContext(newCtx)
@@ -1467,7 +1467,7 @@ func (s *OpenTracingLayerAttributePageStore) Get(pageID string) (*model.Attribut
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributePageStore) GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error) {
+func (s *OpenTracingLayerAttributePageStore) GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributePageStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -2025,7 +2025,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Cleanup() error {
 	return err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery model.ClusterDiscovery) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -2043,7 +2043,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *model.ClusterD
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery model.ClusterDiscovery) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Exists")
 	s.Root.Store.SetContext(newCtx)
@@ -2061,7 +2061,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery *model.ClusterD
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) (model.ClusterDiscoverySlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.GetAll")
 	s.Root.Store.SetContext(newCtx)
@@ -2079,7 +2079,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clu
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery model.ClusterDiscovery) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -2097,7 +2097,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery *model.ClusterDis
 	return err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery model.ClusterDiscovery) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.SetLastPingAt")
 	s.Root.Store.SetContext(newCtx)
@@ -2295,7 +2295,7 @@ func (s *OpenTracingLayerCollectionProductStore) FilterByOptions(options *model.
 	return result, err
 }
 
-func (s *OpenTracingLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
+func (s *OpenTracingLayerComplianceStore) ComplianceExport(model model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.ComplianceExport")
 	s.Root.Store.SetContext(newCtx)
@@ -2367,34 +2367,16 @@ func (s *OpenTracingLayerComplianceStore) MessageExport(cursor model_helper.Mess
 	return result, resultVar1, err
 }
 
-func (s *OpenTracingLayerComplianceStore) Save(model model.Compliance) (*model.Compliance, error) {
+func (s *OpenTracingLayerComplianceStore) Upsert(model model.Compliance) (*model.Compliance, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.ComplianceStore.Save(model)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerComplianceStore) Update(model model.Compliance) (*model.Compliance, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ComplianceStore.Update(model)
+	result, err := s.ComplianceStore.Upsert(model)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4193,7 +4175,7 @@ func (s *OpenTracingLayerOrderLineStore) Upsert(tx boil.ContextTransactor, order
 	return result, err
 }
 
-func (s *OpenTracingLayerPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
+func (s *OpenTracingLayerPageStore) FilterByOptions(options model_helper.PageFilterOptions) (model.PageSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PageStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)

@@ -443,7 +443,7 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 	}
 
 	s.srv.Log.Warn("Unknown discount type", slog.String("discount_type", string(voucher.Type)))
-	return nil, nil, model_helper.NewAppError("GetVoucherDiscountForCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
+	return nil, nil, model_helper.NewAppError("GetVoucherDiscountForCheckout", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
 }
 
 func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model_helper.AppError) {

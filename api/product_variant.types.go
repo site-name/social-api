@@ -95,7 +95,7 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	}
 
 	if args.CountryCode == nil || !args.CountryCode.IsValid() {
-		return nil, model_helper.NewAppError("ProductVariant.Stocks", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariant.Stocks", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
 	}
 
 	if embedCtx.CurrentChannelID == "" {
@@ -400,7 +400,7 @@ func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *we
 	for _, item := range p.Input {
 		existed := channelIDsMeetMap[item.ChannelID]
 		if existed {
-			return model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
 		}
 		channelIDsMeetMap[item.ChannelID] = true
 	}
@@ -414,7 +414,7 @@ func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *we
 	}
 
 	if len(channelIDsMeetMap) != len(productChannelListings) {
-		return model_helper.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
 	}
 
 	// clean prices

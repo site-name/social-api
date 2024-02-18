@@ -21,8 +21,8 @@ func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
 	VariantID string
 }) (*DigitalContentCreate, error) {
 	// validate params
-	if !model.IsValidId(args.VariantID) {
-		return nil, model_helper.NewAppError("DigitalContentCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.VariantID) {
+		return nil, model_helper.NewAppError("DigitalContentCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 
 	panic("not implemented")
@@ -31,8 +31,8 @@ func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ VariantID string }) (*DigitalContentDelete, error) {
 	// validate params
-	if !model.IsValidId(args.VariantID) {
-		return nil, model_helper.NewAppError("DigitalContentDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.VariantID) {
+		return nil, model_helper.NewAppError("DigitalContentDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -54,8 +54,8 @@ func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 	VariantID string
 }) (*DigitalContentUpdate, error) {
 	// validate params
-	if !model.IsValidId(args.VariantID) {
-		return nil, model_helper.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.VariantID) {
+		return nil, model_helper.NewAppError("DigitalContentUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -71,11 +71,11 @@ func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 	// clean input
 	switch {
 	case args.Input.MaxDownloads == nil:
-		return nil, model_helper.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaxDownloads"}, "please provide MaxDownloads", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DigitalContentUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaxDownloads"}, "please provide MaxDownloads", http.StatusBadRequest)
 	case args.Input.URLValidDays == nil:
-		return nil, model_helper.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "URLValidDays"}, "please provide URLValidDays", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DigitalContentUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "URLValidDays"}, "please provide URLValidDays", http.StatusBadRequest)
 	case args.Input.AutomaticFulfillment == nil:
-		return nil, model_helper.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AutomaticFulfillment"}, "please provide AutomaticFulfillment", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DigitalContentUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AutomaticFulfillment"}, "please provide AutomaticFulfillment", http.StatusBadRequest)
 	}
 
 	content.MaxDownloads = (*int)(unsafe.Pointer(args.Input.MaxDownloads))
@@ -97,8 +97,8 @@ func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 func (r *Resolver) DigitalContentURLCreate(ctx context.Context, args struct {
 	Input DigitalContentURLCreateInput
 }) (*DigitalContentURLCreate, error) {
-	if !model.IsValidId(args.Input.Content) {
-		return nil, model_helper.NewAppError("DigitalContentURLCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Content"}, "please provide valid digital content id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Input.Content) {
+		return nil, model_helper.NewAppError("DigitalContentURLCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Content"}, "please provide valid digital content id", http.StatusBadRequest)
 	}
 
 	contentUrl := &model.DigitalContentUrl{
@@ -118,8 +118,8 @@ func (r *Resolver) DigitalContentURLCreate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 // TODO: check if we need permissions to see this.
 func (r *Resolver) DigitalContent(ctx context.Context, args struct{ Id string }) (*DigitalContent, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DigitalContentURLCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Content"}, "please provide valid digital content id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("DigitalContentURLCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Content"}, "please provide valid digital content id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

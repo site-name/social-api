@@ -41,7 +41,7 @@ type User struct {
 	LastPasswordUpdate       int64                  `boil:"last_password_update" json:"last_password_update" toml:"last_password_update" yaml:"last_password_update"`
 	LastPictureUpdate        int64                  `boil:"last_picture_update" json:"last_picture_update" toml:"last_picture_update" yaml:"last_picture_update"`
 	FailedAttempts           int                    `boil:"failed_attempts" json:"failed_attempts" toml:"failed_attempts" yaml:"failed_attempts"`
-	Locale                   string                 `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
+	Locale                   LanguageCode           `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
 	Timezone                 model_types.JsonMap    `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
 	MfaActive                bool                   `boil:"mfa_active" json:"mfa_active" toml:"mfa_active" yaml:"mfa_active"`
 	MfaSecret                string                 `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
@@ -227,7 +227,7 @@ var UserWhere = struct {
 	LastPasswordUpdate       whereHelperint64
 	LastPictureUpdate        whereHelperint64
 	FailedAttempts           whereHelperint
-	Locale                   whereHelperstring
+	Locale                   whereHelperLanguageCode
 	Timezone                 whereHelpermodel_types_JsonMap
 	MfaActive                whereHelperbool
 	MfaSecret                whereHelperstring
@@ -262,7 +262,7 @@ var UserWhere = struct {
 	LastPasswordUpdate:       whereHelperint64{field: "\"users\".\"last_password_update\""},
 	LastPictureUpdate:        whereHelperint64{field: "\"users\".\"last_picture_update\""},
 	FailedAttempts:           whereHelperint{field: "\"users\".\"failed_attempts\""},
-	Locale:                   whereHelperstring{field: "\"users\".\"locale\""},
+	Locale:                   whereHelperLanguageCode{field: "\"users\".\"locale\""},
 	Timezone:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"timezone\""},
 	MfaActive:                whereHelperbool{field: "\"users\".\"mfa_active\""},
 	MfaSecret:                whereHelperstring{field: "\"users\".\"mfa_secret\""},

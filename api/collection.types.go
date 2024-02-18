@@ -32,7 +32,7 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 	}
 
 	return &Collection{
-		ID:              c.Id,
+		ID:              c.ID,
 		SeoTitle:        &c.SeoTitle,
 		SeoDescription:  &c.SeoDescription,
 		Name:            c.Name,

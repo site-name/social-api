@@ -25,7 +25,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 }) (*OrderAddNote, error) {
 	args.Input.Message = strings.TrimSpace(args.Input.Message)
 	if args.Input.Message == "" {
-		return nil, model_helper.NewAppError("OrderAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderAddNote", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -111,7 +111,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	Id     UUID
 }) (*OrderCapture, error) {
 	if args.Amount.ToDecimal().LessThanOrEqual(decimal.Zero) {
-		return nil, model_helper.NewAppError("OrderCapture", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderCapture", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
 	}
 	decimalAmount := args.Amount.ToDecimal()
 
@@ -662,7 +662,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 
 	amount := args.Amount.ToDecimal()
 	if amount.LessThanOrEqual(decimal.Zero) {
-		return nil, model_helper.NewAppError("OrderRefund", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderRefund", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
 	}
 
 	appErr = cleanOrderRefund("OrderRefund", embedCtx.App, order)
@@ -739,7 +739,7 @@ func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
 }) (*OrderUpdate, error) {
 	// validate params
 	if args.Input.UserEmail != nil && !model.IsValidEmail(*args.Input.UserEmail) {
-		return nil, model_helper.NewAppError("OrderUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please proide valid user email", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please proide valid user email", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -849,7 +849,7 @@ func (r *Resolver) OrderUpdateShipping(ctx context.Context, args struct {
 		}
 
 		if !order.IsDraft() && orderRequiresShipping {
-			return nil, model_helper.NewAppError("OrderUpdateShipping", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ShippingMethod"}, "shipping method is required for this order", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("OrderUpdateShipping", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ShippingMethod"}, "shipping method is required for this order", http.StatusBadRequest)
 		}
 
 		order.ShippingMethodID = nil
@@ -1130,7 +1130,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(orderDiscouts) == 0 {
-		return nil, model_helper.NewAppError("OrderDiscountUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid order discount id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderDiscountUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid order discount id", http.StatusBadRequest)
 	}
 
 	// validate order
@@ -1226,14 +1226,14 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	for _, lineInput := range args.Input.Lines {
 		if lineIdsMeetMap[lineInput.OrderLineID] {
-			return nil, model_helper.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate order line ids detected", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate order line ids detected", http.StatusBadRequest)
 		}
 		lineIdsMeetMap[lineInput.OrderLineID] = true
 
 		warehouseIdsOfLineMeetMap := map[UUID]bool{} // keys are warehouse ids
 		for _, stockInput := range lineInput.Stocks {
 			if warehouseIdsOfLineMeetMap[stockInput.Warehouse] {
-				return nil, model_helper.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate warehouse ids detected", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate warehouse ids detected", http.StatusBadRequest)
 			}
 			warehouseIdsOfLineMeetMap[stockInput.Warehouse] = true
 
@@ -1281,7 +1281,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	// check total quantity of item
 	if lo.Sum(lo.Values(totalQuantityForLineMap)) <= 0 {
-		return nil, model_helper.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "total fulfill quantity must be positive", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "total fulfill quantity must be positive", http.StatusBadRequest)
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)

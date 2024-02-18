@@ -112,8 +112,8 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 	ChannelID string
 }) ([]*PaymentGateway, error) {
 	// validate params
-	if !model.IsValidId(args.ChannelID) {
-		return nil, model_helper.NewAppError("Shop.AvailablePaymentGateways", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.ChannelID) {
+		return nil, model_helper.NewAppError("Shop.AvailablePaymentGateways", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -172,7 +172,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 }) ([]*ShippingMethod, error) {
 	// validate argument(s)
 	if !slug.IsSlug(args.Channel) {
-		return nil, model_helper.NewAppError("Shop.AvailableShippingMethods", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Shop.AvailableShippingMethods", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 	if args.Address != nil {
 		err := args.Address.validate("AvailableShippingMethods")

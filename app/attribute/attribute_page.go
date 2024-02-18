@@ -8,8 +8,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// AttributePageByOption returns an attribute page filtered using given option
-func (a *ServiceAttribute) AttributePageByOption(option *model.AttributePageFilterOption) (*model.AttributePage, *model_helper.AppError) {
+func (a *ServiceAttribute) AttributePageByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, *model_helper.AppError) {
 	attributePage, err := a.srv.Store.AttributePage().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

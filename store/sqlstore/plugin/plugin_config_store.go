@@ -5,6 +5,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -103,7 +104,7 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigur
 	}
 
 	// check if we need to prefetch
-	if options.PrefetchRelatedChannel && model.IsValidId(res.Id) {
+	if options.PrefetchRelatedChannel && model_helper.IsValidId(res.Id) {
 		channel, err := p.Channel().Get(res.ChannelID)
 
 		if err != nil {

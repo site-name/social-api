@@ -25,7 +25,7 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 	// validate given currencyCode is valid:
 	revenue, err := util.ZeroTaxedMoney(currencyCode)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateRevenueForVariant", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CalculateRevenueForVariant", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, orderLine := range orderLines {

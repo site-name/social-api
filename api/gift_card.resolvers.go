@@ -21,8 +21,8 @@ import (
 
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string }) (*GiftCardActivate, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftCardActivate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftCardActivate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -131,8 +131,8 @@ func (r *Resolver) GiftCardCreate(ctx context.Context, args struct{ Input GiftCa
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string }) (*GiftCardDelete, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftCardDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftCardDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -160,8 +160,8 @@ func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string })
 
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id string }) (*GiftCardDeactivate, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftcardDeactivate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftcardDeactivate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -200,11 +200,11 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	Input GiftCardUpdateInput
 }) (*GiftCardUpdate, error) {
 	// valudate input
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftcardUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftcardUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
 	if args.Input.ExpiryDate != nil && args.Input.ExpiryDate.Before(time.Now()) {
-		return nil, model_helper.NewAppError("GiftCardUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date mut be brater than now", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftCardUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date mut be brater than now", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -290,14 +290,14 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardResend(ctx context.Context, args struct{ Input GiftCardResendInput }) (*GiftCardResend, error) {
 	// validate params
-	if !model.IsValidId(args.Input.ID) {
-		return nil, model_helper.NewAppError("GiftcardResend", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Input.ID+" is not a valid id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Input.ID) {
+		return nil, model_helper.NewAppError("GiftcardResend", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Input.ID+" is not a valid id", http.StatusBadRequest)
 	}
 	if args.Input.Email != nil && !model.IsValidEmail(*args.Input.Email) {
-		return nil, model_helper.NewAppError("GiftcardResend", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, *args.Input.Email+" is not a valid email", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftcardResend", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, *args.Input.Email+" is not a valid email", http.StatusBadRequest)
 	}
-	if !model.IsValidId(args.Input.Channel) {
-		return nil, model_helper.NewAppError("GiftcardResend", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Input.Channel+" is not a valid channel id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Input.Channel) {
+		return nil, model_helper.NewAppError("GiftcardResend", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Input.Channel+" is not a valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -350,11 +350,11 @@ func (r *Resolver) GiftCardAddNote(ctx context.Context, args struct {
 	Input GiftCardAddNoteInput
 }) (*GiftCardAddNote, error) {
 	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftcardAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftcardAddNote", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid id", http.StatusBadRequest)
 	}
 	if args.Input.Message == "" {
-		return nil, model_helper.NewAppError("GiftcardAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "message"}, "message can not be empty", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftcardAddNote", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "message"}, "message can not be empty", http.StatusBadRequest)
 	}
 
 	// validate if giftcard really does exist
@@ -387,8 +387,8 @@ func (r *Resolver) GiftCardAddNote(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkDelete, error) {
 	// validate params
-	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model_helper.NewAppError("GiftCardBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("GiftCardBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -403,8 +403,8 @@ func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []st
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkActivate, error) {
 	// validate params
-	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model_helper.NewAppError("GiftCardBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("GiftCardBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -446,8 +446,8 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkDeactivate, error) {
 	// validate params
-	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model_helper.NewAppError("GiftCardBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("GiftCardBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid gift card ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -488,8 +488,8 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 }
 
 func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*GiftCard, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("GiftCard", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid giftcard id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("GiftCard", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid giftcard id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -515,7 +515,7 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if args.SortBy != nil && !args.SortBy.Field.IsValid() {
-		return nil, model_helper.NewAppError("GiftCards", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "please provide valid sort field", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GiftCards", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "please provide valid sort field", http.StatusBadRequest)
 	}
 	if args.Filter != nil {
 		giftcardFilter, appErr = args.Filter.ToSystemGiftcardFilter()

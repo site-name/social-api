@@ -2209,19 +2209,19 @@ func (s *ComplianceSettings) SetDefaults() {
 }
 
 type LocalizationSettings struct {
-	DefaultServerLocale *string            `access:"site_localization"`
-	DefaultClientLocale *string            `access:"site_localization"`
-	AvailableLocales    *string            `access:"site_localization"`
-	DefaultCountryCode  *model.CountryCode `access:"site_localization"` // added for sitename
+	DefaultServerLocale *model.LanguageCode `access:"site_localization"`
+	DefaultClientLocale *model.LanguageCode `access:"site_localization"`
+	AvailableLocales    *string             `access:"site_localization"`
+	DefaultCountryCode  *model.CountryCode  `access:"site_localization"` // added for sitename
 }
 
 func (s *LocalizationSettings) SetDefaults() {
 	if s.DefaultServerLocale == nil {
-		s.DefaultServerLocale = GetPointerOfValue(DEFAULT_LOCALE.String())
+		s.DefaultServerLocale = GetPointerOfValue(DEFAULT_LOCALE)
 	}
 
 	if s.DefaultClientLocale == nil {
-		s.DefaultClientLocale = GetPointerOfValue(DEFAULT_LOCALE.String())
+		s.DefaultClientLocale = GetPointerOfValue(DEFAULT_LOCALE)
 	}
 
 	if s.AvailableLocales == nil {
@@ -3591,7 +3591,7 @@ func (s *DataRetentionSettings) isValid() *AppError {
 
 func (s *LocalizationSettings) isValid() *AppError {
 	if *s.AvailableLocales != "" {
-		if !strings.Contains(*s.AvailableLocales, *s.DefaultClientLocale) {
+		if !strings.Contains(*s.AvailableLocales, s.DefaultClientLocale.String()) {
 			return NewAppError("Config.IsValid", "model.config.is_valid.localization.available_locales.app_error", nil, "", http.StatusBadRequest)
 		}
 	}

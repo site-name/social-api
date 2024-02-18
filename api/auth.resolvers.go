@@ -140,7 +140,7 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userWithEmail != nil {
-		return nil, model_helper.NewAppError("RequestEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("RequestEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
 	}
 
 	// validate url
@@ -193,7 +193,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userByEmail != nil {
-		return nil, model_helper.NewAppError("ConfirmEmailChange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ConfirmEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
 	}
 
 	currentUser, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)

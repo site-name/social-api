@@ -1393,7 +1393,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 
 }
 
-func (s *RetryLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
+func (s *RetryLayerAttributeStore) CountByOptions(options model_helper.AttributeFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -1433,7 +1433,7 @@ func (s *RetryLayerAttributeStore) Delete(tx boil.ContextTransactor, ids []strin
 
 }
 
-func (s *RetryLayerAttributeStore) FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *RetryLayerAttributeStore) FilterbyOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1473,7 +1473,7 @@ func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 
 }
 
-func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error) {
+func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1533,7 +1533,7 @@ func (s *RetryLayerAttributePageStore) Get(pageID string) (*model.AttributePage,
 
 }
 
-func (s *RetryLayerAttributePageStore) GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -2153,7 +2153,7 @@ func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Delete(discovery model.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -2173,7 +2173,7 @@ func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscove
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Exists(discovery model.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -2193,7 +2193,7 @@ func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscove
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) (model.ClusterDiscoverySlice, error) {
 
 	tries := 0
 	for {
@@ -2213,7 +2213,7 @@ func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) Save(discovery model.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -2233,7 +2233,7 @@ func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery model.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -2453,7 +2453,7 @@ func (s *RetryLayerCollectionProductStore) FilterByOptions(options *model.Collec
 
 }
 
-func (s *RetryLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
+func (s *RetryLayerComplianceStore) ComplianceExport(model model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 
 	tries := 0
 	for {
@@ -2533,31 +2533,11 @@ func (s *RetryLayerComplianceStore) MessageExport(cursor model_helper.MessageExp
 
 }
 
-func (s *RetryLayerComplianceStore) Save(model model.Compliance) (*model.Compliance, error) {
+func (s *RetryLayerComplianceStore) Upsert(model model.Compliance) (*model.Compliance, error) {
 
 	tries := 0
 	for {
-		result, err := s.ComplianceStore.Save(model)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerComplianceStore) Update(model model.Compliance) (*model.Compliance, error) {
-
-	tries := 0
-	for {
-		result, err := s.ComplianceStore.Update(model)
+		result, err := s.ComplianceStore.Upsert(model)
 		if err == nil {
 			return result, nil
 		}
@@ -4545,7 +4525,7 @@ func (s *RetryLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine *
 
 }
 
-func (s *RetryLayerPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
+func (s *RetryLayerPageStore) FilterByOptions(options model_helper.PageFilterOptions) (model.PageSlice, error) {
 
 	tries := 0
 	for {

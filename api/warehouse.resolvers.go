@@ -30,7 +30,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 	}
 
 	if strings.TrimSpace(input.Name) == "" {
-		return nil, model_helper.NewAppError("CreateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "name"}, "please provide a name for your warehouse", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CreateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "name"}, "please provide a name for your warehouse", http.StatusBadRequest)
 	}
 
 	newWarehouse.Name = input.Name
@@ -44,17 +44,17 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 	}
 	if input.Email != nil {
 		if !model.IsValidEmail(*input.Email) {
-			return nil, model_helper.NewAppError("CreateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, *input.Email+" is not a valid email", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("CreateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, *input.Email+" is not a valid email", http.StatusBadRequest)
 		}
 		newWarehouse.Email = *input.Email
 	}
 
-	if !lo.EveryBy(input.ShippingZones, model.IsValidId) {
-		return nil, model_helper.NewAppError("CreateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shippingZones"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	if !lo.EveryBy(input.ShippingZones, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("CreateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shippingZones"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
 	if input.Slug != nil {
 		if !slug.IsSlug(*input.Slug) {
-			return nil, model_helper.NewAppError("CreateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, *input.Slug+" is not a valid slug", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("CreateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, *input.Slug+" is not a valid slug", http.StatusBadRequest)
 		}
 
 		newWarehouse.Slug = *input.Slug
@@ -119,8 +119,8 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	Input WarehouseUpdateInput
 }) (*WarehouseUpdate, error) {
 	// validate arguments
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("UpdateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("UpdateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -136,13 +136,13 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	input := args.Input
 	if input.Email != nil {
 		if !model.IsValidEmail(*input.Email) {
-			return nil, model_helper.NewAppError("UpdateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide valid warehouse email", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpdateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide valid warehouse email", http.StatusBadRequest)
 		}
 		warehouse.Email = *input.Email
 	}
 	if input.Slug != nil {
 		if !slug.IsSlug(*input.Slug) {
-			return nil, model_helper.NewAppError("UpdateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid warehouse slug", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpdateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid warehouse slug", http.StatusBadRequest)
 		}
 		warehouse.Slug = *input.Slug
 	}
@@ -170,7 +170,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 
 	if input.ClickAndCollectOption != nil {
 		if input.ClickAndCollectOption.IsValid() {
-			return nil, model_helper.NewAppError("UpdateWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ClickAndCollectOption"}, "please provide valid click and collect option", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpdateWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ClickAndCollectOption"}, "please provide valid click and collect option", http.StatusBadRequest)
 		}
 		warehouse.ClickAndCollectOption = *input.ClickAndCollectOption
 	}
@@ -193,8 +193,8 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }) (*WarehouseDelete, error) {
 	// validate arguments
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DeleteWarehouse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("DeleteWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -252,11 +252,11 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneAssign, error) {
 	// validate arguments
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
-	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
-		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.ShippingZoneIds, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -292,11 +292,11 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneUnassign, error) {
 	// validate arguments
-	if !model.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.Id) {
+		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
-	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
-		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	if !lo.EveryBy(args.ShippingZoneIds, model_helper.IsValidId) {
+		return nil, model_helper.NewAppError("AssignWarehouseShippingZone", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -352,8 +352,8 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 			warehouseFilterOpts.Search = *filter.Search
 		}
 		if len(filter.Ids) > 0 {
-			if !lo.EveryBy(filter.Ids, model.IsValidId) {
-				return nil, model_helper.NewAppError("Warehouses", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid warehouse ids", http.StatusBadRequest)
+			if !lo.EveryBy(filter.Ids, model_helper.IsValidId) {
+				return nil, model_helper.NewAppError("Warehouses", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid warehouse ids", http.StatusBadRequest)
 			}
 			andConds = append(andConds, squirrel.Eq{model.WarehouseTableName + ".Id": filter.Ids})
 		}

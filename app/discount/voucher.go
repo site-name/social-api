@@ -89,7 +89,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 		*goprices.TaxedMoneyRange:
 
 	default:
-		return nil, model_helper.NewAppError("GetDiscountAmountFor", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetDiscountAmountFor", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
 	}
 
 	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)

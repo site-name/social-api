@@ -38,13 +38,13 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	localCurrency = strings.ToUpper(localCurrency)
@@ -128,7 +128,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 					continue
 				}
 				if !strings.EqualFold(currency, listing.Currency) {
-					return nil, model_helper.NewAppError("GetProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
+					return nil, model_helper.NewAppError("GetProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
 				}
 			}
 		}

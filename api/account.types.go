@@ -31,7 +31,7 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 		Address: *address,
 		Country: &CountryDisplay{
 			Code:    address.Country.String(),
-			Country: model.Countries[address.Country],
+			Country: model_helper.Countries[address.Country],
 		},
 	}
 }
@@ -40,12 +40,12 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 
-	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
+	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserID)()
 	if err != nil {
 		return nil, err
 	}
 
-	isDefaultShippingAddr := user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Id
+	isDefaultShippingAddr := user.DefaultShippingAddressID.IsNotNilAndEqual(a.ID)
 	return &isDefaultShippingAddr, nil
 }
 
@@ -53,12 +53,12 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 
-	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
+	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserID)()
 	if err != nil {
 		return nil, err
 	}
 
-	isDefaultBillingAddr := user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Id
+	isDefaultBillingAddr := user.DefaultBillingAddressID.IsNotNilAndEqual(a.ID)
 	return &isDefaultBillingAddr, nil
 }
 
@@ -70,8 +70,10 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 	addresses, appErr := webCtx.App.
 		Srv().
 		AccountService().
-		AddressesByOption(&model.AddressFilterOption{
-			Conditions: squirrel.Eq{model.AddressTableName + ".Id": ids},
+		AddressesByOption(model_helper.AddressFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.AddressWhere.ID.IN(ids),
+			),
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -80,7 +82,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		return res
 	}
 
-	addressMap := lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
+	addressMap := lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.ID, a })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Address]{Data: addressMap[id]}
 	}
@@ -128,19 +130,19 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 	}
 
 	res := &User{
-		ID:                       u.Id,
+		ID:                       u.ID,
 		Email:                    u.Email,
 		FirstName:                u.FirstName,
 		LastName:                 u.LastName,
 		UserName:                 u.Username,
 		IsActive:                 u.IsActive,
-		LanguageCode:             model.LanguageCodeEnum(u.Locale),
-		DefaultShippingAddressID: u.DefaultShippingAddressID,
-		DefaultBillingAddressID:  u.DefaultBillingAddressID,
-		note:                     u.Note,
+		LanguageCode:             u.Locale,
+		DefaultShippingAddressID: u.DefaultShippingAddressID.String,
+		DefaultBillingAddressID:  u.DefaultBillingAddressID.String,
+		note:                     u.Note.String,
 		Metadata:                 MetadataToSlice(u.Metadata),
 		PrivateMetadata:          MetadataToSlice(u.PrivateMetadata),
-		DateJoined:               DateTime{util.TimeFromMillis(u.CreateAt)},
+		DateJoined:               DateTime{util.TimeFromMillis(u.CreatedAt)},
 
 		user: u,
 	}
@@ -157,10 +159,9 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID || currentSession.
-		GetUserRoles().
-		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
-		Len() > 0 {
+	if currentSession.UserID == u.ID || model_helper.
+		SessionGetUserRoles(*currentSession).
+		ContainsAny(model_helper.ShopStaffRoleId, model_helper.ShopAdminRoleId) {
 		if u.DefaultShippingAddressID == nil {
 			return nil, nil
 		}
@@ -179,7 +180,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID ||
+	if currentSession.UserID == u.ID ||
 		currentSession.
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
@@ -199,14 +200,14 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
-	if !model.IsValidId(args.ChannelID) {
-		return nil, model_helper.NewAppError("User.StoredPaymentSources", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+	if !model_helper.IsValidId(args.ChannelID) {
+		return nil, model_helper.NewAppError("User.StoredPaymentSources", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// ONLY customers can see their own payment sources.
-	if u.ID == embedCtx.AppContext.Session().UserId {
+	if u.ID == embedCtx.AppContext.Session().UserID {
 		pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 		paymentGateWays := embedCtx.App.Srv().PaymentService().ListGateways(pluginManager, embedCtx.CurrentChannelID)
 
@@ -262,7 +263,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID ||
+	if currentSession.UserID == u.ID ||
 		currentSession.
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
@@ -273,8 +274,8 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 		if args.ChannelID == nil {
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
-			if !model.IsValidId(*args.ChannelID) {
-				return nil, model_helper.NewAppError("User.CheckoutTokens", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+			if !model_helper.IsValidId(*args.ChannelID) {
+				return nil, model_helper.NewAppError("User.CheckoutTokens", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 			}
 			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.ChannelID)()
 		}
@@ -293,7 +294,7 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID ||
+	if currentSession.UserID == u.ID ||
 		currentSession.
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId}).
@@ -320,7 +321,7 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID ||
+	if currentSession.UserID == u.ID ||
 		currentSession.
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
@@ -354,7 +355,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	session := embedCtx.AppContext.Session()
 
-	requesterCanSeeUserOrders := session.UserId == u.ID ||
+	requesterCanSeeUserOrders := session.UserID == u.ID ||
 		session.
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId}).

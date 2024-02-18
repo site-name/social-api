@@ -13,13 +13,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model_helper.AppError) {
+func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValueSlice, *model_helper.AppError) {
 	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeID},
 	})
 }
 
-func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model_helper.AppError) {
+func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, *model_helper.AppError) {
 	values, err := s.srv.Store.AttributeValue().FilterByOptions(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("FilterAttributeValuesByOptions", "app.attribute.error_finding_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -46,7 +46,7 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue)
 	return attrValue, nil
 }
 
-func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model_helper.AppError) {
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValueSlice) (model.AttributeValueSlice, *model_helper.AppError) {
 	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -65,7 +65,7 @@ func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values
 }
 
 type Reordering struct {
-	Values     model.AttributeValues
+	Values     model.AttributeValueSlice
 	Operations map[string]*int
 	Field      string
 
@@ -75,7 +75,7 @@ type Reordering struct {
 	OldSortMap map[string]*int
 
 	cachedOrderedNodeMap  map[string]*int
-	cachedAttributeValues model.AttributeValues
+	cachedAttributeValues model.AttributeValueSlice
 
 	// Will contain the list of keys kept
 	// in correct order in accordance to their sort order
@@ -85,7 +85,7 @@ type Reordering struct {
 	runned bool // to make sure that the method `orderedNodeMap` only run once
 }
 
-func (s *ServiceAttribute) newReordering(values model.AttributeValues, operations map[string]*int, field string) *Reordering {
+func (s *ServiceAttribute) newReordering(values model.AttributeValueSlice, operations map[string]*int, field string) *Reordering {
 	return &Reordering{
 		Values:     values,
 		Operations: operations,
@@ -277,8 +277,8 @@ func (r *Reordering) Run(transaction *gorm.DB) *model_helper.AppError {
 	return r.commit(transaction)
 }
 
-func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model_helper.AppError {
-	transaction := s.srv.Store.GetMaster().Begin()
+func (s *ServiceAttribute) PerformReordering(values model.AttributeValueSlice, operations map[string]*int) *model_helper.AppError {
+	transaction := s.srv.Store.GetMaster().BeginTx()
 	if transaction.Error != nil {
 		return model_helper.NewAppError("PerformOrdering", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
