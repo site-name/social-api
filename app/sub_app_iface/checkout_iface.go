@@ -7,8 +7,9 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -53,6 +54,8 @@ type CheckoutService interface {
 	CalculatePriceForShippingMethod(checkoutInfo *model.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
 	CancelActivePayments(checkout *model.Checkout) *model_helper.AppError
+	// Check if current shipping method is valid
+	CleanDeliveryMethod(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model_helper.AppError)
 	// CheckVariantInStock
 	CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model_helper.AppError)
 	// CheckoutByOption returns a checkout filtered by given option
@@ -129,7 +132,9 @@ type CheckoutService interface {
 	// :raises ValidationError
 	//
 	// NOTE: Make sure user is authenticated before calling this method.
-	CompleteCheckout(transaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings model.ShopSettings, trackingCode string, redirectURL string) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model_helper.AppError)
+	CompleteCheckout(dbTransaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings model.ShopSettings, trackingCode string, redirectURL string) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model_helper.AppError)
+	// PrepareInsufficientStockCheckoutValidationAppError
+	PrepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model_helper.AppError
 	// RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
 	// Will clear both voucher and discount if the discount is no longer applicable.
 	RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model_helper.AppError
@@ -160,6 +165,7 @@ type CheckoutService interface {
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model_helper.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model_helper.AppError)
 	ChangeBillingAddressInCheckout(transaction *gorm.DB, checkout *model.Checkout, address *model.Address) *model_helper.AppError
+	CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model_helper.AppError
 	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model_helper.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model_helper.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model_helper.AppError)
@@ -170,11 +176,7 @@ type CheckoutService interface {
 	DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model_helper.AppError
 	GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model_helper.AppError)
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model_helper.AppError)
+	UpdateCheckoutShippingMethodIfValid(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError
 	UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model_helper.AppError)
 	ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model_helper.AppError
-	CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model_helper.AppError
-	UpdateCheckoutShippingMethodIfValid(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError
-	PrepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model_helper.AppError
-	// NOTE: method must be either *model.Warehouse or *model.ShippingMethod
-	CleanDeliveryMethod(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model_helper.AppError)
 }

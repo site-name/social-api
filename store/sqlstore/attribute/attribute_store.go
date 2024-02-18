@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAttributeStore struct {
@@ -51,7 +52,7 @@ func (as *SqlAttributeStore) Upsert(attr model.Attribute) (*model.Attribute, err
 	return &attr, nil
 }
 
-func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {
+func (as *SqlAttributeStore) commonQueryBuilder(option model_helper.AttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().
 		Select(model.AttributeTableName + ".*").
 		From(model.AttributeTableName).
@@ -146,8 +147,7 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 	return query
 }
 
-// FilterbyOption returns a list of attributes by given option
-func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
+func (as *SqlAttributeStore) FilterbyOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, error) {
 	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
@@ -234,39 +234,37 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 	return res, nil
 }
 
-func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
-	// unassigned
-	query := `SELECT * FROM ` +
-		model.AttributeTableName +
-		` A WHERE A.Type = $1
-		AND NOT EXISTS(
-			SELECT (1) AS "a"
-			FROM ` + model.AttributePageTableName +
-		` AP WHERE (
-				AP.PageTypeID = $2
-				AND AP.AttributeID = A.Id
-			)
-			LIMIT 1
-		)`
-
-	if !unassigned {
-		query = `SELECT A.* FROM ` + model.AttributeTableName +
-			` A INNER JOIN ` + model.AttributePageTableName +
-			` AP ON AP.AttributeID = A.Id
-			WHERE A.Type = $1
-			AND AP.PageTypeID = $2`
+func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.AttributeSlice, error) {
+	conds := []qm.QueryMod{
+		model.AttributeWhere.Type.EQ(model.AttributeTypePageType),
+	}
+	if unassigned {
+		conds = append(conds, qm.Where(fmt.Sprintf(
+			`NOT EXISTS(
+				SELECT (1) AS "a"
+				FROM %s WHERE (
+					%s = ?
+					AND %s = %s
+				)
+				LIMIT 1
+			)`,
+			model.TableNames.AttributePages,
+			model.AttributePageTableColumns.PageTypeID,
+			model.AttributePageTableColumns.AttributeID,
+			model.AttributeTableColumns.ID,
+		)))
+	} else {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.AttributePages, model.AttributePageTableColumns.AttributeID, model.AttributeTableColumns.ID)),
+			model.AttributePageWhere.PageTypeID.EQ(pageTypeID),
+		)
 	}
 
-	var res model.Attributes
-	err := s.GetReplica().Raw(query, model.PAGE_TYPE, pageTypeID).Scan(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find page type attribute with given page type id")
-	}
-
-	return res, nil
+	return model.Attributes(conds...).All(s.GetReplica())
 }
 
-func (s *SqlAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+func (s *SqlAttributeStore) CountByOptions(options model_helper.AttributeFilterOption) (int64, error) {
 	options.GraphqlPaginationValues = model.GraphqlPaginationValues{}
 	query := s.commonQueryBuilder(options)
 	countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()

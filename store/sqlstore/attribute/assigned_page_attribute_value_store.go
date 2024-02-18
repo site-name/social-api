@@ -3,7 +3,6 @@ package attribute
 import (
 	"database/sql"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
@@ -67,36 +66,38 @@ func (as *SqlAssignedPageAttributeValueStore) Get(id string) (*model.AssignedPag
 }
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedPageAttributeValueSlice, model.AttributeValueSlice, error) {
-	rows, err := as.GetReplica().
-		Raw("SELECT AssignedPageAttributeValues.*, AttributeValues.* FROM "+
-			model.AssignedPageAttributeValueTableName+
-			" INNER JOIN "+model.AttributeValueTableName+
-			" ON AttributeValues.Id = AssignedPageAttributeValues.ValueID WHERE AssignedPageAttributeValues.AssignmentID = ?", assignmentID).
-		Rows()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to find assignment attribute values with given assignment Id")
-	}
-	defer rows.Close()
+	// rows, err := as.GetReplica().
+	// 	Raw("SELECT AssignedPageAttributeValues.*, AttributeValues.* FROM "+
+	// 		model.AssignedPageAttributeValueTableName+
+	// 		" INNER JOIN "+model.AttributeValueTableName+
+	// 		" ON AttributeValues.Id = AssignedPageAttributeValues.ValueID WHERE AssignedPageAttributeValues.AssignmentID = ?", assignmentID).
+	// 	Rows()
+	// if err != nil {
+	// 	return nil, nil, errors.Wrap(err, "failed to find assignment attribute values with given assignment Id")
+	// }
+	// defer rows.Close()
 
-	var (
-		assignedPageAttributeValues []*model.AssignedPageAttributeValue
-		attributeValues             []*model.AttributeValue
-	)
+	// var (
+	// 	assignedPageAttributeValues []*model.AssignedPageAttributeValue
+	// 	attributeValues             []*model.AttributeValue
+	// )
 
-	for rows.Next() {
-		var (
-			assignedPageAttributeValue model.AssignedPageAttributeValue
-			attributeValue             model.AttributeValue
-			scanFields                 = append(as.ScanFields(&assignedPageAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
-		)
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "error scanning a row of assigned page attribute value")
-		}
+	// for rows.Next() {
+	// 	var (
+	// 		assignedPageAttributeValue model.AssignedPageAttributeValue
+	// 		attributeValue             model.AttributeValue
+	// 		scanFields                 = append(as.ScanFields(&assignedPageAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
+	// 	)
+	// 	err = rows.Scan(scanFields...)
+	// 	if err != nil {
+	// 		return nil, nil, errors.Wrapf(err, "error scanning a row of assigned page attribute value")
+	// 	}
 
-		assignedPageAttributeValues = append(assignedPageAttributeValues, &assignedPageAttributeValue)
-		attributeValues = append(attributeValues, &attributeValue)
-	}
+	// 	assignedPageAttributeValues = append(assignedPageAttributeValues, &assignedPageAttributeValue)
+	// 	attributeValues = append(attributeValues, &attributeValue)
+	// }
 
-	return assignedPageAttributeValues, attributeValues, nil
+	// return assignedPageAttributeValues, attributeValues, nil
+	// return model, nil, nil
+	panic("not implemented")
 }

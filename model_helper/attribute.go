@@ -6,6 +6,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 func AttributePageIsValid(a model.AttributePage) *AppError {
@@ -19,6 +20,16 @@ func AttributePageIsValid(a model.AttributePage) *AppError {
 		return NewAppError("AttributePageIsValid", "model.attribute_page.is_valid.page_type_id.app_error", nil, "please provide valid page type id", http.StatusBadRequest)
 	}
 	return nil
+}
+
+func AttributePagePreSave(a *model.AttributePage) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
+}
+
+type AttributePageFilterOption struct {
+	CommonQueryOptions
 }
 
 func AssignedPageAttributeValueIsValid(a model.AssignedPageAttributeValue) *AppError {
@@ -95,6 +106,12 @@ func AssignedProductAttributeValueIsValid(a model.AssignedProductAttributeValue)
 	return nil
 }
 
+func AssignedProductAttributeValuePreSave(a *model.AssignedProductAttributeValue) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
+}
+
 func AttributeValueCommonPre(a *model.AttributeValue) {
 	a.Name = SanitizeUnicode(a.Name)
 }
@@ -142,6 +159,12 @@ func AttributePreUpdate(a *model.Attribute) {
 	attributeCommonPre(a)
 }
 
+type AttributeFilterOption struct {
+	CommonQueryOptions
+	Search   *string // WHERE Attributes.Name ILIKE ... OR Attributes.Slug ILIKE ...
+	Metadata model_types.JsonMap
+}
+
 func AttributeIsValid(a model.Attribute) *AppError {
 	if !IsValidId(a.ID) {
 		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.id.app_error", nil, "please provide valid attribute id", http.StatusBadRequest)
@@ -167,4 +190,65 @@ func AttributeIsValid(a model.Attribute) *AppError {
 
 type AttributeValueFilterOptions struct {
 	CommonQueryOptions
+}
+
+type AttributeCategoryFilterOptions struct {
+	CommonQueryOptions
+}
+
+func CategoryAttributePreSave(a *model.CategoryAttribute) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
+}
+
+func CategoryAttributeIsValid(a model.CategoryAttribute) *AppError {
+	if !IsValidId(a.ID) {
+		return NewAppError("CategoryAttributeIsValid", "model.category_attribute.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(a.CategoryID) {
+		return NewAppError("CategoryAttributeIsValid", "model.category_attribute.is_valid.category_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(a.AttributeID) {
+		return NewAppError("CategoryAttributeIsValid", "model.category_attribute.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	return nil
+}
+
+type CustomProductAttributeFilterOptions struct {
+	CommonQueryOptions
+}
+
+func CustomProductAttributePreSave(a *model.CustomProductAttribute) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
+	CustomProductAttributeCommonPre(a)
+}
+
+func CustomProductAttributeCommonPre(a *model.CustomProductAttribute) {
+	a.Name = SanitizeUnicode(a.Name)
+	a.Slug = slug.Make(a.Name)
+}
+
+func CustomProductAttributeIsValid(a model.CustomProductAttribute) *AppError {
+	if !IsValidId(a.ID) {
+		return NewAppError("CustomProductAttributeIsValid", "model.custom_product_attribute.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(a.ProductID) {
+		return NewAppError("CustomProductAttributeIsValid", "model.custom_product_attribute.is_valid.product_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !slug.IsSlug(a.Slug) {
+		return NewAppError("CustomProductAttributeIsValid", "model.custom_product_attribute.is_valid.slug.app_error", nil, "", http.StatusBadRequest)
+	}
+	return nil
+}
+
+type AssignedProductAttributeValueFilterOptions struct {
+	CommonQueryOptions
+}
+
+type AssignedProductAttributeFilterOption struct {
+	CommonQueryOptions
+	AttributeProduct_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeCategory ON ... INNER JOIN Attributes ON ... WHERE Attributes.VisibleInStoreFront ...
 }

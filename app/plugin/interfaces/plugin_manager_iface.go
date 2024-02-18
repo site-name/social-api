@@ -9,6 +9,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // PluginManagerInterface contains methods for plugin manager
@@ -32,9 +33,9 @@ type PluginManagerInterface interface {
 	CalculateCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError)
 	CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError)
 	CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError)
-	CalculateOrderLineUnit(order model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError)
-	CalculateOrderShipping(order model.Order) (*goprices.TaxedMoney, *model_helper.AppError)
-	CalculateOrderlineTotal(order model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateOrderShipping(orDer model.Order) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateOrderlineTotal(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model_helper.AppError)
 	CapturePayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error)
 	ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError)
 	CheckoutCreated(checkOut model.Checkout) (interface{}, *model_helper.AppError)
@@ -42,9 +43,9 @@ type PluginManagerInterface interface {
 	ConfirmPayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error)
 	CustomerCreated(customer model.User) (interface{}, *model_helper.AppError)
 	CustomerUpdated(customer model.User) (interface{}, *model_helper.AppError)
-	DraftOrderCreated(order model.Order) (interface{}, *model_helper.AppError)
-	DraftOrderDeleted(order model.Order) (interface{}, *model_helper.AppError)
-	DraftOrderUpdated(order model.Order) (interface{}, *model_helper.AppError)
+	DraftOrderCreated(orDer model.Order) (interface{}, *model_helper.AppError)
+	DraftOrderDeleted(orDer model.Order) (interface{}, *model_helper.AppError)
+	DraftOrderUpdated(orDer model.Order) (interface{}, *model_helper.AppError)
 	ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model_helper.AppError)
 	ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model_helper.AppError)
 	ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*model.ExternalAccessTokens, *model_helper.AppError)
@@ -56,23 +57,23 @@ type PluginManagerInterface interface {
 	GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
 	GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
 	GetClientToken(gateway string, tokenConfig model.TokenConfig, channelID string) (string, *model_helper.AppError)
-	GetOrderLineTaxRate(order model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
-	GetOrderShippingTaxRate(order model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
+	GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
+	GetOrderShippingTaxRate(orDer model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
 	GetTaxRateTypeChoices() ([]*model.TaxType, *model_helper.AppError)
 	InitializePayment(gateway string, paymentData model.StringInterface, channelID string) *model.InitializedPaymentResponse
 	InvoiceDelete(inVoice model.Invoice) (interface{}, *model_helper.AppError)
-	InvoiceRequest(order model.Order, inVoice model.Invoice, number string) (interface{}, *model_helper.AppError)
+	InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string) (interface{}, *model_helper.AppError)
 	InvoiceSent(inVoice model.Invoice, email string) (interface{}, *model_helper.AppError)
 	ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model_helper.AppError)
 	ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model.PaymentGateway
 	ListPaymentSources(gateway, customerID, channelID string) ([]*model.CustomerSource, error)
-	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model_helper.AppError) // NOTE: pluginID can be empty
-	OrderCancelled(order model.Order) (interface{}, *model_helper.AppError)
-	OrderConfirmed(order model.Order) (interface{}, *model_helper.AppError)
-	OrderCreated(order model.Order) (interface{}, *model_helper.AppError)
-	OrderFulfilled(order model.Order) (interface{}, *model_helper.AppError)
-	OrderFullyPaid(order model.Order) (interface{}, *model_helper.AppError)
-	OrderUpdated(order model.Order) (interface{}, *model_helper.AppError)
+	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model_helper.AppError)
+	OrderCancelled(orDer model.Order) (interface{}, *model_helper.AppError)
+	OrderConfirmed(orDer model.Order) (interface{}, *model_helper.AppError)
+	OrderCreated(orDer model.Order) (interface{}, *model_helper.AppError)
+	OrderFulfilled(orDer model.Order) (interface{}, *model_helper.AppError)
+	OrderFullyPaid(orDer model.Order) (interface{}, *model_helper.AppError)
+	OrderUpdated(orDer model.Order) (interface{}, *model_helper.AppError)
 	PageCreated(paGe model.Page) (interface{}, *model_helper.AppError)
 	PageDeleted(paGe model.Page) (interface{}, *model_helper.AppError)
 	PageUpdated(paGe model.Page) (interface{}, *model_helper.AppError)

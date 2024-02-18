@@ -3,7 +3,10 @@
 
 package sub_app_iface
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
+)
 
 // ShopService contains methods for working with shops
 type ShopService interface {

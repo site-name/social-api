@@ -5,7 +5,8 @@ package sub_app_iface
 
 import (
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,6 @@ type ShippingService interface {
 	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model_helper.AppError)
-	ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError
 	// Prepare mapping shipping method to price from channel listings
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model_helper.AppError)
 	// ShippingMethodByOption returns a shipping method with given options
@@ -37,6 +37,7 @@ type ShippingService interface {
 	DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError)
 	DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model_helper.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model_helper.AppError)
+	ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError
 	UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model_helper.AppError)
 	UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model_helper.AppError)
 	UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model_helper.AppError)

@@ -1,10 +1,12 @@
 package csv
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCsvExportFileStore struct {
@@ -15,25 +17,28 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 	return &SqlCsvExportFileStore{s}
 }
 
-// Save inserts given csv export file into database then returns it
 func (cs *SqlCsvExportFileStore) Save(file model.ExportFile) (*model.ExportFile, error) {
-	if err := cs.GetMaster().Create(file).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to save ExportFile with Id=%s", file.Id)
+	model_helper.ExportFilePreSave(&file)
+	if err := model_helper.ExportFileIsValid(file); err != nil {
+		return nil, err
 	}
-	return file, nil
+
+	err := file.Insert(cs.GetMaster(), boil.Infer())
+	if err != nil {
+		return nil, err
+	}
+
+	return &file, nil
 }
 
-// Get finds and returns an export file with given id
 func (cs *SqlCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
-	var res model.ExportFile
-
-	err := cs.GetMaster().First(&res, "Id = ?", id).Error
+	record, err := model.FindExportFile(cs.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.CsvExportFileTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ExportFiles, id)
 		}
-		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)
+		return nil, err
 	}
 
-	return &res, nil
+	return record, nil
 }

@@ -43,15 +43,11 @@ type SqlStoreStores struct {
 	assignedPageAttributeValue    store.AssignedPageAttributeValueStore
 	assignedProductAttribute      store.AssignedProductAttributeStore
 	assignedProductAttributeValue store.AssignedProductAttributeValueStore
-	assignedVariantAttribute      store.AssignedVariantAttributeStore
-	assignedVariantAttributeValue store.AssignedVariantAttributeValueStore
 	attribute                     store.AttributeStore
 	attributePage                 store.AttributePageStore
-	attributeProduct              store.AttributeProductStore
 	attributeTranslation          store.AttributeTranslationStore
 	attributeValue                store.AttributeValueStore
 	attributeValueTranslation     store.AttributeValueTranslationStore
-	attributeVariant              store.AttributeVariantStore
 	audit                         store.AuditStore
 	category                      store.CategoryStore
 	categoryTranslation           store.CategoryTranslationStore
@@ -66,6 +62,7 @@ type SqlStoreStores struct {
 	compliance                    store.ComplianceStore
 	csvExportEvent                store.CsvExportEventStore
 	csvExportFile                 store.CsvExportFileStore
+	customProductAttribute        store.CustomProductAttributeStore
 	customerEvent                 store.CustomerEventStore
 	customerNote                  store.CustomerNoteStore
 	digitalContent                store.DigitalContentStore
@@ -145,15 +142,11 @@ func (store *SqlStore) setupStores() {
 		assignedPageAttributeValue:    attribute.NewSqlAssignedPageAttributeValueStore(store),
 		assignedProductAttribute:      attribute.NewSqlAssignedProductAttributeStore(store),
 		assignedProductAttributeValue: attribute.NewSqlAssignedProductAttributeValueStore(store),
-		assignedVariantAttribute:      attribute.NewSqlAssignedVariantAttributeStore(store),
-		assignedVariantAttributeValue: attribute.NewSqlAssignedVariantAttributeValueStore(store),
 		attribute:                     attribute.NewSqlAttributeStore(store),
 		attributePage:                 attribute.NewSqlAttributePageStore(store),
-		attributeProduct:              attribute.NewSqlAttributeProductStore(store),
 		attributeTranslation:          attribute.NewSqlAttributeTranslationStore(store),
 		attributeValue:                attribute.NewSqlAttributeValueStore(store),
 		attributeValueTranslation:     attribute.NewSqlAttributeValueTranslationStore(store),
-		attributeVariant:              attribute.NewSqlAttributeVariantStore(store),
 		audit:                         audit.NewSqlAuditStore(store),
 		category:                      product.NewSqlCategoryStore(store),
 		categoryTranslation:           product.NewSqlCategoryTranslationStore(store),
@@ -168,6 +161,7 @@ func (store *SqlStore) setupStores() {
 		compliance:                    compliance.NewSqlComplianceStore(store),
 		csvExportEvent:                csv.NewSqlCsvExportEventStore(store),
 		csvExportFile:                 csv.NewSqlCsvExportFileStore(store),
+		customProductAttribute:        attribute.NewSqlCustomProductAttributeStore(store),
 		customerEvent:                 account.NewSqlCustomerEventStore(store),
 		customerNote:                  account.NewSqlCustomerNoteStore(store),
 		digitalContent:                product.NewSqlDigitalContentStore(store),
@@ -269,24 +263,12 @@ func (ss *SqlStore) AssignedProductAttributeValue() store.AssignedProductAttribu
 	return ss.stores.assignedProductAttributeValue
 }
 
-func (ss *SqlStore) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	return ss.stores.assignedVariantAttribute
-}
-
-func (ss *SqlStore) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	return ss.stores.assignedVariantAttributeValue
-}
-
 func (ss *SqlStore) Attribute() store.AttributeStore {
 	return ss.stores.attribute
 }
 
 func (ss *SqlStore) AttributePage() store.AttributePageStore {
 	return ss.stores.attributePage
-}
-
-func (ss *SqlStore) AttributeProduct() store.AttributeProductStore {
-	return ss.stores.attributeProduct
 }
 
 func (ss *SqlStore) AttributeTranslation() store.AttributeTranslationStore {
@@ -299,10 +281,6 @@ func (ss *SqlStore) AttributeValue() store.AttributeValueStore {
 
 func (ss *SqlStore) AttributeValueTranslation() store.AttributeValueTranslationStore {
 	return ss.stores.attributeValueTranslation
-}
-
-func (ss *SqlStore) AttributeVariant() store.AttributeVariantStore {
-	return ss.stores.attributeVariant
 }
 
 func (ss *SqlStore) Audit() store.AuditStore {
@@ -359,6 +337,10 @@ func (ss *SqlStore) CsvExportEvent() store.CsvExportEventStore {
 
 func (ss *SqlStore) CsvExportFile() store.CsvExportFileStore {
 	return ss.stores.csvExportFile
+}
+
+func (ss *SqlStore) CustomProductAttribute() store.CustomProductAttributeStore {
+	return ss.stores.customProductAttribute
 }
 
 func (ss *SqlStore) CustomerEvent() store.CustomerEventStore {

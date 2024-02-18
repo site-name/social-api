@@ -6,11 +6,12 @@ package sub_app_iface
 import (
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -123,14 +124,13 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model_helper.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model_helper.AppError)
-	// NOTE: if `isDelete` is true, system will add sale relations, otherwise if false
-	ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
 	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model_helper.AppError)
 	FilterVats(options *model.VatFilterOptions) ([]*model.Vat, *model_helper.AppError)
 	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError)
 	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model_helper.AppError)
+	ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
+	ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
 	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model_helper.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError)
-	ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
 }

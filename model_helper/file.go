@@ -171,3 +171,27 @@ func GetEtagForFileInfos(infos model.FileInfoSlice) string {
 
 	return Etag(infos[0].ParentID, maxUpdateAt)
 }
+
+func ExportFilePreSave(f *model.ExportFile) {
+	if f.ID == "" {
+		f.ID = NewId()
+	}
+	f.CreatedAt = GetMillis()
+	f.UpdatedAt = f.CreatedAt
+}
+
+func ExportFileIsValid(f model.ExportFile) *AppError {
+	if !IsValidId(f.ID) {
+		return NewAppError("ExportFileIsValid", "model.export_file.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if f.CreatedAt <= 0 {
+		return NewAppError("ExportFileIsValid", "model.export_file.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if f.UpdatedAt <= 0 {
+		return NewAppError("ExportFileIsValid", "model.export_file.is_valid.updated_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !f.UserID.IsNil() && !IsValidId(*f.UserID.String) {
+		return NewAppError("ExportFileIsValid", "model.export_file.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	return nil
+}

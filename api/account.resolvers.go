@@ -18,7 +18,7 @@ import (
 // NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	Input AddressInput
-	Type  *
+	Type  *AddressTypeEnum
 }) (*AccountAddressCreate, error) {
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedContext.AppContext.Session()

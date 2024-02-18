@@ -15,16 +15,6 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 	return &SqlShippingMethodPostalCodeRuleStore{s}
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) ScanFields(rule *model.ShippingMethodPostalCodeRule) []interface{} {
-	return []interface{}{
-		&rule.Id,
-		&rule.ShippingMethodID,
-		&rule.Start,
-		&rule.End,
-		&rule.InclusionType,
-	}
-}
-
 func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
 	args, err := store.BuildSqlizer(options.Conditions, "ShippingMethodPostalCodeRule_FilterByOptions")
 	if err != nil {

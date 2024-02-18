@@ -7,7 +7,8 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -119,14 +120,13 @@ type PaymentService interface {
 	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError)
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError)
-	// if order has no payment, returning error will be non-nil
 	GetLastOrderPayment(orderID string) (*model.Payment, *model_helper.AppError)
 	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model_helper.AppError)
 	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model_helper.AppError)
 	GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model_helper.AppError)
 	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*model.PaymentGateway
 	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model.CustomerSource, *model_helper.AppError)
-	PaymentGetAuthorizedAmount(pm *model.Payment) (*goprices.Money, *model_helper.AppError)
+	PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError)
 	SaveTransaction(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
 	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)

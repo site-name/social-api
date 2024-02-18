@@ -11,9 +11,10 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type TimerLayer struct {
@@ -27,15 +28,11 @@ type TimerLayer struct {
 	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
 	AssignedProductAttributeStore      store.AssignedProductAttributeStore
 	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
-	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
-	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
 	AttributeStore                     store.AttributeStore
 	AttributePageStore                 store.AttributePageStore
-	AttributeProductStore              store.AttributeProductStore
 	AttributeTranslationStore          store.AttributeTranslationStore
 	AttributeValueStore                store.AttributeValueStore
 	AttributeValueTranslationStore     store.AttributeValueTranslationStore
-	AttributeVariantStore              store.AttributeVariantStore
 	AuditStore                         store.AuditStore
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
@@ -50,6 +47,7 @@ type TimerLayer struct {
 	ComplianceStore                    store.ComplianceStore
 	CsvExportEventStore                store.CsvExportEventStore
 	CsvExportFileStore                 store.CsvExportFileStore
+	CustomProductAttributeStore        store.CustomProductAttributeStore
 	CustomerEventStore                 store.CustomerEventStore
 	CustomerNoteStore                  store.CustomerNoteStore
 	DigitalContentStore                store.DigitalContentStore
@@ -150,24 +148,12 @@ func (s *TimerLayer) AssignedProductAttributeValue() store.AssignedProductAttrib
 	return s.AssignedProductAttributeValueStore
 }
 
-func (s *TimerLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	return s.AssignedVariantAttributeStore
-}
-
-func (s *TimerLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	return s.AssignedVariantAttributeValueStore
-}
-
 func (s *TimerLayer) Attribute() store.AttributeStore {
 	return s.AttributeStore
 }
 
 func (s *TimerLayer) AttributePage() store.AttributePageStore {
 	return s.AttributePageStore
-}
-
-func (s *TimerLayer) AttributeProduct() store.AttributeProductStore {
-	return s.AttributeProductStore
 }
 
 func (s *TimerLayer) AttributeTranslation() store.AttributeTranslationStore {
@@ -180,10 +166,6 @@ func (s *TimerLayer) AttributeValue() store.AttributeValueStore {
 
 func (s *TimerLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
 	return s.AttributeValueTranslationStore
-}
-
-func (s *TimerLayer) AttributeVariant() store.AttributeVariantStore {
-	return s.AttributeVariantStore
 }
 
 func (s *TimerLayer) Audit() store.AuditStore {
@@ -240,6 +222,10 @@ func (s *TimerLayer) CsvExportEvent() store.CsvExportEventStore {
 
 func (s *TimerLayer) CsvExportFile() store.CsvExportFileStore {
 	return s.CsvExportFileStore
+}
+
+func (s *TimerLayer) CustomProductAttribute() store.CustomProductAttributeStore {
+	return s.CustomProductAttributeStore
 }
 
 func (s *TimerLayer) CustomerEvent() store.CustomerEventStore {
@@ -546,16 +532,6 @@ type TimerLayerAssignedProductAttributeValueStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerAssignedVariantAttributeStore struct {
-	store.AssignedVariantAttributeStore
-	Root *TimerLayer
-}
-
-type TimerLayerAssignedVariantAttributeValueStore struct {
-	store.AssignedVariantAttributeValueStore
-	Root *TimerLayer
-}
-
 type TimerLayerAttributeStore struct {
 	store.AttributeStore
 	Root *TimerLayer
@@ -563,11 +539,6 @@ type TimerLayerAttributeStore struct {
 
 type TimerLayerAttributePageStore struct {
 	store.AttributePageStore
-	Root *TimerLayer
-}
-
-type TimerLayerAttributeProductStore struct {
-	store.AttributeProductStore
 	Root *TimerLayer
 }
 
@@ -583,11 +554,6 @@ type TimerLayerAttributeValueStore struct {
 
 type TimerLayerAttributeValueTranslationStore struct {
 	store.AttributeValueTranslationStore
-	Root *TimerLayer
-}
-
-type TimerLayerAttributeVariantStore struct {
-	store.AttributeVariantStore
 	Root *TimerLayer
 }
 
@@ -658,6 +624,11 @@ type TimerLayerCsvExportEventStore struct {
 
 type TimerLayerCsvExportFileStore struct {
 	store.CsvExportFileStore
+	Root *TimerLayer
+}
+
+type TimerLayerCustomProductAttributeStore struct {
+	store.CustomProductAttributeStore
 	Root *TimerLayer
 }
 
@@ -1231,7 +1202,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) Upsert(tx boil.ContextTransa
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
+func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
@@ -1247,23 +1218,7 @@ func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options model.
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedProductAttributeStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.GetWithOption(option)
@@ -1279,23 +1234,7 @@ func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option model.Ass
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.FilterByOptions(options)
@@ -1343,23 +1282,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.SaveInBulk", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedProductAttributeValueStore.SelectForSort(assignmentID)
@@ -1373,182 +1296,6 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.SelectForSort", success, elapsed)
 	}
 	return result, resultVar1, err
-}
-
-func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error {
-	start := timemodule.Now()
-
-	err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.UpdateInBulk", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.FilterByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*model.AssignedVariantAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.GetWithOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeValueStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.SaveInBulk", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedVariantAttributeValueSlice, []*model.AttributeValue, error) {
-	start := timemodule.Now()
-
-	result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.SelectForSort", success, elapsed)
-	}
-	return result, resultVar1, err
-}
-
-func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error {
-	start := timemodule.Now()
-
-	err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.UpdateInBulk", success, elapsed)
-	}
-	return err
 }
 
 func (s *TimerLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
@@ -1695,70 +1442,6 @@ func (s *TimerLayerAttributePageStore) Save(page model.AttributePage) (*model.At
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeProductStore.FilterByOptions(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeProductStore.Get(attributeProductID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeProductStore) GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeProductStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeProductStore) Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeProductStore.Save(attributeProduct)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerAttributeValueStore) Count(options model_helper.AttributeValueFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
@@ -1835,70 +1518,6 @@ func (s *TimerLayerAttributeValueStore) Upsert(tx boil.ContextTransactor, values
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Upsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeVariantStore) FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeVariantStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeVariantStore.Get(attributeVariantID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeVariantStore) GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeVariantStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeVariantStore) Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeVariantStore.Save(attributeVariant)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -2683,6 +2302,54 @@ func (s *TimerLayerCsvExportFileStore) Save(file model.ExportFile) (*model.Expor
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportFileStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomProductAttributeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomProductAttributeStore.Delete(tx, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomProductAttributeStore.Delete", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomProductAttributeStore) FilterByOptions(options model_helper.CustomProductAttributeFilterOptions) (model.CustomProductAttributeSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomProductAttributeStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomProductAttributeStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomProductAttributeStore) Upsert(tx boil.ContextTransactor, record model.CustomProductAttribute) (*model.CustomProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomProductAttributeStore.Upsert(tx, record)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomProductAttributeStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -8031,15 +7698,11 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.AssignedPageAttributeValueStore = &TimerLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
 	newStore.AssignedProductAttributeStore = &TimerLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
 	newStore.AssignedProductAttributeValueStore = &TimerLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
-	newStore.AssignedVariantAttributeStore = &TimerLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
-	newStore.AssignedVariantAttributeValueStore = &TimerLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
 	newStore.AttributeStore = &TimerLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
 	newStore.AttributePageStore = &TimerLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
-	newStore.AttributeProductStore = &TimerLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
 	newStore.AttributeTranslationStore = &TimerLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
 	newStore.AttributeValueStore = &TimerLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
 	newStore.AttributeValueTranslationStore = &TimerLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
-	newStore.AttributeVariantStore = &TimerLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &TimerLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.CategoryStore = &TimerLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &TimerLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
@@ -8054,6 +7717,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ComplianceStore = &TimerLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
 	newStore.CsvExportEventStore = &TimerLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
 	newStore.CsvExportFileStore = &TimerLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.CustomProductAttributeStore = &TimerLayerCustomProductAttributeStore{CustomProductAttributeStore: childStore.CustomProductAttribute(), Root: &newStore}
 	newStore.CustomerEventStore = &TimerLayerCustomerEventStore{CustomerEventStore: childStore.CustomerEvent(), Root: &newStore}
 	newStore.CustomerNoteStore = &TimerLayerCustomerNoteStore{CustomerNoteStore: childStore.CustomerNote(), Root: &newStore}
 	newStore.DigitalContentStore = &TimerLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}

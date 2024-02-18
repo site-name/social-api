@@ -8,15 +8,14 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
 // ProductService contains methods for working with products
 type ProductService interface {
-	ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model_helper.AppError
-	ValidateVariantsAvailableForPurchase(variantIds []string, channelID string) *model_helper.AppError
 	// BulkUpsertProductChannelListings bulk update/inserts given product channel listings and returns them
 	BulkUpsertProductChannelListings(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, *model_helper.AppError)
 	// BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
@@ -135,10 +134,12 @@ type ProductService interface {
 	UpsertDigitalContentURL(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, *model_helper.AppError)
 	// UpsertProductVariant tells store to upsert given product variant and returns it
 	UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model_helper.AppError)
-	VisibleCollectionsToUser(channelSlug string, userIsShopStaff bool) ([]*model.Collection, *model_helper.AppError)
 	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model_helper.AppError)
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model_helper.AppError)
 	CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model_helper.AppError)
+	DeleteProductMedias(tx *gorm.DB, ids []string) (int64, *model_helper.AppError)
+	DeleteProductTypes(tx *gorm.DB, ids []string) (int64, *model_helper.AppError)
+	DeleteProductVariants(variantIds []string, requesterID string) (int64, *model_helper.AppError)
 	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model_helper.AppError)
 	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, *model_helper.AppError)
 	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
@@ -147,20 +148,20 @@ type ProductService interface {
 	GetProductAvailability(product model.Product, productChannelListing *model.ProductChannelListing, variants []*model.ProductVariant, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, manager interfaces.PluginManagerInterface, countryCode model.CountryCode, localCurrency string) (*model.ProductAvailability, *model_helper.AppError)
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model_helper.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model_helper.AppError)
-	GetVisibleToUserProducts(channel_IdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model_helper.AppError)
+	GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.Products, *model_helper.AppError)
 	IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model_helper.AppError)
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model_helper.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, *model_helper.AppError)
+	SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model_helper.AppError)
+	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model_helper.AppError
+	ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError
+	UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model_helper.AppError
 	UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model_helper.AppError
 	UpsertDigitalContent(digitalContent *model.DigitalContent) (*model.DigitalContent, *model_helper.AppError)
-	DeleteProductMedias(tx *gorm.DB, ids []string) (int64, *model_helper.AppError)
-	UpsertProductMedias(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, *model_helper.AppError)
-	DeleteProductTypes(tx *gorm.DB, ids []string) (int64, *model_helper.AppError)
-	UpsertProductType(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, *model_helper.AppError)
-	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model_helper.AppError
 	UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model_helper.AppError)
-	DeleteProductVariants(variantIds []string, requesterID string) (int64, *model_helper.AppError)
-	SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model_helper.AppError)
-	UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model_helper.AppError	
-	ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError
+	UpsertProductMedias(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, *model_helper.AppError)
+	UpsertProductType(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, *model_helper.AppError)
+	ValidateVariantsAvailableForPurchase(variantIds []string, channelID string) *model_helper.AppError
+	ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model_helper.AppError
+	VisibleCollectionsToUser(channelSlug string, userIsShopStaff bool) ([]*model.Collection, *model_helper.AppError)
 }

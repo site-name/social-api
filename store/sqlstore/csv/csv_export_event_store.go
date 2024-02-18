@@ -1,9 +1,10 @@
 package csv
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCsvExportEventStore struct {
@@ -14,27 +15,20 @@ func NewSqlCsvExportEventStore(sqlStore store.Store) store.CsvExportEventStore {
 	return &SqlCsvExportEventStore{sqlStore}
 }
 
-// Save inserts given export event into database then returns it
-func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
-	if err := cs.GetMaster().Create(event).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to save ExportEvent with ExportEventId=%s", event.Id)
+func (cs *SqlCsvExportEventStore) Save(event model.ExportEvent) (*model.ExportEvent, error) {
+	model_helper.ExportEventPreSave(&event)
+	if err := model_helper.ExportEventIsValid(event); err != nil {
+		return nil, err
 	}
 
-	return event, nil
-}
-
-// FilterByOption finds and returns a list of export events filtered using given option
-func (cs *SqlCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
+	err := event.Insert(cs.GetMaster(), boil.Infer())
 	if err != nil {
 		return nil, err
 	}
 
-	var res []*model.ExportEvent
-	err = cs.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find export events based on given options")
-	}
+	return &event, nil
+}
 
-	return res, nil
+func (cs *SqlCsvExportEventStore) FilterByOption(options model_helper.ExportEventFilterOption) ([]*model.ExportEvent, error) {
+	return model.ExportEvents(options.Conditions...).All(cs.GetReplica())
 }

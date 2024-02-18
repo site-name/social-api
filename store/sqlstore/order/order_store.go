@@ -19,47 +19,6 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	return &SqlOrderStore{sqlStore}
 }
 
-func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
-	return []interface{}{
-		&holder.Id,
-		&holder.CreateAt,
-		&holder.Status,
-		&holder.UserID,
-		&holder.LanguageCode,
-		&holder.TrackingClientID,
-		&holder.BillingAddressID,
-		&holder.ShippingAddressID,
-		&holder.UserEmail,
-		&holder.OriginalID,
-		&holder.Origin,
-		&holder.Currency,
-		&holder.ShippingMethodID,
-		&holder.CollectionPointID,
-		&holder.ShippingMethodName,
-		&holder.CollectionPointName,
-		&holder.ChannelID,
-		&holder.ShippingPriceNetAmount,
-		&holder.ShippingPriceGrossAmount,
-		&holder.ShippingTaxRate,
-		&holder.Token,
-		&holder.CheckoutToken,
-		&holder.TotalNetAmount,
-		&holder.UnDiscountedTotalNetAmount,
-		&holder.TotalGrossAmount,
-		&holder.UnDiscountedTotalGrossAmount,
-		&holder.TotalPaidAmount,
-		&holder.VoucherID,
-		&holder.DisplayGrossPrices,
-		&holder.CustomerNote,
-		&holder.WeightAmount,
-		&holder.WeightUnit,
-		&holder.Weight,
-		&holder.RedirectUrl,
-		&holder.Metadata,
-		&holder.PrivateMetadata,
-	}
-}
-
 // BulkUpsert performs bulk upsert given orders
 func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
 	if transaction == nil {

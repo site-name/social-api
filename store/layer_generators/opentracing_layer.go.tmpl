@@ -14,8 +14,9 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	goprices "github.com/site-name/go-prices"
 	spanlog "github.com/opentracing/opentracing-go/log"
-  "github.com/Masterminds/squirrel"
-	"gorm.io/gorm"
+  	"github.com/Masterminds/squirrel"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type {{.Name}} struct {

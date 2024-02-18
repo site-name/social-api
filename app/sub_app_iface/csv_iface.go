@@ -4,19 +4,20 @@
 package sub_app_iface
 
 import (
-	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/model"
+	"github.com/mattermost/squirrel"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/temp/model"
 )
 
 // CsvService contains methods for working with csv
 type CsvService interface {
 	// CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
-	CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model_helper.AppError)
+	CommonCreateExportEvent(exportEvent model.ExportEvent) (*model.ExportEvent, *model_helper.AppError)
 	// CreateExportFile inserts given export file into database then returns it
-	CreateExportFile(file *model.ExportFile) (*model.ExportFile, *model_helper.AppError)
+	CreateExportFile(file model.ExportFile) (*model.ExportFile, *model_helper.AppError)
 	// ExportEventsByOption returns a list of export events filtered using given options
-	ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError)
+	ExportEventsByOption(options model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError)
 	// ExportFileById returns an export file found by given id
 	ExportFileById(id string) (*model.ExportFile, *model_helper.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products

@@ -48,7 +48,7 @@ type OpenTracingAppLayer struct {
 	ctx context.Context
 }
 
-func (a *OpenTracingAppLayer) AddConfigListener(listener func(*model.Config, *model.Config)) string {
+func (a *OpenTracingAppLayer) AddConfigListener(listener func(*model_helper.Config, *model_helper.Config)) string {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AddConfigListener")
 
@@ -133,7 +133,7 @@ func (a *OpenTracingAppLayer) ClientConfigWithComputed() map[string]string {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Config() *model.Config {
+func (a *OpenTracingAppLayer) Config() *model_helper.Config {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Config")
 
@@ -278,7 +278,7 @@ func (a *OpenTracingAppLayer) ExportPermissions(w io.Writer) error {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (model.Audits, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (model.AuditSlice, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetAudits")
 
@@ -300,7 +300,7 @@ func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (model.Audits,
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) GetAuditsPage(userID string, page int, perPage int) (model.AuditSlice, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetAuditsPage")
 
@@ -339,7 +339,7 @@ func (a *OpenTracingAppLayer) GetClusterId() string {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetClusterStatus() []*model.ClusterInfo {
+func (a *OpenTracingAppLayer) GetClusterStatus() []*model_helper.ClusterInfo {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetClusterStatus")
 
@@ -400,7 +400,7 @@ func (a *OpenTracingAppLayer) GetComplianceReport(reportID string) (*model.Compl
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetComplianceReports(page int, perPage int) (model.Compliances, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) GetComplianceReports(page int, perPage int) (model.ComplianceSlice, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceReports")
 
@@ -527,7 +527,7 @@ func (a *OpenTracingAppLayer) GetOpenGraphMetadata(requestURL string) ([]byte, e
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetSanitizedConfig() *model.Config {
+func (a *OpenTracingAppLayer) GetSanitizedConfig() *model_helper.Config {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetSanitizedConfig")
 
@@ -583,7 +583,7 @@ func (a *OpenTracingAppLayer) GetSystemInstallDate() (int64, *model_helper.AppEr
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model_helper.WarnMetricStatus, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetWarnMetricsStatus")
 
@@ -620,7 +620,7 @@ func (a *OpenTracingAppLayer) Handle404(w http.ResponseWriter, r *http.Request) 
 	a.app.Handle404(w, r)
 }
 
-func (a *OpenTracingAppLayer) HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config) {
+func (a *OpenTracingAppLayer) HandleMessageExportConfig(cfg *model_helper.Config, appCfg *model_helper.Config) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.HandleMessageExportConfig")
 
@@ -799,7 +799,7 @@ func (a *OpenTracingAppLayer) NewClusterDiscoveryService() *app.ClusterDiscovery
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model_helper.AppError {
+func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, forceAck bool, isBot bool) *model_helper.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.NotifyAndSetWarnMetricAck")
 
@@ -855,7 +855,7 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Publish(message *model.WebSocketEvent) {
+func (a *OpenTracingAppLayer) Publish(message *model_helper.WebSocketEvent) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Publish")
 
@@ -929,7 +929,7 @@ func (a *OpenTracingAppLayer) ResetPermissionsSystem() *model_helper.AppError {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) SaveComplianceReport(job model.Compliance) (*model.Compliance, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SaveComplianceReport")
 
@@ -951,7 +951,7 @@ func (a *OpenTracingAppLayer) SaveComplianceReport(job *model.Compliance) (*mode
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model_helper.AppError) {
+func (a *OpenTracingAppLayer) SaveConfig(newCfg *model_helper.Config, sendConfigChangeClusterMessage bool) (*model_helper.Config, *model_helper.Config, *model_helper.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SaveConfig")
 
@@ -1012,7 +1012,7 @@ func (a *OpenTracingAppLayer) SetPhase2PermissionsMigrationStatus(isComplete boo
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) UpdateConfig(f func(*model.Config)) {
+func (a *OpenTracingAppLayer) UpdateConfig(f func(*model_helper.Config)) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateConfig")
 

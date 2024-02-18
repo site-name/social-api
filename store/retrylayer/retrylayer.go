@@ -12,9 +12,10 @@ import (
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type RetryLayer struct {
@@ -27,15 +28,11 @@ type RetryLayer struct {
 	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
 	AssignedProductAttributeStore      store.AssignedProductAttributeStore
 	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
-	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
-	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
 	AttributeStore                     store.AttributeStore
 	AttributePageStore                 store.AttributePageStore
-	AttributeProductStore              store.AttributeProductStore
 	AttributeTranslationStore          store.AttributeTranslationStore
 	AttributeValueStore                store.AttributeValueStore
 	AttributeValueTranslationStore     store.AttributeValueTranslationStore
-	AttributeVariantStore              store.AttributeVariantStore
 	AuditStore                         store.AuditStore
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
@@ -50,6 +47,7 @@ type RetryLayer struct {
 	ComplianceStore                    store.ComplianceStore
 	CsvExportEventStore                store.CsvExportEventStore
 	CsvExportFileStore                 store.CsvExportFileStore
+	CustomProductAttributeStore        store.CustomProductAttributeStore
 	CustomerEventStore                 store.CustomerEventStore
 	CustomerNoteStore                  store.CustomerNoteStore
 	DigitalContentStore                store.DigitalContentStore
@@ -150,24 +148,12 @@ func (s *RetryLayer) AssignedProductAttributeValue() store.AssignedProductAttrib
 	return s.AssignedProductAttributeValueStore
 }
 
-func (s *RetryLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	return s.AssignedVariantAttributeStore
-}
-
-func (s *RetryLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	return s.AssignedVariantAttributeValueStore
-}
-
 func (s *RetryLayer) Attribute() store.AttributeStore {
 	return s.AttributeStore
 }
 
 func (s *RetryLayer) AttributePage() store.AttributePageStore {
 	return s.AttributePageStore
-}
-
-func (s *RetryLayer) AttributeProduct() store.AttributeProductStore {
-	return s.AttributeProductStore
 }
 
 func (s *RetryLayer) AttributeTranslation() store.AttributeTranslationStore {
@@ -180,10 +166,6 @@ func (s *RetryLayer) AttributeValue() store.AttributeValueStore {
 
 func (s *RetryLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
 	return s.AttributeValueTranslationStore
-}
-
-func (s *RetryLayer) AttributeVariant() store.AttributeVariantStore {
-	return s.AttributeVariantStore
 }
 
 func (s *RetryLayer) Audit() store.AuditStore {
@@ -240,6 +222,10 @@ func (s *RetryLayer) CsvExportEvent() store.CsvExportEventStore {
 
 func (s *RetryLayer) CsvExportFile() store.CsvExportFileStore {
 	return s.CsvExportFileStore
+}
+
+func (s *RetryLayer) CustomProductAttribute() store.CustomProductAttributeStore {
+	return s.CustomProductAttributeStore
 }
 
 func (s *RetryLayer) CustomerEvent() store.CustomerEventStore {
@@ -546,16 +532,6 @@ type RetryLayerAssignedProductAttributeValueStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerAssignedVariantAttributeStore struct {
-	store.AssignedVariantAttributeStore
-	Root *RetryLayer
-}
-
-type RetryLayerAssignedVariantAttributeValueStore struct {
-	store.AssignedVariantAttributeValueStore
-	Root *RetryLayer
-}
-
 type RetryLayerAttributeStore struct {
 	store.AttributeStore
 	Root *RetryLayer
@@ -563,11 +539,6 @@ type RetryLayerAttributeStore struct {
 
 type RetryLayerAttributePageStore struct {
 	store.AttributePageStore
-	Root *RetryLayer
-}
-
-type RetryLayerAttributeProductStore struct {
-	store.AttributeProductStore
 	Root *RetryLayer
 }
 
@@ -583,11 +554,6 @@ type RetryLayerAttributeValueStore struct {
 
 type RetryLayerAttributeValueTranslationStore struct {
 	store.AttributeValueTranslationStore
-	Root *RetryLayer
-}
-
-type RetryLayerAttributeVariantStore struct {
-	store.AttributeVariantStore
 	Root *RetryLayer
 }
 
@@ -658,6 +624,11 @@ type RetryLayerCsvExportEventStore struct {
 
 type RetryLayerCsvExportFileStore struct {
 	store.CsvExportFileStore
+	Root *RetryLayer
+}
+
+type RetryLayerCustomProductAttributeStore struct {
+	store.CustomProductAttributeStore
 	Root *RetryLayer
 }
 
@@ -1302,7 +1273,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) Upsert(tx boil.ContextTransa
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
+func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
 
 	tries := 0
 	for {
@@ -1322,27 +1293,7 @@ func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options model.
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedProductAttributeStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1362,27 +1313,7 @@ func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option model.Ass
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1442,27 +1373,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error) {
 
 	tries := 0
 	for {
@@ -1477,226 +1388,6 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, resultVar1, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error {
-
-	tries := 0
-	for {
-		err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*model.AssignedVariantAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeValueStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error) {
-
-	tries := 0
-	for {
-		result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedVariantAttributeValueSlice, []*model.AttributeValue, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
-		if err == nil {
-			return result, resultVar1, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error {
-
-	tries := 0
-	for {
-		err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
 		}
 	}
 
@@ -1882,86 +1573,6 @@ func (s *RetryLayerAttributePageStore) Save(page model.AttributePage) (*model.At
 
 }
 
-func (s *RetryLayerAttributeProductStore) FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeProductStore.FilterByOptions(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeProductStore.Get(attributeProductID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeProductStore) GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeProductStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeProductStore) Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeProductStore.Save(attributeProduct)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerAttributeValueStore) Count(options model_helper.AttributeValueFilterOptions) (int64, error) {
 
 	tries := 0
@@ -2047,86 +1658,6 @@ func (s *RetryLayerAttributeValueStore) Upsert(tx boil.ContextTransactor, values
 	tries := 0
 	for {
 		result, err := s.AttributeValueStore.Upsert(tx, values)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeVariantStore) FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeVariantStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeVariantStore.Get(attributeVariantID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeVariantStore) GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeVariantStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeVariantStore) Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeVariantStore.Save(attributeVariant)
 		if err == nil {
 			return result, nil
 		}
@@ -3107,6 +2638,66 @@ func (s *RetryLayerCsvExportFileStore) Save(file model.ExportFile) (*model.Expor
 	tries := 0
 	for {
 		result, err := s.CsvExportFileStore.Save(file)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomProductAttributeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomProductAttributeStore.Delete(tx, ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomProductAttributeStore) FilterByOptions(options model_helper.CustomProductAttributeFilterOptions) (model.CustomProductAttributeSlice, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomProductAttributeStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomProductAttributeStore) Upsert(tx boil.ContextTransactor, record model.CustomProductAttribute) (*model.CustomProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomProductAttributeStore.Upsert(tx, record)
 		if err == nil {
 			return result, nil
 		}
@@ -9645,15 +9236,11 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.AssignedPageAttributeValueStore = &RetryLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
 	newStore.AssignedProductAttributeStore = &RetryLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
 	newStore.AssignedProductAttributeValueStore = &RetryLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
-	newStore.AssignedVariantAttributeStore = &RetryLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
-	newStore.AssignedVariantAttributeValueStore = &RetryLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
 	newStore.AttributeStore = &RetryLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
 	newStore.AttributePageStore = &RetryLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
-	newStore.AttributeProductStore = &RetryLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
 	newStore.AttributeTranslationStore = &RetryLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
 	newStore.AttributeValueStore = &RetryLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
 	newStore.AttributeValueTranslationStore = &RetryLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
-	newStore.AttributeVariantStore = &RetryLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &RetryLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.CategoryStore = &RetryLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &RetryLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
@@ -9668,6 +9255,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ComplianceStore = &RetryLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
 	newStore.CsvExportEventStore = &RetryLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
 	newStore.CsvExportFileStore = &RetryLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.CustomProductAttributeStore = &RetryLayerCustomProductAttributeStore{CustomProductAttributeStore: childStore.CustomProductAttribute(), Root: &newStore}
 	newStore.CustomerEventStore = &RetryLayerCustomerEventStore{CustomerEventStore: childStore.CustomerEvent(), Root: &newStore}
 	newStore.CustomerNoteStore = &RetryLayerCustomerNoteStore{CustomerNoteStore: childStore.CustomerNote(), Root: &newStore}
 	newStore.DigitalContentStore = &RetryLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}

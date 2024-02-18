@@ -18,21 +18,6 @@ func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 	return &SqlFulfillmentStore{sqlStore}
 }
 
-func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface{} {
-	return []interface{}{
-		&holder.Id,
-		&holder.FulfillmentOrder,
-		&holder.OrderID,
-		&holder.Status,
-		&holder.TrackingNumber,
-		&holder.CreateAt,
-		&holder.ShippingRefundAmount,
-		&holder.TotalRefundAmount,
-		&holder.Metadata,
-		&holder.PrivateMetadata,
-	}
-}
-
 // Upsert depends on given fulfillment's Id to decide update or insert it
 func (fs *SqlFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	if transaction == nil {

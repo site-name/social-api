@@ -4,7 +4,8 @@
 package sub_app_iface
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +13,6 @@ import (
 type AttributeService interface {
 	// AssignedPageAttributeByOption returns 1 assigned page attribute
 	AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError)
-	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model_helper.AppError)
 	// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
 	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError)
 	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
@@ -47,6 +47,7 @@ type AttributeService interface {
 	UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model_helper.AppError)
 	// UpsertAttributeValue insderts or updates given attribute value then returns it
 	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model_helper.AppError)
+	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model_helper.AppError)
 	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model_helper.AppError)
 	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model_helper.AppError)
 	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model_helper.AppError)

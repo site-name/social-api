@@ -892,9 +892,13 @@ func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user model.User
 	}
 
 	infos, err := a.srv.Store.FileInfo().GetWithOptions(
-		model.FileInfoWhere.CreatorID.EQ(user.ID),
-		model.FileInfoWhere.DeleteAt.EQ(0),
-		qm.OrderBy(model.FileInfoColumns.CreatedAt), // ASC by default
+		model_helper.FileInfoFilterOption{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.FileInfoWhere.CreatorID.EQ(user.ID),
+				model.FileInfoWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+				qm.OrderBy(model.FileInfoColumns.CreatedAt), // ASC by default
+			),
+		},
 	)
 	if err != nil {
 		slog.Warn("Error getting file list for user from FileInfoStore", slog.Err(err))

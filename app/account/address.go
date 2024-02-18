@@ -57,7 +57,7 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model
 	if manager != nil {
 		_, appErr := manager.ChangeUserAddress(address, &addressType, &user)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 	}
 

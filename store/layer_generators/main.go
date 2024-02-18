@@ -152,7 +152,7 @@ func buildStoreImplement() error {
 			case "Attribute", "AttributeTranslation", "AttributeValue", "AttributeValueTranslation",
 				"AssignedPageAttributeValue", "AssignedPageAttribute", "AttributePage",
 				"AssignedVariantAttributeValue", "AssignedVariantAttribute", "AttributeVariant",
-				"AssignedProductAttributeValue", "AssignedProductAttribute", "AttributeProduct":
+				"AssignedProductAttributeValue", "AssignedProductAttribute", "AttributeProduct", "CustomProductAttribute":
 				return "attribute"
 			case "FileInfo", "UploadSession":
 				return "file"

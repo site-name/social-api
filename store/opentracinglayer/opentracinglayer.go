@@ -12,10 +12,11 @@ import (
 	spanlog "github.com/opentracing/opentracing-go/log"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type OpenTracingLayer struct {
@@ -28,15 +29,11 @@ type OpenTracingLayer struct {
 	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
 	AssignedProductAttributeStore      store.AssignedProductAttributeStore
 	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
-	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
-	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
 	AttributeStore                     store.AttributeStore
 	AttributePageStore                 store.AttributePageStore
-	AttributeProductStore              store.AttributeProductStore
 	AttributeTranslationStore          store.AttributeTranslationStore
 	AttributeValueStore                store.AttributeValueStore
 	AttributeValueTranslationStore     store.AttributeValueTranslationStore
-	AttributeVariantStore              store.AttributeVariantStore
 	AuditStore                         store.AuditStore
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
@@ -51,6 +48,7 @@ type OpenTracingLayer struct {
 	ComplianceStore                    store.ComplianceStore
 	CsvExportEventStore                store.CsvExportEventStore
 	CsvExportFileStore                 store.CsvExportFileStore
+	CustomProductAttributeStore        store.CustomProductAttributeStore
 	CustomerEventStore                 store.CustomerEventStore
 	CustomerNoteStore                  store.CustomerNoteStore
 	DigitalContentStore                store.DigitalContentStore
@@ -151,24 +149,12 @@ func (s *OpenTracingLayer) AssignedProductAttributeValue() store.AssignedProduct
 	return s.AssignedProductAttributeValueStore
 }
 
-func (s *OpenTracingLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	return s.AssignedVariantAttributeStore
-}
-
-func (s *OpenTracingLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	return s.AssignedVariantAttributeValueStore
-}
-
 func (s *OpenTracingLayer) Attribute() store.AttributeStore {
 	return s.AttributeStore
 }
 
 func (s *OpenTracingLayer) AttributePage() store.AttributePageStore {
 	return s.AttributePageStore
-}
-
-func (s *OpenTracingLayer) AttributeProduct() store.AttributeProductStore {
-	return s.AttributeProductStore
 }
 
 func (s *OpenTracingLayer) AttributeTranslation() store.AttributeTranslationStore {
@@ -181,10 +167,6 @@ func (s *OpenTracingLayer) AttributeValue() store.AttributeValueStore {
 
 func (s *OpenTracingLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
 	return s.AttributeValueTranslationStore
-}
-
-func (s *OpenTracingLayer) AttributeVariant() store.AttributeVariantStore {
-	return s.AttributeVariantStore
 }
 
 func (s *OpenTracingLayer) Audit() store.AuditStore {
@@ -241,6 +223,10 @@ func (s *OpenTracingLayer) CsvExportEvent() store.CsvExportEventStore {
 
 func (s *OpenTracingLayer) CsvExportFile() store.CsvExportFileStore {
 	return s.CsvExportFileStore
+}
+
+func (s *OpenTracingLayer) CustomProductAttribute() store.CustomProductAttributeStore {
+	return s.CustomProductAttributeStore
 }
 
 func (s *OpenTracingLayer) CustomerEvent() store.CustomerEventStore {
@@ -547,16 +533,6 @@ type OpenTracingLayerAssignedProductAttributeValueStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerAssignedVariantAttributeStore struct {
-	store.AssignedVariantAttributeStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerAssignedVariantAttributeValueStore struct {
-	store.AssignedVariantAttributeValueStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerAttributeStore struct {
 	store.AttributeStore
 	Root *OpenTracingLayer
@@ -564,11 +540,6 @@ type OpenTracingLayerAttributeStore struct {
 
 type OpenTracingLayerAttributePageStore struct {
 	store.AttributePageStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerAttributeProductStore struct {
-	store.AttributeProductStore
 	Root *OpenTracingLayer
 }
 
@@ -584,11 +555,6 @@ type OpenTracingLayerAttributeValueStore struct {
 
 type OpenTracingLayerAttributeValueTranslationStore struct {
 	store.AttributeValueTranslationStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerAttributeVariantStore struct {
-	store.AttributeVariantStore
 	Root *OpenTracingLayer
 }
 
@@ -659,6 +625,11 @@ type OpenTracingLayerCsvExportEventStore struct {
 
 type OpenTracingLayerCsvExportFileStore struct {
 	store.CsvExportFileStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCustomProductAttributeStore struct {
+	store.CustomProductAttributeStore
 	Root *OpenTracingLayer
 }
 
@@ -1262,7 +1233,7 @@ func (s *OpenTracingLayerAssignedPageAttributeValueStore) Upsert(tx boil.Context
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeStore) FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
+func (s *OpenTracingLayerAssignedProductAttributeStore) FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -1280,25 +1251,7 @@ func (s *OpenTracingLayerAssignedProductAttributeStore) FilterByOptions(options 
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedProductAttributeStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedProductAttributeStore) GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+func (s *OpenTracingLayerAssignedProductAttributeStore) GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.GetWithOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1316,25 +1269,7 @@ func (s *OpenTracingLayerAssignedProductAttributeStore) GetWithOption(option mod
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
+func (s *OpenTracingLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -1388,25 +1323,7 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) Save(assignedProduc
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.SaveInBulk")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error) {
+func (s *OpenTracingLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.SelectForSort")
 	s.Root.Store.SetContext(newCtx)
@@ -1422,204 +1339,6 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) SelectForSort(assig
 	}
 
 	return result, resultVar1, err
-}
-
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.UpdateInBulk")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeStore) FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.FilterByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeStore) Get(id string) (*model.AssignedVariantAttribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeStore) GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.GetWithOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeValueStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.SaveInBulk")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (model.AssignedVariantAttributeValueSlice, []*model.AttributeValue, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.SelectForSort")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, resultVar1, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.UpdateInBulk")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
 }
 
 func (s *OpenTracingLayerAttributeStore) CountByOptions(options model.AttributeFilterOption) (int64, error) {
@@ -1784,78 +1503,6 @@ func (s *OpenTracingLayerAttributePageStore) Save(page model.AttributePage) (*mo
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeProductStore) FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeProductStore.FilterByOptions(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeProductStore.Get(attributeProductID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeProductStore) GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.GetByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeProductStore.GetByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeProductStore) Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeProductStore.Save(attributeProduct)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerAttributeValueStore) Count(options model_helper.AttributeValueFilterOptions) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Count")
@@ -1938,78 +1585,6 @@ func (s *OpenTracingLayerAttributeValueStore) Upsert(tx boil.ContextTransactor, 
 
 	defer span.Finish()
 	result, err := s.AttributeValueStore.Upsert(tx, values)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeVariantStore) FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeVariantStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeVariantStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeVariantStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeVariantStore.Get(attributeVariantID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeVariantStore) GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeVariantStore.GetByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeVariantStore.GetByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeVariantStore) Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeVariantStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeVariantStore.Save(attributeVariant)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2892,6 +2467,60 @@ func (s *OpenTracingLayerCsvExportFileStore) Save(file model.ExportFile) (*model
 
 	defer span.Finish()
 	result, err := s.CsvExportFileStore.Save(file)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCustomProductAttributeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomProductAttributeStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CustomProductAttributeStore.Delete(tx, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCustomProductAttributeStore) FilterByOptions(options model_helper.CustomProductAttributeFilterOptions) (model.CustomProductAttributeSlice, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomProductAttributeStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CustomProductAttributeStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCustomProductAttributeStore) Upsert(tx boil.ContextTransactor, record model.CustomProductAttribute) (*model.CustomProductAttribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomProductAttributeStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CustomProductAttributeStore.Upsert(tx, record)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8858,15 +8487,11 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.AssignedPageAttributeValueStore = &OpenTracingLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
 	newStore.AssignedProductAttributeStore = &OpenTracingLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
 	newStore.AssignedProductAttributeValueStore = &OpenTracingLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
-	newStore.AssignedVariantAttributeStore = &OpenTracingLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
-	newStore.AssignedVariantAttributeValueStore = &OpenTracingLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
 	newStore.AttributeStore = &OpenTracingLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
 	newStore.AttributePageStore = &OpenTracingLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
-	newStore.AttributeProductStore = &OpenTracingLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
 	newStore.AttributeTranslationStore = &OpenTracingLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
 	newStore.AttributeValueStore = &OpenTracingLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
 	newStore.AttributeValueTranslationStore = &OpenTracingLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
-	newStore.AttributeVariantStore = &OpenTracingLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &OpenTracingLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.CategoryStore = &OpenTracingLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &OpenTracingLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
@@ -8881,6 +8506,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.ComplianceStore = &OpenTracingLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
 	newStore.CsvExportEventStore = &OpenTracingLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
 	newStore.CsvExportFileStore = &OpenTracingLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.CustomProductAttributeStore = &OpenTracingLayerCustomProductAttributeStore{CustomProductAttributeStore: childStore.CustomProductAttribute(), Root: &newStore}
 	newStore.CustomerEventStore = &OpenTracingLayerCustomerEventStore{CustomerEventStore: childStore.CustomerEvent(), Root: &newStore}
 	newStore.CustomerNoteStore = &OpenTracingLayerCustomerNoteStore{CustomerNoteStore: childStore.CustomerNote(), Root: &newStore}
 	newStore.DigitalContentStore = &OpenTracingLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}

@@ -1,13 +1,14 @@
 package attribute
 
 import (
-	"strings"
+	"database/sql"
+	"fmt"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAssignedProductAttributeStore struct {
@@ -18,88 +19,33 @@ func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAtt
 	return &SqlAssignedProductAttributeStore{s}
 }
 
-func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-	if err := as.GetMaster().Save(newInstance).Error; err != nil {
-		if as.IsUniqueConstraintError(err, []string{"ProductID", "AssignmentID", strings.ToLower(model.AssignedProductAttributeTableName) + "_productid_assignmentid_key"}) {
-			return nil, store.NewErrInvalidInput(model.AssignedProductAttributeTableName, "ProductID/AssignmentID", newInstance.ProductID+"/"+newInstance.AssignmentID)
-		}
-		return nil, errors.Wrap(err, "failed to insert new assigned product attribute with")
-	}
-
-	return newInstance, nil
-}
-
-func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
-	var res model.AssignedProductAttribute
-
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find assigned product attribute with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
-	selectFields := []string{model.AssignedProductAttributeTableName + ".*"}
-
-	query := as.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.AssignedProductAttributeTableName).
-		Where(options.Conditions)
-
+func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options model_helper.AssignedProductAttributeFilterOption) []qm.QueryMod {
+	conds := options.Conditions
 	if options.AttributeProduct_Attribute_VisibleInStoreFront != nil {
-		query = query.
-			InnerJoin(model.AttributeProductTableName + " ON AttributeProducts.Id = AssignedProductAttributes.AssignmentID").
-			InnerJoin(model.AttributeTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
-			Where(squirrel.Eq{model.AttributeTableName + ".VisibleInStoreFront": *options.AttributeProduct_Attribute_VisibleInStoreFront})
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.CategoryAttributes, model.CategoryAttributeTableColumns.ID, model.AssignedProductAttributeTableColumns.AssignmentID)),
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Attributes, model.AttributeTableColumns.ID, model.CategoryAttributeTableColumns.AttributeID)),
+			model.AttributeWhere.VisibleInStorefront.EQ(*options.AttributeProduct_Attribute_VisibleInStoreFront),
+		)
 	}
-
-	return query
+	return conds
 }
 
-func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
-	queryString, args, err := as.commonQueryBuilder(option).ToSql()
+func (as *SqlAssignedProductAttributeStore) GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
+	conds := as.commonQueryBuilder(option)
+	record, err := model.AssignedProductAttributes(conds...).One(as.GetReplica())
 	if err != nil {
-		return nil, errors.Wrap(err, "GetWithOption_ToSql")
-	}
-
-	var res model.AssignedProductAttribute
-	db := as.GetReplica()
-
-	for _, preload := range option.Preloads {
-		db = db.Preload(preload)
-	}
-
-	err = db.Raw(queryString, args...).First(&res).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, "option")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AssignedProductAttributes, "options")
 		}
-		return nil, errors.Wrapf(err, "failed to find assigned product attribute with given options")
+		return nil, errors.Wrap(err, "GetWithOption")
 	}
 
-	return &res, nil
+	return record, nil
 }
 
-func (as *SqlAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
-	queryString, args, err := as.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	var res model.AssignedProductAttributes
-	db := as.GetReplica()
-	for _, preload := range options.Preloads {
-		db = db.Preload(preload)
-	}
-	err = db.Raw(queryString, args...).Scan(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find assigned product attributes with given options")
-	}
-
-	return res, nil
+func (as *SqlAssignedProductAttributeStore) FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error) {
+	conds := as.commonQueryBuilder(options)
+	return model.AssignedProductAttributes(conds...).All(as.GetReplica())
 }

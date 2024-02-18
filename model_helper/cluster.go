@@ -112,7 +112,10 @@ func ClusterDiscoveriesAreEqual(c1 *model.ClusterDiscovery, c2 *model.ClusterDis
 		c1.HostName == c2.HostName
 }
 
-func ClusterDiscoveryIsValid(c *model.ClusterDiscovery) *AppError {
+func ClusterDiscoveryIsValid(c model.ClusterDiscovery) *AppError {
+	if !IsValidId(c.ID) {
+		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.id.app_error", nil, "please provide valid cluster id", http.StatusBadRequest)
+	}
 	if c.ClusterName == "" {
 		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.cluster_name.app_error", nil, "please provide cluster name", http.StatusBadRequest)
 	}
@@ -122,6 +125,19 @@ func ClusterDiscoveryIsValid(c *model.ClusterDiscovery) *AppError {
 	if c.HostName == "" {
 		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.host_name.app_error", nil, "please provide host name", http.StatusBadRequest)
 	}
+	if c.CreatedAt <= 0 {
+		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.created_at.app_error", nil, "please provide created at", http.StatusBadRequest)
+	}
 
 	return nil
+}
+
+func ClusterDiscoveryPreSave(c *model.ClusterDiscovery) {
+	if c.ID == "" {
+		c.ID = NewId()
+	}
+	if c.CreatedAt == 0 {
+		c.CreatedAt = GetMillis()
+		c.LastPingAt = c.CreatedAt
+	}
 }

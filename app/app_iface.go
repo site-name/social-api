@@ -22,6 +22,10 @@ import (
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
+	//	func (a *App) Cloud() einterfaces.CloudInterface {
+	//		return a.srv.Cloud
+	//	}
+	HTTPService() httpservice.HTTPService
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
@@ -31,7 +35,7 @@ type AppIface interface {
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// GetComplianceReports returns compliances along with an app error
-	GetComplianceReports(page, perPage int) (model_helper.Compliances, *model_helper.AppError)
+	GetComplianceReports(page, perPage int) (model.ComplianceSlice, *model_helper.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -60,23 +64,19 @@ type AppIface interface {
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model_helper.AppError
 	// SaveComplianceReport
-	SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model_helper.AppError)
+	SaveComplianceReport(job model.Compliance) (*model.Compliance, *model_helper.AppError)
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
-	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model_helper.AppError)
+	SaveConfig(newCfg *model_helper.Config, sendConfigChangeClusterMessage bool) (*model_helper.Config, *model_helper.Config, *model_helper.AppError)
 	// Srv returns system server
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
 	// UpdateConfig updates config
-	UpdateConfig(f func(*model.Config))
-	//	func (a *App) Cloud() einterfaces.CloudInterface {
-	//		return a.srv.Cloud
-	//	}
-	HTTPService() httpservice.HTTPService
+	UpdateConfig(f func(*model_helper.Config))
 	// metrics for app
 	Metrics() einterfaces.MetricsInterface
 	AccountMigration() einterfaces.AccountMigrationInterface
-	AddConfigListener(listener func(*model.Config, *model.Config)) string
+	AddConfigListener(listener func(*model_helper.Config, *model_helper.Config)) string
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
@@ -87,19 +87,19 @@ type AppIface interface {
 	DoSystemConsoleRolesCreationMigration()
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	GetAudits(userID string, limit int) (model.Audits, *model_helper.AppError)
-	GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model_helper.AppError)
+	GetAudits(userID string, limit int) (model.AuditSlice, *model_helper.AppError)
+	GetAuditsPage(userID string, page int, perPage int) (model.AuditSlice, *model_helper.AppError)
 	GetClusterId() string
-	GetClusterStatus() []*model.ClusterInfo
+	GetClusterStatus() []*model_helper.ClusterInfo
 	GetComplianceFile(job *model.Compliance) ([]byte, *model_helper.AppError)
 	GetComplianceReport(reportID string) (*model.Compliance, *model_helper.AppError)
 	GetLogs(page, perPage int) ([]string, *model_helper.AppError)
 	GetLogsSkipSend(page, perPage int) ([]string, *model_helper.AppError)
 	GetOpenGraphMetadata(requestURL string) ([]byte, error)
 	GetSystemInstallDate() (int64, *model_helper.AppError)
-	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model_helper.AppError)
+	GetWarnMetricsStatus() (map[string]*model_helper.WarnMetricStatus, *model_helper.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
-	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
+	HandleMessageExportConfig(cfg *model_helper.Config, appCfg *model_helper.Config)
 	ImageProxy() *imageproxy.ImageProxy
 	ImageProxyAdder() func(string) string
 	ImageProxyRemover() func(string) string
@@ -107,7 +107,7 @@ type AppIface interface {
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
 	NewClusterDiscoveryService() *ClusterDiscoveryService
-	NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model_helper.AppError
+	NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, forceAck bool, isBot bool) *model_helper.AppError
 	OriginChecker() func(*http.Request) bool
 	PostActionCookieSecret() []byte
 	ReloadConfig() error

@@ -127,12 +127,8 @@ type Store interface {
 	AssignedPageAttributeValue() AssignedPageAttributeValueStore       //
 	AssignedPageAttribute() AssignedPageAttributeStore                 //
 	AttributePage() AttributePageStore                                 //
-	AssignedVariantAttributeValue() AssignedVariantAttributeValueStore //
-	AssignedVariantAttribute() AssignedVariantAttributeStore           //
-	AttributeVariant() AttributeVariantStore                           //
 	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
 	AssignedProductAttribute() AssignedProductAttributeStore           //
-	AttributeProduct() AttributeProductStore                           //
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
 	Plugin() PluginStore                                               //
@@ -140,6 +136,11 @@ type Store interface {
 	ShopStaff() ShopStaffStore                                         //
 	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
+
+	// AssignedVariantAttributeValue() AssignedVariantAttributeValueStore //
+	// AssignedVariantAttribute() AssignedVariantAttributeStore           //
+	// AttributeVariant() AttributeVariantStore                           //
+	// AttributeProduct() AttributeProductStore                           //
 }
 
 // shop
@@ -202,11 +203,11 @@ type FileInfoStore interface {
 type (
 	AttributeStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		Upsert(attr model.Attribute) (*model.Attribute, error)                           // Upsert inserts or updates given model then returns it
-		FilterbyOption(option model.AttributeFilterOption) (model.AttributeSlice, error) // FilterbyOption returns a list of attributes by given option
-		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.AttributeSlice, error)
+		Upsert(attr model.Attribute) (*model.Attribute, error)                                  // Upsert inserts or updates given model then returns it
+		FilterbyOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, error) // FilterbyOption returns a list of attributes by given option
+		GetProductTypeAttributes(productTypeID string, unassigned bool, filter model_helper.AttributeFilterOption) (model.AttributeSlice, error)
 		GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.AttributeSlice, error)
-		CountByOptions(options model.AttributeFilterOption) (int64, error)
+		CountByOptions(options model_helper.AttributeFilterOption) (int64, error)
 	}
 	AttributeTranslationStore interface {
 	}
@@ -232,57 +233,59 @@ type (
 	AttributePageStore interface {
 		Save(page model.AttributePage) (*model.AttributePage, error)
 		Get(pageID string) (*model.AttributePage, error)
-		GetByOption(option model.AttributePageFilterOption) (*model.AttributePage, error)
+		GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error)
 	}
-	AssignedVariantAttributeValueStore interface {
-		Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                                 // Save inserts new value into database then returns it with an error
-		Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                     // Get try finding a value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error)                                                    // SaveInBulk save multiple values into database then returns them
-		SelectForSort(assignmentID string) (assignedVariantAttributeValues model.AssignedVariantAttributeValueSlice, attributeValues []*model.AttributeValue, err error) // SelectForSort
-		UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error                                                                                     // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
-		FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error)
-	}
-	AssignedVariantAttributeStore interface {
-		Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error)         // Save insert new instance into database then returns it with an error
-		Get(id string) (*model.AssignedVariantAttribute, error)                                                        // Get find assigned variant model from database then returns it with an error
-		GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error)      // GetWithOption try finding an assigned variant model with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
-		FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
-	}
-	AttributeVariantStore interface {
-		Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error)
-		Get(attributeVariantID string) (*model.AttributeVariant, error)
-		GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) // GetByOption finds 1 model variant with given option.
-		FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
-	}
+	// AssignedVariantAttributeValueStore interface {
+	// 	Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                                 // Save inserts new value into database then returns it with an error
+	// 	Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                     // Get try finding a value with given id then returns it with an error
+	// 	SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error)                                                    // SaveInBulk save multiple values into database then returns them
+	// 	SelectForSort(assignmentID string) (assignedVariantAttributeValues model.AssignedVariantAttributeValueSlice, attributeValues []*model.AttributeValue, err error) // SelectForSort
+	// 	UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error                                                                                     // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
+	// 	FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error)
+	// }
+	// AssignedVariantAttributeStore interface {
+	// Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error)         // Save insert new instance into database then returns it with an error
+	// Get(id string) (*model.AssignedVariantAttribute, error)                                                        // Get find assigned variant model from database then returns it with an error
+	// GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error)      // GetWithOption try finding an assigned variant model with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
+	// FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
+	// }
+	// AttributeVariantStore interface {
+	// 	Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error)
+	// 	Get(attributeVariantID string) (*model.AttributeVariant, error)
+	// 	GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) // GetByOption finds 1 model variant with given option.
+	// 	FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
+	// }
 	AssignedProductAttributeValueStore interface {
 		Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                             // Get try finding an instance with given id then returns the value with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedProductAttributeValueSlice, error)    // SaveInBulk save multiple values into database
-		SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, []*model.AttributeValue, error)    // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
-		UpdateInBulk(attributeValues model.AssignedProductAttributeValueSlice) error                                     // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
-		FilterByOptions(options model.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error)
+		SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error)  // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
+		FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error)
 	}
 	AssignedProductAttributeStore interface {
-		Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)    // Save inserts new assgignedProductAttribute into database and returns it with an error
-		Get(id string) (*model.AssignedProductAttribute, error)                                                   // Get finds and returns an assignedProductAttribute with en error
-		GetWithOption(option model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
-		FilterByOptions(options model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error)
+		// Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)           // Save inserts new assgignedProductAttribute into database and returns it with an error
+		// Get(id string) (*model.AssignedProductAttribute, error)                                                          // Get finds and returns an assignedProductAttribute with en error
+		GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
+		FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error)
 	}
-	AttributeProductStore interface {
-		Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
-		Get(attributeProductID string) (*model.AttributeProduct, error)                               // Get finds an attributeProduct relationship and returns it with an error
-		GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition
-		FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) // FilterByOptions returns attributeProducts with given condition
+	// AttributeProductStore interface {
+	// 	Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
+	// 	Get(attributeProductID string) (*model.AttributeProduct, error)                               // Get finds an attributeProduct relationship and returns it with an error
+	// 	GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition
+	// 	FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) // FilterByOptions returns attributeProducts with given condition
+	// }
+	CustomProductAttributeStore interface {
+		Upsert(tx boil.ContextTransactor, record model.CustomProductAttribute) (*model.CustomProductAttribute, error)
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		FilterByOptions(options model_helper.CustomProductAttributeFilterOptions) (model.CustomProductAttributeSlice, error)
 	}
 )
 
 // model
 type ComplianceStore interface {
-	Save(model model.Compliance) (*model.Compliance, error)
-	Update(model model.Compliance) (*model.Compliance, error)
+	Upsert(model model.Compliance) (*model.Compliance, error)
 	Get(id string) (*model.Compliance, error)
 	GetAll(offset, limit int) (model.ComplianceSlice, error)
-	ComplianceExport(model *model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error)
+	ComplianceExport(model model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error)
 	MessageExport(cursor model_helper.MessageExportCursor, limit int) ([]*model_helper.MessageExport, model_helper.MessageExportCursor, error)
 }
 
@@ -512,7 +515,7 @@ type (
 	PageTranslationStore interface {
 	}
 	PageStore interface {
-		FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error)
+		FilterByOptions(options model_helper.PageFilterOptions) (model.PageSlice, error)
 	}
 )
 
@@ -705,11 +708,11 @@ type (
 )
 
 type ClusterDiscoveryStore interface {
-	Save(discovery *model.ClusterDiscovery) error
-	Delete(discovery *model.ClusterDiscovery) (bool, error)
-	Exists(discovery *model.ClusterDiscovery) (bool, error)
-	GetAll(discoveryType, clusterName string) ([]*model.ClusterDiscovery, error)
-	SetLastPingAt(discovery *model.ClusterDiscovery) error
+	Save(discovery model.ClusterDiscovery) error
+	Delete(discovery model.ClusterDiscovery) (bool, error)
+	Exists(discovery model.ClusterDiscovery) (bool, error)
+	GetAll(discoveryType, clusterName string) (model.ClusterDiscoverySlice, error)
+	SetLastPingAt(discovery model.ClusterDiscovery) error
 	Cleanup() error
 }
 

@@ -10,13 +10,13 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 // AccountService contains methods for working with accounts
@@ -36,11 +36,11 @@ type AccountService interface {
 	// AuthenticateUserForLogin
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *model.User, err *model_helper.AppError)
 	// ChangeUserDefaultAddress set default address for given user
-	ChangeUserDefaultAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model_helper.AppError
+	ChangeUserDefaultAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) (*model.User, *model_helper.AppError)
 	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
-	CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model_helper.AppError
+	CheckPasswordAndAllCriteria(user model.User, password string, mfaToken string) *model_helper.AppError
 	// CheckRolesExist get role model instances with given roleNames,
 	// checks if at least one db role has name contained in given roleNames.
 	CheckRolesExist(roleNames []string) *model_helper.AppError
@@ -51,34 +51,32 @@ type AccountService interface {
 	// 2) multi factor authentication is not enabled => return non-nil error
 	//
 	// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
-	CheckUserMfa(user *model.User, token string) *model_helper.AppError
+	CheckUserMfa(user model.User, token string) *model_helper.AppError
 	// CheckUserPassword compares user's password to given password. If they dont match, return an error
-	CheckUserPassword(user *model.User, password string) *model_helper.AppError
+	CheckUserPassword(user model.User, password string) *model_helper.AppError
 	// CheckUserPostflightAuthenticationCriteria checks if:
 	//
 	// Given user's `EmailVerified` attribute is false && email verification is required,
 	// Then it return an error.
-	CheckUserPostflightAuthenticationCriteria(user *model.User) *model_helper.AppError
+	CheckUserPostflightAuthenticationCriteria(user model.User) *model_helper.AppError
 	// CheckUserPreflightAuthenticationCriteria checks:
 	//
 	// 1) user is not disabled
 	//
 	// 2) numbers of failed logins is not exceed the limit
-	CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToken string) *model_helper.AppError
+	CheckUserPreflightAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	// ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 	ClearAllUsersSessionCacheLocal()
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
 	ClearSessionCacheForUserSkipClusterSend(userID string)
-	// CopyAddress inserts a new address with fields identical to given address except Id field.
-	CopyAddress(address *model.Address) (*model.Address, *model_helper.AppError)
 	// CreateRole takes a role struct and save it to database
-	CreateRole(role *model.Role) (*model.Role, *model_helper.AppError)
+	CreateRole(role model.Role) (*model.Role, *model_helper.AppError)
 	// CreateSession try saving given session to the database. If success then add that session to cache.
-	CreateSession(session *model.Session) (*model.Session, *model_helper.AppError)
+	CreateSession(session model.Session) (*model.Session, *model_helper.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
-	CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model_helper.AppError)
+	CustomerPlacedOrderEvent(tx store.ContextRunner, user *model.User, order model.Order) (*model.CustomerEvent, *model_helper.AppError)
 	// DoubleCheckPassword performs:
 	//
 	// 1) check if number of failed login is not exceed the limit. If yes returns an error
@@ -86,7 +84,7 @@ type AccountService interface {
 	// 2) check if user's password and given password don't match, update number of attempts failed in database, return an error
 	//
 	// otherwise: set number of failed attempts to 0
-	DoubleCheckPassword(user *model.User, password string) *model_helper.AppError
+	DoubleCheckPassword(user model.User, password string) *model_helper.AppError
 	// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
 	// A new ExpiresAt is only written if enough time has elapsed since last update.
 	// Returns true only if the session was extended.
@@ -96,16 +94,16 @@ type AccountService interface {
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
 	GetRoleByName(ctx context.Context, name string) (*model.Role, *model_helper.AppError)
 	// GetRolesByNames returns a slice of model.Role by given names
-	GetRolesByNames(names []string) ([]*model.Role, *model_helper.AppError)
+	GetRolesByNames(names []string) (model.RoleSlice, *model_helper.AppError)
 	// GetSessionLengthInMillis returns the session length, in milliseconds,
 	// based on the type of session (Mobile, SSO, Web/LDAP).
-	GetSessionLengthInMillis(session *model.Session) int64
+	GetSessionLengthInMillis(session model.Session) int64
 	// GetSessions get session from database with UserID attribute of given `userID`
 	GetSessions(userID string) ([]*model.Session, *model_helper.AppError)
 	// GetUserForLogin
 	GetUserForLogin(id, loginId string) (*model.User, *model_helper.AppError)
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
-	HasPermissionTo(askingUserId string, permission *model_helper.Permission) bool
+	HasPermissionTo(askingUserId string, permission model_helper.Permission) bool
 	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
 	HasPermissionToUser(askingUserId string, userID string) bool
 	// InvalidateCacheForUser invalidates cache for given user
@@ -119,23 +117,17 @@ type AccountService interface {
 	// SendAccountDeleteConfirmationNotification Trigger sending a account delete notification for the given user
 	SendAccountDeleteConfirmationNotification(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
 	// SessionHasPermissionTo checks if this user has given permission to procceed
-	SessionHasPermissionTo(session model.Session, permission *model_helper.Permission) bool
+	SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
-	SessionHasPermissionToAll(session *model.Session, permissions ...*model_helper.Permission) bool
+	SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session model.Session, permissions []*model_helper.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
 	SetSessionExpireInDays(session *model.Session, days int)
-	// SetUserDefaultBillingAddress sets default billing address for given user
-	SetUserDefaultBillingAddress(user *model.User, defaultBillingAddressID string) *model_helper.AppError
-	// SetUserDefaultShippingAddress sets default shipping address for given user
-	SetUserDefaultShippingAddress(user *model.User, defaultShippingAddressID string) *model_helper.AppError
-	// StoreUserAddress Add address to user address book and set as default one.
-	StoreUserAddress(user *model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// Trigger sending a email change notification for the given user
 	SendUserChangeEmailNotification(recipientEmail string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
 	// Trigger sending a notification change email for the given user
@@ -147,74 +139,74 @@ type AccountService interface {
 	// Trigger sending an account confirmation notification for the given user
 	SendAccountConfirmation(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
-	UpsertAddress(transaction *gorm.DB, address *model.Address) (*model.Address, *model_helper.AppError)
+	UpsertAddress(transaction store.ContextRunner, address model.Address) (*model.Address, *model_helper.AppError)
 	ActivateMfa(userID, token string) *model_helper.AppError
-	AddStatusCache(status *model.Status)
-	AddStatusCacheSkipClusterSend(status *model.Status)
+	AddStatusCache(status model.Status)
+	AddStatusCacheSkipClusterSend(status model.Status)
 	AddressById(id string) (*model.Address, *model_helper.AppError)
 	AddressesByUserId(userID string) (model.AddressSlice, *model_helper.AppError)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model_helper.AppError)
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model_helper.AppError
-	BroadcastStatus(status *model.Status)
-	CheckProviderAttributes(user *model.User, patch *model_helper.UserPatch) string
-	CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model_helper.AppError
+	BroadcastStatus(status model.Status)
+	CheckProviderAttributes(user model.User, patch model_helper.UserPatch) string
+	CheckUserAllAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	ClearUserSessionCacheLocal(userID string)
-	CommonCustomerCreateEvent(tx *gorm.DB, userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model_helper.AppError)
+	CommonCustomerCreateEvent(tx store.ContextRunner, userID *string, orderID *string, eventType model.CustomerEventType, params model_types.JsonMap) (*model.CustomerEvent, *model_helper.AppError)
 	CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model_helper.AppError)
-	CreateUser(c *request.Context, user *model.User) (*model.User, *model_helper.AppError)
-	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError)
-	CreateUserAsAdmin(c *request.Context, user *model.User, redirect string) (*model.User, *model_helper.AppError)
-	CreateUserFromSignup(c *request.Context, user *model.User, redirect string) (*model.User, *model_helper.AppError)
-	CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model_helper.AppError)
-	CustomerEventsByOptions(option squirrel.Sqlizer) ([]*model.CustomerEvent, *model_helper.AppError)
+	CreateUser(c request.Context, user model.User) (*model.User, *model_helper.AppError)
+	CreateUserAccessToken(token model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError)
+	CreateUserAsAdmin(c request.Context, user model.User, redirect string) (*model.User, *model_helper.AppError)
+	CreateUserFromSignup(c request.Context, user model.User, redirect string) (*model.User, *model_helper.AppError)
+	CreateUserWithToken(c request.Context, user model.User, token model.Token) (*model.User, *model_helper.AppError)
+	CustomerEventsByOptions(conds ...qm.QueryMod) (model.CustomerEventSlice, *model_helper.AppError)
 	DeactivateMfa(userID string) *model_helper.AppError
-	DeletePreferences(userID string, preferences model.Preferences) *model_helper.AppError
-	DeleteToken(token *model.Token) *model_helper.AppError
+	DeletePreferences(userID string, preferences model.PreferenceSlice) *model_helper.AppError
+	DeleteToken(token model.Token) *model_helper.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
-	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model_helper.AppError
+	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model_helper.AppError
 	EnableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
-	FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model_helper.AppError)
-	GenerateMfaSecret(userID string) (*model.MfaSecret, *model_helper.AppError)
+	FidUsersByOptions(conds ...qm.QueryMod) (model.UserSlice, *model_helper.AppError)
+	GenerateMfaSecret(userID string) (*model_helper.MfaSecret, *model_helper.AppError)
 	GetCloudSession(token string) (*model.Session, *model_helper.AppError)
 	GetDefaultProfileImage(user *model.User) ([]byte, *model_helper.AppError)
-	GetDefaultUserPayload(user *model.User) model.StringInterface
-	GetFilteredUsersStats(options *model.UserCountOptions) (*model.UsersStats, *model_helper.AppError)
+	GetDefaultUserPayload(user *model.User) map[string]any
+	GetFilteredUsersStats(options *model_helper.UserCountOptions) (*model_helper.UsersStats, *model_helper.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model_helper.AppError)
 	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model_helper.AppError)
-	GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model_helper.AppError)
-	GetPreferencesForUser(userID string) (model.Preferences, *model_helper.AppError)
+	GetPreferenceByCategoryForUser(userID string, category string) (model.PreferenceSlice, *model_helper.AppError)
+	GetPreferencesForUser(userID string) (model.PreferenceSlice, *model_helper.AppError)
 	GetProfileImage(user *model.User) ([]byte, bool, *model_helper.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model_helper.AppError)
 	GetSessionById(sessionID string) (*model.Session, *model_helper.AppError)
 	GetStatus(userID string) (*model.Status, *model_helper.AppError)
 	GetStatusFromCache(userID string) *model.Status
-	GetTotalUsersStats() (*model.UsersStats, *model_helper.AppError)
+	GetTotalUsersStats() (*model_helper.UsersStats, *model_helper.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model_helper.AppError)
-	GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model_helper.AppError)
-	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model_helper.AppError)
-	GetUserByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, *model_helper.AppError)
-	GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model_helper.AppError)
-	GetUsers(options *model.UserGetOptions) ([]*model.User, *model_helper.AppError)
-	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*model.User, *model_helper.AppError)
-	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*model.User, *model_helper.AppError)
+	GetUserAccessTokens(page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError)
+	GetUserAccessTokensForUser(userID string, page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError)
+	GetUserByOptions(conds ...qm.QueryMod) (*model.User, *model_helper.AppError)
+	GetUserStatusesByIds(userIDs []string) (model.StatusSlice, *model_helper.AppError)
+	GetUsers(options model_helper.UserGetOptions) (model.UserSlice, *model_helper.AppError)
+	GetUsersByIds(userIDs []string, options store.UserGetByIdsOpts) (model.UserSlice, *model_helper.AppError)
+	GetUsersByUsernames(usernames []string, asAdmin bool) (model.UserSlice, *model_helper.AppError)
 	GetVerifyEmailToken(token string) (*model.Token, *model_helper.AppError)
 	IsFirstUserAccount() bool
 	IsUserSignUpAllowed() *model_helper.AppError
 	IsUsernameTaken(name string) bool
-	MakePermissionError(s *model.Session, permissions ...*model_helper.Permission) *model_helper.AppError
-	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model_helper.AppError)
+	MakePermissionError(s *model.Session, permissions ...model_helper.Permission) *model_helper.AppError
+	PatchRole(role model.Role, patch model_helper.RolePatch) (*model.Role, *model_helper.AppError)
 	PermanentDeleteAllUsers(c *request.Context) *model_helper.AppError
-	PermanentDeleteUser(c *request.Context, user *model.User) *model_helper.AppError
+	PermanentDeleteUser(c *request.Context, user model.User) *model_helper.AppError
 	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model_helper.AppError
 	ReturnSessionToPool(session *model.Session)
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model_helper.AppError
 	RevokeUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
 	RolesGrantPermission(roleNames []string, permissionId string) bool
 	SanitizeProfile(user *model.User, asAdmin bool)
-	SaveAndBroadcastStatus(status *model.Status)
-	SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model_helper.AppError)
-	SearchUsers(props *model.UserSearch, options *model.UserSearchOptions) ([]*model.User, *model_helper.AppError)
+	SaveAndBroadcastStatus(status model.Status)
+	SearchUserAccessTokens(term string) (model.UserAccessTokenSlice, *model_helper.AppError)
+	SearchUsers(props *model_helper.UserSearch, options *model_helper.UserSearchOptions) (model.UserSlice, *model_helper.AppError)
 	SendEmailVerification(user *model.User, newEmail, redirect string) *model_helper.AppError
 	SendPasswordReset(email string, siteURL string) (bool, *model_helper.AppError)
 	SessionCacheLength() int
@@ -225,8 +217,8 @@ type AccountService interface {
 	SetStatusOffline(userID string, manual bool)
 	SetStatusOnline(userID string, manual bool)
 	StatusByID(statusID string) (*model.Status, *model_helper.AppError)
-	StatusesByIDs(statusIDs []string) ([]*model.Status, *model_helper.AppError)
-	UpdateActive(c *request.Context, user *model.User, active bool) (*model.User, *model_helper.AppError)
+	StatusesByIDs(statusIDs []string) (model.StatusSlice, *model_helper.AppError)
+	UpdateActive(c *request.Context, user model.User, active bool) (*model.User, *model_helper.AppError)
 	UpdateHashedPassword(user *model.User, newHashedPassword string) *model_helper.AppError
 	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model_helper.AppError
 	UpdateLastActivityAtIfNeeded(session model.Session)
@@ -235,14 +227,14 @@ type AccountService interface {
 	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model_helper.AppError
 	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model_helper.AppError
 	UpdatePasswordSendEmail(user *model.User, newPassword, method string) *model_helper.AppError
-	UpdatePreferences(userID string, preferences model.Preferences) *model_helper.AppError
-	UpdateRole(role *model.Role) (*model.Role, *model_helper.AppError)
-	UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model_helper.AppError)
+	UpdatePreferences(userID string, preferences model.PreferenceSlice) *model_helper.AppError
+	UpdateRole(role model.Role) (*model.Role, *model_helper.AppError)
+	UpdateUser(user model.User, sendNotifications bool) (*model.User, *model_helper.AppError)
 	UpdateUserActive(c *request.Context, userID string, active bool) *model_helper.AppError
-	UpdateUserAsUser(user *model.User, asAdmin bool) (*model.User, *model_helper.AppError)
-	UpdateUserAuth(userID string, userAuth *model.UserAuth) (*model.UserAuth, *model_helper.AppError)
+	UpdateUserAsUser(user model.User, asAdmin bool) (*model.User, *model_helper.AppError)
+	UpdateUserAuth(userID string, userAuth *model_helper.UserAuth) (*model_helper.UserAuth, *model_helper.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*model.User, *model_helper.AppError)
-	UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model_helper.AppError)
+	UpdateUserRolesWithUser(user model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model_helper.AppError)
 	UserById(ctx context.Context, userID string) (*model.User, *model_helper.AppError)
 	UserSetDefaultAddress(userID, addressID string, addressType model_helper.AddressTypeEnum) (*model.User, *model_helper.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model_helper.AppError
