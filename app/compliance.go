@@ -32,7 +32,7 @@ func (a *App) SaveComplianceReport(job model.Compliance) (*model.Compliance, *mo
 
 	job.Type = model.ComplianceTypeAdhoc
 
-	savedJob, err := a.Srv().Store.Compliance().Save(job)
+	savedJob, err := a.Srv().Store.Compliance().Upsert(job)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr

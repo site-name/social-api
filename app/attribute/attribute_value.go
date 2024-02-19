@@ -1,21 +1,25 @@
 package attribute
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
 func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValueSlice, *model_helper.AppError) {
-	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeID},
+	return a.FilterAttributeValuesByOptions(model_helper.AttributeValueFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.AttributeValueWhere.AttributeID.EQ(attributeID),
+		),
 	})
 }
 
@@ -28,26 +32,8 @@ func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model_helper.At
 	return values, nil
 }
 
-// UpsertAttributeValue insderts or updates given attribute value then returns it
-func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model_helper.AppError) {
-	attrValue, err := a.srv.Store.AttributeValue().Upsert(attrValue)
-	if err != nil {
-		if appErr, ok := err.(*model_helper.AppError); ok {
-			return nil, appErr
-		}
-
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrInvalidInput); ok {
-			statusCode = http.StatusBadRequest
-		}
-		return nil, model_helper.NewAppError("UpsertAttributeValue", "app.attribute.error_upserting_attribute_value.app_error", nil, err.Error(), statusCode)
-	}
-
-	return attrValue, nil
-}
-
-func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValueSlice) (model.AttributeValueSlice, *model_helper.AppError) {
-	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, *model_helper.AppError) {
+	values, err := a.srv.Store.AttributeValue().Upsert(transaction, values)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -99,11 +85,13 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 		// indicate runned
 		r.runned = true
 
-		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Ordering:        model.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
-			Conditions:      squirrel.Eq{model.AttributeValueTableName + ".Id": r.Values.IDs()},
-			SelectForUpdate: true,
-			Transaction:     transaction,
+		valueIDs := lo.Map(r.Values, func(a *model.AttributeValue, _ int) string { return a.ID })
+
+		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model_helper.AttributeValueFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				qm.OrderBy(fmt.Sprintf("%s %s NULLS LAST", model.AttributeValueColumns.SortOrder, model_helper.ASC)),
+				model.AttributeValueWhere.ID.IN(valueIDs),
+			),
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -115,7 +103,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 		// orderingMap has keys are attribute value ids
 		var orderingMap = make(map[string]*int)
 		for _, value := range attributeValues {
-			orderingMap[value.Id] = value.SortOrder
+			orderingMap[value.ID] = value.SortOrder.Int
 		}
 
 		// copy
@@ -136,7 +124,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 			}
 
 			previousSortOrder++
-			orderingMap[key] = model.GetPointerOfValue(previousSortOrder)
+			orderingMap[key] = model_helper.GetPointerOfValue(previousSortOrder)
 		}
 
 		// cache

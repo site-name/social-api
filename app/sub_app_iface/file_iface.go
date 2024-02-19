@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/temp/model"
+	"github.com/sitename/sitename/model"
 )
 
 // FileService contains methods for working with files
@@ -27,7 +27,7 @@ type FileService interface {
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model_helper.AppError)
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError)
+	GetFileInfos(page, perPage int, opt model_helper.FileInfoFilterOption) ([]*model.FileInfo, *model_helper.AppError)
 	// ImageDecoder retutns image encoder
 	ImageDecoder() *imaging.Decoder
 	// ImageEncoder returns image encoder
@@ -39,10 +39,10 @@ type FileService interface {
 	// TestFileStoreConnection test if connection to file backend server is good
 	TestFileStoreConnection() *model_helper.AppError
 	// TestFileStoreConnectionWithConfig test file backend connection with config
-	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model_helper.AppError
+	TestFileStoreConnectionWithConfig(settings *model_helper.FileSettings) *model_helper.AppError
 	// This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
 	// Ensure the zip file name ends with a .zip
-	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model_helper.FileData, zipFileName, directory string) error
 	// UploadFileX uploads a single file as specified in t. It applies the upload
 	// constraints, executes plugins and image processing logic as needed. It
 	// returns a filled-out FileInfo and an optional error. A plugin may reject the
@@ -50,7 +50,7 @@ type FileService interface {
 	// contained the last "good" FileInfo before the execution of that plugin.
 	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*model.FileInfo, *model_helper.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model_helper.AppError)
-	CheckMandatoryS3Fields(settings *model.FileSettings) *model_helper.AppError
+	CheckMandatoryS3Fields(settings *model_helper.FileSettings) *model_helper.AppError
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model_helper.AppError)
 	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model_helper.AppError)
 	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model_helper.AppError)

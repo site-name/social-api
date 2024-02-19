@@ -524,9 +524,8 @@ func userCommonPre(u *model.User) {
 		u.Props = model_types.JsonMap{}
 	}
 
-	u.Locale = strings.ToUpper(u.Locale)
 	if model.LanguageCode(u.Locale).IsValid() != nil {
-		u.Locale = DEFAULT_LOCALE.String()
+		u.Locale = DEFAULT_LOCALE
 	}
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()
@@ -560,7 +559,7 @@ func PatchUser(u *model.User, patch UserPatch) {
 		u.Email = *patch.Email
 	}
 	if patch.Locale != nil && patch.Locale.IsValid() == nil {
-		u.Locale = patch.Locale.String()
+		u.Locale = *patch.Locale
 	}
 	if patch.Timezone != nil {
 		u.Timezone = patch.Timezone

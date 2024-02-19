@@ -129,7 +129,7 @@ func (a *ServiceFile) FileBackend() (filestore.FileBackend, *model_helper.AppErr
 	return backend, nil
 }
 
-func (a *ServiceFile) CheckMandatoryS3Fields(settings *model.FileSettings) *model_helper.AppError {
+func (a *ServiceFile) CheckMandatoryS3Fields(settings *model_helper.FileSettings) *model_helper.AppError {
 	fileBackendSettings := settings.ToFileBackendSettings(false)
 	err := fileBackendSettings.CheckMandatoryS3Fields()
 	if err != nil {
@@ -164,7 +164,7 @@ func (a *ServiceFile) TestFileStoreConnection() *model_helper.AppError {
 }
 
 // TestFileStoreConnectionWithConfig test file backend connection with config
-func (a *ServiceFile) TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model_helper.AppError {
+func (a *ServiceFile) TestFileStoreConnectionWithConfig(settings *model_helper.FileSettings) *model_helper.AppError {
 	backend, err := filestore.NewFileBackend(settings.ToFileBackendSettings(true))
 	if err != nil {
 		return model_helper.NewAppError("FileBackend", "api.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -336,12 +336,12 @@ func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
 		if len(text) > maxContentExtractionSize {
 			text = text[0:maxContentExtractionSize]
 		}
-		if _, storeErr := a.srv.Store.FileInfo().Upsert(&model.FileInfo{Id: fileInfo.Id, Content: text}); storeErr != nil {
+		if _, storeErr := a.srv.Store.FileInfo().Upsert(model.FileInfo{ID: fileInfo.ID, Content: text}); storeErr != nil {
 			return errors.Wrap(storeErr, "failed to save the extracted file content")
 		}
-		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.Id, false)
+		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.ID, false)
 		if storeErr != nil {
-			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.Id))
+			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.ID))
 		} else {
 			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache()
 			slog.Warn("This flow is not implemented", slog.String("function", "generateMiniPreview"))

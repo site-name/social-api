@@ -310,7 +310,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.createPushNotificationsHub()
 
-	if err2 := i18n.InitTranslations(*s.Config().LocalizationSettings.DefaultServerLocale, *s.Config().LocalizationSettings.DefaultClientLocale); err2 != nil {
+	if err2 := i18n.InitTranslations(s.Config().LocalizationSettings.DefaultServerLocale.String(), s.Config().LocalizationSettings.DefaultClientLocale.String()); err2 != nil {
 		return nil, errors.Wrapf(err2, "unable to load Mattermost translation files")
 	}
 
@@ -750,15 +750,14 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			"base":   []string{model_helper.DEFAULT_CURRENCY.String()}, // units other than USD require service subsciption
 		}
 		responseValue struct {
-			Disclaimer string             `json:"disclaimer,omitempty"`
-			License    string             `json:"license,omitempty"`
-			TimeStamp  int64              `json:"timestamp,omitempty"`
-			Base       string             `json:"base"`
-			Rates      map[string]float64 `json:"rates"`
+			Disclaimer string                     `json:"disclaimer,omitempty"`
+			License    string                     `json:"license,omitempty"`
+			TimeStamp  int64                      `json:"timestamp,omitempty"`
+			Base       string                     `json:"base"`
+			Rates      map[model.Currency]float64 `json:"rates"`
 		}
 	)
 
-	client.Timeout = 2 * time.Minute
 	apiEndPoint = apiEndPoint + "?" + params.Encode()
 
 	fetchFun := func() {
@@ -785,7 +784,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			return
 		}
 
-		exchangeRateInstances := []*model.OpenExchangeRate{}
+		var exchangeRateInstances model.OpenExchangeRateSlice
 		for currency, rate := range responseValue.Rates {
 			exchangeRate := &model.OpenExchangeRate{
 				ToCurrency: currency,

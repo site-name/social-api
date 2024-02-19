@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -11,13 +12,19 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
 func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model_helper.AppError) {
-	uss, err := a.srv.Store.UploadSession().GetForUser(userID)
+	uss, err := a.srv.Store.UploadSession().FindAll(model_helper.UploadSessionFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UploadSessionWhere.UserID.EQ(userID),
+			qm.OrderBy(fmt.Sprintf("%s %s", model.UploadSessionColumns.CreatedAt, model_helper.ASC)),
+		),
+	})
 	var (
 		statusCode int
 		errMsg     string
@@ -95,25 +102,25 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
 	a.uploadLockMapMut.Lock()
-	locked := a.uploadLockMap[us.Id]
+	locked := a.uploadLockMap[us.ID]
 	if locked {
 		// session lock is already taken, return error.
 		a.uploadLockMapMut.Unlock()
 		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "", http.StatusBadRequest)
 	}
 	// grab the session lock.
-	a.uploadLockMap[us.Id] = true
+	a.uploadLockMap[us.ID] = true
 	a.uploadLockMapMut.Unlock()
 
 	// reset the session lock on exit.
 	defer func() {
 		a.uploadLockMapMut.Lock()
-		delete(a.uploadLockMap, us.Id)
+		delete(a.uploadLockMap, us.ID)
 		a.uploadLockMapMut.Unlock()
 	}()
 
 	// fetch the session from store to check for inconsistencies.
-	if storedSession, err := a.GetUploadSession(us.Id); err != nil {
+	if storedSession, err := a.GetUploadSession(us.ID); err != nil {
 		return nil, err
 	} else if us.FileOffset != storedSession.FileOffset {
 		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "FileOffset mismatch", http.StatusBadRequest)
@@ -151,7 +158,9 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	}
 	if written > 0 {
 		us.FileOffset += written
-		if storeErr := a.srv.Store.UploadSession().Update(us); storeErr != nil {
+		var storeErr error
+		us, storeErr = a.srv.Store.UploadSession().Upsert(*us)
+		if storeErr != nil {
 			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.update.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -170,13 +179,13 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 		return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	info, err := model.GetInfoForBytes(us.FileName, f, int(us.FileSize))
+	info, err := model_helper.GetInfoForBytes(us.FileName, f, int(us.FileSize))
 	f.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	info.CreatorId = us.UserID
+	info.CreatorID = us.UserID
 	info.Path = us.Path
 
 	// info.RemoteId = model.GetPointerOfValue(us.RemoteId)
@@ -190,15 +199,16 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	// }
 
 	// image post-processing
-	if info.IsImage() {
-		if limitErr := checkImageResolutionLimit(info.Width, info.Height, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
+	if model_helper.FileInfoIsImage(*info) {
+		width, height := model_helper.GetValueOfPointerOrZero(info.Width.Int), model_helper.GetValueOfPointerOrZero(info.Height.Int)
+		if limitErr := checkImageResolutionLimit(width, height, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
 			return nil, model_helper.NewAppError(
 				"uploadData",
 				"app.upload.upload_data.large_image.app_error",
 				map[string]interface{}{
 					"Filename": us.FileName,
-					"Width":    info.Width,
-					"Height":   info.Height,
+					"Width":    width,
+					"Height":   height,
 				}, "", http.StatusBadRequest)
 		}
 
@@ -219,7 +229,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	}
 
 	var storeErr error
-	if info, storeErr = a.srv.Store.FileInfo().Upsert(info); storeErr != nil {
+	if info, storeErr = a.srv.Store.FileInfo().Upsert(*info); storeErr != nil {
 		if appErr, ok := storeErr.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
@@ -231,13 +241,13 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 		a.srv.Go(func() {
 			err := a.ExtractContentFromFileInfo(&infoCopy)
 			if err != nil {
-				slog.Error("Failed to extract file content", slog.Err(err), slog.String("fileInfoId", infoCopy.Id))
+				slog.Error("Failed to extract file content", slog.Err(err), slog.String("fileInfoId", infoCopy.ID))
 			}
 		})
 	}
 
 	// delete upload session
-	if storeErr := a.srv.Store.UploadSession().Delete(us.Id); storeErr != nil {
+	if storeErr := a.srv.Store.UploadSession().Delete(us.ID); storeErr != nil {
 		slog.Warn("Failed to delete UploadSession", slog.Err(storeErr))
 	}
 

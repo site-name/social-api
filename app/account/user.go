@@ -1257,6 +1257,10 @@ func (us *ServiceAccount) ClearAllUsersSessionCacheLocal() {
 	us.sessionCache.Purge()
 }
 
+func (us *ServiceAccount) ClearStatusCache() {
+	us.statusCache.Purge()
+}
+
 func getProfileImagePath(userID string) string {
 	return filepath.Join("users", userID, "profile.png")
 }

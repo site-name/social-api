@@ -6,7 +6,7 @@ package sub_app_iface
 import (
 	"time"
 
-	"github.com/mattermost/squirrel"
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"

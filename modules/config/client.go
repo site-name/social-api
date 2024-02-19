@@ -166,7 +166,7 @@ func GenerateLimitedClientConfig(c *model_helper.Config) map[string]string {
 	props["SupportEmail"] = *c.SupportSettings.SupportEmail
 	props["EnableAskCommunityLink"] = strconv.FormatBool(*c.SupportSettings.EnableAskCommunityLink)
 
-	props["DefaultClientLocale"] = *c.LocalizationSettings.DefaultClientLocale
+	props["DefaultClientLocale"] = c.LocalizationSettings.DefaultClientLocale.String()
 
 	props["EnableCustomEmoji"] = strconv.FormatBool(*c.ServiceSettings.EnableCustomEmoji)
 	props["AppDownloadLink"] = *c.NativeAppSettings.AppDownloadLink

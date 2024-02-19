@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -19,7 +19,7 @@ const (
 )
 
 func (s *ServiceFile) DownloadFromURL(downloadURL string) ([]byte, error) {
-	if !model.IsValidHTTPURL(downloadURL) {
+	if !model_helper.IsValidHTTPURL(downloadURL) {
 		return nil, errors.Errorf("invalid url %s", downloadURL)
 	}
 

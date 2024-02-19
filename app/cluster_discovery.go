@@ -37,16 +37,16 @@ func (cds *ClusterDiscoveryService) Start() {
 		slog.Warn("ClusterDiscoveryService failed to cleanup the outdated cluster discovery information", slog.Err(err))
 	}
 
-	exists, err := cds.srv.Store.ClusterDiscovery().Exists(&cds.ClusterDiscovery)
+	exists, err := cds.srv.Store.ClusterDiscovery().Exists(cds.ClusterDiscovery)
 	if err != nil {
 		slog.Warn("ClusterDiscoveryService failed to check if row exists", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID), slog.Err(err))
 	} else if exists {
-		if _, err := cds.srv.Store.ClusterDiscovery().Delete(&cds.ClusterDiscovery); err != nil {
+		if _, err := cds.srv.Store.ClusterDiscovery().Delete(cds.ClusterDiscovery); err != nil {
 			slog.Warn("ClusterDiscoveryService failed to start clean", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID), slog.Err(err))
 		}
 	}
 
-	if err := cds.srv.Store.ClusterDiscovery().Save(&cds.ClusterDiscovery); err != nil {
+	if err := cds.srv.Store.ClusterDiscovery().Save(cds.ClusterDiscovery); err != nil {
 		slog.Error("ClusterDiscoveryService failed to save", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID), slog.Err(err))
 		return
 	}
@@ -56,7 +56,7 @@ func (cds *ClusterDiscoveryService) Start() {
 		ticker := time.NewTicker(DiscoveryServiceWritePing)
 		defer func() {
 			ticker.Stop()
-			if _, err := cds.srv.Store.ClusterDiscovery().Delete(&cds.ClusterDiscovery); err != nil {
+			if _, err := cds.srv.Store.ClusterDiscovery().Delete(cds.ClusterDiscovery); err != nil {
 				slog.Warn("ClusterDiscoveryService failed to cleanup", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID), slog.Err(err))
 			}
 			slog.Debug("ClusterDiscoveryService ping writer stopped", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID))
@@ -65,7 +65,7 @@ func (cds *ClusterDiscoveryService) Start() {
 		for {
 			select {
 			case <-ticker.C:
-				if err := cds.srv.Store.ClusterDiscovery().SetLastPingAt(&cds.ClusterDiscovery); err != nil {
+				if err := cds.srv.Store.ClusterDiscovery().SetLastPingAt(cds.ClusterDiscovery); err != nil {
 					slog.Error("ClusterDiscoveryService failed to write ping", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.ID), slog.Err(err))
 				}
 			case <-cds.stop:

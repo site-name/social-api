@@ -116,14 +116,14 @@ func FixInvalidLocales(cfg *model_helper.Config) bool {
 	var changed bool
 
 	locales := i18n.GetSupportedLocales()
-	if _, ok := locales[*cfg.LocalizationSettings.DefaultServerLocale]; !ok {
-		*cfg.LocalizationSettings.DefaultServerLocale = model_helper.DEFAULT_LOCALE.String()
+	if _, ok := locales[cfg.LocalizationSettings.DefaultServerLocale.String()]; !ok {
+		*cfg.LocalizationSettings.DefaultServerLocale = model_helper.DEFAULT_LOCALE
 		slog.Warn("DefaultServerLocale must be one of the supported locales. Setting DefaultServerLocale to en as default value.")
 		changed = true
 	}
 
-	if _, ok := locales[*cfg.LocalizationSettings.DefaultClientLocale]; !ok {
-		*cfg.LocalizationSettings.DefaultClientLocale = model_helper.DEFAULT_LOCALE.String()
+	if _, ok := locales[cfg.LocalizationSettings.DefaultClientLocale.String()]; !ok {
+		*cfg.LocalizationSettings.DefaultClientLocale = model_helper.DEFAULT_LOCALE
 		slog.Warn("DefaultClientLocale must be one of the supported locales. Setting DefaultClientLocale to en as default value.")
 		changed = true
 	}
@@ -139,7 +139,7 @@ func FixInvalidLocales(cfg *model_helper.Config) bool {
 				break
 			}
 
-			if word == *cfg.LocalizationSettings.DefaultClientLocale {
+			if word == cfg.LocalizationSettings.DefaultClientLocale.String() {
 				isDefaultClientLocaleInAvailableLocales = true
 			}
 		}
@@ -147,7 +147,7 @@ func FixInvalidLocales(cfg *model_helper.Config) bool {
 		availableLocales := *cfg.LocalizationSettings.AvailableLocales
 
 		if !isDefaultClientLocaleInAvailableLocales {
-			availableLocales += "," + *cfg.LocalizationSettings.DefaultClientLocale
+			availableLocales += "," + cfg.LocalizationSettings.DefaultClientLocale.String()
 			slog.Warn("Adding DefaultClientLocale to AvailableLocales.")
 			changed = true
 		}

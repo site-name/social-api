@@ -17,7 +17,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		userID = &requesterUser.Id
 	}
 
-	payload := model.StringInterface{
+	payload := model_helper.StringInterface{
 		"gift_card":         s.GetDefaultGiftcardPayload(giftCard),
 		"user":              userPayload,
 		"requester_user_id": userID,

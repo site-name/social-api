@@ -106,7 +106,7 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.Giftcard, *m
 }
 
 func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *model_helper.AppError {
-	err := s.srv.Store.Giftcard().DeleteGiftcards(transaction, ids)
+	err := s.srv.Store.Giftcard().Delete(transaction, ids)
 	if err != nil {
 		return model_helper.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

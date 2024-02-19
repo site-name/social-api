@@ -279,8 +279,8 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, 
 			if *a.Config().EmailSettings.SMTPServer == "" {
 				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.missing_server.app_error", nil, i18n.T("api.context.invalid_param.app_error", map[string]interface{}{"Name": "SMTPServer"}), http.StatusInternalServerError)
 			}
-			T := i18n.GetUserTranslations(sender.Locale)
-			data := a.Srv().EmailService.NewEmailTemplateData(sender.Locale)
+			T := i18n.GetUserTranslations(sender.Locale.String())
+			data := a.Srv().EmailService.NewEmailTemplateData(sender.Locale.String())
 			data.Props["ContactNameHeader"] = T("api.templates.warn_metric_ack.body.contact_name_header")
 			data.Props["ContactNameValue"] = model_helper.UserGetFullName(sender)
 			data.Props["ContactEmailHeader"] = T("api.templates.warn_metric_ack.body.contact_email_header")
@@ -353,7 +353,7 @@ func (a *App) setWarnMetricsStatus(status string) *model_helper.AppError {
 
 func (a *App) setWarnMetricsStatusForId(warnMetricId string, status string) *model_helper.AppError {
 	slog.Debug("Store status for warn metric", slog.String("warnMetricId", warnMetricId), slog.String("status", status))
-	if err := a.Srv().Store.System().SaveOrUpdateWithWarnMetricHandling(&model.System{
+	if err := a.Srv().Store.System().SaveOrUpdateWithWarnMetricHandling(model.System{
 		Name:  warnMetricId,
 		Value: status,
 	}); err != nil {

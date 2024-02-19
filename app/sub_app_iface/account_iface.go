@@ -67,6 +67,7 @@ type AccountService interface {
 	CheckUserPreflightAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	// ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 	ClearAllUsersSessionCacheLocal()
+	ClearStatusCache()
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
