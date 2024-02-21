@@ -72,7 +72,7 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.Giftcard, error) {
 	return giftcard, nil
 }
 
-func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (gs *SqlGiftCardStore) FilterByOption(option model_helper.GiftcardFilterOption) (int64, model.GiftcardSlice, error) {
 	query := gs.
 		GetQueryBuilder().
 		Select(model.GiftcardTableName + ".*").

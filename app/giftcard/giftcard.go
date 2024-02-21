@@ -41,7 +41,7 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*model.Giftcard, *model_helper
 	return giftcard, nil
 }
 
-func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*model.Giftcard, *model_helper.AppError) {
+func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) (model.GiftcardSlice, *model_helper.AppError) {
 	_, giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
 		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkoutToken},
 	})
@@ -61,7 +61,7 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model_helper.
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
-func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOption) (int64, []*model.Giftcard, *model_helper.AppError) {
+func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOption) (int64, model.GiftcardSlice, *model_helper.AppError) {
 	totalCount, giftcards, err := a.srv.Store.Giftcard().FilterByOption(option)
 	if err != nil {
 		return 0, nil, model_helper.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -71,7 +71,7 @@ func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOp
 }
 
 // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*model.Giftcard) ([]*model.Giftcard, *model_helper.AppError) {
+func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*model.Giftcard) (model.GiftcardSlice, *model_helper.AppError) {
 	giftcards, err := a.srv.Store.Giftcard().BulkUpsert(transaction, giftcards...)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -92,7 +92,7 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*mo
 }
 
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.Giftcard, *model_helper.AppError) {
+func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) (model.GiftcardSlice, *model_helper.AppError) {
 	_, giftcards, appErr := s.GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Or{

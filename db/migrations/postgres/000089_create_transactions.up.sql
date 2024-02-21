@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE IF NOT EXISTS payment_transactions (
   id varchar(36) NOT NULL PRIMARY KEY,
   created_at bigint NOT NULL,
   payment_id varchar(36) NOT NULL,
@@ -14,3 +14,6 @@ CREATE TABLE IF NOT EXISTS transactions (
   gateway_response text NOT NULL,
   already_processed boolean NOT NULL
 );
+
+ALTER TABLE ONLY payment_transactions
+    ADD CONSTRAINT fk_transactions_payments FOREIGN KEY (payment_id) REFERENCES payments(id);

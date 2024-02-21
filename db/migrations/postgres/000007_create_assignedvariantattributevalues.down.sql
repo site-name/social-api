@@ -1,1 +1,0 @@
--- DROP TABLE IF EXISTS assigned_variant_attribute_values;

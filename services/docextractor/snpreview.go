@@ -3,7 +3,6 @@ package docextractor
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"path"
@@ -56,7 +55,7 @@ func (sn *snPreviewExtractor) Extract(filename string, file io.ReadSeeker) (stri
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New("Unable to generate file preview using mmpreview (The server has replied with an error)")
 	}
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "unable to read the response from snPreview")
 	}

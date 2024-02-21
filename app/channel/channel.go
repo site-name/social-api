@@ -7,12 +7,11 @@ package channel
 import (
 	"net/http"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type ServiceChannel struct {
@@ -27,13 +26,12 @@ func init() {
 }
 
 // ChannelByOption returns a channel that satisfies given options
-func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model_helper.AppError) {
-	option.Limit = 1
+func (s *ServiceChannel) ChannelByOption(option model_helper.ChannelFilterOptions) (*model.Channel, *model_helper.AppError) {
 	channels, appErr := s.ChannelsByOption(option)
 	if appErr != nil {
 		return nil, appErr
 	}
-	if channels.Len() == 0 {
+	if len(channels) == 0 {
 		return nil, model_helper.NewAppError("ChannelByOption", "app.channel.channel_by_options.app_error", nil, "no channel exist", http.StatusNotFound)
 	}
 
@@ -42,14 +40,13 @@ func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*mo
 
 // ValidateChannel check if a channel with given id is active
 func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model_helper.AppError) {
-	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
-		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": channelID},
+	channel, appErr := a.ChannelByOption(model_helper.ChannelFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.ChannelWhere.ID.EQ(channelID)),
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	// check if channel is active
 	if !channel.IsActive {
 		return nil, model_helper.NewAppError("CleanChannel", "app.channel.channel_inactive.app_error", nil, "", http.StatusNotModified)
 	}
@@ -61,14 +58,13 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 	if channelID != nil {
 		return a.ValidateChannel(*channelID)
 	}
-	return a.ChannelByOption(&model.ChannelFilterOption{
-		Conditions: squirrel.Expr(model.ChannelTableName + ".IsActive"),
+	return a.ChannelByOption(model_helper.ChannelFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.ChannelWhere.IsActive.EQ(true)),
 	})
 }
 
-// ChannelsByOption returns a list of channels by given options
-func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model_helper.AppError) {
-	channels, err := a.srv.Store.Channel().FilterByOption(option)
+func (a *ServiceChannel) ChannelsByOption(option model_helper.ChannelFilterOptions) (model.ChannelSlice, *model_helper.AppError) {
+	channels, err := a.srv.Store.Channel().Find(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("ChannelsByOptions", "app.channel.error_finding_channels_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -76,8 +72,8 @@ func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (mo
 	return channels, nil
 }
 
-func (a *ServiceChannel) UpsertChannel(transaction *gorm.DB, channel *model.Channel) (*model.Channel, *model_helper.AppError) {
-	channel, err := a.srv.Store.Channel().Upsert(transaction, channel)
+func (a *ServiceChannel) UpsertChannel(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, *model_helper.AppError) {
+	savedChannel, err := a.srv.Store.Channel().Upsert(tx, channel)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -88,10 +84,10 @@ func (a *ServiceChannel) UpsertChannel(transaction *gorm.DB, channel *model.Chan
 		}
 		return nil, model_helper.NewAppError("UpsertChannel", "app.channel.upsert_channel.app_error", nil, err.Error(), statusCode)
 	}
-	return channel, nil
+	return savedChannel, nil
 }
 
-func (s *ServiceChannel) DeleteChannels(transaction *gorm.DB, ids ...string) *model_helper.AppError {
+func (s *ServiceChannel) DeleteChannels(transaction boil.ContextTransactor, ids []string) *model_helper.AppError {
 	err := s.srv.Store.Channel().DeleteChannels(transaction, ids)
 	if err != nil {
 		return model_helper.NewAppError("DeleteChannels", "app.channel.channel_delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)

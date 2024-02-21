@@ -8,7 +8,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
+	"github.com/sitename/sitename/model"
 	"gorm.io/gorm"
 )
 

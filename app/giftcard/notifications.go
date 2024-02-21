@@ -20,7 +20,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 	payload := model_helper.StringInterface{
 		"gift_card":         s.GetDefaultGiftcardPayload(giftCard),
 		"user":              userPayload,
-		"requester_user_id": userID,
+		"requester_user_id": model_helper.GetValueOfpointerOrNil(requesterUser.ID),
 		"requester_app_id":  nil,
 		"recipient_email":   email,
 		"resending":         resending,

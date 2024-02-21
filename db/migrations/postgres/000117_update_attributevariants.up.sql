@@ -1,4 +1,0 @@
--- ALTER TABLE ONLY attribute_variants
---     ADD CONSTRAINT fk_attribute_variants_attributes FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE;
--- ALTER TABLE ONLY attribute_variants
---     ADD CONSTRAINT fk_attribute_variants_product_types FOREIGN KEY (product_type_id) REFERENCES product_types(id) ON DELETE CASCADE;
