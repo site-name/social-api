@@ -142,6 +142,9 @@ func AttributeValueIsValid(a model.AttributeValue) *AppError {
 }
 
 func AttributePreSave(a *model.Attribute) {
+	if a.ID == "" {
+		a.ID = NewId()
+	}
 	attributeCommonPre(a)
 	if a.Slug == "" {
 		a.Slug = slug.Make(a.Name)
@@ -161,8 +164,9 @@ func AttributePreUpdate(a *model.Attribute) {
 
 type AttributeFilterOption struct {
 	CommonQueryOptions
-	Search   *string // WHERE Attributes.Name ILIKE ... OR Attributes.Slug ILIKE ...
+	Search   string // WHERE Attributes.Name ILIKE ... OR Attributes.Slug ILIKE ...
 	Metadata model_types.JsonMap
+	Preload  []string
 }
 
 func AttributeIsValid(a model.Attribute) *AppError {

@@ -68,15 +68,15 @@ func (_m *WarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLi
 }
 
 // ApplicableForClickAndCollectOrderLines provides a mock function with given fields: orderLines, country
-func (_m *WarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
+func (_m *WarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.Warehouses, error) {
 	ret := _m.Called(orderLines, country)
 
 	var r0 model.Warehouses
 	var r1 error
-	if rf, ok := ret.Get(0).(func(model.OrderLines, model.CountryCode) (model.Warehouses, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.OrderLineSlice, model.CountryCode) (model.Warehouses, error)); ok {
 		return rf(orderLines, country)
 	}
-	if rf, ok := ret.Get(0).(func(model.OrderLines, model.CountryCode) model.Warehouses); ok {
+	if rf, ok := ret.Get(0).(func(model.OrderLineSlice, model.CountryCode) model.Warehouses); ok {
 		r0 = rf(orderLines, country)
 	} else {
 		if ret.Get(0) != nil {
@@ -84,7 +84,7 @@ func (_m *WarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines mode
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(model.OrderLines, model.CountryCode) error); ok {
+	if rf, ok := ret.Get(1).(func(model.OrderLineSlice, model.CountryCode) error); ok {
 		r1 = rf(orderLines, country)
 	} else {
 		r1 = ret.Error(1)

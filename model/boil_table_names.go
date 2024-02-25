@@ -57,6 +57,7 @@ var TableNames = struct {
 	PageTranslations                      string
 	PageTypes                             string
 	Pages                                 string
+	PaymentTransactions                   string
 	Payments                              string
 	PluginConfigurations                  string
 	PluginKeyValueStore                   string
@@ -96,7 +97,6 @@ var TableNames = struct {
 	Systems                               string
 	TermsOfServices                       string
 	Tokens                                string
-	Transactions                          string
 	UploadSessions                        string
 	UserAccessTokens                      string
 	Users                                 string
@@ -169,6 +169,7 @@ var TableNames = struct {
 	PageTranslations:                      "page_translations",
 	PageTypes:                             "page_types",
 	Pages:                                 "pages",
+	PaymentTransactions:                   "payment_transactions",
 	Payments:                              "payments",
 	PluginConfigurations:                  "plugin_configurations",
 	PluginKeyValueStore:                   "plugin_key_value_store",
@@ -208,7 +209,6 @@ var TableNames = struct {
 	Systems:                               "systems",
 	TermsOfServices:                       "terms_of_services",
 	Tokens:                                "tokens",
-	Transactions:                          "transactions",
 	UploadSessions:                        "upload_sessions",
 	UserAccessTokens:                      "user_access_tokens",
 	Users:                                 "users",

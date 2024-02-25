@@ -79,7 +79,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
 	if user != nil && !model_helper.IsValidId(user.Id) {
 		user = nil
 	}
@@ -108,7 +108,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, order
 	return res, nil, appErr
 }
 
-func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (model.OrderLines, *model_helper.AppError) {
+func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError) {
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{
@@ -127,7 +127,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (
 }
 
 // GiftcardsCreate creates purchased gift cards
-func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLineSlice, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError) {
 	var (
 		customerUser          *model.User = nil
 		customerUserID        *string
@@ -211,8 +211,8 @@ func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftc
 	return giftcards, nil
 }
 
-func GetGiftcardLines(lines model.OrderLines) model.OrderLines {
-	res := model.OrderLines{}
+func GetGiftcardLines(lines model.OrderLineSlice) model.OrderLineSlice {
+	res := model.OrderLineSlice{}
 	for _, line := range lines {
 		if line != nil && line.IsGiftcard {
 			res = append(res, line)
@@ -222,7 +222,7 @@ func GetGiftcardLines(lines model.OrderLines) model.OrderLines {
 	return res
 }
 
-func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
 	if len(giftcardLines) == 0 {
 		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
 	}

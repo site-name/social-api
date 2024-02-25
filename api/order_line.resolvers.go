@@ -100,7 +100,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	}
 
 	// add order lines
-	var addedOrderLines = make(model.OrderLines, 0, len(args.Input))
+	var addedOrderLines = make(model.OrderLineSlice, 0, len(args.Input))
 	var linesToAdd = make(model.QuantityOrderLines, 0, len(args.Input))
 	var variantsMap = lo.SliceToMap(variants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
 

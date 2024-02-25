@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type ServiceGiftcard struct {
@@ -71,7 +71,7 @@ func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOp
 }
 
 // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*model.Giftcard) (model.GiftcardSlice, *model_helper.AppError) {
+func (a *ServiceGiftcard) UpsertGiftcards(transaction boil.ContextTransactor, giftcards ...*model.Giftcard) (model.GiftcardSlice, *model_helper.AppError) {
 	giftcards, err := a.srv.Store.Giftcard().BulkUpsert(transaction, giftcards...)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -105,7 +105,7 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) (model.GiftcardSlice, 
 	return giftcards, appErr
 }
 
-func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *model_helper.AppError {
+func (s *ServiceGiftcard) DeleteGiftcards(transaction boil.ContextTransactor, ids []string) *model_helper.AppError {
 	err := s.srv.Store.Giftcard().Delete(transaction, ids)
 	if err != nil {
 		return model_helper.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -115,7 +115,7 @@ func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *m
 }
 
 // relations must be []*Order || []*Checkout
-func (s *ServiceGiftcard) AddGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model_helper.AppError {
+func (s *ServiceGiftcard) AddGiftcardRelations(transaction boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) *model_helper.AppError {
 	err := s.srv.Store.Giftcard().AddRelations(transaction, giftcards, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -129,7 +129,7 @@ func (s *ServiceGiftcard) AddGiftcardRelations(transaction *gorm.DB, giftcards m
 }
 
 // relations must be []*Order || []*Checkout
-func (s *ServiceGiftcard) RemoveGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model_helper.AppError {
+func (s *ServiceGiftcard) RemoveGiftcardRelations(transaction boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) *model_helper.AppError {
 	err := s.srv.Store.Giftcard().RemoveRelations(transaction, giftcards, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

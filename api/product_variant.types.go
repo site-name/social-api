@@ -341,7 +341,7 @@ func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period Report
 		return nil, err
 	}
 
-	var orderLines model.OrderLines
+	var orderLines model.OrderLineSlice
 	orderLines, err = OrderLinesByVariantIdAndChannelIdLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channel.Id))()
 	if err != nil {
 		return nil, err

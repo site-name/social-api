@@ -6,15 +6,14 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type CheckoutLineFilterOptions struct {
-	Conditions []qm.QueryMod
+	CommonQueryOptions
 }
 
 type CheckoutFilterOptions struct {
-	Conditions []qm.QueryMod
+	CommonQueryOptions
 }
 
 func CheckoutGetDiscountMoney(c model.Checkout) goprices.Money {

@@ -54,7 +54,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/samber/lo v1.38.1
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.4.2-0.20230727053713-cee2990f2f91
+	github.com/site-name/go-prices v1.4.2
 	github.com/site-name/i18naddress v0.0.4
 	github.com/spf13/cobra v1.7.0
 	github.com/splitio/go-client/v6 v6.3.3
@@ -66,6 +66,7 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	github.com/volatiletech/null/v8 v8.1.2
+	github.com/volatiletech/sqlboiler v3.7.1+incompatible
 	github.com/volatiletech/sqlboiler/v4 v4.15.0
 	github.com/volatiletech/strmangle v0.0.6
 	golang.org/x/crypto v0.14.0
@@ -88,6 +89,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
+	github.com/volatiletech/null v8.0.0+incompatible // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect

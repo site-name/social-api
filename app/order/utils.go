@@ -300,7 +300,7 @@ func (a *ServiceOrder) UpdateTaxesForOrderLine(line model.OrderLine, order model
 	return nil
 }
 
-func (a *ServiceOrder) UpdateTaxesForOrderLines(lines model.OrderLines, order model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model_helper.AppError {
+func (a *ServiceOrder) UpdateTaxesForOrderLines(lines model.OrderLineSlice, order model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model_helper.AppError {
 	for _, line := range lines.FilterNils() {
 		appErr := a.UpdateTaxesForOrderLine(*line, order, manager, taxIncludeed)
 		if appErr != nil {
@@ -347,7 +347,7 @@ func (a *ServiceOrder) UpdateOrderPrices(tx *gorm.DB, order model.Order, manager
 	return a.RecalculateOrder(tx, &order, map[string]interface{}{})
 }
 
-func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError) {
+func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError) {
 	// check shipping required:
 	if !lo.SomeBy(lines, func(l *model.OrderLine) bool { return l.IsShippingRequired }) {
 		return model.Warehouses{}, nil
@@ -365,7 +365,7 @@ func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, 
 }
 
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLines, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError) {
 	if len(orderLines) == 0 {
 		return orderLines, nil
 	}

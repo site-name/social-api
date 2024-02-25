@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 // CheckoutLineInfo contains information of a checkout line
@@ -278,7 +279,7 @@ func (c *CollectionPointInfo) GetWarehouseFilterLookup() map[string]any {
 }
 
 func (c *CollectionPointInfo) IsValidDeliveryMethod() bool {
-	return c.ShippingAddress != nil && c.DeliveryMethod.AddressID.IsNotNilAndEqual(c.ShippingAddress.ID)
+	return c.ShippingAddress != nil && model_types.PrimitiveIsNotNilAndEqual(c.DeliveryMethod.AddressID.String, c.ShippingAddress.ID)
 }
 
 func (c *CollectionPointInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {

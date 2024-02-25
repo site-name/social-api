@@ -18,7 +18,6 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 	return &SqlCheckoutStore{sqlStore}
 }
 
-// Upsert depends on given checkout's Token property to decide to update or insert it
 func (cs *SqlCheckoutStore) Upsert(tx boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, error) {
 	if tx == nil {
 		tx = cs.GetMaster()
@@ -57,7 +56,6 @@ func (cs *SqlCheckoutStore) Upsert(tx boil.ContextTransactor, checkouts model.Ch
 	return checkouts, nil
 }
 
-// GetByOption finds and returns 1 checkout based on given option
 func (cs *SqlCheckoutStore) GetByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, error) {
 	checkout, err := model.Checkouts(option.Conditions...).One(cs.GetReplica())
 	if err != nil {
@@ -70,23 +68,28 @@ func (cs *SqlCheckoutStore) GetByOption(option model_helper.CheckoutFilterOption
 	return checkout, nil
 }
 
-// FilterByOption finds and returns a list of checkout based on given option
 func (cs *SqlCheckoutStore) FilterByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, error) {
 	return model.Checkouts(option.Conditions...).All(cs.GetReplica())
 }
 
-// FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
-func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
+func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout model.Checkout) (model_helper.CheckoutLineInfos, error) {
 	// please refer to file checkout_store_sql.md for details
 
 	// fetch checkout lines:
-	var checkoutLines model.CheckoutLines
+	// var checkoutLines model.CheckoutLineSlice
 
-	err := cs.GetReplica().Order("CreateAt ASC").Find(&checkoutLines, "CheckoutID = ?", checkout.Token).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", checkout.Token)
-	}
+	// err := cs.GetReplica().Order("CreateAt ASC").Find(&checkoutLines, "CheckoutID = ?", checkout.Token).Error
+	// if err != nil {
+	// 	return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", checkout.Token)
+	// }
 	productVariantIDs := checkoutLines.VariantIDs()
+
+	checkoutLines, err := model.CheckoutLines(model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token)).All(cs.GetReplica())
+	if err != nil {
+		return nil, err
+	}
+
+	var c model.CheckoutLine
 
 	// fetch product variants
 	var (
@@ -234,8 +237,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	return checkoutLineInfos, nil
 }
 
-// DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
-// It returns an error indicating if the operation was performed successfully.
 func (cs *SqlCheckoutStore) Delete(transaction boil.ContextTransactor, tokens []string) error {
 	if transaction == nil {
 		transaction = cs.GetMaster()

@@ -2,11 +2,14 @@ package warehouse
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"gorm.io/gorm"
 )
 
@@ -438,32 +441,15 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, c
 	return query
 }
 
-// ChangeQuantity reduce or increase the quantity of given stock
-func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
-	err := ss.GetMaster().Raw("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to change stock quantity for stock with id=%s", stockID)
-	}
-
-	return nil
+func (ss *SqlStockStore) ChangeQuantity(stockID string, quantityDelta int) error {
+	query := fmt.Sprintf("UPDATE %s SET %s = %s + ? WHERE %s = ?", model.TableNames.Stocks, model.StockColumns.Quantity, model.StockColumns.Quantity, model.StockColumns.ID)
+	_, err := queries.Raw(query, quantityDelta, stockID).Exec(ss.GetMaster())
+	return err
 }
 
-func (s *SqlStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+func (s *SqlStockStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	if tx == nil {
 		tx = s.GetMaster()
 	}
-	if options == nil || options.Conditions == nil {
-		return 0, store.NewErrInvalidInput(model.StockTableName, "Conditions", "")
-	}
-
-	args, err := store.BuildSqlizer(options.Conditions, "Stock_Delete")
-	if err != nil {
-		return 0, err
-	}
-	result := tx.Delete(&model.Stock{}, args...)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete stocks by given options")
-	}
-
-	return result.RowsAffected, nil
+	return model.Stocks(model.StockWhere.ID.IN(ids)).DeleteAll(tx)
 }

@@ -1153,11 +1153,11 @@ func (s *RetryLayerAllocationStore) Get(id string) (*model.Allocation, error) {
 
 }
 
-func (s *RetryLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
+func (s *RetryLayerAssignedPageAttributeStore) FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.AssignedPageAttributeStore.FilterByOptions(mods...)
+		result, err := s.AssignedPageAttributeStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -2973,7 +2973,7 @@ func (s *RetryLayerDiscountSaleStore) Delete(tx boil.ContextTransactor, ids []st
 
 }
 
-func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
+func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model_helper.CustomSaleSlice, error) {
 
 	tries := 0
 	for {
@@ -3153,7 +3153,7 @@ func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date timemodule.Time) (
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model.VoucherSlice, error) {
+func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
 
 	tries := 0
 	for {
@@ -4465,7 +4465,7 @@ func (s *RetryLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, orderLi
 
 }
 
-func (s *RetryLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
+func (s *RetryLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
 
 	tries := 0
 	for {
@@ -7921,11 +7921,11 @@ func (s *RetryLayerUserStore) Count(options model_helper.UserCountOptions) (int6
 
 }
 
-func (s *RetryLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
+func (s *RetryLayerUserStore) Find(options model_helper.UserFilterOptions) (model.UserSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.Find(conds...)
+		result, err := s.UserStore.Find(options)
 		if err == nil {
 			return result, nil
 		}
@@ -7941,11 +7941,11 @@ func (s *RetryLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error
 
 }
 
-func (s *RetryLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
+func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.Get(conds...)
+		result, err := s.UserStore.Get(ctx, id)
 		if err == nil {
 			return result, nil
 		}

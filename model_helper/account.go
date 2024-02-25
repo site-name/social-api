@@ -926,50 +926,6 @@ func TermsOfServiceIsValid(t model.TermsOfService) *AppError {
 	return nil
 }
 
-type CustomerEventType string
-
-func (t CustomerEventType) IsValid() bool {
-	switch t {
-	case CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED,
-		CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT,
-		CUSTOMER_EVENT_TYPE_PASSWORD_RESET,
-		CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED,
-		CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST,
-		CUSTOMER_EVENT_TYPE_EMAIL_CHANGED,
-		CUSTOMER_EVENT_TYPE_PLACED_ORDER,
-		CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER,
-		CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
-		CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED,
-		CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED,
-		CUSTOMER_EVENT_TYPE_NAME_ASSIGNED,
-		CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED,
-		CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED,
-		CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED:
-		return true
-	default:
-		return false
-	}
-}
-
-// some available types for CustomerEvent's Type attribute
-const (
-	CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED          CustomerEventType = "ACCOUNT_CREATED"
-	CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT CustomerEventType = "PASSWORD_RESET_LINK_SENT"
-	CUSTOMER_EVENT_TYPE_PASSWORD_RESET           CustomerEventType = "PASSWORD_RESET"
-	CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED         CustomerEventType = "PASSWORD_CHANGED"
-	CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST     CustomerEventType = "EMAIL_CHANGED_REQUEST"
-	CUSTOMER_EVENT_TYPE_EMAIL_CHANGED            CustomerEventType = "EMAIL_CHANGED"
-	CUSTOMER_EVENT_TYPE_PLACED_ORDER             CustomerEventType = "PLACED_ORDER"            // created an order
-	CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER      CustomerEventType = "NOTE_ADDED_TO_ORDER"     // added a note to one of their orders
-	CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED  CustomerEventType = "DIGITAL_LINK_DOWNLOADED" // downloaded a digital good
-	CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED         CustomerEventType = "CUSTOMER_DELETED"        // staff user deleted a customer
-	CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED           CustomerEventType = "EMAIL_ASSIGNED"          // the staff user assigned a email to the customer
-	CUSTOMER_EVENT_TYPE_NAME_ASSIGNED            CustomerEventType = "NAME_ASSIGNED"           // the staff user added set a name to the customer
-	CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED      CustomerEventType = "NOTE_ADDED"              // the staff user added a note to the customer
-	CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED        CustomerEventType = "ACCOUNT_ACTIVATED"
-	CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED      CustomerEventType = "ACCOUNT_DEACTIVATED"
-)
-
 type MfaSecret struct {
 	Secret string `json:"secret"`
 	QRCode string `json:"qr_code"`
@@ -993,4 +949,8 @@ func IsInRole(userRoles string, inRole string) bool {
 
 type UsersStats struct {
 	TotalUsersCount int64 `json:"total_users_count"`
+}
+
+type UserFilterOptions struct {
+	CommonQueryOptions
 }

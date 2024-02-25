@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
@@ -63,54 +64,83 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	return voucher, nil
 }
 
-func (vs *SqlVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
+func (vs *SqlVoucherStore) commonQueryOptionsBuilder(option model_helper.VoucherFilterOption) ([]qm.QueryMod, *model_helper.AppError) {
 	appErr := option.Validate()
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	conds := option.Conditions
-	selectColumns := []string{model.TableNames.Vouchers + ".*"}
-
-	if option.Annotate_MinDiscountValue || option.Annotate_MinSpentAmount {
-		conds = append(
-			conds,
-			qm.LeftOuterJoin(
-				fmt.Sprintf("%s ON %s = %s", model.TableNames.VoucherChannelListings, model.VoucherChannelListingTableColumns.VoucherID, model.VoucherTableColumns.ID),
-			),
-			qm.LeftOuterJoin(
-				fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.VoucherChannelListingTableColumns.ChannelID),
-			),
+	result := option.Conditions
+	if option.Annotate_MinValues {
+		result = append(
+			result,
+			qm.LeftOuterJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.VoucherChannelListings, model.VoucherChannelListingTableColumns.VoucherID, model.VoucherTableColumns.ID)),
+			qm.LeftOuterJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.VoucherChannelListingTableColumns.ChannelID)),
 			qm.GroupBy(model.VoucherTableColumns.ID),
 		)
 
-		if option.Annotate_MinDiscountValue {
-			minDiscountValueColumn := fmt.Sprintf(
-				`MIN (%s) FILTER (WHERE %s = '%s' OR %s = '%s') AS "minDiscountValue"`,
-				model.VoucherChannelListingTableColumns.DiscountValue,
-				model.VoucherChannelListingTableColumns.ChannelID,
-				option.ChannelIdOrSlug,
-				model.ChannelTableColumns.Slug,
-				option.ChannelIdOrSlug,
-			)
-			selectColumns = append(selectColumns, minDiscountValueColumn)
-		}
-		if option.Annotate_MinSpentAmount {
-			minSpentAmountColumn := fmt.Sprintf(
-				`MIN (%s) FILTER (WHERE %s = '%s' OR %s = '%s') AS "minSpentAmount"`,
-				model.VoucherChannelListingTableColumns.MinSpendAmount,
-				model.VoucherChannelListingTableColumns.ChannelID,
-				option.ChannelIdOrSlug,
-				model.ChannelTableColumns.Slug,
-				option.ChannelIdOrSlug,
-			)
-			selectColumns = append(selectColumns, minSpentAmountColumn)
-		}
-	}
-	conds = append(conds, qm.Select(selectColumns...))
+		minDiscountValueColumn := fmt.Sprintf(
+			`MIN (%s) FILTER (WHERE %s = '%s' OR %s = '%s') AS %s`,
+			model.VoucherChannelListingTableColumns.DiscountValue,
+			model.VoucherChannelListingTableColumns.ChannelID,
+			option.ChannelIdOrSlug,
+			model.ChannelTableColumns.Slug,
+			option.ChannelIdOrSlug,
+			model_helper.CustomVoucherTableColumns.MinDiscountValue,
+		)
+		result = append(result, qm.Select(minDiscountValueColumn))
 
-	var result model_helper.CustomVoucherSlice
-	return result, model.Vouchers(conds...).Bind(nil, vs.GetReplica(), &result)
+		minSpentAmountColumn := fmt.Sprintf(
+			`MIN (%s) FILTER (WHERE %s = '%s' OR %s = '%s') AS %s`,
+			model.VoucherChannelListingTableColumns.MinSpendAmount,
+			model.VoucherChannelListingTableColumns.ChannelID,
+			option.ChannelIdOrSlug,
+			model.ChannelTableColumns.Slug,
+			option.ChannelIdOrSlug,
+			model_helper.CustomVoucherTableColumns.MinSpentAmount,
+		)
+		result = append(result, qm.Select(minSpentAmountColumn))
+	}
+
+	return result, nil
+}
+
+func (vs *SqlVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
+	queryOptions, appErr := vs.commonQueryOptionsBuilder(option)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	rows, err := model.Vouchers(queryOptions...).Query.Query(vs.GetReplica())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find vouchers with given conditions")
+	}
+
+	var vouchers model_helper.CustomVoucherSlice
+	for rows.Next() {
+		var customVoucher model_helper.CustomVoucher
+		var scanValues []any
+
+		if option.Annotate_MinValues {
+			scanValues = model_helper.CustomVoucherScanValues(&customVoucher)
+		} else {
+			scanValues = model_helper.VoucherScanValues(&customVoucher.Voucher)
+		}
+
+		err = rows.Scan(scanValues...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of voucher")
+		}
+
+		vouchers = append(vouchers, &customVoucher)
+	}
+
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "rows has error")
+	}
+
+	return vouchers, nil
 }
 
 func (vs *SqlVoucherStore) ExpiredVouchers(date time.Time) (model.VoucherSlice, error) {
@@ -123,7 +153,6 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date time.Time) (model.VoucherSlice, 
 		},
 		model.VoucherWhere.StartDate.LT(milisecond),
 	).All(vs.GetReplica())
-
 }
 
 func (s *SqlVoucherStore) Delete(transaction boil.ContextTransactor, ids []string) (int64, error) {

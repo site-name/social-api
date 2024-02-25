@@ -151,7 +151,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	}
 
 	// create order events on order lines
-	orderOrderLinesMap := map[string]model.OrderLines{}
+	orderOrderLinesMap := map[string]model.OrderLineSlice{}
 	orders := model.Orders{}
 	for _, line := range orderLines {
 		_, exist := orderOrderLinesMap[line.OrderID]

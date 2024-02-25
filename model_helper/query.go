@@ -1,6 +1,8 @@
 package model_helper
 
 import (
+	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -45,4 +47,24 @@ func (and And) Apply(q *queries.Query) {
 		return
 	}
 	queries.AppendWhere(q, clause, args...)
+}
+
+// JsonbContains buils a query mod that checks if a jsonb field contains a key-value pair
+func JsonbContains(field string, key string, value any) qm.QueryMod {
+	template := "{%q:%q}"
+	if _, ok := any(value).(string); !ok {
+		template = "{%q:%v}"
+	}
+
+	return qm.Where(fmt.Sprintf("%s::jsonb @> ?", field), fmt.Sprintf(template, key, value))
+}
+
+// JsonbHasKey builds a query mod that checks if a jsonb field contains a key
+func JsonbHasKey(field string, key string) qm.QueryMod {
+	return qm.Where(fmt.Sprintf("%s::jsonb -> '%s' IS NOT NULL", field, key))
+}
+
+// JsonbHasNoKey builds a query mod that checks if a jsonb field does not contain a key
+func JsonbHasNoKey(field string, key string) qm.QueryMod {
+	return qm.Where(fmt.Sprintf("%s::jsonb -> '%s' IS NULL", field, key))
 }

@@ -56,19 +56,19 @@ func (_m *OrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.O
 }
 
 // FilterbyOption provides a mock function with given fields: option
-func (_m *OrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
+func (_m *OrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
 	ret := _m.Called(option)
 
-	var r0 model.OrderLines
+	var r0 model.OrderLineSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.OrderLineFilterOption) (model.OrderLines, error)); ok {
+	if rf, ok := ret.Get(0).(func(*model.OrderLineFilterOption) (model.OrderLineSlice, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.OrderLineFilterOption) model.OrderLines); ok {
+	if rf, ok := ret.Get(0).(func(*model.OrderLineFilterOption) model.OrderLineSlice); ok {
 		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.OrderLines)
+			r0 = ret.Get(0).(model.OrderLineSlice)
 		}
 	}
 

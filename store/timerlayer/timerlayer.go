@@ -1106,10 +1106,10 @@ func (s *TimerLayerAllocationStore) Get(id string) (*model.Allocation, error) {
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
+func (s *TimerLayerAssignedPageAttributeStore) FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.AssignedPageAttributeStore.FilterByOptions(mods...)
+	result, err := s.AssignedPageAttributeStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2562,7 +2562,7 @@ func (s *TimerLayerDiscountSaleStore) Delete(tx boil.ContextTransactor, ids []st
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
+func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model_helper.CustomSaleSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
@@ -2706,7 +2706,7 @@ func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date timemodule.Time) (
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model.VoucherSlice, error) {
+func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
@@ -3776,7 +3776,7 @@ func (s *TimerLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, orderLi
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
+func (s *TimerLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.FilterbyOption(option)
@@ -6605,10 +6605,10 @@ func (s *TimerLayerUserStore) Count(options model_helper.UserCountOptions) (int6
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
+func (s *TimerLayerUserStore) Find(options model_helper.UserFilterOptions) (model.UserSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.Find(conds...)
+	result, err := s.UserStore.Find(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6621,10 +6621,10 @@ func (s *TimerLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
+func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.Get(conds...)
+	result, err := s.UserStore.Get(ctx, id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

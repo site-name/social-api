@@ -6240,6 +6240,198 @@ func (e OrderOrigin) Ordinal() int {
 	}
 }
 
+// NullOrderOrigin is a nullable OrderOrigin enum type. It supports SQL and JSON serialization.
+type NullOrderOrigin struct {
+	Val   OrderOrigin
+	Valid bool
+}
+
+// NullOrderOriginFrom creates a new OrderOrigin that will never be blank.
+func NullOrderOriginFrom(v OrderOrigin) NullOrderOrigin {
+	return NewNullOrderOrigin(v, true)
+}
+
+// NullOrderOriginFromPtr creates a new NullOrderOrigin that be null if s is nil.
+func NullOrderOriginFromPtr(v *OrderOrigin) NullOrderOrigin {
+	if v == nil {
+		return NewNullOrderOrigin("", false)
+	}
+	return NewNullOrderOrigin(*v, true)
+}
+
+// NewNullOrderOrigin creates a new NullOrderOrigin
+func NewNullOrderOrigin(v OrderOrigin, valid bool) NullOrderOrigin {
+	return NullOrderOrigin{
+		Val:   v,
+		Valid: valid,
+	}
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *NullOrderOrigin) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, null.NullBytes) {
+		e.Val = ""
+		e.Valid = false
+		return nil
+	}
+
+	if err := json.Unmarshal(data, &e.Val); err != nil {
+		return err
+	}
+
+	e.Valid = true
+	return nil
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e NullOrderOrigin) MarshalJSON() ([]byte, error) {
+	if !e.Valid {
+		return null.NullBytes, nil
+	}
+	return json.Marshal(e.Val)
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (e NullOrderOrigin) MarshalText() ([]byte, error) {
+	if !e.Valid {
+		return []byte{}, nil
+	}
+	return []byte(e.Val), nil
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (e *NullOrderOrigin) UnmarshalText(text []byte) error {
+	if text == nil || len(text) == 0 {
+		e.Valid = false
+		return nil
+	}
+
+	e.Val = OrderOrigin(text)
+	e.Valid = true
+	return nil
+}
+
+// SetValid changes this NullOrderOrigin value and also sets it to be non-null.
+func (e *NullOrderOrigin) SetValid(v OrderOrigin) {
+	e.Val = v
+	e.Valid = true
+}
+
+// Ptr returns a pointer to this NullOrderOrigin value, or a nil pointer if this NullOrderOrigin is null.
+func (e NullOrderOrigin) Ptr() *OrderOrigin {
+	if !e.Valid {
+		return nil
+	}
+	return &e.Val
+}
+
+// IsZero returns true for null types.
+func (e NullOrderOrigin) IsZero() bool {
+	return !e.Valid
+}
+
+// Scan implements the Scanner interface.
+func (e *NullOrderOrigin) Scan(value interface{}) error {
+	if value == nil {
+		e.Val, e.Valid = "", false
+		return nil
+	}
+	e.Valid = true
+	return convert.ConvertAssign((*string)(&e.Val), value)
+}
+
+// Value implements the driver Valuer interface.
+func (e NullOrderOrigin) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.Val), nil
+}
+
+type TransactionKind string
+
+// Enum values for TransactionKind
+const (
+	TransactionKindExternal        TransactionKind = "external"
+	TransactionKindAuth            TransactionKind = "auth"
+	TransactionKindCapture         TransactionKind = "capture"
+	TransactionKindCaptureFailed   TransactionKind = "capture_failed"
+	TransactionKindActionToConfirm TransactionKind = "action_to_confirm"
+	TransactionKindVoid            TransactionKind = "void"
+	TransactionKindRefund          TransactionKind = "refund"
+	TransactionKindRefundOngoing   TransactionKind = "refund_ongoing"
+	TransactionKindRefundFailed    TransactionKind = "refund_failed"
+	TransactionKindRefundReversed  TransactionKind = "refund_reversed"
+	TransactionKindConfirm         TransactionKind = "confirm"
+	TransactionKindCancel          TransactionKind = "cancel"
+	TransactionKindPending         TransactionKind = "pending"
+)
+
+func AllTransactionKind() []TransactionKind {
+	return []TransactionKind{
+		TransactionKindExternal,
+		TransactionKindAuth,
+		TransactionKindCapture,
+		TransactionKindCaptureFailed,
+		TransactionKindActionToConfirm,
+		TransactionKindVoid,
+		TransactionKindRefund,
+		TransactionKindRefundOngoing,
+		TransactionKindRefundFailed,
+		TransactionKindRefundReversed,
+		TransactionKindConfirm,
+		TransactionKindCancel,
+		TransactionKindPending,
+	}
+}
+
+func (e TransactionKind) IsValid() error {
+	switch e {
+	case TransactionKindExternal, TransactionKindAuth, TransactionKindCapture, TransactionKindCaptureFailed, TransactionKindActionToConfirm, TransactionKindVoid, TransactionKindRefund, TransactionKindRefundOngoing, TransactionKindRefundFailed, TransactionKindRefundReversed, TransactionKindConfirm, TransactionKindCancel, TransactionKindPending:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e TransactionKind) String() string {
+	return string(e)
+}
+
+func (e TransactionKind) Ordinal() int {
+	switch e {
+	case TransactionKindExternal:
+		return 0
+	case TransactionKindAuth:
+		return 1
+	case TransactionKindCapture:
+		return 2
+	case TransactionKindCaptureFailed:
+		return 3
+	case TransactionKindActionToConfirm:
+		return 4
+	case TransactionKindVoid:
+		return 5
+	case TransactionKindRefund:
+		return 6
+	case TransactionKindRefundOngoing:
+		return 7
+	case TransactionKindRefundFailed:
+		return 8
+	case TransactionKindRefundReversed:
+		return 9
+	case TransactionKindConfirm:
+		return 10
+	case TransactionKindCancel:
+		return 11
+	case TransactionKindPending:
+		return 12
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
 type PaymentChargeStatus string
 
 // Enum values for PaymentChargeStatus
@@ -6534,90 +6726,6 @@ func (e StaffSalaryPeriod) Ordinal() int {
 		return 1
 	case StaffSalaryPeriodMonthly:
 		return 2
-
-	default:
-		panic(errors.New("enum is not valid"))
-	}
-}
-
-type TransactionKind string
-
-// Enum values for TransactionKind
-const (
-	TransactionKindExternal        TransactionKind = "external"
-	TransactionKindAuth            TransactionKind = "auth"
-	TransactionKindCapture         TransactionKind = "capture"
-	TransactionKindCaptureFailed   TransactionKind = "capture_failed"
-	TransactionKindActionToConfirm TransactionKind = "action_to_confirm"
-	TransactionKindVoid            TransactionKind = "void"
-	TransactionKindRefund          TransactionKind = "refund"
-	TransactionKindRefundOngoing   TransactionKind = "refund_ongoing"
-	TransactionKindRefundFailed    TransactionKind = "refund_failed"
-	TransactionKindRefundReversed  TransactionKind = "refund_reversed"
-	TransactionKindConfirm         TransactionKind = "confirm"
-	TransactionKindCancel          TransactionKind = "cancel"
-	TransactionKindPending         TransactionKind = "pending"
-)
-
-func AllTransactionKind() []TransactionKind {
-	return []TransactionKind{
-		TransactionKindExternal,
-		TransactionKindAuth,
-		TransactionKindCapture,
-		TransactionKindCaptureFailed,
-		TransactionKindActionToConfirm,
-		TransactionKindVoid,
-		TransactionKindRefund,
-		TransactionKindRefundOngoing,
-		TransactionKindRefundFailed,
-		TransactionKindRefundReversed,
-		TransactionKindConfirm,
-		TransactionKindCancel,
-		TransactionKindPending,
-	}
-}
-
-func (e TransactionKind) IsValid() error {
-	switch e {
-	case TransactionKindExternal, TransactionKindAuth, TransactionKindCapture, TransactionKindCaptureFailed, TransactionKindActionToConfirm, TransactionKindVoid, TransactionKindRefund, TransactionKindRefundOngoing, TransactionKindRefundFailed, TransactionKindRefundReversed, TransactionKindConfirm, TransactionKindCancel, TransactionKindPending:
-		return nil
-	default:
-		return errors.New("enum is not valid")
-	}
-}
-
-func (e TransactionKind) String() string {
-	return string(e)
-}
-
-func (e TransactionKind) Ordinal() int {
-	switch e {
-	case TransactionKindExternal:
-		return 0
-	case TransactionKindAuth:
-		return 1
-	case TransactionKindCapture:
-		return 2
-	case TransactionKindCaptureFailed:
-		return 3
-	case TransactionKindActionToConfirm:
-		return 4
-	case TransactionKindVoid:
-		return 5
-	case TransactionKindRefund:
-		return 6
-	case TransactionKindRefundOngoing:
-		return 7
-	case TransactionKindRefundFailed:
-		return 8
-	case TransactionKindRefundReversed:
-		return 9
-	case TransactionKindConfirm:
-		return 10
-	case TransactionKindCancel:
-		return 11
-	case TransactionKindPending:
-		return 12
 
 	default:
 		panic(errors.New("enum is not valid"))

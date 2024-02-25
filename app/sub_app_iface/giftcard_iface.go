@@ -23,13 +23,13 @@ type GiftcardService interface {
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
 	CalculateExpiryDate(shopSettings model.ShopSettings) *time.Time
 	// FulfillNonShippableGiftcards
-	FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError)
+	FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError)
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model_helper.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
 	GiftcardsByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, *model_helper.AppError)
 	// GiftcardsCreate creates purchased gift cards
-	GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError)
+	GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLineSlice, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events
 	GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model_helper.AppError)
 	// PromoCodeIsGiftCard checks whether there is giftcard with given code
@@ -48,10 +48,10 @@ type GiftcardService interface {
 	RemoveGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model_helper.AppError
 	DeactivateOrderGiftcards(tx *gorm.DB, orderID string, user *model.User, _ interface{}) *model_helper.AppError
 	DeleteGiftcards(transaction *gorm.DB, ids []string) *model_helper.AppError
-	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
+	FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
 	GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface
 	GetGiftCard(id string) (*model.GiftCard, *model_helper.AppError)
-	GetNonShippableGiftcardLines(lines model.OrderLines) (model.OrderLines, *model_helper.AppError)
+	GetNonShippableGiftcardLines(lines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError)
 	GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model_helper.AppError)
 	GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model_helper.AppError)
 	OrderHasGiftcardLines(order *model.Order) (bool, *model_helper.AppError)

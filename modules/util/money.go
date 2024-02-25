@@ -15,7 +15,7 @@ func ZeroTaxedMoney(currency string) (*goprices.TaxedMoney, error) {
 	if err != nil {
 		return nil, err
 	}
-	return goprices.NewTaxedMoney(zero, zero)
+	return goprices.NewTaxedMoney(*zero, *zero)
 }
 
 func ZeroMoneyRange(currency string) (*goprices.MoneyRange, error) {
@@ -23,7 +23,7 @@ func ZeroMoneyRange(currency string) (*goprices.MoneyRange, error) {
 	if err != nil {
 		return nil, err
 	}
-	return goprices.NewMoneyRange(zero, zero)
+	return goprices.NewMoneyRange(*zero, *zero)
 }
 
 func ZeroTaxedMoneyRange(currency string) (*goprices.TaxedMoneyRange, error) {
@@ -31,5 +31,5 @@ func ZeroTaxedMoneyRange(currency string) (*goprices.TaxedMoneyRange, error) {
 	if err != nil {
 		return nil, err
 	}
-	return goprices.NewTaxedMoneyRange(zero, zero)
+	return goprices.NewTaxedMoneyRange(*zero, *zero)
 }

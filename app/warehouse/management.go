@@ -249,7 +249,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 
 	var (
 		allocationsToUpdate model.Allocations
-		notDeallocatedLines model.OrderLines
+		notDeallocatedLines model.OrderLineSlice
 	)
 	for _, lineInfo := range orderLineDatas {
 		var (

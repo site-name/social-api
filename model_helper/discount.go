@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gosimple/slug"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -34,28 +35,74 @@ type VoucherTranslationFilterOption struct {
 
 type SaleFilterOption struct {
 	CommonQueryOptions
-	SaleChannelListing_ChannelSlug qm.QueryMod
+	SaleChannelListing_ChannelSlug qm.QueryMod // INNER JOIN sale_channel_listings ON ... INNER JOIN channels ON ... WHERE channels.slug ...
+
+	AnnotateSaleDiscountValue bool   // LEFT JOIN sale_channel_listings ON ... LEFT JOIN channels ON ... WHERE channels.slug ...
+	ChannelSlug               string // This param goes with `AnnotateSaleDiscountValue`
+}
+
+func (s SaleFilterOption) Validate() *AppError {
+	if s.AnnotateSaleDiscountValue && !slug.IsSlug(s.ChannelSlug) {
+		return NewAppError("SaleFilterOption.Validate", InvalidArgumentAppErrorID, map[string]any{"Fields": "channel_slug"}, "please provide related channel slug", http.StatusBadRequest)
+	}
+	return nil
 }
 
 type VoucherFilterOption struct {
 	CommonQueryOptions
 
-	Annotate_MinDiscountValue bool
-	Annotate_MinSpentAmount   bool
-	ChannelIdOrSlug           string
+	Annotate_MinValues bool // this options tell store whether to annotate `min_discount_value` and `min_spent_amount` to the result
+	ChannelIdOrSlug    string
 }
 
-func (v VoucherFilterOption) Validate() error {
-	if (v.Annotate_MinDiscountValue || v.Annotate_MinSpentAmount) && v.ChannelIdOrSlug == "" {
-		return NewAppError("VoucherFilterOption.Validate", "ChannelIdOrSlug", nil, "please provide related channel id or slug", http.StatusBadRequest)
+func (v VoucherFilterOption) Validate() *AppError {
+	if v.Annotate_MinValues &&
+		(!slug.IsSlug(v.ChannelIdOrSlug) && !IsValidId(v.ChannelIdOrSlug)) {
+		return NewAppError("VoucherFilterOption.Validate", InvalidArgumentAppErrorID, map[string]any{"Fields": "channel_id_or_slug"}, "please provide related channel id or slug", http.StatusBadRequest)
 	}
 	return nil
 }
 
 type CustomVoucher struct {
 	model.Voucher
-	MinDiscountValue *decimal.Decimal
-	MinSpentAmount   *decimal.Decimal
+	MinDiscountValue *decimal.Decimal `boil:"min_discount_value" json:"min_discount_value" toml:"min_discount_value" yaml:"min_discount_value"`
+	MinSpentAmount   *decimal.Decimal `boil:"min_spent_amount" json:"min_spent_amount" toml:"min_spent_amount" yaml:"min_spent_amount"`
+}
+
+var CustomVoucherTableColumns = struct {
+	MinDiscountValue string
+	MinSpentAmount   string
+}{
+	MinDiscountValue: `"vouchers.min_discount_value"`,
+	MinSpentAmount:   `"vouchers.min_spent_amount"`,
+}
+
+// NOTE: this function's return value MUST BE updated when fields of `model.Voucher` are updated
+func VoucherScanValues(v *model.Voucher) []any {
+	return []any{
+		&v.ID,
+		&v.Type,
+		&v.Name,
+		&v.Code,
+		&v.UsageLimit,
+		&v.Used,
+		&v.StartDate,
+		&v.EndDate,
+		&v.ApplyOncePerOrder,
+		&v.ApplyOncePerCustomer,
+		&v.OnlyForStaff,
+		&v.DiscountValueType,
+		&v.Countries,
+		&v.MinCheckoutItemsQuantity,
+		&v.CreatedAt,
+		&v.UpdatedAt,
+		&v.Metadata,
+		&v.PrivateMetadata,
+	}
+}
+
+func CustomVoucherScanValues(v *CustomVoucher) []any {
+	return append(VoucherScanValues(&v.Voucher), &v.MinDiscountValue, &v.MinSpentAmount)
 }
 
 type CustomVoucherSlice []*CustomVoucher
@@ -67,7 +114,7 @@ func SaleIsValid(s model.Sale) *AppError {
 	if s.Name == "" {
 		return NewAppError("SaleIsValid", "model.sale.is_valid.name.app_error", nil, "invalid name", http.StatusBadRequest)
 	}
-	if s.EndDate.IsNotNilAndEqual(0) {
+	if model_types.PrimitiveIsNotNilAndEqual(s.EndDate.Int64, 0) {
 		return NewAppError("SaleIsValid", "model.sale.is_valid.end_date.app_error", nil, "invalid end date", http.StatusBadRequest)
 	}
 	if s.CreatedAt <= 0 {
@@ -110,7 +157,7 @@ func VoucherIsValid(v model.Voucher) *AppError {
 	if !IsValidId(v.ID) {
 		return NewAppError("VoucherIsValid", "model.voucher.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
-	if v.Name.IsNotNilAndEqual("") {
+	if model_types.PrimitiveIsNotNilAndEqual(v.Name.String, "") {
 		return NewAppError("VoucherIsValid", "model.voucher.is_valid.name.app_error", nil, "invalid name", http.StatusBadRequest)
 	}
 	if v.CreatedAt <= 0 {
@@ -161,7 +208,7 @@ func voucherCommonPre(v *model.Voucher) {
 	if v.OnlyForStaff.IsNil() {
 		v.OnlyForStaff = model_types.NewNullBool(false)
 	}
-	if v.Name.IsNotNilAndNotEqual("") {
+	if model_types.PrimitiveIsNotNilAndNotEqual(v.Name.String, "") {
 		*v.Name.String = SanitizeUnicode(*v.Name.String)
 	}
 	if v.DiscountValueType.IsValid() != nil {
@@ -480,9 +527,9 @@ func GiftcardIsValid(g model.Giftcard) *AppError {
 	if !g.ProductID.IsNil() && !IsValidId(*g.ProductID.String) {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.product_id.app_error", nil, "invalid product id", http.StatusBadRequest)
 	}
-	// if !g.LastUsedOn.IsNil() && *g.LastUsedOn.Int64 <= 0 {
-	// 	return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.last_used_on.app_error", nil, "invalid last used on", http.StatusBadRequest)
-	// }
+	if !g.LastUsedOn.IsNil() && *g.LastUsedOn.Int64 <= 0 {
+		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.last_used_on.app_error", nil, "invalid last used on", http.StatusBadRequest)
+	}
 	if !g.StartDate.IsNil() && g.StartDate.Time.IsZero() {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
 	}
@@ -490,4 +537,36 @@ func GiftcardIsValid(g model.Giftcard) *AppError {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.expiry_date.app_error", nil, "invalid expiry date", http.StatusBadRequest)
 	}
 	return nil
+}
+
+type CustomSale struct {
+	model.Sale
+	DiscountValue *decimal.Decimal `boil:"discount_value" json:"discount_value" toml:"discount_value" yaml:"discount_value"`
+}
+
+var CustomSaleTableColumns = struct {
+	DiscountValue string
+}{
+	DiscountValue: `"sales.discount_value"`,
+}
+
+type CustomSaleSlice []*CustomSale
+
+// NOTE: this function's return value MUST BE updated when fields of `model.Sale` are updated
+func SaleScanValues(s *model.Sale) []any {
+	return []any{
+		&s.ID,
+		&s.Name,
+		&s.Type,
+		&s.StartDate,
+		&s.EndDate,
+		&s.CreatedAt,
+		&s.UpdatedAt,
+		&s.Metadata,
+		&s.PrivateMetadata,
+	}
+}
+
+func CustomSaleScanValues(s *CustomSale) []any {
+	return append(SaleScanValues(&s.Sale), &s.DiscountValue)
 }

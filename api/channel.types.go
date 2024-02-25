@@ -145,7 +145,7 @@ func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*d
 		res        = make([]*dataloader.Result[*model.Channel], len(orderLineIDs))
 		orders     model.Orders
 		channels   []*model.Channel
-		orderLines model.OrderLines
+		orderLines model.OrderLineSlice
 		errs       []error
 	)
 

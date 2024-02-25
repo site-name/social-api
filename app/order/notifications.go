@@ -200,7 +200,7 @@ func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringI
 	}, nil
 }
 
-func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLines) ([]model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLineSlice) ([]model.StringInterface, *model_helper.AppError) {
 	// if some order line(s) don't have ProductVariant field populated, then populate them
 	if lo.SomeBy(orderLines, func(item *model.OrderLine) bool { return item != nil && item.ProductVariant == nil }) {
 		var appErr *model_helper.AppError

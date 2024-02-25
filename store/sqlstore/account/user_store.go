@@ -50,8 +50,8 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 
 func (us *SqlUserStore) ClearCaches() {}
 
-func (us *SqlUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
-	user, err := model.Users(conds...).One(us.GetReplica())
+func (us *SqlUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+	user, err := model.FindUser(us.DBXFromContext(ctx), id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Users, "conds")
@@ -62,8 +62,8 @@ func (us *SqlUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
 	return user, nil
 }
 
-func (us *SqlUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
-	return model.Users(conds...).All(us.GetReplica())
+func (us *SqlUserStore) Find(options model_helper.UserFilterOptions) (model.UserSlice, error) {
+	return model.Users(options.Conditions...).All(us.GetReplica())
 }
 
 // ResetAuthDataToEmailForUsers resets the AuthData of users whose AuthService

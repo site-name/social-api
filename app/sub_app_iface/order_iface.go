@@ -120,7 +120,7 @@ type OrderService interface {
 	// product to child category won't work
 	GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model_helper.AppError)
 	// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-	GetDiscountedLines(orderLines model.OrderLines, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError)
+	GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError)
 	// GetOrderCountry Return country to which order will be shipped
 	GetOrderCountry(order *model.Order) (model.CountryCode, *model_helper.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
@@ -177,7 +177,7 @@ type OrderService interface {
 	// NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
 	OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine) (bool, *model_helper.AppError)
 	// OrderLinesByOption returns a list of order lines by given option
-	OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model_helper.AppError)
+	OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, *model_helper.AppError)
 	// OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
 	OrderNeedsAutomaticFulfillment(order model.Order) (bool, *model_helper.AppError)
 	// OrderRefunded
@@ -314,7 +314,7 @@ type OrderService interface {
 	FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
 	FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
 	FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError)
-	GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError)
+	GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError)
 	GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model_helper.AppError)
 	LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model.StringInterface
 	LinesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []model.StringInterface
@@ -335,5 +335,5 @@ type OrderService interface {
 	SumOrderTotals(orders []*model.Order, currencyCode string) (*goprices.TaxedMoney, *model_helper.AppError)
 	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
 	UpdateTaxesForOrderLine(line model.OrderLine, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError
-	UpdateTaxesForOrderLines(lines model.OrderLines, order model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model_helper.AppError
+	UpdateTaxesForOrderLines(lines model.OrderLineSlice, order model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model_helper.AppError
 }

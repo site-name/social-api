@@ -217,7 +217,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		ProductWeightUnit   measurement.WeightUnit
 	}
 
-	err := model.CheckoutLines(
+	err := model.NewQuery(
 		qm.Select(
 			model.CheckoutLineTableColumns.Quantity,
 			model.ProductVariantTableColumns.Weight,
@@ -225,6 +225,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 			model.ProductTableColumns.Weight,
 			model.ProductTableColumns.WeightUnit,
 		),
+		qm.From(model.TableNames.CheckoutLines),
 		qm.InnerJoin("%s ON %s = %s", model.TableNames.ProductVariants, model.CheckoutLineTableColumns.VariantID, model.ProductVariantTableColumns.ID),
 		qm.InnerJoin("%s ON %s = %s", model.TableNames.Products, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID),
 		model.CheckoutLineWhere.ID.IN(checkoutLineIDs),

@@ -18,7 +18,6 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	return &SqlCategoryStore{s}
 }
 
-// Upsert depends on given category's Id field to decide update or insert it
 func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	err := cs.GetMaster().Save(category).Error
 	if err != nil {
@@ -32,7 +31,6 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 	return category, nil
 }
 
-// Get finds and returns a category with given id
 func (cs *SqlCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 	var res model.Category
 	err := cs.DBXFromContext(ctx).First(&res, "Id = ?", categoryID).Error
@@ -75,7 +73,6 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 	return query
 }
 
-// FilterByOption finds and returns a list of categories satisfy given option
 func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
 	query := cs.commonQueryBuilder(option)
 
@@ -106,7 +103,6 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 	return res, nil
 }
 
-// GetByOption finds and returns 1 category satisfy given option
 func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
 	queryString, args, err := cs.commonQueryBuilder(option).ToSql()
 	if err != nil {

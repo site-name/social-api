@@ -43,18 +43,18 @@ func (c *Context) SessionRequired() {
 }
 
 // CheckAuthenticatedAndHasPermissionToAll checks if user is authenticated, then check if user has all given permission(s)
-func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms ...*model_helper.Permission) {
+func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms []*model_helper.Permission) {
 	c.SessionRequired()
 	if c.Err != nil {
 		return
 	}
-	if !c.App.Srv().AccountService().SessionHasPermissionToAll(c.AppContext.Session(), perms...) {
+	if !c.App.Srv().AccountService().SessionHasPermissionToAll(*c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }
 
 // CheckAuthenticatedAndHasPermissionToAny check user authenticated, then check if user has any of given permission(s)
-func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model_helper.Permission) {
+func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms []*model_helper.Permission) {
 	c.SessionRequired()
 	if c.Err != nil {
 		return
@@ -256,7 +256,7 @@ func NewJSONEncodingError() *model_helper.AppError {
 }
 
 func (c *Context) SetPermissionError(permissions ...*model_helper.Permission) {
-	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions...)
+	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions)
 }
 
 func (c *Context) SetSiteURLHeader(url string) {

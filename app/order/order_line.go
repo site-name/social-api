@@ -36,7 +36,7 @@ func (a *ServiceOrder) DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *mod
 }
 
 // OrderLinesByOption returns a list of order lines by given option
-func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model_helper.AppError) {
+func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, *model_helper.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().FilterbyOption(option)
 	var (
 		statusCode int

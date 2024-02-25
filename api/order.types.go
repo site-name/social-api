@@ -203,7 +203,7 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.OrderLine] {
 	var (
 		res     = make([]*dataloader.Result[[]*model.OrderLine], len(idPairs))
-		lineMap = map[string]model.OrderLines{} // keys have format variantID__channelID
+		lineMap = map[string]model.OrderLineSlice{} // keys have format variantID__channelID
 
 		variantIDs []string
 		channelIDs []string

@@ -237,7 +237,7 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 		return nil, model_helper.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "inactive_token", http.StatusUnauthorized)
 	}
 
-	user, nErr := a.srv.Store.User().Get(model.UserWhere.ID.EQ(token.UserID))
+	user, nErr := a.srv.Store.User().Get(context.Background(), token.UserID)
 	if nErr != nil {
 		var nfErr *store.ErrNotFound
 		switch {
@@ -359,12 +359,15 @@ func (a *ServiceAccount) UpdateLastActivityAtIfNeeded(session model.Session) {
 
 // GetSessionLengthInMillis returns the session length, in milliseconds,
 // based on the type of session (Mobile, SSO, Web/LDAP).
-func (a *ServiceAccount) GetSessionLengthInMillis(session model.Session) int64 {
+func (a *ServiceAccount) GetSessionLengthInMillis(session *model.Session) int64 {
+	if session == nil {
+		return 0
+	}
 	var days int
 	switch {
-	case model_helper.SessionIsMobileApp(session):
+	case model_helper.SessionIsMobileApp(*session):
 		days = *a.srv.Config().ServiceSettings.SessionLengthMobileInDays
-	case model_helper.SessionIsSSOLogin(session):
+	case model_helper.SessionIsSSOLogin(*session):
 		days = *a.srv.Config().ServiceSettings.SessionLengthSSOInDays
 	default:
 		days = *a.srv.Config().ServiceSettings.SessionLengthWebInDays
@@ -517,7 +520,7 @@ func (a *ServiceAccount) ExtendSessionExpiryIfNeeded(session *model.Session) boo
 		return false
 	}
 
-	sessionLength := a.GetSessionLengthInMillis(*session)
+	sessionLength := a.GetSessionLengthInMillis(session)
 
 	// Only extend the expiry if the lessor of 1% or 1 day has elapsed within the
 	// current session duration.

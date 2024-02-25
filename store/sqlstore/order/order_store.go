@@ -1,14 +1,16 @@
 package order
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlOrderStore struct {
@@ -19,10 +21,19 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	return &SqlOrderStore{sqlStore}
 }
 
-// BulkUpsert performs bulk upsert given orders
-func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
+func (os *SqlOrderStore) BulkUpsert(transaction boil.ContextTransactor, orders model.OrderSlice) (model.OrderSlice, error) {
 	if transaction == nil {
 		transaction = os.GetMaster()
+	}
+
+	for _, order := range orders {
+		isSaving := order.ID == ""
+		if isSaving {
+			model_helper.OrderPreSave(order)
+		} else {
+			model_helper.OrderCommonPre(order)
+		}
+
 	}
 
 	for _, ord := range orders {
@@ -54,21 +65,19 @@ func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order)
 	return orders, nil
 }
 
-// Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
-	var order model.Order
-	err := os.GetReplica().First(&order, "Id = ?", id).Error
+	order, err := model.FindOrder(os.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.OrderTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Orders, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
+		return nil, err
 	}
-	return &order, nil
+
+	return order, nil
 }
 
-// FilterByOption returns a list of orders, filtered by given option
-func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error) {
+func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, model.OrderSlice, error) {
 	query := os.GetQueryBuilder().
 		Select(model.OrderTableName + ".*").
 		From(model.OrderTableName).
@@ -301,15 +310,10 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64,
 	return totalCount, res, nil
 }
 
-func (s *SqlOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+func (s *SqlOrderStore) Delete(transaction boil.ContextTransactor, ids []string) (int64, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	result := transaction.Raw("DELETE FROM "+model.OrderTableName+" WHERE Id IN ?", ids)
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete orders")
-	}
-
-	return result.RowsAffected, nil
+	return model.Orders(model.OrderWhere.ID.IN(ids)).DeleteAll(transaction)
 }

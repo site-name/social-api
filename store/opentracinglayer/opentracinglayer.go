@@ -1125,7 +1125,7 @@ func (s *OpenTracingLayerAllocationStore) Get(id string) (*model.Allocation, err
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
+func (s *OpenTracingLayerAssignedPageAttributeStore) FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedPageAttributeStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -1134,7 +1134,7 @@ func (s *OpenTracingLayerAssignedPageAttributeStore) FilterByOptions(mods ...qm.
 	}()
 
 	defer span.Finish()
-	result, err := s.AssignedPageAttributeStore.FilterByOptions(mods...)
+	result, err := s.AssignedPageAttributeStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2763,7 +2763,7 @@ func (s *OpenTracingLayerDiscountSaleStore) Delete(tx boil.ContextTransactor, id
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) {
+func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option model_helper.SaleFilterOption) (model_helper.CustomSaleSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.FilterSalesByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -2925,7 +2925,7 @@ func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date timemodule.T
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model.VoucherSlice, error) {
+func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.FilterVouchersByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4121,7 +4121,7 @@ func (s *OpenTracingLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, o
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
+func (s *OpenTracingLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -7277,7 +7277,7 @@ func (s *OpenTracingLayerUserStore) Count(options model_helper.UserCountOptions)
 	return result, err
 }
 
-func (s *OpenTracingLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice, error) {
+func (s *OpenTracingLayerUserStore) Find(options model_helper.UserFilterOptions) (model.UserSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.Find")
 	s.Root.Store.SetContext(newCtx)
@@ -7286,7 +7286,7 @@ func (s *OpenTracingLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice,
 	}()
 
 	defer span.Finish()
-	result, err := s.UserStore.Find(conds...)
+	result, err := s.UserStore.Find(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7295,7 +7295,7 @@ func (s *OpenTracingLayerUserStore) Find(conds ...qm.QueryMod) (model.UserSlice,
 	return result, err
 }
 
-func (s *OpenTracingLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, error) {
+func (s *OpenTracingLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -7304,7 +7304,7 @@ func (s *OpenTracingLayerUserStore) Get(conds ...qm.QueryMod) (*model.User, erro
 	}()
 
 	defer span.Finish()
-	result, err := s.UserStore.Get(conds...)
+	result, err := s.UserStore.Get(ctx, id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

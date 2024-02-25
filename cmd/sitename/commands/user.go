@@ -254,7 +254,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		nickname        string
 		firstname       string
 		lastname        string
-		locale          string
+		locale          model.LanguageCode
 		systemAdmin     bool
 	)
 	fmt.Println("---------------CREATE USER--------------")
@@ -290,7 +290,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		return errors.New("passwords do not match")
 	}
 
-	user := &model.User{
+	user := model.User{
 		Username:  username,
 		Email:     email,
 		Password:  password,
@@ -300,19 +300,19 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		Locale:    locale,
 	}
 
-	ruser, err := a.Srv().AccountService().CreateUser(&request.Context{}, user)
+	ruser, err := a.Srv().AccountService().CreateUser(request.Context{}, user)
 	if ruser == nil {
 		return errors.New("Unable to create user. Error: " + err.Error())
 	}
 
 	if systemAdmin {
-		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(ruser, "system_user system_admin", false); err != nil {
+		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(*ruser, "system_user system_admin", false); err != nil {
 			return errors.New("Unable to make user system admin. Error: " + err.Error())
 		}
 	} else {
 		// This else case exists to prevent the first user created from being
 		// created as a system admin unless explicitly specified.
-		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(ruser, "system_user", false); err != nil {
+		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(*ruser, "system_user", false); err != nil {
 			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
 		}
 	}

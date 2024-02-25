@@ -374,20 +374,20 @@ var PaymentWhere = struct {
 
 // PaymentRels is where relationship names are stored.
 var PaymentRels = struct {
-	Checkout     string
-	Order        string
-	Transactions string
+	Checkout            string
+	Order               string
+	PaymentTransactions string
 }{
-	Checkout:     "Checkout",
-	Order:        "Order",
-	Transactions: "Transactions",
+	Checkout:            "Checkout",
+	Order:               "Order",
+	PaymentTransactions: "PaymentTransactions",
 }
 
 // paymentR is where relationships are stored.
 type paymentR struct {
-	Checkout     *Checkout        `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
-	Order        *Order           `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
-	Transactions TransactionSlice `boil:"Transactions" json:"Transactions" toml:"Transactions" yaml:"Transactions"`
+	Checkout            *Checkout               `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Order               *Order                  `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	PaymentTransactions PaymentTransactionSlice `boil:"PaymentTransactions" json:"PaymentTransactions" toml:"PaymentTransactions" yaml:"PaymentTransactions"`
 }
 
 // NewStruct creates a new relationship struct
@@ -409,11 +409,11 @@ func (r *paymentR) GetOrder() *Order {
 	return r.Order
 }
 
-func (r *paymentR) GetTransactions() TransactionSlice {
+func (r *paymentR) GetPaymentTransactions() PaymentTransactionSlice {
 	if r == nil {
 		return nil
 	}
-	return r.Transactions
+	return r.PaymentTransactions
 }
 
 // paymentL is where Load methods for each relationship are stored.
@@ -540,18 +540,18 @@ func (o *Payment) Order(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// Transactions retrieves all the transaction's Transactions with an executor.
-func (o *Payment) Transactions(mods ...qm.QueryMod) transactionQuery {
+// PaymentTransactions retrieves all the payment_transaction's PaymentTransactions with an executor.
+func (o *Payment) PaymentTransactions(mods ...qm.QueryMod) paymentTransactionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"transactions\".\"payment_id\"=?", o.ID),
+		qm.Where("\"payment_transactions\".\"payment_id\"=?", o.ID),
 	)
 
-	return Transactions(queryMods...)
+	return PaymentTransactions(queryMods...)
 }
 
 // LoadCheckout allows an eager lookup of values, cached into the
@@ -786,9 +786,9 @@ func (paymentL) LoadOrder(e boil.Executor, singular bool, maybePayment interface
 	return nil
 }
 
-// LoadTransactions allows an eager lookup of values, cached into the
+// LoadPaymentTransactions allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (paymentL) LoadTransactions(e boil.Executor, singular bool, maybePayment interface{}, mods queries.Applicator) error {
+func (paymentL) LoadPaymentTransactions(e boil.Executor, singular bool, maybePayment interface{}, mods queries.Applicator) error {
 	var slice []*Payment
 	var object *Payment
 
@@ -841,8 +841,8 @@ func (paymentL) LoadTransactions(e boil.Executor, singular bool, maybePayment in
 	}
 
 	query := NewQuery(
-		qm.From(`transactions`),
-		qm.WhereIn(`transactions.payment_id in ?`, argsSlice...),
+		qm.From(`payment_transactions`),
+		qm.WhereIn(`payment_transactions.payment_id in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -850,26 +850,26 @@ func (paymentL) LoadTransactions(e boil.Executor, singular bool, maybePayment in
 
 	results, err := query.Query(e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load transactions")
+		return errors.Wrap(err, "failed to eager load payment_transactions")
 	}
 
-	var resultSlice []*Transaction
+	var resultSlice []*PaymentTransaction
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice transactions")
+		return errors.Wrap(err, "failed to bind eager loaded slice payment_transactions")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on transactions")
+		return errors.Wrap(err, "failed to close results in eager load on payment_transactions")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for transactions")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payment_transactions")
 	}
 
 	if singular {
-		object.R.Transactions = resultSlice
+		object.R.PaymentTransactions = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &transactionR{}
+				foreign.R = &paymentTransactionR{}
 			}
 			foreign.R.Payment = object
 		}
@@ -879,9 +879,9 @@ func (paymentL) LoadTransactions(e boil.Executor, singular bool, maybePayment in
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.PaymentID {
-				local.R.Transactions = append(local.R.Transactions, foreign)
+				local.R.PaymentTransactions = append(local.R.PaymentTransactions, foreign)
 				if foreign.R == nil {
-					foreign.R = &transactionR{}
+					foreign.R = &paymentTransactionR{}
 				}
 				foreign.R.Payment = local
 				break
@@ -1050,11 +1050,11 @@ func (o *Payment) RemoveOrder(exec boil.Executor, related *Order) error {
 	return nil
 }
 
-// AddTransactions adds the given related objects to the existing relationships
+// AddPaymentTransactions adds the given related objects to the existing relationships
 // of the payment, optionally inserting them as new records.
-// Appends related to o.R.Transactions.
+// Appends related to o.R.PaymentTransactions.
 // Sets related.R.Payment appropriately.
-func (o *Payment) AddTransactions(exec boil.Executor, insert bool, related ...*Transaction) error {
+func (o *Payment) AddPaymentTransactions(exec boil.Executor, insert bool, related ...*PaymentTransaction) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -1064,9 +1064,9 @@ func (o *Payment) AddTransactions(exec boil.Executor, insert bool, related ...*T
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"transactions\" SET %s WHERE %s",
+				"UPDATE \"payment_transactions\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
-				strmangle.WhereClause("\"", "\"", 2, transactionPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, paymentTransactionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -1084,15 +1084,15 @@ func (o *Payment) AddTransactions(exec boil.Executor, insert bool, related ...*T
 
 	if o.R == nil {
 		o.R = &paymentR{
-			Transactions: related,
+			PaymentTransactions: related,
 		}
 	} else {
-		o.R.Transactions = append(o.R.Transactions, related...)
+		o.R.PaymentTransactions = append(o.R.PaymentTransactions, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &transactionR{
+			rel.R = &paymentTransactionR{
 				Payment: o,
 			}
 		} else {

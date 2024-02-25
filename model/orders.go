@@ -34,8 +34,8 @@ type Order struct {
 	ShippingAddressID            model_types.NullString `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
 	UserEmail                    string                 `boil:"user_email" json:"user_email" toml:"user_email" yaml:"user_email"`
 	OriginalID                   model_types.NullString `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
-	Origin                       OrderOrigin            `boil:"origin" json:"origin" toml:"origin" yaml:"origin"`
-	Currency                     string                 `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Origin                       NullOrderOrigin        `boil:"origin" json:"origin,omitempty" toml:"origin" yaml:"origin,omitempty"`
+	Currency                     Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	ShippingMethodID             model_types.NullString `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
 	CollectionPointID            model_types.NullString `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
 	ShippingMethodName           model_types.NullString `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
@@ -249,40 +249,43 @@ func (w whereHelperOrderStatus) NIN(slice []OrderStatus) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelperOrderOrigin struct{ field string }
+type whereHelperNullOrderOrigin struct{ field string }
 
-func (w whereHelperOrderOrigin) EQ(x OrderOrigin) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
+func (w whereHelperNullOrderOrigin) EQ(x NullOrderOrigin) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelperOrderOrigin) NEQ(x OrderOrigin) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+func (w whereHelperNullOrderOrigin) NEQ(x NullOrderOrigin) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelperOrderOrigin) LT(x OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) LT(x NullOrderOrigin) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelperOrderOrigin) LTE(x OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) LTE(x NullOrderOrigin) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelperOrderOrigin) GT(x OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) GT(x NullOrderOrigin) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelperOrderOrigin) GTE(x OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) GTE(x NullOrderOrigin) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelperOrderOrigin) IN(slice []OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) IN(slice []NullOrderOrigin) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelperOrderOrigin) NIN(slice []OrderOrigin) qm.QueryMod {
+func (w whereHelperNullOrderOrigin) NIN(slice []NullOrderOrigin) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
+
+func (w whereHelperNullOrderOrigin) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelperNullOrderOrigin) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 type whereHelperfloat32 struct{ field string }
 
@@ -324,8 +327,8 @@ var OrderWhere = struct {
 	ShippingAddressID            whereHelpermodel_types_NullString
 	UserEmail                    whereHelperstring
 	OriginalID                   whereHelpermodel_types_NullString
-	Origin                       whereHelperOrderOrigin
-	Currency                     whereHelperstring
+	Origin                       whereHelperNullOrderOrigin
+	Currency                     whereHelperCurrency
 	ShippingMethodID             whereHelpermodel_types_NullString
 	CollectionPointID            whereHelpermodel_types_NullString
 	ShippingMethodName           whereHelpermodel_types_NullString
@@ -360,8 +363,8 @@ var OrderWhere = struct {
 	ShippingAddressID:            whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_address_id\""},
 	UserEmail:                    whereHelperstring{field: "\"orders\".\"user_email\""},
 	OriginalID:                   whereHelpermodel_types_NullString{field: "\"orders\".\"original_id\""},
-	Origin:                       whereHelperOrderOrigin{field: "\"orders\".\"origin\""},
-	Currency:                     whereHelperstring{field: "\"orders\".\"currency\""},
+	Origin:                       whereHelperNullOrderOrigin{field: "\"orders\".\"origin\""},
+	Currency:                     whereHelperCurrency{field: "\"orders\".\"currency\""},
 	ShippingMethodID:             whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_method_id\""},
 	CollectionPointID:            whereHelpermodel_types_NullString{field: "\"orders\".\"collection_point_id\""},
 	ShippingMethodName:           whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_method_name\""},
@@ -576,8 +579,8 @@ type orderL struct{}
 
 var (
 	orderAllColumns            = []string{"id", "created_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
-	orderColumnsWithoutDefault = []string{"id", "created_at", "status", "language_code", "tracking_client_id", "user_email", "origin", "currency", "channel_id", "token", "checkout_token", "customer_note", "weight_amount", "weight_unit"}
-	orderColumnsWithDefault    = []string{"user_id", "billing_address_id", "shipping_address_id", "original_id", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "redirect_url", "metadata", "private_metadata"}
+	orderColumnsWithoutDefault = []string{"id", "created_at", "status", "language_code", "tracking_client_id", "user_email", "currency", "channel_id", "token", "checkout_token", "customer_note", "weight_amount", "weight_unit"}
+	orderColumnsWithDefault    = []string{"user_id", "billing_address_id", "shipping_address_id", "original_id", "origin", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "redirect_url", "metadata", "private_metadata"}
 	orderPrimaryKeyColumns     = []string{"id"}
 	orderGeneratedColumns      = []string{}
 )

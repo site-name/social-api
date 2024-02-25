@@ -22,8 +22,8 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-// Transaction is an object representing the database table.
-type Transaction struct {
+// PaymentTransaction is an object representing the database table.
+type PaymentTransaction struct {
 	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
 	CreatedAt          int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	PaymentID          string                 `boil:"payment_id" json:"payment_id" toml:"payment_id" yaml:"payment_id"`
@@ -39,11 +39,11 @@ type Transaction struct {
 	GatewayResponse    string                 `boil:"gateway_response" json:"gateway_response" toml:"gateway_response" yaml:"gateway_response"`
 	AlreadyProcessed   bool                   `boil:"already_processed" json:"already_processed" toml:"already_processed" yaml:"already_processed"`
 
-	R *transactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L transactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *paymentTransactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L paymentTransactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-var TransactionColumns = struct {
+var PaymentTransactionColumns = struct {
 	ID                 string
 	CreatedAt          string
 	PaymentID          string
@@ -75,7 +75,7 @@ var TransactionColumns = struct {
 	AlreadyProcessed:   "already_processed",
 }
 
-var TransactionTableColumns = struct {
+var PaymentTransactionTableColumns = struct {
 	ID                 string
 	CreatedAt          string
 	PaymentID          string
@@ -91,20 +91,20 @@ var TransactionTableColumns = struct {
 	GatewayResponse    string
 	AlreadyProcessed   string
 }{
-	ID:                 "transactions.id",
-	CreatedAt:          "transactions.created_at",
-	PaymentID:          "transactions.payment_id",
-	Token:              "transactions.token",
-	Kind:               "transactions.kind",
-	IsSuccess:          "transactions.is_success",
-	ActionRequired:     "transactions.action_required",
-	ActionRequiredData: "transactions.action_required_data",
-	Currency:           "transactions.currency",
-	Amount:             "transactions.amount",
-	Error:              "transactions.error",
-	CustomerID:         "transactions.customer_id",
-	GatewayResponse:    "transactions.gateway_response",
-	AlreadyProcessed:   "transactions.already_processed",
+	ID:                 "payment_transactions.id",
+	CreatedAt:          "payment_transactions.created_at",
+	PaymentID:          "payment_transactions.payment_id",
+	Token:              "payment_transactions.token",
+	Kind:               "payment_transactions.kind",
+	IsSuccess:          "payment_transactions.is_success",
+	ActionRequired:     "payment_transactions.action_required",
+	ActionRequiredData: "payment_transactions.action_required_data",
+	Currency:           "payment_transactions.currency",
+	Amount:             "payment_transactions.amount",
+	Error:              "payment_transactions.error",
+	CustomerID:         "payment_transactions.customer_id",
+	GatewayResponse:    "payment_transactions.gateway_response",
+	AlreadyProcessed:   "payment_transactions.already_processed",
 }
 
 // Generated where
@@ -144,7 +144,7 @@ func (w whereHelperTransactionKind) NIN(slice []TransactionKind) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-var TransactionWhere = struct {
+var PaymentTransactionWhere = struct {
 	ID                 whereHelperstring
 	CreatedAt          whereHelperint64
 	PaymentID          whereHelperstring
@@ -160,78 +160,78 @@ var TransactionWhere = struct {
 	GatewayResponse    whereHelperstring
 	AlreadyProcessed   whereHelperbool
 }{
-	ID:                 whereHelperstring{field: "\"transactions\".\"id\""},
-	CreatedAt:          whereHelperint64{field: "\"transactions\".\"created_at\""},
-	PaymentID:          whereHelperstring{field: "\"transactions\".\"payment_id\""},
-	Token:              whereHelperstring{field: "\"transactions\".\"token\""},
-	Kind:               whereHelperTransactionKind{field: "\"transactions\".\"kind\""},
-	IsSuccess:          whereHelperbool{field: "\"transactions\".\"is_success\""},
-	ActionRequired:     whereHelperbool{field: "\"transactions\".\"action_required\""},
-	ActionRequiredData: whereHelperstring{field: "\"transactions\".\"action_required_data\""},
-	Currency:           whereHelperCurrency{field: "\"transactions\".\"currency\""},
-	Amount:             whereHelperdecimal_Decimal{field: "\"transactions\".\"amount\""},
-	Error:              whereHelpermodel_types_NullString{field: "\"transactions\".\"error\""},
-	CustomerID:         whereHelpermodel_types_NullString{field: "\"transactions\".\"customer_id\""},
-	GatewayResponse:    whereHelperstring{field: "\"transactions\".\"gateway_response\""},
-	AlreadyProcessed:   whereHelperbool{field: "\"transactions\".\"already_processed\""},
+	ID:                 whereHelperstring{field: "\"payment_transactions\".\"id\""},
+	CreatedAt:          whereHelperint64{field: "\"payment_transactions\".\"created_at\""},
+	PaymentID:          whereHelperstring{field: "\"payment_transactions\".\"payment_id\""},
+	Token:              whereHelperstring{field: "\"payment_transactions\".\"token\""},
+	Kind:               whereHelperTransactionKind{field: "\"payment_transactions\".\"kind\""},
+	IsSuccess:          whereHelperbool{field: "\"payment_transactions\".\"is_success\""},
+	ActionRequired:     whereHelperbool{field: "\"payment_transactions\".\"action_required\""},
+	ActionRequiredData: whereHelperstring{field: "\"payment_transactions\".\"action_required_data\""},
+	Currency:           whereHelperCurrency{field: "\"payment_transactions\".\"currency\""},
+	Amount:             whereHelperdecimal_Decimal{field: "\"payment_transactions\".\"amount\""},
+	Error:              whereHelpermodel_types_NullString{field: "\"payment_transactions\".\"error\""},
+	CustomerID:         whereHelpermodel_types_NullString{field: "\"payment_transactions\".\"customer_id\""},
+	GatewayResponse:    whereHelperstring{field: "\"payment_transactions\".\"gateway_response\""},
+	AlreadyProcessed:   whereHelperbool{field: "\"payment_transactions\".\"already_processed\""},
 }
 
-// TransactionRels is where relationship names are stored.
-var TransactionRels = struct {
+// PaymentTransactionRels is where relationship names are stored.
+var PaymentTransactionRels = struct {
 	Payment string
 }{
 	Payment: "Payment",
 }
 
-// transactionR is where relationships are stored.
-type transactionR struct {
+// paymentTransactionR is where relationships are stored.
+type paymentTransactionR struct {
 	Payment *Payment `boil:"Payment" json:"Payment" toml:"Payment" yaml:"Payment"`
 }
 
 // NewStruct creates a new relationship struct
-func (*transactionR) NewStruct() *transactionR {
-	return &transactionR{}
+func (*paymentTransactionR) NewStruct() *paymentTransactionR {
+	return &paymentTransactionR{}
 }
 
-func (r *transactionR) GetPayment() *Payment {
+func (r *paymentTransactionR) GetPayment() *Payment {
 	if r == nil {
 		return nil
 	}
 	return r.Payment
 }
 
-// transactionL is where Load methods for each relationship are stored.
-type transactionL struct{}
+// paymentTransactionL is where Load methods for each relationship are stored.
+type paymentTransactionL struct{}
 
 var (
-	transactionAllColumns            = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "amount", "error", "customer_id", "gateway_response", "already_processed"}
-	transactionColumnsWithoutDefault = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "gateway_response", "already_processed"}
-	transactionColumnsWithDefault    = []string{"amount", "error", "customer_id"}
-	transactionPrimaryKeyColumns     = []string{"id"}
-	transactionGeneratedColumns      = []string{}
+	paymentTransactionAllColumns            = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "amount", "error", "customer_id", "gateway_response", "already_processed"}
+	paymentTransactionColumnsWithoutDefault = []string{"id", "created_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "gateway_response", "already_processed"}
+	paymentTransactionColumnsWithDefault    = []string{"amount", "error", "customer_id"}
+	paymentTransactionPrimaryKeyColumns     = []string{"id"}
+	paymentTransactionGeneratedColumns      = []string{}
 )
 
 type (
-	// TransactionSlice is an alias for a slice of pointers to Transaction.
-	// This should almost always be used instead of []Transaction.
-	TransactionSlice []*Transaction
+	// PaymentTransactionSlice is an alias for a slice of pointers to PaymentTransaction.
+	// This should almost always be used instead of []PaymentTransaction.
+	PaymentTransactionSlice []*PaymentTransaction
 
-	transactionQuery struct {
+	paymentTransactionQuery struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	transactionType                 = reflect.TypeOf(&Transaction{})
-	transactionMapping              = queries.MakeStructMapping(transactionType)
-	transactionPrimaryKeyMapping, _ = queries.BindMapping(transactionType, transactionMapping, transactionPrimaryKeyColumns)
-	transactionInsertCacheMut       sync.RWMutex
-	transactionInsertCache          = make(map[string]insertCache)
-	transactionUpdateCacheMut       sync.RWMutex
-	transactionUpdateCache          = make(map[string]updateCache)
-	transactionUpsertCacheMut       sync.RWMutex
-	transactionUpsertCache          = make(map[string]insertCache)
+	paymentTransactionType                 = reflect.TypeOf(&PaymentTransaction{})
+	paymentTransactionMapping              = queries.MakeStructMapping(paymentTransactionType)
+	paymentTransactionPrimaryKeyMapping, _ = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, paymentTransactionPrimaryKeyColumns)
+	paymentTransactionInsertCacheMut       sync.RWMutex
+	paymentTransactionInsertCache          = make(map[string]insertCache)
+	paymentTransactionUpdateCacheMut       sync.RWMutex
+	paymentTransactionUpdateCache          = make(map[string]updateCache)
+	paymentTransactionUpsertCacheMut       sync.RWMutex
+	paymentTransactionUpsertCache          = make(map[string]insertCache)
 )
 
 var (
@@ -242,9 +242,9 @@ var (
 	_ = qmhelper.Where
 )
 
-// One returns a single transaction record from the query.
-func (q transactionQuery) One(exec boil.Executor) (*Transaction, error) {
-	o := &Transaction{}
+// One returns a single paymentTransaction record from the query.
+func (q paymentTransactionQuery) One(exec boil.Executor) (*PaymentTransaction, error) {
+	o := &PaymentTransaction{}
 
 	queries.SetLimit(q.Query, 1)
 
@@ -253,26 +253,26 @@ func (q transactionQuery) One(exec boil.Executor) (*Transaction, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "model: failed to execute a one query for transactions")
+		return nil, errors.Wrap(err, "model: failed to execute a one query for payment_transactions")
 	}
 
 	return o, nil
 }
 
-// All returns all Transaction records from the query.
-func (q transactionQuery) All(exec boil.Executor) (TransactionSlice, error) {
-	var o []*Transaction
+// All returns all PaymentTransaction records from the query.
+func (q paymentTransactionQuery) All(exec boil.Executor) (PaymentTransactionSlice, error) {
+	var o []*PaymentTransaction
 
 	err := q.Bind(nil, exec, &o)
 	if err != nil {
-		return nil, errors.Wrap(err, "model: failed to assign all query results to Transaction slice")
+		return nil, errors.Wrap(err, "model: failed to assign all query results to PaymentTransaction slice")
 	}
 
 	return o, nil
 }
 
-// Count returns the count of all Transaction records in the query.
-func (q transactionQuery) Count(exec boil.Executor) (int64, error) {
+// Count returns the count of all PaymentTransaction records in the query.
+func (q paymentTransactionQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -280,14 +280,14 @@ func (q transactionQuery) Count(exec boil.Executor) (int64, error) {
 
 	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: failed to count transactions rows")
+		return 0, errors.Wrap(err, "model: failed to count payment_transactions rows")
 	}
 
 	return count, nil
 }
 
 // Exists checks if the row exists in the table.
-func (q transactionQuery) Exists(exec boil.Executor) (bool, error) {
+func (q paymentTransactionQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -296,14 +296,14 @@ func (q transactionQuery) Exists(exec boil.Executor) (bool, error) {
 
 	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "model: failed to check if transactions exists")
+		return false, errors.Wrap(err, "model: failed to check if payment_transactions exists")
 	}
 
 	return count > 0, nil
 }
 
 // Payment pointed to by the foreign key.
-func (o *Transaction) Payment(mods ...qm.QueryMod) paymentQuery {
+func (o *PaymentTransaction) Payment(mods ...qm.QueryMod) paymentQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("\"id\" = ?", o.PaymentID),
 	}
@@ -315,28 +315,28 @@ func (o *Transaction) Payment(mods ...qm.QueryMod) paymentQuery {
 
 // LoadPayment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction interface{}, mods queries.Applicator) error {
-	var slice []*Transaction
-	var object *Transaction
+func (paymentTransactionL) LoadPayment(e boil.Executor, singular bool, maybePaymentTransaction interface{}, mods queries.Applicator) error {
+	var slice []*PaymentTransaction
+	var object *PaymentTransaction
 
 	if singular {
 		var ok bool
-		object, ok = maybeTransaction.(*Transaction)
+		object, ok = maybePaymentTransaction.(*PaymentTransaction)
 		if !ok {
-			object = new(Transaction)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeTransaction)
+			object = new(PaymentTransaction)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePaymentTransaction)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTransaction))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePaymentTransaction))
 			}
 		}
 	} else {
-		s, ok := maybeTransaction.(*[]*Transaction)
+		s, ok := maybePaymentTransaction.(*[]*PaymentTransaction)
 		if ok {
 			slice = *s
 		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeTransaction)
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePaymentTransaction)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTransaction))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePaymentTransaction))
 			}
 		}
 	}
@@ -344,14 +344,14 @@ func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction
 	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
-			object.R = &transactionR{}
+			object.R = &paymentTransactionR{}
 		}
 		args[object.PaymentID] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
 			if obj.R == nil {
-				obj.R = &transactionR{}
+				obj.R = &paymentTransactionR{}
 			}
 
 			args[obj.PaymentID] = struct{}{}
@@ -405,7 +405,7 @@ func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction
 		if foreign.R == nil {
 			foreign.R = &paymentR{}
 		}
-		foreign.R.Transactions = append(foreign.R.Transactions, object)
+		foreign.R.PaymentTransactions = append(foreign.R.PaymentTransactions, object)
 		return nil
 	}
 
@@ -416,7 +416,7 @@ func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction
 				if foreign.R == nil {
 					foreign.R = &paymentR{}
 				}
-				foreign.R.Transactions = append(foreign.R.Transactions, local)
+				foreign.R.PaymentTransactions = append(foreign.R.PaymentTransactions, local)
 				break
 			}
 		}
@@ -425,10 +425,10 @@ func (transactionL) LoadPayment(e boil.Executor, singular bool, maybeTransaction
 	return nil
 }
 
-// SetPayment of the transaction to the related item.
+// SetPayment of the paymentTransaction to the related item.
 // Sets o.R.Payment to related.
-// Adds o to related.R.Transactions.
-func (o *Transaction) SetPayment(exec boil.Executor, insert bool, related *Payment) error {
+// Adds o to related.R.PaymentTransactions.
+func (o *PaymentTransaction) SetPayment(exec boil.Executor, insert bool, related *Payment) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec, boil.Infer()); err != nil {
@@ -437,9 +437,9 @@ func (o *Transaction) SetPayment(exec boil.Executor, insert bool, related *Payme
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"transactions\" SET %s WHERE %s",
+		"UPDATE \"payment_transactions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
-		strmangle.WhereClause("\"", "\"", 2, transactionPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, paymentTransactionPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
 
@@ -453,7 +453,7 @@ func (o *Transaction) SetPayment(exec boil.Executor, insert bool, related *Payme
 
 	o.PaymentID = related.ID
 	if o.R == nil {
-		o.R = &transactionR{
+		o.R = &paymentTransactionR{
 			Payment: related,
 		}
 	} else {
@@ -462,88 +462,88 @@ func (o *Transaction) SetPayment(exec boil.Executor, insert bool, related *Payme
 
 	if related.R == nil {
 		related.R = &paymentR{
-			Transactions: TransactionSlice{o},
+			PaymentTransactions: PaymentTransactionSlice{o},
 		}
 	} else {
-		related.R.Transactions = append(related.R.Transactions, o)
+		related.R.PaymentTransactions = append(related.R.PaymentTransactions, o)
 	}
 
 	return nil
 }
 
-// Transactions retrieves all the records using an executor.
-func Transactions(mods ...qm.QueryMod) transactionQuery {
-	mods = append(mods, qm.From("\"transactions\""))
+// PaymentTransactions retrieves all the records using an executor.
+func PaymentTransactions(mods ...qm.QueryMod) paymentTransactionQuery {
+	mods = append(mods, qm.From("\"payment_transactions\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"transactions\".*"})
+		queries.SetSelect(q, []string{"\"payment_transactions\".*"})
 	}
 
-	return transactionQuery{q}
+	return paymentTransactionQuery{q}
 }
 
-// FindTransaction retrieves a single record by ID with an executor.
+// FindPaymentTransaction retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindTransaction(exec boil.Executor, iD string, selectCols ...string) (*Transaction, error) {
-	transactionObj := &Transaction{}
+func FindPaymentTransaction(exec boil.Executor, iD string, selectCols ...string) (*PaymentTransaction, error) {
+	paymentTransactionObj := &PaymentTransaction{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"transactions\" where \"id\"=$1", sel,
+		"select %s from \"payment_transactions\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(nil, exec, transactionObj)
+	err := q.Bind(nil, exec, paymentTransactionObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "model: unable to select from transactions")
+		return nil, errors.Wrap(err, "model: unable to select from payment_transactions")
 	}
 
-	return transactionObj, nil
+	return paymentTransactionObj, nil
 }
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Transaction) Insert(exec boil.Executor, columns boil.Columns) error {
+func (o *PaymentTransaction) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
-		return errors.New("model: no transactions provided for insertion")
+		return errors.New("model: no payment_transactions provided for insertion")
 	}
 
 	var err error
 
-	nzDefaults := queries.NonZeroDefaultSet(transactionColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(paymentTransactionColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
-	transactionInsertCacheMut.RLock()
-	cache, cached := transactionInsertCache[key]
-	transactionInsertCacheMut.RUnlock()
+	paymentTransactionInsertCacheMut.RLock()
+	cache, cached := paymentTransactionInsertCache[key]
+	paymentTransactionInsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			transactionAllColumns,
-			transactionColumnsWithDefault,
-			transactionColumnsWithoutDefault,
+			paymentTransactionAllColumns,
+			paymentTransactionColumnsWithDefault,
+			paymentTransactionColumnsWithoutDefault,
 			nzDefaults,
 		)
 
-		cache.valueMapping, err = queries.BindMapping(transactionType, transactionMapping, wl)
+		cache.valueMapping, err = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping(transactionType, transactionMapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, returnColumns)
 		if err != nil {
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"transactions\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"payment_transactions\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"transactions\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"payment_transactions\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -570,42 +570,42 @@ func (o *Transaction) Insert(exec boil.Executor, columns boil.Columns) error {
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "model: unable to insert into transactions")
+		return errors.Wrap(err, "model: unable to insert into payment_transactions")
 	}
 
 	if !cached {
-		transactionInsertCacheMut.Lock()
-		transactionInsertCache[key] = cache
-		transactionInsertCacheMut.Unlock()
+		paymentTransactionInsertCacheMut.Lock()
+		paymentTransactionInsertCache[key] = cache
+		paymentTransactionInsertCacheMut.Unlock()
 	}
 
 	return nil
 }
 
-// Update uses an executor to update the Transaction.
+// Update uses an executor to update the PaymentTransaction.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Transaction) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
+func (o *PaymentTransaction) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
-	transactionUpdateCacheMut.RLock()
-	cache, cached := transactionUpdateCache[key]
-	transactionUpdateCacheMut.RUnlock()
+	paymentTransactionUpdateCacheMut.RLock()
+	cache, cached := paymentTransactionUpdateCache[key]
+	paymentTransactionUpdateCacheMut.RUnlock()
 
 	if !cached {
 		wl := columns.UpdateColumnSet(
-			transactionAllColumns,
-			transactionPrimaryKeyColumns,
+			paymentTransactionAllColumns,
+			paymentTransactionPrimaryKeyColumns,
 		)
 		if len(wl) == 0 {
-			return 0, errors.New("model: unable to update transactions, could not build whitelist")
+			return 0, errors.New("model: unable to update payment_transactions, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"transactions\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"payment_transactions\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
-			strmangle.WhereClause("\"", "\"", len(wl)+1, transactionPrimaryKeyColumns),
+			strmangle.WhereClause("\"", "\"", len(wl)+1, paymentTransactionPrimaryKeyColumns),
 		)
-		cache.valueMapping, err = queries.BindMapping(transactionType, transactionMapping, append(wl, transactionPrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, append(wl, paymentTransactionPrimaryKeyColumns...))
 		if err != nil {
 			return 0, err
 		}
@@ -620,42 +620,42 @@ func (o *Transaction) Update(exec boil.Executor, columns boil.Columns) (int64, e
 	var result sql.Result
 	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to update transactions row")
+		return 0, errors.Wrap(err, "model: unable to update payment_transactions row")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: failed to get rows affected by update for transactions")
+		return 0, errors.Wrap(err, "model: failed to get rows affected by update for payment_transactions")
 	}
 
 	if !cached {
-		transactionUpdateCacheMut.Lock()
-		transactionUpdateCache[key] = cache
-		transactionUpdateCacheMut.Unlock()
+		paymentTransactionUpdateCacheMut.Lock()
+		paymentTransactionUpdateCache[key] = cache
+		paymentTransactionUpdateCacheMut.Unlock()
 	}
 
 	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q transactionQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
+func (q paymentTransactionQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
 	result, err := q.Query.Exec(exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to update all for transactions")
+		return 0, errors.Wrap(err, "model: unable to update all for payment_transactions")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to retrieve rows affected for transactions")
+		return 0, errors.Wrap(err, "model: unable to retrieve rows affected for payment_transactions")
 	}
 
 	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o TransactionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
+func (o PaymentTransactionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -677,13 +677,13 @@ func (o TransactionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 
 	// Append all of the primary key values for each column
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), transactionPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentTransactionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"transactions\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"payment_transactions\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, transactionPrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, paymentTransactionPrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -691,24 +691,24 @@ func (o TransactionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 	result, err := exec.Exec(sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to update all in transaction slice")
+		return 0, errors.Wrap(err, "model: unable to update all in paymentTransaction slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to retrieve rows affected all in update all transaction")
+		return 0, errors.Wrap(err, "model: unable to retrieve rows affected all in update all paymentTransaction")
 	}
 	return rowsAff, nil
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Transaction) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
+func (o *PaymentTransaction) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
 	if o == nil {
-		return errors.New("model: no transactions provided for upsert")
+		return errors.New("model: no payment_transactions provided for upsert")
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(transactionColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(paymentTransactionColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -738,48 +738,48 @@ func (o *Transaction) Upsert(exec boil.Executor, updateOnConflict bool, conflict
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	transactionUpsertCacheMut.RLock()
-	cache, cached := transactionUpsertCache[key]
-	transactionUpsertCacheMut.RUnlock()
+	paymentTransactionUpsertCacheMut.RLock()
+	cache, cached := paymentTransactionUpsertCache[key]
+	paymentTransactionUpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, _ := insertColumns.InsertColumnSet(
-			transactionAllColumns,
-			transactionColumnsWithDefault,
-			transactionColumnsWithoutDefault,
+			paymentTransactionAllColumns,
+			paymentTransactionColumnsWithDefault,
+			paymentTransactionColumnsWithoutDefault,
 			nzDefaults,
 		)
 
 		update := updateColumns.UpdateColumnSet(
-			transactionAllColumns,
-			transactionPrimaryKeyColumns,
+			paymentTransactionAllColumns,
+			paymentTransactionPrimaryKeyColumns,
 		)
 
 		if updateOnConflict && len(update) == 0 {
-			return errors.New("model: unable to upsert transactions, could not build update column list")
+			return errors.New("model: unable to upsert payment_transactions, could not build update column list")
 		}
 
-		ret := strmangle.SetComplement(transactionAllColumns, strmangle.SetIntersect(insert, update))
+		ret := strmangle.SetComplement(paymentTransactionAllColumns, strmangle.SetIntersect(insert, update))
 
 		conflict := conflictColumns
 		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
-			if len(transactionPrimaryKeyColumns) == 0 {
-				return errors.New("model: unable to upsert transactions, could not build conflict column list")
+			if len(paymentTransactionPrimaryKeyColumns) == 0 {
+				return errors.New("model: unable to upsert payment_transactions, could not build conflict column list")
 			}
 
-			conflict = make([]string, len(transactionPrimaryKeyColumns))
-			copy(conflict, transactionPrimaryKeyColumns)
+			conflict = make([]string, len(paymentTransactionPrimaryKeyColumns))
+			copy(conflict, paymentTransactionPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"transactions\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"payment_transactions\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
-		cache.valueMapping, err = queries.BindMapping(transactionType, transactionMapping, insert)
+		cache.valueMapping, err = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(transactionType, transactionMapping, ret)
+			cache.retMapping, err = queries.BindMapping(paymentTransactionType, paymentTransactionMapping, ret)
 			if err != nil {
 				return err
 			}
@@ -806,27 +806,27 @@ func (o *Transaction) Upsert(exec boil.Executor, updateOnConflict bool, conflict
 		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "model: unable to upsert transactions")
+		return errors.Wrap(err, "model: unable to upsert payment_transactions")
 	}
 
 	if !cached {
-		transactionUpsertCacheMut.Lock()
-		transactionUpsertCache[key] = cache
-		transactionUpsertCacheMut.Unlock()
+		paymentTransactionUpsertCacheMut.Lock()
+		paymentTransactionUpsertCache[key] = cache
+		paymentTransactionUpsertCacheMut.Unlock()
 	}
 
 	return nil
 }
 
-// Delete deletes a single Transaction record with an executor.
+// Delete deletes a single PaymentTransaction record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Transaction) Delete(exec boil.Executor) (int64, error) {
+func (o *PaymentTransaction) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
-		return 0, errors.New("model: no Transaction provided for delete")
+		return 0, errors.New("model: no PaymentTransaction provided for delete")
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), transactionPrimaryKeyMapping)
-	sql := "DELETE FROM \"transactions\" WHERE \"id\"=$1"
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), paymentTransactionPrimaryKeyMapping)
+	sql := "DELETE FROM \"payment_transactions\" WHERE \"id\"=$1"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -834,52 +834,52 @@ func (o *Transaction) Delete(exec boil.Executor) (int64, error) {
 	}
 	result, err := exec.Exec(sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to delete from transactions")
+		return 0, errors.Wrap(err, "model: unable to delete from payment_transactions")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: failed to get rows affected by delete for transactions")
+		return 0, errors.Wrap(err, "model: failed to get rows affected by delete for payment_transactions")
 	}
 
 	return rowsAff, nil
 }
 
 // DeleteAll deletes all matching rows.
-func (q transactionQuery) DeleteAll(exec boil.Executor) (int64, error) {
+func (q paymentTransactionQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
-		return 0, errors.New("model: no transactionQuery provided for delete all")
+		return 0, errors.New("model: no paymentTransactionQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
 	result, err := q.Query.Exec(exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to delete all from transactions")
+		return 0, errors.Wrap(err, "model: unable to delete all from payment_transactions")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: failed to get rows affected by deleteall for transactions")
+		return 0, errors.Wrap(err, "model: failed to get rows affected by deleteall for payment_transactions")
 	}
 
 	return rowsAff, nil
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o TransactionSlice) DeleteAll(exec boil.Executor) (int64, error) {
+func (o PaymentTransactionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
 
 	var args []interface{}
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), transactionPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentTransactionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"transactions\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, transactionPrimaryKeyColumns, len(o))
+	sql := "DELETE FROM \"payment_transactions\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, paymentTransactionPrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -887,12 +887,12 @@ func (o TransactionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	}
 	result, err := exec.Exec(sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "model: unable to delete all from transaction slice")
+		return 0, errors.Wrap(err, "model: unable to delete all from paymentTransaction slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "model: failed to get rows affected by deleteall for transactions")
+		return 0, errors.Wrap(err, "model: failed to get rows affected by deleteall for payment_transactions")
 	}
 
 	return rowsAff, nil
@@ -900,8 +900,8 @@ func (o TransactionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Transaction) Reload(exec boil.Executor) error {
-	ret, err := FindTransaction(exec, o.ID)
+func (o *PaymentTransaction) Reload(exec boil.Executor) error {
+	ret, err := FindPaymentTransaction(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -912,26 +912,26 @@ func (o *Transaction) Reload(exec boil.Executor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *TransactionSlice) ReloadAll(exec boil.Executor) error {
+func (o *PaymentTransactionSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
 
-	slice := TransactionSlice{}
+	slice := PaymentTransactionSlice{}
 	var args []interface{}
 	for _, obj := range *o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), transactionPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentTransactionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"transactions\".* FROM \"transactions\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, transactionPrimaryKeyColumns, len(*o))
+	sql := "SELECT \"payment_transactions\".* FROM \"payment_transactions\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, paymentTransactionPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
 
 	err := q.Bind(nil, exec, &slice)
 	if err != nil {
-		return errors.Wrap(err, "model: unable to reload all in TransactionSlice")
+		return errors.Wrap(err, "model: unable to reload all in PaymentTransactionSlice")
 	}
 
 	*o = slice
@@ -939,10 +939,10 @@ func (o *TransactionSlice) ReloadAll(exec boil.Executor) error {
 	return nil
 }
 
-// TransactionExists checks if the Transaction row exists.
-func TransactionExists(exec boil.Executor, iD string) (bool, error) {
+// PaymentTransactionExists checks if the PaymentTransaction row exists.
+func PaymentTransactionExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"transactions\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"payment_transactions\" where \"id\"=$1 limit 1)"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -952,13 +952,13 @@ func TransactionExists(exec boil.Executor, iD string) (bool, error) {
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "model: unable to check if transactions exists")
+		return false, errors.Wrap(err, "model: unable to check if payment_transactions exists")
 	}
 
 	return exists, nil
 }
 
-// Exists checks if the Transaction row exists.
-func (o *Transaction) Exists(exec boil.Executor) (bool, error) {
-	return TransactionExists(exec, o.ID)
+// Exists checks if the PaymentTransaction row exists.
+func (o *PaymentTransaction) Exists(exec boil.Executor) (bool, error) {
+	return PaymentTransactionExists(exec, o.ID)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAssignedPageAttributeStore struct {
@@ -54,6 +53,6 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttr
 	return attr, nil
 }
 
-func (as *SqlAssignedPageAttributeStore) FilterByOptions(mods ...qm.QueryMod) (model.AssignedPageAttributeSlice, error) {
-	return model.AssignedPageAttributes(mods...).All(as.GetReplica())
+func (as *SqlAssignedPageAttributeStore) FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) {
+	return model.AssignedPageAttributes(options.Conditions...).All(as.GetReplica())
 }

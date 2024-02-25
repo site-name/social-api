@@ -77,7 +77,7 @@ func (ols *SqlOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) err
 	return nil
 }
 
-func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
+func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
 	query := ols.GetReplica()
 	if len(option.Preload) > 0 {
 		for _, rel := range option.Preload {
@@ -134,7 +134,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		return nil, errors.Wrap(err, "please provide valid lookup conditions")
 	}
 
-	var orderLines model.OrderLines
+	var orderLines model.OrderLineSlice
 	err = query.Find(&orderLines, []any{conds, args}...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines by given options")

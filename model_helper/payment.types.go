@@ -2,6 +2,8 @@ package model_helper
 
 import (
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -71,15 +73,15 @@ type PaymentMethodInfo struct {
 type GatewayResponse struct {
 	IsSucess                    bool
 	ActionRequired              bool
-	Kind                        TransactionKind
+	Kind                        model.TransactionKind
 	Amount                      decimal.Decimal
 	Currency                    string
 	TransactionID               string
 	Error                       string
 	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
-	RawResponse                 StringInterface
-	ActionRequiredData          StringInterface
+	RawResponse                 model_types.JsonMap
+	ActionRequiredData          model_types.JsonMap
 	TransactionAlreadyProcessed bool
 	SearchableKey               string
 	PspReference                string
@@ -94,13 +96,13 @@ type AddressData struct {
 	City           string
 	CityArea       string
 	PostalCode     string
-	Country        CountryCode
+	Country        model.CountryCode
 	CountryArea    string
 	Phone          string
 }
 
 // AddressDataFromAddress convert *Address to *AddressData
-func AddressDataFromAddress(a *Address) *AddressData {
+func AddressDataFromAddress(a *model.Address) *AddressData {
 	return &AddressData{
 		FirstName:      a.FirstName,
 		LastName:       a.LastName,
@@ -132,11 +134,11 @@ type PaymentData struct {
 	Token              *string // can be nil
 	CustomerID         *string // can be nil
 	ReuseSource        bool
-	Data               StringInterface    // can be nil
-	GraphqlPaymentID   string             // default to payment's Token
-	GraphqlCustomerID  *string            // can be nil
-	StorePaymentMethod StorePaymentMethod // default to StorePaymentMethodEnum_NONE ("none")
-	PaymentMetadata    StringMap
+	Data               model_types.JsonMap // can be nil
+	GraphqlPaymentID   string              // default to payment's Token
+	GraphqlCustomerID  *string             // can be nil
+	StorePaymentMethod StorePaymentMethod  // default to StorePaymentMethodEnum_NONE ("none")
+	PaymentMetadata    map[string]string
 }
 
 // Dataclass for payment gateway token fetching customization.
@@ -151,7 +153,7 @@ type GatewayConfig struct {
 	GatewayName         string
 	AutoCapture         bool
 	SupportedCurrencies string
-	ConnectionParams    StringInterface
+	ConnectionParams    model_types.JsonMap
 	StoreCustomer       bool
 	Require3dSecure     bool
 }
@@ -161,7 +163,7 @@ type CustomerSource struct {
 	Id             string
 	Gateway        string
 	CreditCardInfo *PaymentMethodInfo
-	Metadata       StringMap
+	Metadata       map[string]string
 }
 
 // Dataclass for storing information about a payment gateway.
@@ -169,7 +171,7 @@ type PaymentGateway struct {
 	Id         string
 	Name       string
 	Currencies util.AnyArray[string]
-	Config     []StringInterface
+	Config     []model_types.JsonMap
 }
 
 type InitializedPaymentResponse struct {
@@ -179,7 +181,7 @@ type InitializedPaymentResponse struct {
 }
 
 type PaymentInterface interface {
-	ListPaymentGateWays(currency *string, checkout *Checkout, channelSlug *string, activeOnly bool) []*PaymentGateway
+	ListPaymentGateWays(currency *string, checkout *model.Checkout, channelSlug *string, activeOnly bool) []*PaymentGateway
 	AuthorizePayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
 	CapturePayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
 	RefundPayent(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse

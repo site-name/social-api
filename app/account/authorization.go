@@ -10,7 +10,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions ...model_helper.Permission) *model_helper.AppError {
+func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions []*model_helper.Permission) *model_helper.AppError {
 	permissionsStr := "permission="
 	for _, permission := range permissions {
 		permissionsStr += permission.Id

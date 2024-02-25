@@ -5,7 +5,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
@@ -50,7 +49,7 @@ func (s *LocalCacheUserStore) InvalidateProfileCacheForUser(userId string) {
 	}
 }
 
-func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error) {
 	if !allowFromCache {
 		return s.UserStore.GetProfileByIds(ctx, userIds, options, false)
 	}
@@ -120,9 +119,7 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*model.User, 
 	}
 	s.userProfileByIdsMut.Unlock()
 
-	user, err := s.UserStore.GetByOptions(ctx, &model.UserFilterOptions{
-		Conditions: squirrel.Eq{model.UserTableName + ".Id": id},
-	})
+	user, err := s.UserStore.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -168,14 +165,18 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 		if fromMaster {
 			ctx = sqlstore.WithMaster(ctx)
 		}
-		_, dbUsers, err := s.UserStore.FilterByOptions(ctx, &model.UserFilterOptions{
-			Conditions: squirrel.Eq{model.UserTableName + ".Id": notCachedUserIds},
-		})
+		dbUsers, err := s.UserStore.Find(
+			model_helper.UserFilterOptions{
+				CommonQueryOptions: model_helper.NewCommonQueryOptions(
+					model.UserWhere.ID.IN(notCachedUserIds),
+				),
+			},
+		)
 		if err != nil {
 			return nil, err
 		}
 		for _, user := range dbUsers {
-			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.Id, user)
+			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.ID, user)
 			cachedUsers = append(cachedUsers, user)
 		}
 	}

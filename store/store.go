@@ -525,7 +525,7 @@ type (
 		Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                         // Get returns a order line with id of given id
 		BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error                               // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error)                    // FilterbyOption finds and returns order lines by given option
+		FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error)                // FilterbyOption finds and returns order lines by given option
 		BulkUpsert(tx boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
@@ -629,9 +629,9 @@ type (
 	}
 	DiscountSaleStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		Upsert(tx boil.ContextTransactor, sale model.Sale) (*model.Sale, error)            // Upsert bases on sale's Id to decide to update or insert given sale
-		Get(saleID string) (*model.Sale, error)                                            // Get finds and returns a sale with given saleID
-		FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, error) // FilterSalesByOption filter sales by option
+		Upsert(tx boil.ContextTransactor, sale model.Sale) (*model.Sale, error)                         // Upsert bases on sale's Id to decide to update or insert given sale
+		Get(saleID string) (*model.Sale, error)                                                         // Get finds and returns a sale with given saleID
+		FilterSalesByOption(option model_helper.SaleFilterOption) (model_helper.CustomSaleSlice, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
 		Upsert(tx boil.ContextTransactor, voucherChannelListings model.VoucherChannelListingSlice) (model.VoucherChannelListingSlice, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
@@ -640,10 +640,10 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	DiscountVoucherStore interface {
-		Upsert(voucher model.Voucher) (*model.Voucher, error)                                       // Upsert saves or updates given voucher then returns it with an error
-		Get(id string) (*model.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
-		FilterVouchersByOption(option model_helper.VoucherFilterOption) (model.VoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
-		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                           // ExpiredVouchers finds and returns vouchers that are expired before given date
+		Upsert(voucher model.Voucher) (*model.Voucher, error)                                                    // Upsert saves or updates given voucher then returns it with an error
+		Get(id string) (*model.Voucher, error)                                                                   // Get finds a voucher with given id, then returns it with an error
+		FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
+		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                                        // ExpiredVouchers finds and returns vouchers that are expired before given date
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		// ToggleVoucherRelations(tx boil.ContextTransactor, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
 		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
@@ -811,8 +811,8 @@ type (
 		AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error)
 		GetProfileByIds(ctx context.Context, userIds []string, options UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error)
 		IsEmpty() (bool, error)
-		Get(conds ...qm.QueryMod) (*model.User, error)
-		Find(conds ...qm.QueryMod) (model.UserSlice, error)
+		Get(ctx context.Context, id string) (*model.User, error)
+		Find(options model_helper.UserFilterOptions) (model.UserSlice, error)
 
 		// FilterByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (int64, model.UserSlice, error)
 		// GetByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (*model.User, error)
