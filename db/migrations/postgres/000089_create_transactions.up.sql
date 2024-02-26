@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS payment_transactions (
   kind transaction_kind NOT NULL,
   is_success boolean NOT NULL,
   action_required boolean NOT NULL,
-  action_required_data text NOT NULL,
+  action_required_data jsonb NOT NULL,
   currency Currency NOT NULL,
   amount decimal(12,3) NOT NULL DEFAULT 0.00,
   error varchar(256),
   customer_id varchar(256),
-  gateway_response text NOT NULL,
+  gateway_response jsonb NOT NULL,
   already_processed boolean NOT NULL
 );
 

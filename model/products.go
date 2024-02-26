@@ -26,7 +26,7 @@ type Product struct {
 	ID                   string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name                 string                  `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Slug                 string                  `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Description          model_types.JsonMap     `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Description          model_types.JSONString  `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	DescriptionPlainText string                  `boil:"description_plain_text" json:"description_plain_text" toml:"description_plain_text" yaml:"description_plain_text"`
 	CategoryID           string                  `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
 	CreatedAt            int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -36,8 +36,8 @@ type Product struct {
 	WeightUnit           string                  `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	DefaultVariantID     model_types.NullString  `boil:"default_variant_id" json:"default_variant_id,omitempty" toml:"default_variant_id" yaml:"default_variant_id,omitempty"`
 	Rating               model_types.NullFloat32 `boil:"rating" json:"rating,omitempty" toml:"rating" yaml:"rating,omitempty"`
-	Metadata             model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata             model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 	SeoTitle             string                  `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
 	SeoDescription       string                  `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
@@ -127,7 +127,7 @@ var ProductWhere = struct {
 	ID                   whereHelperstring
 	Name                 whereHelperstring
 	Slug                 whereHelperstring
-	Description          whereHelpermodel_types_JsonMap
+	Description          whereHelpermodel_types_JSONString
 	DescriptionPlainText whereHelperstring
 	CategoryID           whereHelperstring
 	CreatedAt            whereHelperint64
@@ -137,15 +137,15 @@ var ProductWhere = struct {
 	WeightUnit           whereHelperstring
 	DefaultVariantID     whereHelpermodel_types_NullString
 	Rating               whereHelpermodel_types_NullFloat32
-	Metadata             whereHelpermodel_types_JsonMap
-	PrivateMetadata      whereHelpermodel_types_JsonMap
+	Metadata             whereHelpermodel_types_JSONString
+	PrivateMetadata      whereHelpermodel_types_JSONString
 	SeoTitle             whereHelperstring
 	SeoDescription       whereHelperstring
 }{
 	ID:                   whereHelperstring{field: "\"products\".\"id\""},
 	Name:                 whereHelperstring{field: "\"products\".\"name\""},
 	Slug:                 whereHelperstring{field: "\"products\".\"slug\""},
-	Description:          whereHelpermodel_types_JsonMap{field: "\"products\".\"description\""},
+	Description:          whereHelpermodel_types_JSONString{field: "\"products\".\"description\""},
 	DescriptionPlainText: whereHelperstring{field: "\"products\".\"description_plain_text\""},
 	CategoryID:           whereHelperstring{field: "\"products\".\"category_id\""},
 	CreatedAt:            whereHelperint64{field: "\"products\".\"created_at\""},
@@ -155,8 +155,8 @@ var ProductWhere = struct {
 	WeightUnit:           whereHelperstring{field: "\"products\".\"weight_unit\""},
 	DefaultVariantID:     whereHelpermodel_types_NullString{field: "\"products\".\"default_variant_id\""},
 	Rating:               whereHelpermodel_types_NullFloat32{field: "\"products\".\"rating\""},
-	Metadata:             whereHelpermodel_types_JsonMap{field: "\"products\".\"metadata\""},
-	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"products\".\"private_metadata\""},
+	Metadata:             whereHelpermodel_types_JSONString{field: "\"products\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JSONString{field: "\"products\".\"private_metadata\""},
 	SeoTitle:             whereHelperstring{field: "\"products\".\"seo_title\""},
 	SeoDescription:       whereHelperstring{field: "\"products\".\"seo_description\""},
 }

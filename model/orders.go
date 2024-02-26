@@ -57,8 +57,8 @@ type Order struct {
 	WeightAmount                 float32                `boil:"weight_amount" json:"weight_amount" toml:"weight_amount" yaml:"weight_amount"`
 	WeightUnit                   string                 `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	RedirectURL                  model_types.NullString `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
-	Metadata                     model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata              model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                     model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata              model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *orderR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -350,8 +350,8 @@ var OrderWhere = struct {
 	WeightAmount                 whereHelperfloat32
 	WeightUnit                   whereHelperstring
 	RedirectURL                  whereHelpermodel_types_NullString
-	Metadata                     whereHelpermodel_types_JsonMap
-	PrivateMetadata              whereHelpermodel_types_JsonMap
+	Metadata                     whereHelpermodel_types_JSONString
+	PrivateMetadata              whereHelpermodel_types_JSONString
 }{
 	ID:                           whereHelperstring{field: "\"orders\".\"id\""},
 	CreatedAt:                    whereHelperint64{field: "\"orders\".\"created_at\""},
@@ -386,8 +386,8 @@ var OrderWhere = struct {
 	WeightAmount:                 whereHelperfloat32{field: "\"orders\".\"weight_amount\""},
 	WeightUnit:                   whereHelperstring{field: "\"orders\".\"weight_unit\""},
 	RedirectURL:                  whereHelpermodel_types_NullString{field: "\"orders\".\"redirect_url\""},
-	Metadata:                     whereHelpermodel_types_JsonMap{field: "\"orders\".\"metadata\""},
-	PrivateMetadata:              whereHelpermodel_types_JsonMap{field: "\"orders\".\"private_metadata\""},
+	Metadata:                     whereHelpermodel_types_JSONString{field: "\"orders\".\"metadata\""},
+	PrivateMetadata:              whereHelpermodel_types_JSONString{field: "\"orders\".\"private_metadata\""},
 }
 
 // OrderRels is where relationship names are stored.

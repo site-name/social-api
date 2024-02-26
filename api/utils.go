@@ -87,45 +87,39 @@ func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
 	})
 }
 
-func SystemMoneyToGraphqlMoney(money *goprices.Money) *Money {
-	if money == nil {
-		return nil
-	}
-	return &Money{
+func SystemMoneyToGraphqlMoney(money goprices.Money) Money {
+	return Money{
 		Currency: money.Currency,
 		Amount:   money.Amount.InexactFloat64(),
 	}
 }
 
-func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney {
-	if money == nil {
-		return nil
-	}
-	return &TaxedMoney{
-		Currency: money.Currency,
+func SystemTaxedMoneyToGraphqlTaxedMoney(money goprices.TaxedMoney) TaxedMoney {
+	return TaxedMoney{
+		Currency: money.GetCurrency(),
 		Gross:    SystemMoneyToGraphqlMoney(money.Gross),
 		Net:      SystemMoneyToGraphqlMoney(money.Net),
-		Tax:      SystemMoneyToGraphqlMoney(money.Tax()),
+		Tax:      SystemMoneyToGraphqlMoney(*money.Tax()),
 	}
 }
 
-func SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(m *goprices.TaxedMoneyRange) *TaxedMoneyRange {
-	if m == nil {
-		return nil
-	}
-	return &TaxedMoneyRange{
-		Start: SystemTaxedMoneyToGraphqlTaxedMoney(m.Start),
-		Stop:  SystemTaxedMoneyToGraphqlTaxedMoney(m.Stop),
+func SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(m goprices.TaxedMoneyRange) TaxedMoneyRange {
+	start := SystemTaxedMoneyToGraphqlTaxedMoney(m.Start)
+	stop := SystemTaxedMoneyToGraphqlTaxedMoney(m.Stop)
+
+	return TaxedMoneyRange{
+		Start: &start,
+		Stop:  &stop,
 	}
 }
 
-func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange {
-	if money == nil {
-		return nil
-	}
-	return &MoneyRange{
-		Start: SystemMoneyToGraphqlMoney(money.Start),
-		Stop:  SystemMoneyToGraphqlMoney(money.Stop),
+func SystemMoneyRangeToGraphqlMoneyRange(money goprices.MoneyRange) MoneyRange {
+	start := SystemMoneyToGraphqlMoney(money.Start)
+	stop := SystemMoneyToGraphqlMoney(money.Stop)
+
+	return MoneyRange{
+		Start: &start,
+		Stop:  &stop,
 	}
 }
 

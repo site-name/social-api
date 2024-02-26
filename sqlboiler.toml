@@ -32,7 +32,16 @@ no-context = true
     type = "null.JSON"
     nullable = true
   [types.replace]
-    type = "model_types.JsonMap"
+    type = "model_types.JSONString"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "types.JSON"
+    nullable = false
+  [types.replace]
+    type = "model_types.JSONString"
   [types.imports]
     third_party = ['"github.com/sitename/sitename/modules/model_types"']
 

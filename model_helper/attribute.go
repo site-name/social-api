@@ -165,7 +165,7 @@ func AttributePreUpdate(a *model.Attribute) {
 type AttributeFilterOption struct {
 	CommonQueryOptions
 	Search   string // WHERE Attributes.Name ILIKE ... OR Attributes.Slug ILIKE ...
-	Metadata model_types.JsonMap
+	Metadata model_types.JSONString
 	Preload  []string
 }
 

@@ -32,8 +32,8 @@ type Invoice struct {
 	Message         string                 `boil:"message" json:"message" toml:"message" yaml:"message"`
 	UpdatedAt       int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	InvoiceFile     model_types.NullString `boil:"invoice_file" json:"invoice_file,omitempty" toml:"invoice_file" yaml:"invoice_file,omitempty"`
-	Metadata        model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata        model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *invoiceR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L invoiceL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -103,8 +103,8 @@ var InvoiceWhere = struct {
 	Message         whereHelperstring
 	UpdatedAt       whereHelperint64
 	InvoiceFile     whereHelpermodel_types_NullString
-	Metadata        whereHelpermodel_types_JsonMap
-	PrivateMetadata whereHelpermodel_types_JsonMap
+	Metadata        whereHelpermodel_types_JSONString
+	PrivateMetadata whereHelpermodel_types_JSONString
 }{
 	ID:              whereHelperstring{field: "\"invoices\".\"id\""},
 	OrderID:         whereHelpermodel_types_NullString{field: "\"invoices\".\"order_id\""},
@@ -115,8 +115,8 @@ var InvoiceWhere = struct {
 	Message:         whereHelperstring{field: "\"invoices\".\"message\""},
 	UpdatedAt:       whereHelperint64{field: "\"invoices\".\"updated_at\""},
 	InvoiceFile:     whereHelpermodel_types_NullString{field: "\"invoices\".\"invoice_file\""},
-	Metadata:        whereHelpermodel_types_JsonMap{field: "\"invoices\".\"metadata\""},
-	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"invoices\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JSONString{field: "\"invoices\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JSONString{field: "\"invoices\".\"private_metadata\""},
 }
 
 // InvoiceRels is where relationship names are stored.

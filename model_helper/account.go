@@ -253,7 +253,7 @@ func SessionPreSave(s *model.Session) {
 	s.CreatedAt = GetMillis()
 	s.LastActivityAt = s.CreatedAt
 	if s.Props == nil {
-		s.Props = model_types.JsonMap{}
+		s.Props = model_types.JSONString{}
 	}
 }
 
@@ -418,15 +418,15 @@ func UserAccessTokenCommonPre(t *model.UserAccessToken) {
 // ------------ user ---------------
 
 type UserPatch struct {
-	Username    *string             `json:"username"`
-	Password    *string             `json:"password,omitempty"`
-	Nickname    *string             `json:"nickname"`
-	FirstName   *string             `json:"first_name"`
-	LastName    *string             `json:"last_name"`
-	Email       *string             `json:"email"`
-	Locale      *model.LanguageCode `json:"locale"`
-	Timezone    model_types.JsonMap `json:"timezone"`
-	NotifyProps model_types.JsonMap `json:"notify_props,omitempty"`
+	Username    *string                `json:"username"`
+	Password    *string                `json:"password,omitempty"`
+	Nickname    *string                `json:"nickname"`
+	FirstName   *string                `json:"first_name"`
+	LastName    *string                `json:"last_name"`
+	Email       *string                `json:"email"`
+	Locale      *model.LanguageCode    `json:"locale"`
+	Timezone    model_types.JSONString `json:"timezone"`
+	NotifyProps model_types.JSONString `json:"notify_props,omitempty"`
 }
 
 type UserAuth struct {
@@ -521,7 +521,7 @@ func userCommonPre(u *model.User) {
 		u.AuthData.String = nil
 	}
 	if u.Props == nil {
-		u.Props = model_types.JsonMap{}
+		u.Props = model_types.JSONString{}
 	}
 
 	if model.LanguageCode(u.Locale).IsValid() != nil {
@@ -533,7 +533,7 @@ func userCommonPre(u *model.User) {
 }
 
 func UserSetDefaultNotifications(u *model.User) {
-	u.NotifyProps = model_types.JsonMap{
+	u.NotifyProps = model_types.JSONString{
 		EMAIL_NOTIFY_PROP: "true",
 		PUSH_NOTIFY_PROP:  USER_NOTIFY_MENTION,
 	}
@@ -780,10 +780,10 @@ type UserGetOptions struct {
 
 func UserMakeNonNil(u *model.User) {
 	if u.Props == nil {
-		u.Props = model_types.JsonMap{}
+		u.Props = model_types.JSONString{}
 	}
 	if u.NotifyProps == nil {
-		u.NotifyProps = model_types.JsonMap{}
+		u.NotifyProps = model_types.JSONString{}
 	}
 }
 

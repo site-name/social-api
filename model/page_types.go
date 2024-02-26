@@ -23,11 +23,11 @@ import (
 
 // PageType is an object representing the database table.
 type PageType struct {
-	ID              string              `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string              `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug            string              `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Metadata        model_types.JsonMap `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata model_types.JsonMap `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug            string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Metadata        model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *pageTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -67,14 +67,14 @@ var PageTypeWhere = struct {
 	ID              whereHelperstring
 	Name            whereHelperstring
 	Slug            whereHelperstring
-	Metadata        whereHelpermodel_types_JsonMap
-	PrivateMetadata whereHelpermodel_types_JsonMap
+	Metadata        whereHelpermodel_types_JSONString
+	PrivateMetadata whereHelpermodel_types_JSONString
 }{
 	ID:              whereHelperstring{field: "\"page_types\".\"id\""},
 	Name:            whereHelperstring{field: "\"page_types\".\"name\""},
 	Slug:            whereHelperstring{field: "\"page_types\".\"slug\""},
-	Metadata:        whereHelpermodel_types_JsonMap{field: "\"page_types\".\"metadata\""},
-	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"page_types\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JSONString{field: "\"page_types\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JSONString{field: "\"page_types\".\"private_metadata\""},
 }
 
 // PageTypeRels is where relationship names are stored.

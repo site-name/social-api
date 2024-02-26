@@ -1,10 +1,12 @@
 package payment
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlPaymentTransactionStore struct {
@@ -15,54 +17,48 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	return &SqlPaymentTransactionStore{s}
 }
 
-// Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (ps *SqlPaymentTransactionStore) Upsert(transaction boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	if transaction == nil {
 		transaction = ps.GetMaster()
 	}
-	if err := transaction.Create(paymentTransaction).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to save payment paymentTransaction with id=%s", paymentTransaction.Id)
+	isSaving := paymentTransaction.ID == ""
+
+	if isSaving {
+		model_helper.PaymentTransactionPreSave(&paymentTransaction)
+	} else {
+		model_helper.PaymentTransactionCommonPre(&paymentTransaction)
 	}
 
-	return paymentTransaction, nil
-}
-
-// Update updates given transaction then return it
-func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	transaction.CreateAt = 0 // prevent update this field
-	err := ps.GetMaster().Model(transaction).Updates(transaction).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to update transaction with id=%s", transaction.Id)
+	if err := model_helper.PaymentTransactionIsValid(paymentTransaction); err != nil {
+		return nil, err
 	}
 
-	return transaction, nil
-}
-
-func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
-	var res model.PaymentTransaction
-	err := ps.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.TransactionTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)
+	var err error
+	if isSaving {
+		err = paymentTransaction.Insert(transaction, boil.Infer())
+	} else {
+		_, err = paymentTransaction.Update(transaction, boil.Infer())
 	}
 
-	return &res, nil
-}
-
-// FilterByOption finds and returns a list of transactions with given option
-func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
-	args, err := store.BuildSqlizer(option.Conditions, "PaymentTransaction_FilterByOption")
 	if err != nil {
 		return nil, err
 	}
 
-	var res []*model.PaymentTransaction
-	err = ps.GetReplica().Find(&res, args...).Error
+	return &paymentTransaction, nil
+}
+
+func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
+	tran, err := model.FindPaymentTransaction(ps.GetReplica(), id)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.PaymentTransactions, id)
+		}
+		return nil, err
 	}
 
-	return res, nil
+	return tran, nil
+}
+
+func (ps *SqlPaymentTransactionStore) FilterByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
+	return model.PaymentTransactions(option.Conditions...).All(ps.GetReplica())
 }

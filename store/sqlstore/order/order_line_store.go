@@ -1,13 +1,14 @@
 package order
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlOrderLineStore struct {
@@ -18,8 +19,7 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	return &SqlOrderLineStore{sqlStore}
 }
 
-// Upsert depends on given orderLine's Id to decide to update or save it
-func (ols *SqlOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (ols *SqlOrderLineStore) Upsert(transaction boil.ContextTransactor, orderLine model.OrderLine) (*model.OrderLine, error) {
 	if transaction == nil {
 		transaction = ols.GetMaster()
 	}
@@ -39,42 +39,26 @@ func (ols *SqlOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.Orde
 	return orderLine, nil
 }
 
-// BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
-	for _, orderLine := range orderLines {
-		_, err := ols.Upsert(transaction, orderLine)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return orderLines, nil
-}
-
 func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
-	var odl model.OrderLine
-	err := ols.GetReplica().First(&odl, "Id = ?", id).Error
+	orderLine, err := model.FindOrderLine(ols.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.OrderLineTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.OrderLines, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find order line with id=%s", id)
+		return nil, err
 	}
 
-	return &odl, nil
+	return orderLine, nil
+
 }
 
-// BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-func (ols *SqlOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
+func (ols *SqlOrderLineStore) Delete(tx boil.ContextTransactor, orderLineIDs []string) error {
 	if tx == nil {
 		tx = ols.GetMaster()
 	}
-	err := tx.Raw("DELETE FROM "+model.OrderLineTableName+" WHERE Id IN ?", orderLineIDs).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete order lines with given ids")
-	}
 
-	return nil
+	_, err := model.OrderLines(model.OrderLineWhere.ID.IN(orderLineIDs)).DeleteAll(tx)
+	return err
 }
 
 func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {

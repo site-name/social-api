@@ -45,8 +45,8 @@ type Checkout struct {
 	RedirectURL            model_types.NullString `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
 	TrackingCode           model_types.NullString `boil:"tracking_code" json:"tracking_code,omitempty" toml:"tracking_code" yaml:"tracking_code,omitempty"`
 	LanguageCode           LanguageCode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	Metadata               model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata        model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata               model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata        model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *checkoutR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L checkoutL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -197,8 +197,8 @@ var CheckoutWhere = struct {
 	RedirectURL            whereHelpermodel_types_NullString
 	TrackingCode           whereHelpermodel_types_NullString
 	LanguageCode           whereHelperLanguageCode
-	Metadata               whereHelpermodel_types_JsonMap
-	PrivateMetadata        whereHelpermodel_types_JsonMap
+	Metadata               whereHelpermodel_types_JSONString
+	PrivateMetadata        whereHelpermodel_types_JSONString
 }{
 	Token:                  whereHelperstring{field: "\"checkouts\".\"token\""},
 	CreatedAt:              whereHelperint64{field: "\"checkouts\".\"created_at\""},
@@ -221,8 +221,8 @@ var CheckoutWhere = struct {
 	RedirectURL:            whereHelpermodel_types_NullString{field: "\"checkouts\".\"redirect_url\""},
 	TrackingCode:           whereHelpermodel_types_NullString{field: "\"checkouts\".\"tracking_code\""},
 	LanguageCode:           whereHelperLanguageCode{field: "\"checkouts\".\"language_code\""},
-	Metadata:               whereHelpermodel_types_JsonMap{field: "\"checkouts\".\"metadata\""},
-	PrivateMetadata:        whereHelpermodel_types_JsonMap{field: "\"checkouts\".\"private_metadata\""},
+	Metadata:               whereHelpermodel_types_JSONString{field: "\"checkouts\".\"metadata\""},
+	PrivateMetadata:        whereHelpermodel_types_JSONString{field: "\"checkouts\".\"private_metadata\""},
 }
 
 // CheckoutRels is where relationship names are stored.

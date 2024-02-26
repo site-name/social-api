@@ -3,7 +3,7 @@ package model_types
 import "testing"
 
 func TestJsonMapGet(t *testing.T) {
-	jm := JsonMap{
+	jm := JSONString{
 		"key1": "value1",
 		"key2": "value2",
 	}

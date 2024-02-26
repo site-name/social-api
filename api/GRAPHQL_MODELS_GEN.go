@@ -17,9 +17,11 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 	"github.com/uber/jaeger-client-go/utils"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
@@ -109,82 +111,6 @@ type AddressInput struct {
 	Country        *CountryCode `json:"country"`
 	CountryArea    *string      `json:"countryArea"`
 	Phone          *string      `json:"phone"`
-}
-
-// validate check given `phone` and `country` field are valid. If not returns according error.
-// TODO: in the future we should validate by specific country name.
-func (a *AddressInput) validate(where string) *model_helper.AppError {
-	// validate input country
-	if country := a.Country; country == nil || !country.IsValid() {
-		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
-	}
-
-	// validate input phone
-	if phone := a.Phone; phone != nil {
-		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
-		if !ok {
-			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
-		}
-	}
-
-	return nil
-}
-
-// NOTE: must be called after calling Validate().
-//
-// The returned boolean value indicates if the given address is really changed
-func (a *AddressInput) PatchAddress(addr *model.Address) bool {
-	changed := true
-
-	switch {
-	case a.Phone != nil && *a.Phone != "" && addr.Phone != *a.Phone:
-		addr.Phone = *a.Phone
-		fallthrough
-
-	case *a.Country != addr.Country:
-		addr.Country = *a.Country
-		fallthrough
-
-	case a.FirstName != nil && *a.FirstName != addr.FirstName:
-		addr.FirstName = *a.FirstName
-		fallthrough
-
-	case a.LastName != nil && *a.LastName != addr.LastName:
-		addr.LastName = *a.LastName
-		fallthrough
-
-	case a.CompanyName != nil && *a.CompanyName != addr.CompanyName:
-		addr.CompanyName = *a.CompanyName
-		fallthrough
-
-	case a.StreetAddress1 != nil && *a.StreetAddress1 != addr.StreetAddress1:
-		addr.StreetAddress1 = *a.StreetAddress1
-		fallthrough
-
-	case a.StreetAddress2 != nil && *a.StreetAddress2 != addr.StreetAddress2:
-		addr.StreetAddress2 = *a.StreetAddress2
-		fallthrough
-
-	case a.City != nil && *a.City != addr.City:
-		addr.City = *a.City
-		fallthrough
-
-	case a.CityArea != nil && *a.CityArea != addr.CityArea:
-		addr.CityArea = *a.CityArea
-		fallthrough
-
-	case a.PostalCode != nil && *a.PostalCode != addr.PostalCode:
-		addr.PostalCode = *a.PostalCode
-		fallthrough
-
-	case a.CountryArea != nil && *a.CountryArea != addr.CountryArea:
-		addr.CountryArea = *a.CountryArea
-
-	default:
-		changed = false
-	}
-
-	return changed
 }
 
 type AddressSetDefault struct {
@@ -454,7 +380,7 @@ type AttributeFilterInput struct {
 	AvailableInGrid        *bool              `json:"availableInGrid"`
 	Metadata               []*MetadataInput   `json:"metadata"`
 	Search                 *string            `json:"search"`
-	Ids                    []UUID             `json:"ids"`
+	Ids                    UUIDs              `json:"ids"`
 	Type                   *AttributeTypeEnum `json:"type"`
 	InCollection           *string            `json:"inCollection"`
 	InCategory             *string            `json:"inCategory"`
@@ -484,49 +410,50 @@ func (a *AttributeFilterInput) validate(where string) *model_helper.AppError {
 
 // parse calls validate() first, if an validation error occured, return immediately.
 // If not, return *AttributeFilterOption and nil error
-func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption, *model_helper.AppError) {
+func (a *AttributeFilterInput) parse(where string) (*model_helper.AttributeFilterOption, *model_helper.AppError) {
 	appErr := a.validate(where)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	conditions := squirrel.Eq{}
+	conditions := []qm.QueryMod{}
 	if a.VisibleInStoreFront != nil {
-		conditions[model.AttributeTableName+".VisibleInStoreFront"] = *a.VisibleInStoreFront
+		conditions = append(conditions, model.AttributeWhere.VisibleInStorefront.EQ(*a.VisibleInStoreFront))
 	}
 	if a.ValueRequired != nil {
-		conditions[model.AttributeTableName+".ValueRequired"] = *a.ValueRequired
+		conditions = append(conditions, model.AttributeWhere.ValueRequired.EQ(*a.ValueRequired))
 	}
 	if a.IsVariantOnly != nil {
-		conditions[model.AttributeTableName+".IsVariantOnly"] = *a.IsVariantOnly
+		conditions = append(conditions, model.AttributeWhere.IsVariantOnly.EQ(*a.IsVariantOnly))
 	}
 	if a.FilterableInStorefront != nil {
-		conditions[model.AttributeTableName+".FilterableInStorefront"] = *a.FilterableInStorefront
+		conditions = append(conditions, model.AttributeWhere.FilterableInStorefront.EQ(*a.FilterableInStorefront))
 	}
 	if a.FilterableInDashboard != nil {
-		conditions[model.AttributeTableName+".FilterableInDashboard"] = *a.FilterableInDashboard
+		conditions = append(conditions, model.AttributeWhere.FilterableInDashboard.EQ(*a.FilterableInDashboard))
 	}
 	if a.AvailableInGrid != nil {
-		conditions[model.AttributeTableName+".AvailableInGrid"] = *a.AvailableInGrid
+		conditions = append(conditions, model.AttributeWhere.AvailableInGrid.EQ(*a.AvailableInGrid))
 	}
 	if len(a.Ids) > 0 {
-		conditions[model.AttributeTableName+".Id"] = a.Ids
+		conditions = append(conditions, model.AttributeWhere.ID.IN(a.Ids.ToStrings()))
 	}
 	if a.Type != nil {
-		conditions[model.AttributeTableName+".Type"] = *a.Type
+		conditions = append(conditions, model.AttributeWhere.Type.EQ(*a.Type))
 	}
 
-	res := &model.AttributeFilterOption{
-		Conditions:   conditions,
+	res := &model_helper.AttributeFilterOption{
+		// Conditions:   conditions,
 		InCollection: a.InCollection,
 		InCategory:   a.InCategory,
 	}
+	res.Conditions = conditions
 	if a.Search != nil {
 		res.Search = *a.Search
 	}
 
 	if len(a.Metadata) > 0 {
-		res.Metadata = map[string]string{}
+		res.Metadata = model_types.JSONString{}
 		for _, meta := range a.Metadata {
 			if meta != nil && meta.Key != "" {
 				res.Metadata[meta.Key] = meta.Value
@@ -602,9 +529,9 @@ type AttributeTranslation struct {
 	Language *LanguageDisplay `json:"language"`
 }
 
-type AttributeEntityTypeEnum = model.Attributeentitytype
+type AttributeEntityTypeEnum = model.AttributeEntityType
 
-type AttributeTypeEnum = model.Attributetype
+type AttributeTypeEnum = model.AttributeType
 
 type AttributeUpdate struct {
 	Attribute *Attribute        `json:"attribute"`
@@ -772,7 +699,7 @@ type CategoryInput struct {
 	BackgroundImageAlt *string    `json:"backgroundImageAlt"`
 }
 
-func (c *CategoryInput) Validate(where string) *model_helper.AppError {
+func (c CategoryInput) Validate(where string) *model_helper.AppError {
 	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
 		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
 	}
@@ -1102,14 +1029,14 @@ func (c *CollectionInput) validate(api string) *model_helper.AppError {
 	}
 
 	if c.Name != nil {
-		*c.Name = model.SanitizeUnicode(*c.Name)
+		*c.Name = model_helper.SanitizeUnicode(*c.Name)
 	}
 	if c.BackgroundImageAlt != nil {
-		*c.BackgroundImageAlt = model.SanitizeUnicode(*c.BackgroundImageAlt)
+		*c.BackgroundImageAlt = model_helper.SanitizeUnicode(*c.BackgroundImageAlt)
 	}
 	if c.Seo != nil {
-		c.Seo.Title = model.SanitizeUnicode(c.Seo.Title)
-		c.Seo.Description = model.SanitizeUnicode(c.Seo.Description)
+		c.Seo.Title = model_helper.SanitizeUnicode(c.Seo.Title)
+		c.Seo.Description = model_helper.SanitizeUnicode(c.Seo.Description)
 	}
 
 	return nil
@@ -2594,20 +2521,12 @@ func (ip *OrderFilterInput) parse(where string) (*model.OrderFilterOption, *mode
 }
 
 type OrderDraftFilterInput struct {
-	// if set:
-	/* o.UserEmail ILIKE ... OR
-	o.User.Email ILIKE ... OR
-	o.User.FirstName ILIKE ... OR
-	o.User.LastName ILIKE ...
-	*/
-	Customer *string `json:"customer"`
-	// o.CreateAt
-	Created   *DateRangeInput `json:"created"`
-	PaymentId UUID            `json:"paymentID"`
-	//
-	Search   *string          `json:"search"`
-	Metadata []*MetadataInput `json:"metadata"`
-	Channels []UUID           `json:"channels"`
+	Customer  *string          `json:"customer"`
+	Created   *DateRangeInput  `json:"created"`
+	PaymentId UUID             `json:"paymentID"`
+	Search    *string          `json:"search"`
+	Metadata  []*MetadataInput `json:"metadata"`
+	Channels  UUIDs            `json:"channels"`
 }
 
 func (ip *OrderDraftFilterInput) parse(where string) (*model.OrderFilterOption, *model_helper.AppError) {
@@ -2655,13 +2574,13 @@ func (ip *OrderDraftFilterInput) parse(where string) (*model.OrderFilterOption, 
 }
 
 type OrderError struct {
-	Field       *string                `json:"field"`
-	Message     *string                `json:"message"`
-	Code        OrderErrorCode         `json:"code"`
-	Warehouse   *string                `json:"warehouse"`
-	OrderLine   *string                `json:"orderLine"`
-	Variants    []string               `json:"variants"`
-	AddressType *model.AddressTypeEnum `json:"addressType"`
+	Field       *string                       `json:"field"`
+	Message     *string                       `json:"message"`
+	Code        OrderErrorCode                `json:"code"`
+	Warehouse   *string                       `json:"warehouse"`
+	OrderLine   *string                       `json:"orderLine"`
+	Variants    []string                      `json:"variants"`
+	AddressType *model_helper.AddressTypeEnum `json:"addressType"`
 }
 
 type OrderEventCountableConnection struct {
@@ -3145,7 +3064,7 @@ type PaymentError struct {
 }
 
 type PaymentFilterInput struct {
-	Checkouts []UUID `json:"checkouts"`
+	Checkouts UUIDs `json:"checkouts"`
 }
 
 type PaymentInitialize struct {
@@ -3738,7 +3657,7 @@ type ProductTypeFilterInput struct {
 	ProductType  *ProductTypeEnum         `json:"productType"`
 	Metadata     []*MetadataInput         `json:"metadata"`
 	Kind         *ProductTypeKindEnum     `json:"kind"`
-	Ids          []UUID                   `json:"ids"`
+	Ids          UUIDs                    `json:"ids"`
 }
 
 func (p *ProductTypeFilterInput) parse(where string) *model.ProductTypeFilterOption {
@@ -3808,8 +3727,8 @@ type ProductTypeInput struct {
 	IsDigital          *bool                `json:"isDigital"`
 	Weight             *WeightScalar        `json:"weight"`
 	TaxCode            *string              `json:"taxCode"`
-	ProductAttributes  []UUID               `json:"productAttributes"`
-	VariantAttributes  []UUID               `json:"variantAttributes"`
+	ProductAttributes  UUIDs                `json:"productAttributes"`
+	VariantAttributes  UUIDs                `json:"variantAttributes"`
 }
 
 func (p *ProductTypeInput) validate(where string) *model_helper.AppError {
@@ -4793,11 +4712,13 @@ type StockInput struct {
 	Quantity  int32 `json:"quantity"`
 }
 
+type AddressTypeEnum = model_helper.AddressTypeEnum
+
 type TaxedMoney struct {
 	Currency string `json:"currency"`
-	Gross    *Money `json:"gross"`
-	Net      *Money `json:"net"`
-	Tax      *Money `json:"tax"`
+	Gross    Money  `json:"gross"`
+	Net      Money  `json:"net"`
+	Tax      Money  `json:"tax"`
 }
 
 type TaxedMoneyRange struct {

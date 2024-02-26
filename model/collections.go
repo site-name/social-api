@@ -29,8 +29,8 @@ type Collection struct {
 	BackgroundImage    model_types.NullString `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
 	BackgroundImageAlt string                 `boil:"background_image_alt" json:"background_image_alt" toml:"background_image_alt" yaml:"background_image_alt"`
 	Description        model_types.NullString `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Metadata           model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata           model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 	SeoTitle           string                 `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
 	SeoDescription     string                 `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
@@ -95,8 +95,8 @@ var CollectionWhere = struct {
 	BackgroundImage    whereHelpermodel_types_NullString
 	BackgroundImageAlt whereHelperstring
 	Description        whereHelpermodel_types_NullString
-	Metadata           whereHelpermodel_types_JsonMap
-	PrivateMetadata    whereHelpermodel_types_JsonMap
+	Metadata           whereHelpermodel_types_JSONString
+	PrivateMetadata    whereHelpermodel_types_JSONString
 	SeoTitle           whereHelperstring
 	SeoDescription     whereHelperstring
 }{
@@ -106,8 +106,8 @@ var CollectionWhere = struct {
 	BackgroundImage:    whereHelpermodel_types_NullString{field: "\"collections\".\"background_image\""},
 	BackgroundImageAlt: whereHelperstring{field: "\"collections\".\"background_image_alt\""},
 	Description:        whereHelpermodel_types_NullString{field: "\"collections\".\"description\""},
-	Metadata:           whereHelpermodel_types_JsonMap{field: "\"collections\".\"metadata\""},
-	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"collections\".\"private_metadata\""},
+	Metadata:           whereHelpermodel_types_JSONString{field: "\"collections\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JSONString{field: "\"collections\".\"private_metadata\""},
 	SeoTitle:           whereHelperstring{field: "\"collections\".\"seo_title\""},
 	SeoDescription:     whereHelperstring{field: "\"collections\".\"seo_description\""},
 }

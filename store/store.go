@@ -493,18 +493,17 @@ type (
 // model
 type (
 	PaymentStore interface {
-		Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
-		Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
-		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                  // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
-		FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error)                          // FilterByOption finds and returns a list of payments that satisfy given option
-		UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
+		Upsert(tx boil.ContextTransactor, model model.Payment) (*model.Payment, error)                                    // Save save model instance into database
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
+		FilterByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, error)                              // FilterByOption finds and returns a list of payments that satisfy given option
+		UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
 		PaymentOwnedByUser(userID, paymentID string) (bool, error)
+		// Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
 	}
 	PaymentTransactionStore interface {
-		Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database
-		Get(id string) (*model.PaymentTransaction, error)                                                                // Get returns a model transaction with given id
-		Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error)                                 // Update updates given transaction and returns updated one
-		FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error)                  // FilterByOption finds and returns a list of transactions with given option
+		Upsert(tx boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database
+		Get(id string) (*model.PaymentTransaction, error)                                                                 // Get returns a model transaction with given id
+		FilterByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error)             // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 
@@ -522,11 +521,9 @@ type (
 // order
 type (
 	OrderLineStore interface {
-		Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*model.OrderLine, error)                                                         // Get returns a order line with id of given id
-		BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error                               // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error)                // FilterbyOption finds and returns order lines by given option
-		BulkUpsert(tx boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
+		Upsert(tx boil.ContextTransactor, orderLine model.OrderLine) (*model.OrderLine, error)  // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*model.OrderLine, error)                                                // Get returns a order line with id of given id
+		FilterbyOption(option model_helper.OrderLineFilterOption) (model.OrderLineSlice, error) // FilterbyOption finds and returns order lines by given option
 	}
 	OrderStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)

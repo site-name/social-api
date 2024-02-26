@@ -3856,10 +3856,10 @@ func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 	return err
 }
 
-func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
+func (s *TimerLayerPaymentStore) FilterByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.PaymentStore.FilterByOption(option)
+	result, err := s.PaymentStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3869,7 +3869,7 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.FilterByOption", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
@@ -3888,39 +3888,7 @@ func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.Save(tx, model)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentStore) Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.Update(tx, model)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Update", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error {
+func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) error {
 	start := timemodule.Now()
 
 	err := s.PaymentStore.UpdatePaymentsOfCheckout(tx, checkoutToken, option)
@@ -3936,7 +3904,23 @@ func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransac
 	return err
 }
 
-func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
+func (s *TimerLayerPaymentStore) Upsert(tx boil.ContextTransactor, model model.Payment) (*model.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.Upsert(tx, model)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentTransactionStore) FilterByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.FilterByOption(option)
@@ -3968,10 +3952,10 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Upsert(tx boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentTransactionStore.Save(tx, paymentTransaction)
+	result, err := s.PaymentTransactionStore.Upsert(tx, paymentTransaction)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3979,23 +3963,7 @@ func (s *TimerLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paym
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentTransactionStore.Update(transaction)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Update", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Upsert", success, elapsed)
 	}
 	return result, err
 }

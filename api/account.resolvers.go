@@ -62,7 +62,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 	return &AccountAddressCreate{
 		Address: SystemAddressToGraphqlAddress(savedAddress),
-		User:    &User{ID: currentSession.UserId},
+		User:    &User{ID: currentSession.UserID},
 	}, nil
 }
 

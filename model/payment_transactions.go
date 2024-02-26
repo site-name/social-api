@@ -31,12 +31,12 @@ type PaymentTransaction struct {
 	Kind               TransactionKind        `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
 	IsSuccess          bool                   `boil:"is_success" json:"is_success" toml:"is_success" yaml:"is_success"`
 	ActionRequired     bool                   `boil:"action_required" json:"action_required" toml:"action_required" yaml:"action_required"`
-	ActionRequiredData string                 `boil:"action_required_data" json:"action_required_data" toml:"action_required_data" yaml:"action_required_data"`
+	ActionRequiredData model_types.JSONString `boil:"action_required_data" json:"action_required_data" toml:"action_required_data" yaml:"action_required_data"`
 	Currency           Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	Amount             decimal.Decimal        `boil:"amount" json:"amount" toml:"amount" yaml:"amount"`
 	Error              model_types.NullString `boil:"error" json:"error,omitempty" toml:"error" yaml:"error,omitempty"`
 	CustomerID         model_types.NullString `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
-	GatewayResponse    string                 `boil:"gateway_response" json:"gateway_response" toml:"gateway_response" yaml:"gateway_response"`
+	GatewayResponse    model_types.JSONString `boil:"gateway_response" json:"gateway_response" toml:"gateway_response" yaml:"gateway_response"`
 	AlreadyProcessed   bool                   `boil:"already_processed" json:"already_processed" toml:"already_processed" yaml:"already_processed"`
 
 	R *paymentTransactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -152,12 +152,12 @@ var PaymentTransactionWhere = struct {
 	Kind               whereHelperTransactionKind
 	IsSuccess          whereHelperbool
 	ActionRequired     whereHelperbool
-	ActionRequiredData whereHelperstring
+	ActionRequiredData whereHelpermodel_types_JSONString
 	Currency           whereHelperCurrency
 	Amount             whereHelperdecimal_Decimal
 	Error              whereHelpermodel_types_NullString
 	CustomerID         whereHelpermodel_types_NullString
-	GatewayResponse    whereHelperstring
+	GatewayResponse    whereHelpermodel_types_JSONString
 	AlreadyProcessed   whereHelperbool
 }{
 	ID:                 whereHelperstring{field: "\"payment_transactions\".\"id\""},
@@ -167,12 +167,12 @@ var PaymentTransactionWhere = struct {
 	Kind:               whereHelperTransactionKind{field: "\"payment_transactions\".\"kind\""},
 	IsSuccess:          whereHelperbool{field: "\"payment_transactions\".\"is_success\""},
 	ActionRequired:     whereHelperbool{field: "\"payment_transactions\".\"action_required\""},
-	ActionRequiredData: whereHelperstring{field: "\"payment_transactions\".\"action_required_data\""},
+	ActionRequiredData: whereHelpermodel_types_JSONString{field: "\"payment_transactions\".\"action_required_data\""},
 	Currency:           whereHelperCurrency{field: "\"payment_transactions\".\"currency\""},
 	Amount:             whereHelperdecimal_Decimal{field: "\"payment_transactions\".\"amount\""},
 	Error:              whereHelpermodel_types_NullString{field: "\"payment_transactions\".\"error\""},
 	CustomerID:         whereHelpermodel_types_NullString{field: "\"payment_transactions\".\"customer_id\""},
-	GatewayResponse:    whereHelperstring{field: "\"payment_transactions\".\"gateway_response\""},
+	GatewayResponse:    whereHelpermodel_types_JSONString{field: "\"payment_transactions\".\"gateway_response\""},
 	AlreadyProcessed:   whereHelperbool{field: "\"payment_transactions\".\"already_processed\""},
 }
 

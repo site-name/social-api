@@ -1733,3 +1733,6 @@ CREATE TYPE warehouse_click_and_collect_option AS ENUM (
 );
 END IF;
 END $$;
+
+-- enable trigram similarity
+CREATE EXTENSION IF NOT EXISTS pg_trgm;

@@ -39,8 +39,8 @@ type Giftcard struct {
 	Currency             Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	InitialBalanceAmount model_types.NullDecimal `boil:"initial_balance_amount" json:"initial_balance_amount,omitempty" toml:"initial_balance_amount" yaml:"initial_balance_amount,omitempty"`
 	CurrentBalanceAmount model_types.NullDecimal `boil:"current_balance_amount" json:"current_balance_amount,omitempty" toml:"current_balance_amount" yaml:"current_balance_amount,omitempty"`
-	Metadata             model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata             model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *giftcardR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -145,8 +145,8 @@ var GiftcardWhere = struct {
 	Currency             whereHelperCurrency
 	InitialBalanceAmount whereHelpermodel_types_NullDecimal
 	CurrentBalanceAmount whereHelpermodel_types_NullDecimal
-	Metadata             whereHelpermodel_types_JsonMap
-	PrivateMetadata      whereHelpermodel_types_JsonMap
+	Metadata             whereHelpermodel_types_JSONString
+	PrivateMetadata      whereHelpermodel_types_JSONString
 }{
 	ID:                   whereHelperstring{field: "\"giftcards\".\"id\""},
 	Code:                 whereHelperstring{field: "\"giftcards\".\"code\""},
@@ -164,8 +164,8 @@ var GiftcardWhere = struct {
 	Currency:             whereHelperCurrency{field: "\"giftcards\".\"currency\""},
 	InitialBalanceAmount: whereHelpermodel_types_NullDecimal{field: "\"giftcards\".\"initial_balance_amount\""},
 	CurrentBalanceAmount: whereHelpermodel_types_NullDecimal{field: "\"giftcards\".\"current_balance_amount\""},
-	Metadata:             whereHelpermodel_types_JsonMap{field: "\"giftcards\".\"metadata\""},
-	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"giftcards\".\"private_metadata\""},
+	Metadata:             whereHelpermodel_types_JSONString{field: "\"giftcards\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JSONString{field: "\"giftcards\".\"private_metadata\""},
 }
 
 // GiftcardRels is where relationship names are stored.

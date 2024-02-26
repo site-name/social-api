@@ -23,14 +23,14 @@ import (
 
 // ShippingZone is an object representing the database table.
 type ShippingZone struct {
-	ID              string               `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string               `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Countries       string               `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
-	DefaultFlag     model_types.NullBool `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
-	Description     string               `boil:"description" json:"description" toml:"description" yaml:"description"`
-	CreatedAt       int64                `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata        model_types.JsonMap  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata model_types.JsonMap  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Countries       string                 `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
+	DefaultFlag     model_types.NullBool   `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
+	Description     string                 `boil:"description" json:"description" toml:"description" yaml:"description"`
+	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *shippingZoneR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingZoneL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -85,8 +85,8 @@ var ShippingZoneWhere = struct {
 	DefaultFlag     whereHelpermodel_types_NullBool
 	Description     whereHelperstring
 	CreatedAt       whereHelperint64
-	Metadata        whereHelpermodel_types_JsonMap
-	PrivateMetadata whereHelpermodel_types_JsonMap
+	Metadata        whereHelpermodel_types_JSONString
+	PrivateMetadata whereHelpermodel_types_JSONString
 }{
 	ID:              whereHelperstring{field: "\"shipping_zones\".\"id\""},
 	Name:            whereHelperstring{field: "\"shipping_zones\".\"name\""},
@@ -94,8 +94,8 @@ var ShippingZoneWhere = struct {
 	DefaultFlag:     whereHelpermodel_types_NullBool{field: "\"shipping_zones\".\"default_flag\""},
 	Description:     whereHelperstring{field: "\"shipping_zones\".\"description\""},
 	CreatedAt:       whereHelperint64{field: "\"shipping_zones\".\"created_at\""},
-	Metadata:        whereHelpermodel_types_JsonMap{field: "\"shipping_zones\".\"metadata\""},
-	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"shipping_zones\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JSONString{field: "\"shipping_zones\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JSONString{field: "\"shipping_zones\".\"private_metadata\""},
 }
 
 // ShippingZoneRels is where relationship names are stored.

@@ -23,9 +23,9 @@ import (
 
 // Vat is an object representing the database table.
 type Vat struct {
-	ID          string              `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CountryCode CountryCode         `boil:"country_code" json:"country_code" toml:"country_code" yaml:"country_code"`
-	Data        model_types.JsonMap `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
+	ID          string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CountryCode CountryCode            `boil:"country_code" json:"country_code" toml:"country_code" yaml:"country_code"`
+	Data        model_types.JSONString `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *vatR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L vatL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,11 +56,11 @@ var VatTableColumns = struct {
 var VatWhere = struct {
 	ID          whereHelperstring
 	CountryCode whereHelperCountryCode
-	Data        whereHelpermodel_types_JsonMap
+	Data        whereHelpermodel_types_JSONString
 }{
 	ID:          whereHelperstring{field: "\"vats\".\"id\""},
 	CountryCode: whereHelperCountryCode{field: "\"vats\".\"country_code\""},
-	Data:        whereHelpermodel_types_JsonMap{field: "\"vats\".\"data\""},
+	Data:        whereHelpermodel_types_JSONString{field: "\"vats\".\"data\""},
 }
 
 // VatRels is where relationship names are stored.

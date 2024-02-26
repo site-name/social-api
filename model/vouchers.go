@@ -39,8 +39,8 @@ type Voucher struct {
 	MinCheckoutItemsQuantity int                    `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity"`
 	CreatedAt                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt                int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	Metadata                 model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                 model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *voucherR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -180,8 +180,8 @@ var VoucherWhere = struct {
 	MinCheckoutItemsQuantity whereHelperint
 	CreatedAt                whereHelperint64
 	UpdatedAt                whereHelperint64
-	Metadata                 whereHelpermodel_types_JsonMap
-	PrivateMetadata          whereHelpermodel_types_JsonMap
+	Metadata                 whereHelpermodel_types_JSONString
+	PrivateMetadata          whereHelpermodel_types_JSONString
 }{
 	ID:                       whereHelperstring{field: "\"vouchers\".\"id\""},
 	Type:                     whereHelperVoucherType{field: "\"vouchers\".\"type\""},
@@ -199,8 +199,8 @@ var VoucherWhere = struct {
 	MinCheckoutItemsQuantity: whereHelperint{field: "\"vouchers\".\"min_checkout_items_quantity\""},
 	CreatedAt:                whereHelperint64{field: "\"vouchers\".\"created_at\""},
 	UpdatedAt:                whereHelperint64{field: "\"vouchers\".\"updated_at\""},
-	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"vouchers\".\"metadata\""},
-	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"vouchers\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JSONString{field: "\"vouchers\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JSONString{field: "\"vouchers\".\"private_metadata\""},
 }
 
 // VoucherRels is where relationship names are stored.

@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
@@ -73,7 +72,7 @@ func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 func (r *Resolver) Me(ctx context.Context) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	user, err := UserByUserIdLoader.Load(ctx, embedCtx.AppContext.Session().UserId)()
+	user, err := UserByUserIdLoader.Load(ctx, embedCtx.AppContext.Session().UserID)()
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +91,7 @@ func (r *Resolver) User(ctx context.Context, args struct {
 	if args.Id != nil && !model_helper.IsValidId(*args.Id) {
 		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
 	}
-	if args.Email != nil && !model.IsValidEmail(*args.Email) {
+	if args.Email != nil && !model_helper.IsValidEmail(*args.Email) {
 		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide a valid email", http.StatusBadRequest)
 	}
 
@@ -102,8 +101,10 @@ func (r *Resolver) User(ctx context.Context, args struct {
 	if args.Id != nil {
 		user, appErr = embedCtx.App.Srv().AccountService().UserById(ctx, *args.Id)
 	} else {
-		user, appErr = embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-			Conditions: squirrel.Expr(model.UserTableName+".Email = ?", *args.Email),
+		user, appErr = embedCtx.App.Srv().AccountService().GetUserByOptions(model_helper.UserFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.UserWhere.Email.EQ(*args.Email),
+			),
 		})
 	}
 	if appErr != nil {

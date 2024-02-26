@@ -4211,7 +4211,7 @@ func (s *OpenTracingLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutTo
 	return err
 }
 
-func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) FilterByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4220,13 +4220,13 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilte
 	}()
 
 	defer span.Finish()
-	result, resultVar1, err := s.PaymentStore.FilterByOption(option)
+	result, err := s.PaymentStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *OpenTracingLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
@@ -4247,43 +4247,7 @@ func (s *OpenTracingLayerPaymentStore) PaymentOwnedByUser(userID string, payment
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.PaymentStore.Save(tx, model)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerPaymentStore) Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.PaymentStore.Update(tx, model)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error {
+func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.UpdatePaymentsOfCheckout")
 	s.Root.Store.SetContext(newCtx)
@@ -4301,7 +4265,25 @@ func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextT
 	return err
 }
 
-func (s *OpenTracingLayerPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
+func (s *OpenTracingLayerPaymentStore) Upsert(tx boil.ContextTransactor, model model.Payment) (*model.Payment, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PaymentStore.Upsert(tx, model)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerPaymentTransactionStore) FilterByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4337,34 +4319,16 @@ func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*model.Payment
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *OpenTracingLayerPaymentTransactionStore) Upsert(tx boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentTransactionStore.Save(tx, paymentTransaction)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.PaymentTransactionStore.Update(transaction)
+	result, err := s.PaymentTransactionStore.Upsert(tx, paymentTransaction)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

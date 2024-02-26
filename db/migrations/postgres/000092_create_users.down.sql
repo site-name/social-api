@@ -10,5 +10,6 @@ DROP INDEX IF EXISTS idx_users_names_txt;
 DROP INDEX IF EXISTS idx_users_nickname_lower_textpattern;
 DROP INDEX IF EXISTS idx_users_private_metadata;
 DROP INDEX IF EXISTS idx_users_username_lower_textpattern;
+DROP INDEX IF EXISTS order_user_search_gin;
 
 DROP TABLE IF EXISTS users;

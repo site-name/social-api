@@ -8,6 +8,8 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func OrderCommonPre(order *model.Order) {
@@ -223,3 +225,29 @@ func OrderGetTotalWeight(o model.Order) measurement.Weight {
 		Unit:   measurement.WeightUnit(o.WeightUnit),
 	}
 }
+
+type OrderFilterOption struct {
+	CommonQueryOptions
+
+	// INNER JOIN user ON ... WHERE user.email % ... OR user.first_name % ... OR user.last_name % ...
+	// NOTE: this use trigram search feature
+	Customer string
+
+	Search          string
+	ChannelIdOrSlug string
+
+	PaymentChargeStatus qm.QueryMod // INNER JOIN payment ON ... WHERE payment.charge_status = ...
+	Statuses            util.AnyArray[model.OrderStatus]
+
+	AnnotateBillingAddressNames     bool
+	AnnotateLastPaymentChargeStatus bool
+}
+
+type CustomOrder struct {
+	model.Order
+	OrderBillingAddressLastName  *string                    `boil:"billing_address_last_name" json:"billing_address_last_name"`
+	OrderBillingAddressFirstName *string                    `boil:"billing_address_first_name" json:"billing_address_first_name"`
+	OrderLastPaymentChargeStatus *model.PaymentChargeStatus `boil:"last_payment_charge_status" json:"last_payment_charge_status"`
+}
+
+type CustomOrderSlice []*CustomOrder

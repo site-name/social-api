@@ -36,13 +36,13 @@ type User struct {
 	EmailVerified            bool                   `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
 	Nickname                 string                 `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
 	Roles                    string                 `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
-	Props                    model_types.JsonMap    `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
-	NotifyProps              model_types.JsonMap    `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
+	Props                    model_types.JSONString `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
+	NotifyProps              model_types.JSONString `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
 	LastPasswordUpdate       int64                  `boil:"last_password_update" json:"last_password_update" toml:"last_password_update" yaml:"last_password_update"`
 	LastPictureUpdate        int64                  `boil:"last_picture_update" json:"last_picture_update" toml:"last_picture_update" yaml:"last_picture_update"`
 	FailedAttempts           int                    `boil:"failed_attempts" json:"failed_attempts" toml:"failed_attempts" yaml:"failed_attempts"`
 	Locale                   LanguageCode           `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
-	Timezone                 model_types.JsonMap    `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
+	Timezone                 model_types.JSONString `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
 	MfaActive                bool                   `boil:"mfa_active" json:"mfa_active" toml:"mfa_active" yaml:"mfa_active"`
 	MfaSecret                string                 `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
 	CreatedAt                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -55,8 +55,8 @@ type User struct {
 	TermsOfServiceID         string                 `boil:"terms_of_service_id" json:"terms_of_service_id" toml:"terms_of_service_id" yaml:"terms_of_service_id"`
 	TermsOfServiceCreatedAt  int64                  `boil:"terms_of_service_created_at" json:"terms_of_service_created_at" toml:"terms_of_service_created_at" yaml:"terms_of_service_created_at"`
 	DisableWelcomeEmail      bool                   `boil:"disable_welcome_email" json:"disable_welcome_email" toml:"disable_welcome_email" yaml:"disable_welcome_email"`
-	Metadata                 model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                 model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -222,13 +222,13 @@ var UserWhere = struct {
 	EmailVerified            whereHelperbool
 	Nickname                 whereHelperstring
 	Roles                    whereHelperstring
-	Props                    whereHelpermodel_types_JsonMap
-	NotifyProps              whereHelpermodel_types_JsonMap
+	Props                    whereHelpermodel_types_JSONString
+	NotifyProps              whereHelpermodel_types_JSONString
 	LastPasswordUpdate       whereHelperint64
 	LastPictureUpdate        whereHelperint64
 	FailedAttempts           whereHelperint
 	Locale                   whereHelperLanguageCode
-	Timezone                 whereHelpermodel_types_JsonMap
+	Timezone                 whereHelpermodel_types_JSONString
 	MfaActive                whereHelperbool
 	MfaSecret                whereHelperstring
 	CreatedAt                whereHelperint64
@@ -241,8 +241,8 @@ var UserWhere = struct {
 	TermsOfServiceID         whereHelperstring
 	TermsOfServiceCreatedAt  whereHelperint64
 	DisableWelcomeEmail      whereHelperbool
-	Metadata                 whereHelpermodel_types_JsonMap
-	PrivateMetadata          whereHelpermodel_types_JsonMap
+	Metadata                 whereHelpermodel_types_JSONString
+	PrivateMetadata          whereHelpermodel_types_JSONString
 }{
 	ID:                       whereHelperstring{field: "\"users\".\"id\""},
 	Email:                    whereHelperstring{field: "\"users\".\"email\""},
@@ -257,13 +257,13 @@ var UserWhere = struct {
 	EmailVerified:            whereHelperbool{field: "\"users\".\"email_verified\""},
 	Nickname:                 whereHelperstring{field: "\"users\".\"nickname\""},
 	Roles:                    whereHelperstring{field: "\"users\".\"roles\""},
-	Props:                    whereHelpermodel_types_JsonMap{field: "\"users\".\"props\""},
-	NotifyProps:              whereHelpermodel_types_JsonMap{field: "\"users\".\"notify_props\""},
+	Props:                    whereHelpermodel_types_JSONString{field: "\"users\".\"props\""},
+	NotifyProps:              whereHelpermodel_types_JSONString{field: "\"users\".\"notify_props\""},
 	LastPasswordUpdate:       whereHelperint64{field: "\"users\".\"last_password_update\""},
 	LastPictureUpdate:        whereHelperint64{field: "\"users\".\"last_picture_update\""},
 	FailedAttempts:           whereHelperint{field: "\"users\".\"failed_attempts\""},
 	Locale:                   whereHelperLanguageCode{field: "\"users\".\"locale\""},
-	Timezone:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"timezone\""},
+	Timezone:                 whereHelpermodel_types_JSONString{field: "\"users\".\"timezone\""},
 	MfaActive:                whereHelperbool{field: "\"users\".\"mfa_active\""},
 	MfaSecret:                whereHelperstring{field: "\"users\".\"mfa_secret\""},
 	CreatedAt:                whereHelperint64{field: "\"users\".\"created_at\""},
@@ -276,8 +276,8 @@ var UserWhere = struct {
 	TermsOfServiceID:         whereHelperstring{field: "\"users\".\"terms_of_service_id\""},
 	TermsOfServiceCreatedAt:  whereHelperint64{field: "\"users\".\"terms_of_service_created_at\""},
 	DisableWelcomeEmail:      whereHelperbool{field: "\"users\".\"disable_welcome_email\""},
-	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"metadata\""},
-	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"users\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JSONString{field: "\"users\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JSONString{field: "\"users\".\"private_metadata\""},
 }
 
 // UserRels is where relationship names are stored.

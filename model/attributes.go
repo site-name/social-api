@@ -37,8 +37,8 @@ type Attribute struct {
 	FilterableInDashboard    bool                    `boil:"filterable_in_dashboard" json:"filterable_in_dashboard" toml:"filterable_in_dashboard" yaml:"filterable_in_dashboard"`
 	StorefrontSearchPosition int                     `boil:"storefront_search_position" json:"storefront_search_position" toml:"storefront_search_position" yaml:"storefront_search_position"`
 	AvailableInGrid          bool                    `boil:"available_in_grid" json:"available_in_grid" toml:"available_in_grid" yaml:"available_in_grid"`
-	Metadata                 model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                 model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *attributeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -239,29 +239,29 @@ func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
-type whereHelpermodel_types_JsonMap struct{ field string }
+type whereHelpermodel_types_JSONString struct{ field string }
 
-func (w whereHelpermodel_types_JsonMap) EQ(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) EQ(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpermodel_types_JsonMap) NEQ(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) NEQ(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpermodel_types_JsonMap) LT(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) LT(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpermodel_types_JsonMap) LTE(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) LTE(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpermodel_types_JsonMap) GT(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) GT(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpermodel_types_JsonMap) GTE(x model_types.JsonMap) qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) GTE(x model_types.JSONString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpermodel_types_JsonMap) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpermodel_types_JsonMap) IsNotNull() qm.QueryMod {
+func (w whereHelpermodel_types_JSONString) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_JSONString) IsNotNull() qm.QueryMod {
 	return qmhelper.WhereIsNotNull(w.field)
 }
 
@@ -280,8 +280,8 @@ var AttributeWhere = struct {
 	FilterableInDashboard    whereHelperbool
 	StorefrontSearchPosition whereHelperint
 	AvailableInGrid          whereHelperbool
-	Metadata                 whereHelpermodel_types_JsonMap
-	PrivateMetadata          whereHelpermodel_types_JsonMap
+	Metadata                 whereHelpermodel_types_JSONString
+	PrivateMetadata          whereHelpermodel_types_JSONString
 }{
 	ID:                       whereHelperstring{field: "\"attributes\".\"id\""},
 	Slug:                     whereHelperstring{field: "\"attributes\".\"slug\""},
@@ -297,8 +297,8 @@ var AttributeWhere = struct {
 	FilterableInDashboard:    whereHelperbool{field: "\"attributes\".\"filterable_in_dashboard\""},
 	StorefrontSearchPosition: whereHelperint{field: "\"attributes\".\"storefront_search_position\""},
 	AvailableInGrid:          whereHelperbool{field: "\"attributes\".\"available_in_grid\""},
-	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"attributes\".\"metadata\""},
-	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"attributes\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JSONString{field: "\"attributes\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JSONString{field: "\"attributes\".\"private_metadata\""},
 }
 
 // AttributeRels is where relationship names are stored.

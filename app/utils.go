@@ -80,8 +80,8 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 	var fromCurrency string
 
 	switch t := price.(type) {
-	case goprices.Currencyable:
-		fromCurrency = t.MyCurrency()
+	case goprices.Currencier:
+		fromCurrency = t.GetCurrency()
 
 	default:
 		return nil, model_helper.NewAppError("ToLocalCurrency", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
@@ -110,9 +110,9 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model_helper.AppError) {
 	var appErr *model_helper.AppError
 
-	impl, ok := base.(goprices.Currencyable)
+	impl, ok := base.(goprices.Currencier)
 	if ok {
-		if !strings.EqualFold(impl.MyCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
+		if !strings.EqualFold(impl.GetCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
 			!strings.EqualFold(toCurrency, model_helper.DEFAULT_CURRENCY.String()) {
 			base, appErr = a.ExchangeCurrency(base, model_helper.DEFAULT_CURRENCY.String(), conversionRate)
 			if appErr != nil {
@@ -124,7 +124,7 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 	}
 
 	if conversionRate == nil {
-		conversionRate, appErr = a.GetConversionRate(impl.MyCurrency(), toCurrency)
+		conversionRate, appErr = a.GetConversionRate(impl.GetCurrency(), toCurrency)
 	}
 	if appErr != nil {
 		return nil, appErr

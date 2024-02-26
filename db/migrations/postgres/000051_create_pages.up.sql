@@ -25,3 +25,5 @@ CREATE INDEX idx_pages_slug ON pages USING btree (slug);
 CREATE INDEX idx_pages_title ON pages USING btree (title);
 
 CREATE INDEX idx_pages_title_lower_textpattern ON pages USING btree (lower((title)::text) text_pattern_ops);
+
+CREATE INDEX page_search_gin ON pages USING gin ("title" gin_trgm_ops, "slug" gin_trgm_ops);

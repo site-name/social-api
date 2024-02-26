@@ -19,7 +19,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// CheckVariantInStock
 func (a *ServiceCheckout) CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model_helper.AppError) {
 	// quantity param is default to 1
 
@@ -1055,7 +1054,7 @@ func (s *ServiceCheckout) UpdateCheckoutShippingMethodIfValid(checkoutInfo *mode
 	return nil
 }
 
-func (s *ServiceCheckout) CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model_helper.AppError {
+func (s *ServiceCheckout) CheckLinesQuantity(variants model.ProductVariantSlice, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model_helper.CheckoutLineInfos, replace bool) *model_helper.AppError {
 	for _, quantity := range quantities {
 		if (!allowZeroQuantity && quantity <= 0) || (allowZeroQuantity && quantity < 0) {
 			return model_helper.NewAppError("CheckLinesQuantity", "app.checkout.zero_quantity_not_allowed.app_error", nil, "quantity must be heigher than zero", http.StatusNotAcceptable)

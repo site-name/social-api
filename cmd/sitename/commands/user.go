@@ -403,7 +403,7 @@ func changeUserActiveStatus(a *app.App, user *model.User, userArg string, activa
 	if model_helper.UserIsSSO(*user) {
 		fmt.Println("You must also deactivate this user in the SSO provider or they will be reactivated on next login or sync.")
 	}
-	updatedUser, err := a.Srv().AccountService().UpdateActive(&request.Context{}, user, activate)
+	updatedUser, err := a.Srv().AccountService().UpdateActive(&request.Context{}, *user, activate)
 	if err != nil {
 		return fmt.Errorf("Unable to change activation status of user: %v", userArg)
 	}
@@ -626,7 +626,7 @@ func deleteUserCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.Srv().AccountService().PermanentDeleteUser(&request.Context{}, user); err != nil {
+		if err := a.Srv().AccountService().PermanentDeleteUser(&request.Context{}, *user); err != nil {
 			return err
 		}
 
@@ -694,7 +694,7 @@ func updateUserEmailCmdF(command *cobra.Command, args []string) error {
 	}
 
 	user.Email = newEmail
-	_, errUpdate := a.Srv().AccountService().UpdateUser(user, true)
+	_, errUpdate := a.Srv().AccountService().UpdateUser(*user, true)
 	if errUpdate != nil {
 		return errors.New(errUpdate.Message)
 	}

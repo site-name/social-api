@@ -29,7 +29,7 @@ type InvoiceEvent struct {
 	InvoiceID  model_types.NullString `boil:"invoice_id" json:"invoice_id,omitempty" toml:"invoice_id" yaml:"invoice_id,omitempty"`
 	OrderID    model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Parameters model_types.JsonMap    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	Parameters model_types.JSONString `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 
 	R *invoiceEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L invoiceEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -115,7 +115,7 @@ var InvoiceEventWhere = struct {
 	InvoiceID  whereHelpermodel_types_NullString
 	OrderID    whereHelpermodel_types_NullString
 	UserID     whereHelpermodel_types_NullString
-	Parameters whereHelpermodel_types_JsonMap
+	Parameters whereHelpermodel_types_JSONString
 }{
 	ID:         whereHelperstring{field: "\"invoice_events\".\"id\""},
 	CreatedAt:  whereHelperint64{field: "\"invoice_events\".\"created_at\""},
@@ -123,7 +123,7 @@ var InvoiceEventWhere = struct {
 	InvoiceID:  whereHelpermodel_types_NullString{field: "\"invoice_events\".\"invoice_id\""},
 	OrderID:    whereHelpermodel_types_NullString{field: "\"invoice_events\".\"order_id\""},
 	UserID:     whereHelpermodel_types_NullString{field: "\"invoice_events\".\"user_id\""},
-	Parameters: whereHelpermodel_types_JsonMap{field: "\"invoice_events\".\"parameters\""},
+	Parameters: whereHelpermodel_types_JSONString{field: "\"invoice_events\".\"parameters\""},
 }
 
 // InvoiceEventRels is where relationship names are stored.

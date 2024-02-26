@@ -44,6 +44,9 @@ ALTER TABLE ONLY users
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_username_key UNIQUE (username);
 
+-- this index is used for searching users by email, first_name, and last_name using trigram
+CREATE INDEX order_user_search_gin ON users USING gin ("email" gin_trgm_ops, "first_name" gin_trgm_ops, "last_name" gin_trgm_ops);
+
 CREATE INDEX idx_users_all_no_full_name_txt ON users USING gin (to_tsvector('english'::regconfig, (((((username)::text || ' '::text) || (nickname)::text) || ' '::text) || (email)::text)));
 
 CREATE INDEX idx_users_all_txt ON users USING gin (to_tsvector('english'::regconfig, (((((((((username)::text || ' '::text) || (first_name)::text) || ' '::text) || (last_name)::text) || ' '::text) || (nickname)::text) || ' '::text) || (email)::text)));

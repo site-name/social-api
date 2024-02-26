@@ -125,7 +125,7 @@ func (fs *SqlFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.FulfillmentSlice, error) {
 	runner := fs.GetMaster()
 	if option.Transaction != nil {
 		runner = option.Transaction

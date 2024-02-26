@@ -9,29 +9,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // JSONString implements JSONString custom graphql scalar type
-type JSONString map[string]any
+type JSONString = model_types.JSONString
 
-func (JSONString) ImplementsGraphQLType(name string) bool {
-	return name == "JSONString"
-}
+type UUIDs []UUID
 
-func (j *JSONString) UnmarshalGraphQL(input any) error {
-	switch t := input.(type) {
-	case model.StringInterface:
-		*j = JSONString(t)
-	case map[string]any:
-		*j = t
-
-	default:
-		return fmt.Errorf("wrong type: %T", t)
-	}
-
-	return nil
+func (us *UUIDs) ToStrings() []string {
+	return *(*[]string)(unsafe.Pointer(us))
 }
 
 type UUID string

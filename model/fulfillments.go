@@ -31,8 +31,8 @@ type Fulfillment struct {
 	CreatedAt            int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	ShippingRefundAmount model_types.NullDecimal `boil:"shipping_refund_amount" json:"shipping_refund_amount,omitempty" toml:"shipping_refund_amount" yaml:"shipping_refund_amount,omitempty"`
 	TotalRefundAmount    model_types.NullDecimal `boil:"total_refund_amount" json:"total_refund_amount,omitempty" toml:"total_refund_amount" yaml:"total_refund_amount,omitempty"`
-	Metadata             model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata             model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *fulfillmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fulfillmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -160,8 +160,8 @@ var FulfillmentWhere = struct {
 	CreatedAt            whereHelperint64
 	ShippingRefundAmount whereHelpermodel_types_NullDecimal
 	TotalRefundAmount    whereHelpermodel_types_NullDecimal
-	Metadata             whereHelpermodel_types_JsonMap
-	PrivateMetadata      whereHelpermodel_types_JsonMap
+	Metadata             whereHelpermodel_types_JSONString
+	PrivateMetadata      whereHelpermodel_types_JSONString
 }{
 	ID:                   whereHelperstring{field: "\"fulfillments\".\"id\""},
 	FulfillmentOrder:     whereHelperint{field: "\"fulfillments\".\"fulfillment_order\""},
@@ -171,8 +171,8 @@ var FulfillmentWhere = struct {
 	CreatedAt:            whereHelperint64{field: "\"fulfillments\".\"created_at\""},
 	ShippingRefundAmount: whereHelpermodel_types_NullDecimal{field: "\"fulfillments\".\"shipping_refund_amount\""},
 	TotalRefundAmount:    whereHelpermodel_types_NullDecimal{field: "\"fulfillments\".\"total_refund_amount\""},
-	Metadata:             whereHelpermodel_types_JsonMap{field: "\"fulfillments\".\"metadata\""},
-	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"fulfillments\".\"private_metadata\""},
+	Metadata:             whereHelpermodel_types_JSONString{field: "\"fulfillments\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JSONString{field: "\"fulfillments\".\"private_metadata\""},
 }
 
 // FulfillmentRels is where relationship names are stored.

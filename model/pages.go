@@ -18,24 +18,23 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Page is an object representing the database table.
 type Page struct {
-	ID              string               `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Title           string               `boil:"title" json:"title" toml:"title" yaml:"title"`
-	Slug            string               `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	PageTypeID      string               `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
-	Content         types.JSON           `boil:"content" json:"content" toml:"content" yaml:"content"`
-	CreatedAt       int64                `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata        model_types.JsonMap  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata model_types.JsonMap  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	PublicationDate model_types.NullTime `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
-	IsPublished     bool                 `boil:"is_published" json:"is_published" toml:"is_published" yaml:"is_published"`
-	SeoTitle        string               `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
-	SeoDescription  string               `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Title           string                 `boil:"title" json:"title" toml:"title" yaml:"title"`
+	Slug            string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	PageTypeID      string                 `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
+	Content         model_types.JSONString `boil:"content" json:"content" toml:"content" yaml:"content"`
+	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	PublicationDate model_types.NullTime   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished     bool                   `boil:"is_published" json:"is_published" toml:"is_published" yaml:"is_published"`
+	SeoTitle        string                 `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription  string                 `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
 	R *pageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -99,36 +98,15 @@ var PageTableColumns = struct {
 
 // Generated where
 
-type whereHelpertypes_JSON struct{ field string }
-
-func (w whereHelpertypes_JSON) EQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertypes_JSON) NEQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertypes_JSON) LT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertypes_JSON) LTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertypes_JSON) GT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var PageWhere = struct {
 	ID              whereHelperstring
 	Title           whereHelperstring
 	Slug            whereHelperstring
 	PageTypeID      whereHelperstring
-	Content         whereHelpertypes_JSON
+	Content         whereHelpermodel_types_JSONString
 	CreatedAt       whereHelperint64
-	Metadata        whereHelpermodel_types_JsonMap
-	PrivateMetadata whereHelpermodel_types_JsonMap
+	Metadata        whereHelpermodel_types_JSONString
+	PrivateMetadata whereHelpermodel_types_JSONString
 	PublicationDate whereHelpermodel_types_NullTime
 	IsPublished     whereHelperbool
 	SeoTitle        whereHelperstring
@@ -138,10 +116,10 @@ var PageWhere = struct {
 	Title:           whereHelperstring{field: "\"pages\".\"title\""},
 	Slug:            whereHelperstring{field: "\"pages\".\"slug\""},
 	PageTypeID:      whereHelperstring{field: "\"pages\".\"page_type_id\""},
-	Content:         whereHelpertypes_JSON{field: "\"pages\".\"content\""},
+	Content:         whereHelpermodel_types_JSONString{field: "\"pages\".\"content\""},
 	CreatedAt:       whereHelperint64{field: "\"pages\".\"created_at\""},
-	Metadata:        whereHelpermodel_types_JsonMap{field: "\"pages\".\"metadata\""},
-	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"pages\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JSONString{field: "\"pages\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JSONString{field: "\"pages\".\"private_metadata\""},
 	PublicationDate: whereHelpermodel_types_NullTime{field: "\"pages\".\"publication_date\""},
 	IsPublished:     whereHelperbool{field: "\"pages\".\"is_published\""},
 	SeoTitle:        whereHelperstring{field: "\"pages\".\"seo_title\""},

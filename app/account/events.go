@@ -14,7 +14,7 @@ func (a *ServiceAccount) CommonCustomerCreateEvent(
 	userID *string,
 	orderID *string,
 	eventType model.CustomerEventType,
-	params model_types.JsonMap,
+	params model_types.JSONString,
 ) (*model.CustomerEvent, *model_helper.AppError) {
 	event := model.CustomerEvent{
 		Type:       eventType,

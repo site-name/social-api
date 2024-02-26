@@ -34,8 +34,8 @@ type ProductVariant struct {
 	PreorderEndDate         model_types.NullInt64   `boil:"preorder_end_date" json:"preorder_end_date,omitempty" toml:"preorder_end_date" yaml:"preorder_end_date,omitempty"`
 	PreorderGlobalThreshold model_types.NullInt     `boil:"preorder_global_threshold" json:"preorder_global_threshold,omitempty" toml:"preorder_global_threshold" yaml:"preorder_global_threshold,omitempty"`
 	SortOrder               model_types.NullInt     `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
-	Metadata                model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata         model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata         model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *productVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -143,8 +143,8 @@ var ProductVariantWhere = struct {
 	PreorderEndDate         whereHelpermodel_types_NullInt64
 	PreorderGlobalThreshold whereHelpermodel_types_NullInt
 	SortOrder               whereHelpermodel_types_NullInt
-	Metadata                whereHelpermodel_types_JsonMap
-	PrivateMetadata         whereHelpermodel_types_JsonMap
+	Metadata                whereHelpermodel_types_JSONString
+	PrivateMetadata         whereHelpermodel_types_JSONString
 }{
 	ID:                      whereHelperstring{field: "\"product_variants\".\"id\""},
 	Name:                    whereHelperstring{field: "\"product_variants\".\"name\""},
@@ -157,8 +157,8 @@ var ProductVariantWhere = struct {
 	PreorderEndDate:         whereHelpermodel_types_NullInt64{field: "\"product_variants\".\"preorder_end_date\""},
 	PreorderGlobalThreshold: whereHelpermodel_types_NullInt{field: "\"product_variants\".\"preorder_global_threshold\""},
 	SortOrder:               whereHelpermodel_types_NullInt{field: "\"product_variants\".\"sort_order\""},
-	Metadata:                whereHelpermodel_types_JsonMap{field: "\"product_variants\".\"metadata\""},
-	PrivateMetadata:         whereHelpermodel_types_JsonMap{field: "\"product_variants\".\"private_metadata\""},
+	Metadata:                whereHelpermodel_types_JSONString{field: "\"product_variants\".\"metadata\""},
+	PrivateMetadata:         whereHelpermodel_types_JSONString{field: "\"product_variants\".\"private_metadata\""},
 }
 
 // ProductVariantRels is where relationship names are stored.

@@ -27,7 +27,7 @@ func (or Or) Apply(q *queries.Query) {
 	}
 	clause, args, err := squirrel.Or(or).ToSql()
 	if err != nil {
-		slog.Error("CustomOr ToSql", slog.Err(err))
+		slog.Error("Custom Or ToSql", slog.Err(err))
 		return
 	}
 	queries.AppendWhere(q, clause, args...)
@@ -43,7 +43,7 @@ func (and And) Apply(q *queries.Query) {
 	}
 	clause, args, err := squirrel.And(and).ToSql()
 	if err != nil {
-		slog.Error("CustomAnd ToSql", slog.Err(err))
+		slog.Error("Custom And ToSql", slog.Err(err))
 		return
 	}
 	queries.AppendWhere(q, clause, args...)
@@ -51,8 +51,12 @@ func (and And) Apply(q *queries.Query) {
 
 // JsonbContains buils a query mod that checks if a jsonb field contains a key-value pair
 func JsonbContains(field string, key string, value any) qm.QueryMod {
-	template := "{%q:%q}"
-	if _, ok := any(value).(string); !ok {
+	var template string
+
+	switch value.(type) {
+	case string:
+		template = "{%q:%q}"
+	default:
 		template = "{%q:%v}"
 	}
 

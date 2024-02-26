@@ -18,9 +18,9 @@ const maxPropSizeBytes = 1024 * 1024
 var NullBytes = []byte("null")
 var ErrMaxPropSizeExceeded = fmt.Errorf("max prop size of %d exceeded", maxPropSizeBytes)
 
-type JsonMap map[string]any
+type JSONString map[string]any
 
-func (j *JsonMap) Scan(value any) error {
+func (j *JSONString) Scan(value any) error {
 	if value == nil {
 		return nil
 	}
@@ -35,7 +35,7 @@ func (j *JsonMap) Scan(value any) error {
 	}
 }
 
-func (j JsonMap) Value() (driver.Value, error) {
+func (j JSONString) Value() (driver.Value, error) {
 	data, err := json.Marshal(j)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (j JsonMap) Value() (driver.Value, error) {
 	return string(data), err
 }
 
-func (j JsonMap) Get(key string, defaultValue ...any) any {
+func (j JSONString) Get(key string, defaultValue ...any) any {
 	value, exist := j[key]
 	if exist {
 		return value
@@ -55,6 +55,24 @@ func (j JsonMap) Get(key string, defaultValue ...any) any {
 
 	if len(defaultValue) > 0 {
 		return defaultValue[0]
+	}
+
+	return nil
+}
+
+func (JSONString) ImplementsGraphQLType(name string) bool {
+	return name == "JSONString"
+}
+
+func (j *JSONString) UnmarshalGraphQL(input any) error {
+	switch t := input.(type) {
+	case JSONString:
+		*j = t
+	case map[string]any:
+		*j = t
+
+	default:
+		return fmt.Errorf("wrong type: %T", t)
 	}
 
 	return nil

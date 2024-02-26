@@ -26,7 +26,7 @@ type GiftcardEvent struct {
 	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Date       int64                  `boil:"date" json:"date" toml:"date" yaml:"date"`
 	Type       GiftcardEventType      `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Parameters model_types.JsonMap    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	Parameters model_types.JSONString `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	GiftcardID string                 `boil:"giftcard_id" json:"giftcard_id" toml:"giftcard_id" yaml:"giftcard_id"`
 
@@ -107,14 +107,14 @@ var GiftcardEventWhere = struct {
 	ID         whereHelperstring
 	Date       whereHelperint64
 	Type       whereHelperGiftcardEventType
-	Parameters whereHelpermodel_types_JsonMap
+	Parameters whereHelpermodel_types_JSONString
 	UserID     whereHelpermodel_types_NullString
 	GiftcardID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"giftcard_events\".\"id\""},
 	Date:       whereHelperint64{field: "\"giftcard_events\".\"date\""},
 	Type:       whereHelperGiftcardEventType{field: "\"giftcard_events\".\"type\""},
-	Parameters: whereHelpermodel_types_JsonMap{field: "\"giftcard_events\".\"parameters\""},
+	Parameters: whereHelpermodel_types_JSONString{field: "\"giftcard_events\".\"parameters\""},
 	UserID:     whereHelpermodel_types_NullString{field: "\"giftcard_events\".\"user_id\""},
 	GiftcardID: whereHelperstring{field: "\"giftcard_events\".\"giftcard_id\""},
 }

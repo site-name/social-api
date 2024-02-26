@@ -9,8 +9,10 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlOrderStore struct {
@@ -27,6 +29,10 @@ func (os *SqlOrderStore) BulkUpsert(transaction boil.ContextTransactor, orders m
 	}
 
 	for _, order := range orders {
+		if order == nil {
+			continue
+		}
+
 		isSaving := order.ID == ""
 		if isSaving {
 			model_helper.OrderPreSave(order)
@@ -34,31 +40,31 @@ func (os *SqlOrderStore) BulkUpsert(transaction boil.ContextTransactor, orders m
 			model_helper.OrderCommonPre(order)
 		}
 
-	}
+		if err := model_helper.OrderIsValid(*order); err != nil {
+			return nil, err
+		}
 
-	for _, ord := range orders {
 		var err error
-		if ord.Id == "" {
-			err = transaction.Create(ord).Error
+		if isSaving {
+			err = order.Insert(transaction, boil.Infer())
 		} else {
-			// prevent update non-editable fields
-			ord.CreateAt = 0
-			ord.TrackingClientID = ""
-			ord.BillingAddressID = nil
-			ord.ShippingAddressID = nil
-			ord.CollectionPointName = nil
-			ord.ShippingMethodName = nil
-			ord.ShippingPriceNetAmount = nil
-			ord.ShippingPriceGrossAmount = nil
-
-			err = transaction.Model(ord).Updates(ord).Error
+			_, err = order.Update(transaction, boil.Blacklist(
+				model.OrderColumns.CreatedAt,
+				model.OrderColumns.TrackingClientID,
+				model.OrderColumns.BillingAddressID,
+				model.OrderColumns.ShippingAddressID,
+				model.OrderColumns.CollectionPointName,
+				model.OrderColumns.ShippingMethodName,
+				model.OrderColumns.ShippingPriceNetAmount,
+				model.OrderColumns.ShippingPriceGrossAmount,
+			))
 		}
 
 		if err != nil {
-			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
-				return nil, store.NewErrInvalidInput(model.OrderTableName, "Token", ord.Token)
+			if os.IsUniqueConstraintError(err, []string{model.OrderColumns.Token, "orders_token_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.Orders, model.OrderColumns.Token, order.Token)
 			}
-			return nil, errors.Wrap(err, "failed to upsert order")
+			return nil, err
 		}
 	}
 
@@ -75,6 +81,189 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	}
 
 	return order, nil
+}
+
+func (os *SqlOrderStore) commonQueryBuilder(option model_helper.OrderFilterOption) []qm.QueryMod {
+	conds := option.Conditions
+
+	if len(option.Customer) > 0 {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Users, model.UserTableColumns.ID, model.OrderTableColumns.UserID)),
+			model_helper.Or{
+				squirrel.Expr(fmt.Sprintf("%s %% ?", model.OrderTableColumns.UserEmail), option.Customer),
+				squirrel.Expr(fmt.Sprintf("%s %% ?", model.UserTableColumns.Email), option.Customer),
+				squirrel.Expr(fmt.Sprintf("%s %% ?", model.UserTableColumns.FirstName), option.Customer),
+				squirrel.Expr(fmt.Sprintf("%s %% ?", model.UserTableColumns.LastName), option.Customer),
+			},
+		)
+	}
+
+	if len(option.Search) > 0 {
+		conds = append(
+			conds,
+			model_helper.Or{
+				squirrel.Expr(fmt.Sprintf("%s %% ?", model.OrderTableColumns.UserEmail), option.Search),
+				squirrel.Expr(
+					fmt.Sprintf(
+						`EXISTS (
+							SELECT (1) AS "a"
+							FROM %s
+							WHERE (
+								(
+									%s %% ?
+									OR %s %% ?
+									OR %s %% ?
+								)
+								AND %s = %s
+							)
+							LIMIT 1
+						)`,
+						model.TableNames.Users,
+						model.UserTableColumns.Email,
+						model.UserTableColumns.FirstName,
+						model.UserTableColumns.LastName,
+						model.UserTableColumns.ID,
+						model.OrderTableColumns.UserID,
+					),
+					option.Search,
+					option.Search,
+					option.Search,
+				),
+				squirrel.Expr(
+					fmt.Sprintf(
+						`EXISTS (
+							SELECT (1) AS "a"
+							FROM %s
+							WHERE (
+								%s = ?
+								AND %s = %s
+							)
+							LIMIT 1
+						)`,
+						model.TableNames.Payments,
+						model.PaymentTableColumns.PSPReference,
+						model.PaymentTableColumns.OrderID,
+						model.OrderTableColumns.ID,
+					),
+					option.Search,
+				),
+				squirrel.Expr(
+					fmt.Sprintf(
+						`EXISTS (
+							SELECT (1) AS "a"
+							FROM %s
+							WHERE (
+								(
+									%s %% ?
+									OR %s %% ?
+								)
+								AND %s = %s
+							)
+							LIMIT 1
+						)`,
+						model.TableNames.OrderDiscounts,
+						model.OrderDiscountTableColumns.Name,
+						model.OrderDiscountTableColumns.TranslatedName,
+						model.OrderDiscountTableColumns.OrderID,
+						model.OrderTableColumns.ID,
+					),
+					option.Search,
+					option.Search,
+				),
+				squirrel.Expr(
+					fmt.Sprintf(
+						`EXISTS (
+							SELECT (1) AS "a"
+							FROM %s
+							WHERE (
+								%s = ?
+								AND %s = %s
+							)
+							LIMIT 1
+						)`,
+						model.TableNames.OrderLines,
+						model.OrderLineTableColumns.ProductSku,
+						model.OrderLineTableColumns.OrderID,
+						model.OrderTableColumns.ID,
+					),
+					option.Search,
+				),
+			},
+		)
+	}
+
+	if option.PaymentChargeStatus != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Payments, model.PaymentTableColumns.OrderID, model.OrderTableColumns.ID)),
+			model.PaymentWhere.IsActive.EQ(model_types.NewNullBool(true)),
+			option.PaymentChargeStatus,
+		)
+	}
+
+	if option.Statuses.Len() > 0 {
+		statusOrConditions := model_helper.Or{
+			squirrel.Eq{model.OrderTableColumns.Status: option.Statuses},
+		}
+
+		if option.Statuses.Contains(model.OrderStatusCanceled) {
+			statusOrConditions = append(
+				statusOrConditions,
+
+				qm.LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Payments, model.PaymentTableColumns.OrderID, model.OrderTableColumns.ID)),
+				qm.Select(fmt.Sprintf("SUM ( %s ) AS AmountPaid", model.PaymentTableColumns.CapturedAmount)),
+				qm.GroupBy(model.OrderTableColumns.ID),
+				model_helper.And{
+					model.OrderWhere.Status.IN([]model.OrderStatus{model.ORDER_STATUS_UNFULFILLED, model.ORDER_STATUS_PARTIALLY_FULFILLED}),
+					squirrel.Expr(fmt.Sprintf("%s <= AmountPaid", model.OrderTableColumns.TotalGrossAmount)),
+					squirrel.Expr(
+						fmt.Sprintf(
+							`EXISTS (
+								SELECT (1) AS "a"
+								FROM %s
+								WHERE
+									%s
+									AND %s
+								LIMIT 1
+							)`,
+							model.TableNames.Payments,
+							model.PaymentWhere.IsActive,
+							model.PaymentWhere.OrderID.EQ(model.OrderTableColumns.ID),
+						),
+					),
+				},
+			)
+		}
+
+		// if option.Statuses.Contains(model.OrderStatusFilterReadyToCapture) {
+		// 	conds = append(
+		// 		conds,
+		// 		model_helper.And{
+		// 			model.OrderWhere.Status.NOT_IN([]model.OrderStatus{model.ORDER_STATUS_DRAFT, model.ORDER_STATUS_CANCELED}),
+		// 			squirrel.Expr(
+		// 				fmt.Sprintf(
+		// 					`EXISTS (
+		// 						SELECT (1) AS "a"
+		// 						FROM %s
+		// 						WHERE
+		// 							%s
+		// 							AND %s = ?
+		// 							AND %s
+		// 						LIMIT 1
+		// 					)`,
+		// 					model.TableNames.Payments,
+		// 					model.PaymentWhere.IsActive,
+		// 					model.PaymentWhere.ChargeStatus.EQ(model.PAYMENT_CHARGE_STATUS_NOT_CHARGED),
+		// 					model.PaymentWhere.OrderID.EQ(model.OrderTableColumns.ID),
+		// 				),
+		// 				model.PAYMENT_CHARGE_STATUS_NOT_CHARGED,
+		// 			),
+		// 		},
+		// 	)
+	}
+
+	return conds
 }
 
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, model.OrderSlice, error) {

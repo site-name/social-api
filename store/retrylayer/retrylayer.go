@@ -4565,21 +4565,21 @@ func (s *RetryLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 
 }
 
-func (s *RetryLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
+func (s *RetryLayerPaymentStore) FilterByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.PaymentStore.FilterByOption(option)
+		result, err := s.PaymentStore.FilterByOption(option)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 
@@ -4605,47 +4605,7 @@ func (s *RetryLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 
 }
 
-func (s *RetryLayerPaymentStore) Save(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.Save(tx, model)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentStore) Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.Update(tx, model)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) error {
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) error {
 
 	tries := 0
 	for {
@@ -4665,7 +4625,27 @@ func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(tx boil.ContextTransac
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
+func (s *RetryLayerPaymentStore) Upsert(tx boil.ContextTransactor, model model.Payment) (*model.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.Upsert(tx, model)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) FilterByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -4705,31 +4685,11 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(tx boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Upsert(tx boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.Save(tx, paymentTransaction)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentTransactionStore.Update(transaction)
+		result, err := s.PaymentTransactionStore.Upsert(tx, paymentTransaction)
 		if err == nil {
 			return result, nil
 		}

@@ -31,7 +31,7 @@ type ProductMedium struct {
 	Alt         string                 `boil:"alt" json:"alt" toml:"alt" yaml:"alt"`
 	Type        string                 `boil:"type" json:"type" toml:"type" yaml:"type"`
 	ExternalURL model_types.NullString `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
-	OembedData  model_types.JsonMap    `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
+	OembedData  model_types.JSONString `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
 	SortOrder   model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *productMediumR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -97,7 +97,7 @@ var ProductMediumWhere = struct {
 	Alt         whereHelperstring
 	Type        whereHelperstring
 	ExternalURL whereHelpermodel_types_NullString
-	OembedData  whereHelpermodel_types_JsonMap
+	OembedData  whereHelpermodel_types_JSONString
 	SortOrder   whereHelpermodel_types_NullInt
 }{
 	ID:          whereHelperstring{field: "\"product_media\".\"id\""},
@@ -108,7 +108,7 @@ var ProductMediumWhere = struct {
 	Alt:         whereHelperstring{field: "\"product_media\".\"alt\""},
 	Type:        whereHelperstring{field: "\"product_media\".\"type\""},
 	ExternalURL: whereHelpermodel_types_NullString{field: "\"product_media\".\"external_url\""},
-	OembedData:  whereHelpermodel_types_JsonMap{field: "\"product_media\".\"oembed_data\""},
+	OembedData:  whereHelpermodel_types_JSONString{field: "\"product_media\".\"oembed_data\""},
 	SortOrder:   whereHelpermodel_types_NullInt{field: "\"product_media\".\"sort_order\""},
 }
 

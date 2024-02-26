@@ -23,16 +23,16 @@ import (
 
 // DigitalContent is an object representing the database table.
 type DigitalContent struct {
-	ID                   string               `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UseDefaultSettings   model_types.NullBool `boil:"use_default_settings" json:"use_default_settings,omitempty" toml:"use_default_settings" yaml:"use_default_settings,omitempty"`
-	AutomaticFulfillment model_types.NullBool `boil:"automatic_fulfillment" json:"automatic_fulfillment,omitempty" toml:"automatic_fulfillment" yaml:"automatic_fulfillment,omitempty"`
-	ContentType          ContentType          `boil:"content_type" json:"content_type" toml:"content_type" yaml:"content_type"`
-	ProductVariantID     string               `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
-	ContentFile          string               `boil:"content_file" json:"content_file" toml:"content_file" yaml:"content_file"`
-	MaxDownloads         model_types.NullInt  `boil:"max_downloads" json:"max_downloads,omitempty" toml:"max_downloads" yaml:"max_downloads,omitempty"`
-	URLValidDays         model_types.NullInt  `boil:"url_valid_days" json:"url_valid_days,omitempty" toml:"url_valid_days" yaml:"url_valid_days,omitempty"`
-	Metadata             model_types.JsonMap  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      model_types.JsonMap  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                   string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UseDefaultSettings   model_types.NullBool   `boil:"use_default_settings" json:"use_default_settings,omitempty" toml:"use_default_settings" yaml:"use_default_settings,omitempty"`
+	AutomaticFulfillment model_types.NullBool   `boil:"automatic_fulfillment" json:"automatic_fulfillment,omitempty" toml:"automatic_fulfillment" yaml:"automatic_fulfillment,omitempty"`
+	ContentType          ContentType            `boil:"content_type" json:"content_type" toml:"content_type" yaml:"content_type"`
+	ProductVariantID     string                 `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	ContentFile          string                 `boil:"content_file" json:"content_file" toml:"content_file" yaml:"content_file"`
+	MaxDownloads         model_types.NullInt    `boil:"max_downloads" json:"max_downloads,omitempty" toml:"max_downloads" yaml:"max_downloads,omitempty"`
+	URLValidDays         model_types.NullInt    `boil:"url_valid_days" json:"url_valid_days,omitempty" toml:"url_valid_days" yaml:"url_valid_days,omitempty"`
+	Metadata             model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *digitalContentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L digitalContentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -132,8 +132,8 @@ var DigitalContentWhere = struct {
 	ContentFile          whereHelperstring
 	MaxDownloads         whereHelpermodel_types_NullInt
 	URLValidDays         whereHelpermodel_types_NullInt
-	Metadata             whereHelpermodel_types_JsonMap
-	PrivateMetadata      whereHelpermodel_types_JsonMap
+	Metadata             whereHelpermodel_types_JSONString
+	PrivateMetadata      whereHelpermodel_types_JSONString
 }{
 	ID:                   whereHelperstring{field: "\"digital_contents\".\"id\""},
 	UseDefaultSettings:   whereHelpermodel_types_NullBool{field: "\"digital_contents\".\"use_default_settings\""},
@@ -143,8 +143,8 @@ var DigitalContentWhere = struct {
 	ContentFile:          whereHelperstring{field: "\"digital_contents\".\"content_file\""},
 	MaxDownloads:         whereHelpermodel_types_NullInt{field: "\"digital_contents\".\"max_downloads\""},
 	URLValidDays:         whereHelpermodel_types_NullInt{field: "\"digital_contents\".\"url_valid_days\""},
-	Metadata:             whereHelpermodel_types_JsonMap{field: "\"digital_contents\".\"metadata\""},
-	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"digital_contents\".\"private_metadata\""},
+	Metadata:             whereHelpermodel_types_JSONString{field: "\"digital_contents\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JSONString{field: "\"digital_contents\".\"private_metadata\""},
 }
 
 // DigitalContentRels is where relationship names are stored.

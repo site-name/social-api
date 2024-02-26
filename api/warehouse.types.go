@@ -30,22 +30,22 @@ type Warehouse struct {
 	// Address               *Address                           `json:"address"`
 }
 
-func SystemWarehouseToGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
+func SystemWarehouseToGraphqlWarehouse(wh *model.Warehouse) *Warehouse {
 	if wh == nil {
 		return nil
 	}
 
 	return &Warehouse{
-		ID:                    wh.Id,
+		ID:                    wh.ID,
 		Name:                  wh.Name,
 		Slug:                  wh.Slug,
 		Email:                 wh.Email,
-		IsPrivate:             *wh.IsPrivate,
+		IsPrivate:             model_helper.GetValueOfPointerOrZero(wh.IsPrivate.Bool),
 		Metadata:              MetadataToSlice(wh.Metadata),
 		PrivateMetadata:       MetadataToSlice(wh.Metadata),
 		ClickAndCollectOption: wh.ClickAndCollectOption,
 
-		addressID: wh.AddressID,
+		addressID: wh.AddressID.String,
 	}
 }
 
@@ -56,7 +56,7 @@ func (w *Warehouse) ShippingZones(ctx context.Context, args GraphqlParams) (*Shi
 	}
 
 	keyFunc := func(sz *model.ShippingZone) []any {
-		return []any{model.ShippingZoneTableName + ".CreateAt", sz.CreateAt}
+		return []any{model.ShippingZoneTableColumns.CreatedAt, sz.CreatedAt}
 	}
 	res, appErr := newGraphqlPaginator(shippingZones, keyFunc, SystemShippingZoneToGraphqlShippingZone, args).parse("Warehouse.ShippingZones")
 	if appErr != nil {
@@ -80,10 +80,10 @@ func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
 	return SystemAddressToGraphqlAddress(address), nil
 }
 
-func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.WareHouse] {
+func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Warehouse] {
 	var (
-		res          = make([]*dataloader.Result[*model.WareHouse], len(ids))
-		warehouseMap = map[string]*model.WareHouse{} // keys are warehouse ids
+		res          = make([]*dataloader.Result[*model.Warehouse], len(ids))
+		warehouseMap = map[string]*model.Warehouse{} // keys are warehouse ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -95,7 +95,7 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 		})
 	if appErr != nil {
 		for i := range ids {
-			res[i] = &dataloader.Result[*model.WareHouse]{Error: appErr}
+			res[i] = &dataloader.Result[*model.Warehouse]{Error: appErr}
 		}
 		return res
 	}
@@ -104,37 +104,37 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 		warehouseMap[wh.Id] = wh
 	}
 	for idx, id := range ids {
-		res[idx] = &dataloader.Result[*model.WareHouse]{Data: warehouseMap[id]}
+		res[idx] = &dataloader.Result[*model.Warehouse]{Data: warehouseMap[id]}
 	}
 	return res
 }
 
-func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.Warehouses] {
-	var res = make([]*dataloader.Result[model.Warehouses], len(shippingZoneIDs))
+func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.WarehouseSlice] {
+	var res = make([]*dataloader.Result[model.WarehouseSlice], len(shippingZoneIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	var shippingZones model.ShippingZones
+	var shippingZones model.ShippingZoneSlice
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Warehouses").Find(&shippingZones, "Id IN ?", shippingZoneIDs).Error
 	if err != nil {
 		appErr := model_helper.NewAppError("warehousesByShippingZoneIDLoader", "api.warehouse.shipping_zones_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 		for i := range shippingZoneIDs {
-			res[i] = &dataloader.Result[model.Warehouses]{Error: appErr}
+			res[i] = &dataloader.Result[model.WarehouseSlice]{Error: appErr}
 		}
 		return res
 	}
 
 	shippingZoneMap := map[string]*model.ShippingZone{}
 	for _, zone := range shippingZones {
-		shippingZoneMap[zone.Id] = zone
+		shippingZoneMap[zone.ID] = zone
 	}
 
 	for idx, id := range shippingZoneIDs {
-		var whs model.Warehouses
+		var whs model.WarehouseSlice
 		zone := shippingZoneMap[id]
 		if zone != nil {
-			whs = zone.Warehouses
+			whs = zone.Ware
 		}
-		res[idx] = &dataloader.Result[model.Warehouses]{Data: whs}
+		res[idx] = &dataloader.Result[model.WarehouseSlice]{Data: whs}
 	}
 	return res
 }
@@ -152,7 +152,7 @@ func SystemStockToGraphqlStock(s *model.Stock) *Stock {
 	}
 
 	return &Stock{
-		ID:    s.Id,
+		ID:    s.ID,
 		stock: s,
 	}
 }
@@ -432,16 +432,16 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx contex
 	return res
 }
 
-func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ctx context.Context, idTripple []string) []*dataloader.Result[model.Stocks] {
+func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ctx context.Context, idTripple []string) []*dataloader.Result[model.StockSlice] {
 	var (
 		variantsByCountryAndChannel = map[[2]string][]string{} // keys have form of countryCode__channelID, values are variant ids
-		res                         = make([]*dataloader.Result[model.Stocks], len(idTripple))
-		stocksByVariantAndCountry   = map[string]model.Stocks{} // keys have format of variantID__countryCode__channelID
+		res                         = make([]*dataloader.Result[model.StockSlice], len(idTripple))
+		stocksByVariantAndCountry   = map[string]model.StockSlice{} // keys have format of variantID__countryCode__channelID
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	batchLoadStocksByCountry := func(countryCode, channelID string, variantIDs []string) (map[string]model.Stocks, *model_helper.AppError) {
+	batchLoadStocksByCountry := func(countryCode, channelID string, variantIDs []string) (map[string]model.StockSlice, *model_helper.AppError) {
 		countryCode = strings.ToUpper(countryCode)
 
 		stockFilterOptions := &model.StockFilterOption{
@@ -460,7 +460,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 			return nil, appErr
 		}
 
-		var stocksByVariantIdMap = map[string]model.Stocks{} // keys are variant ids
+		var stocksByVariantIdMap = map[string]model.StockSlice{} // keys are variant ids
 		for _, stock := range stocks {
 			stocksByVariantIdMap[stock.ProductVariantID] = append(stocksByVariantIdMap[stock.ProductVariantID], stock)
 		}
@@ -483,7 +483,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 		stocksByVariantIdMap, appErr := batchLoadStocksByCountry(countryCode, channelID, variantIDs)
 		if appErr != nil {
 			for idx := range idTripple {
-				res[idx] = &dataloader.Result[model.Stocks]{Error: appErr}
+				res[idx] = &dataloader.Result[model.StockSlice]{Error: appErr}
 			}
 			return res
 		}
@@ -498,7 +498,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 	}
 
 	for idx, tripple := range idTripple {
-		res[idx] = &dataloader.Result[model.Stocks]{Data: stocksByVariantAndCountry[tripple]}
+		res[idx] = &dataloader.Result[model.StockSlice]{Data: stocksByVariantAndCountry[tripple]}
 	}
 	return res
 }

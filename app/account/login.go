@@ -180,7 +180,7 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 		Roles:    model_helper.UserGetRawRoles(user),
 		DeviceID: deviceID,
 		IsOauth:  false,
-		Props: model_types.JsonMap{
+		Props: model_types.JSONString{
 			model_helper.USER_AUTH_SERVICE_IS_MOBILE: strconv.FormatBool(isMobile),
 			model_helper.USER_AUTH_SERVICE_IS_SAML:   strconv.FormatBool(isSaml),
 			model_helper.USER_AUTH_SERVICE_IS_OAUTH:  strconv.FormatBool(isOAuthUser),

@@ -59,8 +59,8 @@ type Payment struct {
 	ReturnURL          model_types.NullString `boil:"return_url" json:"return_url,omitempty" toml:"return_url" yaml:"return_url,omitempty"`
 	PSPReference       model_types.NullString `boil:"psp_reference" json:"psp_reference,omitempty" toml:"psp_reference" yaml:"psp_reference,omitempty"`
 	StorePaymentMethod StorePaymentMethod     `boil:"store_payment_method" json:"store_payment_method" toml:"store_payment_method" yaml:"store_payment_method"`
-	Metadata           model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata           model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *paymentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L paymentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -330,8 +330,8 @@ var PaymentWhere = struct {
 	ReturnURL          whereHelpermodel_types_NullString
 	PSPReference       whereHelpermodel_types_NullString
 	StorePaymentMethod whereHelperStorePaymentMethod
-	Metadata           whereHelpermodel_types_JsonMap
-	PrivateMetadata    whereHelpermodel_types_JsonMap
+	Metadata           whereHelpermodel_types_JSONString
+	PrivateMetadata    whereHelpermodel_types_JSONString
 }{
 	ID:                 whereHelperstring{field: "\"payments\".\"id\""},
 	Gateway:            whereHelperstring{field: "\"payments\".\"gateway\""},
@@ -368,8 +368,8 @@ var PaymentWhere = struct {
 	ReturnURL:          whereHelpermodel_types_NullString{field: "\"payments\".\"return_url\""},
 	PSPReference:       whereHelpermodel_types_NullString{field: "\"payments\".\"psp_reference\""},
 	StorePaymentMethod: whereHelperStorePaymentMethod{field: "\"payments\".\"store_payment_method\""},
-	Metadata:           whereHelpermodel_types_JsonMap{field: "\"payments\".\"metadata\""},
-	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"payments\".\"private_metadata\""},
+	Metadata:           whereHelpermodel_types_JSONString{field: "\"payments\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JSONString{field: "\"payments\".\"private_metadata\""},
 }
 
 // PaymentRels is where relationship names are stored.

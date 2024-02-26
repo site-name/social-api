@@ -152,7 +152,7 @@ type AccountService interface {
 	CheckProviderAttributes(user model.User, patch model_helper.UserPatch) string
 	CheckUserAllAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	ClearUserSessionCacheLocal(userID string)
-	CommonCustomerCreateEvent(tx store.ContextRunner, userID *string, orderID *string, eventType model.CustomerEventType, params model_types.JsonMap) (*model.CustomerEvent, *model_helper.AppError)
+	CommonCustomerCreateEvent(tx store.ContextRunner, userID *string, orderID *string, eventType model.CustomerEventType, params model_types.JSONString) (*model.CustomerEvent, *model_helper.AppError)
 	CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model_helper.AppError)
 	CreateUser(c request.Context, user model.User) (*model.User, *model_helper.AppError)
 	CreateUserAccessToken(token model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError)
@@ -166,7 +166,7 @@ type AccountService interface {
 	DisableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model_helper.AppError
 	EnableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
-	FidUsersByOptions(conds ...qm.QueryMod) (model.UserSlice, *model_helper.AppError)
+	FidUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError)
 	GenerateMfaSecret(userID string) (*model_helper.MfaSecret, *model_helper.AppError)
 	GetCloudSession(token string) (*model.Session, *model_helper.AppError)
 	GetDefaultProfileImage(user *model.User) ([]byte, *model_helper.AppError)
@@ -186,7 +186,7 @@ type AccountService interface {
 	GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model_helper.AppError)
 	GetUserAccessTokens(page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError)
-	GetUserByOptions(conds ...qm.QueryMod) (*model.User, *model_helper.AppError)
+	GetUserByOptions(options model_helper.UserFilterOptions) (*model.User, *model_helper.AppError)
 	GetUserStatusesByIds(userIDs []string) (model.StatusSlice, *model_helper.AppError)
 	GetUsers(options model_helper.UserGetOptions) (model.UserSlice, *model_helper.AppError)
 	GetUsersByIds(userIDs []string, options store.UserGetByIdsOpts) (model.UserSlice, *model_helper.AppError)

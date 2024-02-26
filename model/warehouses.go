@@ -31,8 +31,8 @@ type Warehouse struct {
 	ClickAndCollectOption WarehouseClickAndCollectOption `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
 	IsPrivate             model_types.NullBool           `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
 	CreatedAt             int64                          `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata              model_types.JsonMap            `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata       model_types.JsonMap            `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata              model_types.JSONString         `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata       model_types.JSONString         `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *warehouseR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L warehouseL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -132,8 +132,8 @@ var WarehouseWhere = struct {
 	ClickAndCollectOption whereHelperWarehouseClickAndCollectOption
 	IsPrivate             whereHelpermodel_types_NullBool
 	CreatedAt             whereHelperint64
-	Metadata              whereHelpermodel_types_JsonMap
-	PrivateMetadata       whereHelpermodel_types_JsonMap
+	Metadata              whereHelpermodel_types_JSONString
+	PrivateMetadata       whereHelpermodel_types_JSONString
 }{
 	ID:                    whereHelperstring{field: "\"warehouses\".\"id\""},
 	Name:                  whereHelperstring{field: "\"warehouses\".\"name\""},
@@ -143,8 +143,8 @@ var WarehouseWhere = struct {
 	ClickAndCollectOption: whereHelperWarehouseClickAndCollectOption{field: "\"warehouses\".\"click_and_collect_option\""},
 	IsPrivate:             whereHelpermodel_types_NullBool{field: "\"warehouses\".\"is_private\""},
 	CreatedAt:             whereHelperint64{field: "\"warehouses\".\"created_at\""},
-	Metadata:              whereHelpermodel_types_JsonMap{field: "\"warehouses\".\"metadata\""},
-	PrivateMetadata:       whereHelpermodel_types_JsonMap{field: "\"warehouses\".\"private_metadata\""},
+	Metadata:              whereHelpermodel_types_JSONString{field: "\"warehouses\".\"metadata\""},
+	PrivateMetadata:       whereHelpermodel_types_JSONString{field: "\"warehouses\".\"private_metadata\""},
 }
 
 // WarehouseRels is where relationship names are stored.

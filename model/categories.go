@@ -26,7 +26,7 @@ type Category struct {
 	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name               string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Slug               string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Description        model_types.JsonMap    `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Description        model_types.JSONString `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	ParentID           model_types.NullString `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
 	Level              int16                  `boil:"level" json:"level" toml:"level" yaml:"level"`
 	BackgroundImage    model_types.NullString `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
@@ -34,9 +34,9 @@ type Category struct {
 	Images             model_types.NullString `boil:"images" json:"images,omitempty" toml:"images" yaml:"images,omitempty"`
 	SeoTitle           string                 `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
 	SeoDescription     string                 `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
-	NameTranslation    model_types.JsonMap    `boil:"name_translation" json:"name_translation,omitempty" toml:"name_translation" yaml:"name_translation,omitempty"`
-	Metadata           model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	NameTranslation    model_types.JSONString `boil:"name_translation" json:"name_translation,omitempty" toml:"name_translation" yaml:"name_translation,omitempty"`
+	Metadata           model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *categoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L categoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -135,7 +135,7 @@ var CategoryWhere = struct {
 	ID                 whereHelperstring
 	Name               whereHelperstring
 	Slug               whereHelperstring
-	Description        whereHelpermodel_types_JsonMap
+	Description        whereHelpermodel_types_JSONString
 	ParentID           whereHelpermodel_types_NullString
 	Level              whereHelperint16
 	BackgroundImage    whereHelpermodel_types_NullString
@@ -143,14 +143,14 @@ var CategoryWhere = struct {
 	Images             whereHelpermodel_types_NullString
 	SeoTitle           whereHelperstring
 	SeoDescription     whereHelperstring
-	NameTranslation    whereHelpermodel_types_JsonMap
-	Metadata           whereHelpermodel_types_JsonMap
-	PrivateMetadata    whereHelpermodel_types_JsonMap
+	NameTranslation    whereHelpermodel_types_JSONString
+	Metadata           whereHelpermodel_types_JSONString
+	PrivateMetadata    whereHelpermodel_types_JSONString
 }{
 	ID:                 whereHelperstring{field: "\"categories\".\"id\""},
 	Name:               whereHelperstring{field: "\"categories\".\"name\""},
 	Slug:               whereHelperstring{field: "\"categories\".\"slug\""},
-	Description:        whereHelpermodel_types_JsonMap{field: "\"categories\".\"description\""},
+	Description:        whereHelpermodel_types_JSONString{field: "\"categories\".\"description\""},
 	ParentID:           whereHelpermodel_types_NullString{field: "\"categories\".\"parent_id\""},
 	Level:              whereHelperint16{field: "\"categories\".\"level\""},
 	BackgroundImage:    whereHelpermodel_types_NullString{field: "\"categories\".\"background_image\""},
@@ -158,9 +158,9 @@ var CategoryWhere = struct {
 	Images:             whereHelpermodel_types_NullString{field: "\"categories\".\"images\""},
 	SeoTitle:           whereHelperstring{field: "\"categories\".\"seo_title\""},
 	SeoDescription:     whereHelperstring{field: "\"categories\".\"seo_description\""},
-	NameTranslation:    whereHelpermodel_types_JsonMap{field: "\"categories\".\"name_translation\""},
-	Metadata:           whereHelpermodel_types_JsonMap{field: "\"categories\".\"metadata\""},
-	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"categories\".\"private_metadata\""},
+	NameTranslation:    whereHelpermodel_types_JSONString{field: "\"categories\".\"name_translation\""},
+	Metadata:           whereHelpermodel_types_JSONString{field: "\"categories\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JSONString{field: "\"categories\".\"private_metadata\""},
 }
 
 // CategoryRels is where relationship names are stored.

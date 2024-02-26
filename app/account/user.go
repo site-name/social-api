@@ -1077,7 +1077,11 @@ func (a *ServiceAccount) GetUsersByIds(userIDs []string, options store.UserGetBy
 }
 
 func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) (model.UserSlice, *model_helper.AppError) {
-	users, err := a.FidUsersByOptions(model.UserWhere.Username.IN(usernames))
+	users, err := a.FidUsersByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.Username.IN(usernames),
+		),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -1117,7 +1121,11 @@ func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWeb
 }
 
 func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, *model_helper.AppError) {
-	user, err := a.GetUserByOptions(model.UserWhere.Email.EQ(email))
+	user, err := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.Email.EQ(email),
+		),
+	})
 	if err != nil {
 		return false, err
 	}
@@ -1265,23 +1273,23 @@ func getProfileImagePath(userID string) string {
 	return filepath.Join("users", userID, "profile.png")
 }
 
-func (s *ServiceAccount) FidUsersByOptions(conds ...qm.QueryMod) (model.UserSlice, *model_helper.AppError) {
-	users, err := s.srv.Store.User().Find(conds...)
+func (s *ServiceAccount) FidUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError) {
+	users, err := s.srv.Store.User().Find(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("FidUsersByOptions", "app.account.users_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return users, nil
 }
 
-func (s *ServiceAccount) GetUserByOptions(conds ...qm.QueryMod) (*model.User, *model_helper.AppError) {
-	user, err := s.srv.Store.User().Get(conds...)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-
-		return nil, model_helper.NewAppError("GetUserByOptions", "app.account.user_by_options.app_error", nil, err.Error(), statusCode)
+func (s *ServiceAccount) GetUserByOptions(options model_helper.UserFilterOptions) (*model.User, *model_helper.AppError) {
+	users, appErr := s.FidUsersByOptions(options)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return user, nil
+
+	if len(users) == 0 {
+		return nil, model_helper.NewAppError("GetUserByOptions", "app.account.user_by_options.app_error", nil, "", http.StatusNotFound)
+	}
+
+	return users[0], nil
 }

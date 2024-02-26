@@ -28,7 +28,7 @@ type CustomerEvent struct {
 	Type       CustomerEventType      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	OrderID    model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Parameters model_types.JsonMap    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	Parameters model_types.JSONString `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 
 	R *customerEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customerEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -109,14 +109,14 @@ var CustomerEventWhere = struct {
 	Type       whereHelperCustomerEventType
 	OrderID    whereHelpermodel_types_NullString
 	UserID     whereHelpermodel_types_NullString
-	Parameters whereHelpermodel_types_JsonMap
+	Parameters whereHelpermodel_types_JSONString
 }{
 	ID:         whereHelperstring{field: "\"customer_events\".\"id\""},
 	Date:       whereHelperint64{field: "\"customer_events\".\"date\""},
 	Type:       whereHelperCustomerEventType{field: "\"customer_events\".\"type\""},
 	OrderID:    whereHelpermodel_types_NullString{field: "\"customer_events\".\"order_id\""},
 	UserID:     whereHelpermodel_types_NullString{field: "\"customer_events\".\"user_id\""},
-	Parameters: whereHelpermodel_types_JsonMap{field: "\"customer_events\".\"parameters\""},
+	Parameters: whereHelpermodel_types_JSONString{field: "\"customer_events\".\"parameters\""},
 }
 
 // CustomerEventRels is where relationship names are stored.

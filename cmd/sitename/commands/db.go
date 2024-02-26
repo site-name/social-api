@@ -177,7 +177,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 					Slug:  slug.Make(slugg),
 					Name:  path.CategoryNameEn,
 					Level: int16(pathIdx),
-					NameTranslation: model_types.JsonMap{
+					NameTranslation: model_types.JSONString{
 						"vi": path.CategoryName,
 					},
 				}

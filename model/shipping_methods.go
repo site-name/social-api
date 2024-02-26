@@ -32,9 +32,9 @@ type ShippingMethod struct {
 	WeightUnit          string                  `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	MaximumDeliveryDays model_types.NullInt     `boil:"maximum_delivery_days" json:"maximum_delivery_days,omitempty" toml:"maximum_delivery_days" yaml:"maximum_delivery_days,omitempty"`
 	MinimumDeliveryDays model_types.NullInt     `boil:"minimum_delivery_days" json:"minimum_delivery_days,omitempty" toml:"minimum_delivery_days" yaml:"minimum_delivery_days,omitempty"`
-	Description         model_types.JsonMap     `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Metadata            model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata     model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Description         model_types.JSONString  `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Metadata            model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata     model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *shippingMethodR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -143,9 +143,9 @@ var ShippingMethodWhere = struct {
 	WeightUnit          whereHelperstring
 	MaximumDeliveryDays whereHelpermodel_types_NullInt
 	MinimumDeliveryDays whereHelpermodel_types_NullInt
-	Description         whereHelpermodel_types_JsonMap
-	Metadata            whereHelpermodel_types_JsonMap
-	PrivateMetadata     whereHelpermodel_types_JsonMap
+	Description         whereHelpermodel_types_JSONString
+	Metadata            whereHelpermodel_types_JSONString
+	PrivateMetadata     whereHelpermodel_types_JSONString
 }{
 	ID:                  whereHelperstring{field: "\"shipping_methods\".\"id\""},
 	Name:                whereHelperstring{field: "\"shipping_methods\".\"name\""},
@@ -156,9 +156,9 @@ var ShippingMethodWhere = struct {
 	WeightUnit:          whereHelperstring{field: "\"shipping_methods\".\"weight_unit\""},
 	MaximumDeliveryDays: whereHelpermodel_types_NullInt{field: "\"shipping_methods\".\"maximum_delivery_days\""},
 	MinimumDeliveryDays: whereHelpermodel_types_NullInt{field: "\"shipping_methods\".\"minimum_delivery_days\""},
-	Description:         whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"description\""},
-	Metadata:            whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"metadata\""},
-	PrivateMetadata:     whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"private_metadata\""},
+	Description:         whereHelpermodel_types_JSONString{field: "\"shipping_methods\".\"description\""},
+	Metadata:            whereHelpermodel_types_JSONString{field: "\"shipping_methods\".\"metadata\""},
+	PrivateMetadata:     whereHelpermodel_types_JSONString{field: "\"shipping_methods\".\"private_metadata\""},
 }
 
 // ShippingMethodRels is where relationship names are stored.

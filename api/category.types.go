@@ -9,6 +9,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/web"
 )
 
@@ -40,7 +41,7 @@ func systemCategoryToGraphqlCategory(c *model.Category) *Category {
 	}
 
 	return &Category{
-		Id:              c.Id,
+		Id:              c.ID,
 		Name:            c.Name,
 		Slug:            c.Slug,
 		SeoTitle:        &c.SeoTitle,
@@ -62,11 +63,11 @@ func (c *Category) Translation(ctx context.Context, args struct{ LanguageCode La
 }
 
 func (c *Category) Parent(ctx context.Context) (*Category, error) {
-	if c.c.ParentID == nil {
+	if c.c.ParentID.IsNil() {
 		return nil, nil
 	}
 
-	category, err := CategoryByIdLoader.Load(ctx, *c.c.ParentID)()
+	category, err := CategoryByIdLoader.Load(ctx, *c.c.ParentID.String)()
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*Category
 func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	filter := func(c *model.Category) bool { return c.ParentID != nil && *c.ParentID == c.Id }
+	filter := func(c *model.Category) bool { return model_types.PrimitiveIsNotNilAndEqual(c.ParentID.String, c.ID) }
 	children := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
 
 	keyFunc := func(c *model.Category) []any { return []any{model.CategoryTableName + ".Slug", c.Slug} }
@@ -98,7 +99,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoleAny("Category.Products", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("Category.Products", model_helper.ShopStaffRoleId, model_helper.ShopAdminRoleId)
 	userCanSeeAllProducts := embedCtx.Err == nil
 
 	// validate user input params

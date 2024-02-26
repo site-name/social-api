@@ -80,8 +80,8 @@ type GatewayResponse struct {
 	Error                       string
 	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
-	RawResponse                 model_types.JsonMap
-	ActionRequiredData          model_types.JsonMap
+	RawResponse                 model_types.JSONString
+	ActionRequiredData          model_types.JSONString
 	TransactionAlreadyProcessed bool
 	SearchableKey               string
 	PspReference                string
@@ -134,10 +134,10 @@ type PaymentData struct {
 	Token              *string // can be nil
 	CustomerID         *string // can be nil
 	ReuseSource        bool
-	Data               model_types.JsonMap // can be nil
-	GraphqlPaymentID   string              // default to payment's Token
-	GraphqlCustomerID  *string             // can be nil
-	StorePaymentMethod StorePaymentMethod  // default to StorePaymentMethodEnum_NONE ("none")
+	Data               model_types.JSONString // can be nil
+	GraphqlPaymentID   string                 // default to payment's Token
+	GraphqlCustomerID  *string                // can be nil
+	StorePaymentMethod StorePaymentMethod     // default to StorePaymentMethodEnum_NONE ("none")
 	PaymentMetadata    map[string]string
 }
 
@@ -153,7 +153,7 @@ type GatewayConfig struct {
 	GatewayName         string
 	AutoCapture         bool
 	SupportedCurrencies string
-	ConnectionParams    model_types.JsonMap
+	ConnectionParams    model_types.JSONString
 	StoreCustomer       bool
 	Require3dSecure     bool
 }
@@ -171,7 +171,7 @@ type PaymentGateway struct {
 	Id         string
 	Name       string
 	Currencies util.AnyArray[string]
-	Config     []model_types.JsonMap
+	Config     []model_types.JSONString
 }
 
 type InitializedPaymentResponse struct {

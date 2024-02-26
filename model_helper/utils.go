@@ -877,7 +877,7 @@ func GetValueOfPointerOrZero[T any](ptr *T) T {
 	return *ptr
 }
 
-// type StringMap map[string]string
+type StringMap map[string]string
 
 // func (s StringMap) DeepCopy() StringMap {
 // 	if s == nil {

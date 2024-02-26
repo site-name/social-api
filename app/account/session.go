@@ -261,7 +261,7 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 		UserID:  user.ID,
 		Roles:   model_helper.UserGetRawRoles(*user),
 		IsOauth: false,
-		Props: model_types.JsonMap{
+		Props: model_types.JSONString{
 			model_helper.SESSION_PROP_USER_ACCESS_TOKEN_ID: token.ID,
 			model_helper.SESSION_PROP_TYPE:                 model_helper.SESSION_TYPE_USER_ACCESS_TOKEN,
 		},
@@ -575,7 +575,7 @@ func (a *ServiceAccount) GetCloudSession(token string) (*model.Session, *model_h
 		session := &model.Session{
 			Token:   token,
 			IsOauth: false,
-			Props: model_types.JsonMap{
+			Props: model_types.JSONString{
 				model_helper.SESSION_PROP_TYPE: model_helper.SESSION_TYPE_CLOUD_KEY,
 			},
 		}

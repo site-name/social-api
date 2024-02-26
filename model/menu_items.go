@@ -31,8 +31,8 @@ type MenuItem struct {
 	CategoryID      model_types.NullString `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
 	CollectionID    model_types.NullString `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
 	PageID          model_types.NullString `boil:"page_id" json:"page_id,omitempty" toml:"page_id" yaml:"page_id,omitempty"`
-	Metadata        model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata        model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 	SortOrder       model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *menuItemR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -102,8 +102,8 @@ var MenuItemWhere = struct {
 	CategoryID      whereHelpermodel_types_NullString
 	CollectionID    whereHelpermodel_types_NullString
 	PageID          whereHelpermodel_types_NullString
-	Metadata        whereHelpermodel_types_JsonMap
-	PrivateMetadata whereHelpermodel_types_JsonMap
+	Metadata        whereHelpermodel_types_JSONString
+	PrivateMetadata whereHelpermodel_types_JSONString
 	SortOrder       whereHelpermodel_types_NullInt
 }{
 	ID:              whereHelperstring{field: "\"menu_items\".\"id\""},
@@ -114,8 +114,8 @@ var MenuItemWhere = struct {
 	CategoryID:      whereHelpermodel_types_NullString{field: "\"menu_items\".\"category_id\""},
 	CollectionID:    whereHelpermodel_types_NullString{field: "\"menu_items\".\"collection_id\""},
 	PageID:          whereHelpermodel_types_NullString{field: "\"menu_items\".\"page_id\""},
-	Metadata:        whereHelpermodel_types_JsonMap{field: "\"menu_items\".\"metadata\""},
-	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"menu_items\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JSONString{field: "\"menu_items\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JSONString{field: "\"menu_items\".\"private_metadata\""},
 	SortOrder:       whereHelpermodel_types_NullInt{field: "\"menu_items\".\"sort_order\""},
 }
 
