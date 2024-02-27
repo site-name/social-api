@@ -3365,11 +3365,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info model.FileInfo) (*model.FileInfo, 
 
 }
 
-func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(tx boil.ContextTransactor, fulfillments model.Fulfillments) error {
+func (s *RetryLayerFulfillmentStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentStore.BulkDeleteFulfillments(tx, fulfillments)
+		err := s.FulfillmentStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -3385,7 +3385,7 @@ func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(tx boil.ContextTrans
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(option model_helper.FulfillmentFilterOption) (model.FulfillmentSlice, error) {
 
 	tries := 0
 	for {
@@ -3425,27 +3425,7 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
-
-	tries := 0
-	for {
-		result, err := s.FulfillmentStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFulfillmentStore) Upsert(tx boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(tx boil.ContextTransactor, fulfillment model.Fulfillment) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -3465,31 +3445,11 @@ func (s *RetryLayerFulfillmentStore) Upsert(tx boil.ContextTransactor, fulfillme
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(tx boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.BulkUpsert(tx, fulfillmentLines)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(tx boil.ContextTransactor, option *model.FulfillmentLineFilterOption) error {
-
-	tries := 0
-	for {
-		err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(tx, option)
+		err := s.FulfillmentLineStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -3505,11 +3465,11 @@ func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(tx boil.
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) FilterByOptions(option model_helper.FulfillmentLineFilterOption) (model.FulfillmentLineSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.FilterbyOption(option)
+		result, err := s.FulfillmentLineStore.FilterByOptions(option)
 		if err == nil {
 			return result, nil
 		}
@@ -3545,11 +3505,11 @@ func (s *RetryLayerFulfillmentLineStore) Get(id string) (*model.FulfillmentLine,
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) Upsert(fulfillmentLine model.FulfillmentLine) (*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.Save(fulfillmentLine)
+		result, err := s.FulfillmentLineStore.Upsert(fulfillmentLine)
 		if err == nil {
 			return result, nil
 		}
@@ -4205,7 +4165,7 @@ func (s *RetryLayerOpenExchangeRateStore) GetAll() (model.OpenExchangeRateSlice,
 
 }
 
-func (s *RetryLayerOrderStore) BulkUpsert(tx boil.ContextTransactor, orders []*model.Order) ([]*model.Order, error) {
+func (s *RetryLayerOrderStore) BulkUpsert(tx boil.ContextTransactor, orders model.OrderSlice) (model.OrderSlice, error) {
 
 	tries := 0
 	for {
@@ -4245,21 +4205,21 @@ func (s *RetryLayerOrderStore) Delete(tx boil.ContextTransactor, ids []string) (
 
 }
 
-func (s *RetryLayerOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error) {
+func (s *RetryLayerOrderStore) FilterByOption(option model_helper.OrderFilterOption) (model_helper.CustomOrderSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.OrderStore.FilterByOption(option)
+		result, err := s.OrderStore.FilterByOption(option)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 
@@ -4365,107 +4325,7 @@ func (s *RetryLayerOrderDiscountStore) Upsert(tx boil.ContextTransactor, orderDi
 
 }
 
-func (s *RetryLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderEventStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderEventStore.Get(orderEventID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderEventStore) Save(tx boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderEventStore.Save(tx, orderEvent)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderLineStore) BulkDelete(tx boil.ContextTransactor, orderLineIDs []string) error {
-
-	tries := 0
-	for {
-		err := s.OrderLineStore.BulkDelete(tx, orderLineIDs)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderLineStore) BulkUpsert(tx boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderLineStore.BulkUpsert(tx, orderLines)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
+func (s *RetryLayerOrderLineStore) FilterbyOption(option model_helper.OrderLineFilterOptions) (model.OrderLineSlice, error) {
 
 	tries := 0
 	for {
@@ -4505,7 +4365,7 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(tx boil.ContextTransactor, orderLine model.OrderLine) (*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -4950,26 +4810,6 @@ func (s *RetryLayerPluginConfigurationStore) Upsert(config model.PluginConfigura
 	tries := 0
 	for {
 		result, err := s.PluginConfigurationStore.Upsert(config)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.PreferenceStore.CleanupFlagsBatch(limit)
 		if err == nil {
 			return result, nil
 		}

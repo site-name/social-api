@@ -31,26 +31,26 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	// TODO: consider adding validation for specific country
 
 	// construct address
-	address := new(model.Address)
-	args.Input.PatchAddress(address)
+	address := model.Address{}
+	args.Input.PatchAddress(&address)
 
 	// insert address
-	savedAddress, appErr := embedContext.App.Srv().AccountService().UpsertAddress(nil, address)
+	savedAddress, appErr := embedContext.App.AccountService().UpsertAddress(nil, address)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// add user-address relation
-	appErr = embedContext.App.Srv().Store.User().AddRelations(nil, currentSession.UserId, []*model.Address{{Id: savedAddress.Id}}, false)
+	appErr = embedContext.App.Srv().Store.User().AddRelations(nil, currentSession.UserID, []*model.Address{{Id: savedAddress.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// change current user's default address to this new one
-	pluginManager := embedContext.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedContext.App.PluginService().GetPluginManager()
 	if args.Type != nil && args.Type.IsValid() {
-		appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
-			model.User{Id: currentSession.UserId},
+		appErr = embedContext.App.AccountService().ChangeUserDefaultAddress(
+			model.User{Id: currentSession.UserID},
 			*savedAddress,
 			*args.Type,
 			pluginManager,
@@ -85,7 +85,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	}
 
 	// check if user really owns the address:
-	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	addresses, appErr := embedCtx.App.AccountService().AddressesByUserId(currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -97,25 +97,25 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	args.Input.PatchAddress(address)
 
 	// update address
-	savedAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(nil, address)
+	savedAddress, appErr := embedCtx.App.AccountService().UpsertAddress(nil, address)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
-	_, appErr = pluginManager.CustomerUpdated(model.User{Id: currentSession.UserId})
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
+	_, appErr = pluginManager.CustomerUpdated(model.User{Id: currentSession.UserID})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	finalAddress, appErr := pluginManager.ChangeUserAddress(*savedAddress, nil, &model.User{Id: currentSession.UserId})
+	finalAddress, appErr := pluginManager.ChangeUserAddress(*savedAddress, nil, &model.User{Id: currentSession.UserID})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	return &AccountAddressUpdate{
 		Address: SystemAddressToGraphqlAddress(finalAddress),
-		User:    &User{ID: currentSession.UserId},
+		User:    &User{ID: currentSession.UserID},
 	}, nil
 }
 
@@ -129,7 +129,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// check if current user has this address
-	addresses, appErr := embedContext.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	addresses, appErr := embedContext.App.AccountService().AddressesByUserId(currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -139,65 +139,62 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// delete user-address relation, keep address
-	appErr = embedContext.App.Srv().Store.User().RemoveRelations(nil, currentSession.UserId, []*model.Address{{Id: args.Id}}, false)
+	appErr = embedContext.App.Store.User().RemoveRelations(nil, currentSession.UserID, []*model.Address{{Id: args.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	pluginMng := embedContext.App.Srv().PluginService().GetPluginManager()
-	_, appErr = pluginMng.CustomerUpdated(model.User{Id: currentSession.UserId})
+	_, appErr = pluginMng.CustomerUpdated(model.User{Id: currentSession.UserID})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	finalAddress, appErr := pluginMng.ChangeUserAddress(*address, nil, &model.User{Id: currentSession.UserId})
+	finalAddress, appErr := pluginMng.ChangeUserAddress(*address, nil, &model.User{Id: currentSession.UserID})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	return &AccountAddressDelete{
 		Address: SystemAddressToGraphqlAddress(finalAddress),
-		User:    &User{ID: currentSession.UserId},
+		User:    &User{ID: currentSession.UserID},
 	}, nil
 }
 
 // NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
-	Id   string
-	Type model.AddressTypeEnum
+	Id   UUID
+	Type AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
 	// validate arguments
-	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
-	}
 	if !args.Type.IsValid() {
 		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
 	// check if current user own this address
-	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	addresses, appErr := embedCtx.App.AccountService().AddressesByUserId(currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
-	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.ID == args.Id.String() })
 	if !found {
 		return nil, MakeUnauthorizedError("AccountAddressUpdate")
 	}
 
-	user, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Conditions: squirrel.Eq{model.UserTableName + ".Id": currentSession.UserId},
+	user, appErr := embedCtx.App.AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": currentSession.UserID},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
 
 	// perform change user default address
-	appErr = embedCtx.App.Srv().
+	appErr = embedCtx.App.
 		AccountService().
 		ChangeUserDefaultAddress(
 			*user,
@@ -227,7 +224,7 @@ func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input Accou
 func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	user, appErr := embedCtx.App.AccountService().UserById(ctx, embedCtx.AppContext.Session().UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -242,7 +239,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 		user.Locale = val.String()
 	}
 	// save user
-	user, appErr = embedCtx.App.Srv().AccountService().UpdateUser(user, false)
+	user, appErr = embedCtx.App.AccountService().UpdateUser(user, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -285,23 +282,23 @@ func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string 
 	currentSession := embedCtx.AppContext.Session()
 
 	// validate if token is valid
-	_, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, model.TokenTypeDeactivateAccount, nil)
+	_, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, model_helper.TokenTypeDeactivateAccount, nil)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, currentSession.UserId)
+	user, appErr := embedCtx.App.AccountService().UserById(ctx, currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// system admin and system manager cannot deactivate himself
-	if user.IsSystemAdmin() || user.IsInRole(model.SystemManagerRoleId) {
+	if user.IsSystemAdmin() || user.IsInRole(model_helper.SystemManagerRoleId) {
 		return nil, model_helper.NewAppError("AccountDelete", "app.account.administrator_cannot_self_deactivate.app_error", nil, "administration members cannot deactivate themself", http.StatusNotAcceptable)
 	}
 
 	user.IsActive = false
-	updatedUser, appErr := embedCtx.App.Srv().AccountService().UpdateUser(user, false)
+	updatedUser, appErr := embedCtx.App.AccountService().UpdateUser(*user, false)
 	if appErr != nil {
 		return nil, appErr
 	}

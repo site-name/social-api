@@ -131,7 +131,7 @@ func AttributeValueIsValid(a model.AttributeValue) *AppError {
 	if !IsValidId(a.AttributeID) {
 		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
 	}
-	if a.Datetime.IsNil() || a.Datetime.Time.IsZero() {
+	if !a.Datetime.IsNil() && a.Datetime.Time.IsZero() {
 		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.date_time.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !slug.IsSlug(a.Slug) {

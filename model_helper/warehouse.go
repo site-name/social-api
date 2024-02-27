@@ -85,3 +85,7 @@ type WarehouseFilterOption struct {
 	ShippingZoneId        qm.QueryMod
 	Search                string
 }
+
+type CustomAllocation struct {
+	model.Allocation
+}

@@ -9,7 +9,6 @@ import (
 	"unicode"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -173,21 +172,6 @@ func ExtractModelFieldNames(model any) util.AnyArray[string] {
 	}
 
 	return res
-}
-
-func BuildSqlizer(option squirrel.Sqlizer, where string) ([]any, error) {
-	if option == nil {
-		return []any{}, nil
-	}
-
-	query, args, err := option.ToSql()
-	if err != nil {
-		return []any{}, errors.Wrap(err, where+"_ToSql")
-	}
-
-	res := make([]any, 0, len(args)+1)
-	res[0] = query
-	return append(res, args...), nil
 }
 
 type ContextRunner interface {

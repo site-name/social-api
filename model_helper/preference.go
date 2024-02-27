@@ -1,5 +1,14 @@
 package model_helper
 
+import (
+	"encoding/json"
+	"net/http"
+	"regexp"
+	"strings"
+
+	"github.com/sitename/sitename/model"
+)
+
 const (
 	PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW       = "direct_channel_show"
 	PREFERENCE_CATEGORY_GROUP_CHANNEL_SHOW        = "group_channel_show"
@@ -34,3 +43,50 @@ const (
 	PREFERENCE_EMAIL_INTERVAL_HOUR                = "hour"
 	PREFERENCE_EMAIL_INTERVAL_HOUR_AS_SECONDS     = "3600"
 )
+
+var preUpdateColorPattern = regexp.MustCompile(`^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$`)
+
+func PreferencePreUpdate(p *model.Preference) {
+	if p.Category == PREFERENCE_CATEGORY_THEME {
+		var props = map[string]string{}
+
+		json.NewDecoder(strings.NewReader(p.Value)).Decode(&props)
+
+		for name, value := range props {
+			if name == "image" || name == "type" || name == "codeTheme" {
+				continue
+			}
+
+			if !preUpdateColorPattern.MatchString(value) {
+				props[name] = "#ffffff"
+			}
+
+			if b, err := json.Marshal(props); err == nil {
+				p.Value = string(b)
+			}
+		}
+	}
+}
+
+func PreferenceIsValid(p model.Preference) *AppError {
+	if !IsValidId(p.UserID) {
+		return NewAppError("Preference.IsValid", "model.preference.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Category == "" {
+		return NewAppError("Preference.IsValid", "model.preference.is_valid.category.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Name == "" {
+		return NewAppError("Preference.IsValid", "model.preference.is_valid.name.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Value == "" {
+		return NewAppError("Preference.IsValid", "model.preference.is_valid.value.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Category == PREFERENCE_CATEGORY_THEME {
+		var unused map[string]string
+		if err := json.Unmarshal([]byte(p.Value), &unused); err != nil {
+			return NewAppError("Preference.IsValid", "model.preference.is_valid.value.app_error", nil, "", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}

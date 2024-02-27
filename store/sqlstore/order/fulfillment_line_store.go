@@ -1,10 +1,14 @@
 package order
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+	"fmt"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlFulfillmentLineStore struct {
@@ -15,101 +19,64 @@ func NewSqlFulfillmentLineStore(s store.Store) store.FulfillmentLineStore {
 	return &SqlFulfillmentLineStore{s}
 }
 
-func (fls *SqlFulfillmentLineStore) Save(ffml *model.FulfillmentLine) (*model.FulfillmentLine, error) {
-	if err := fls.GetMaster().Create(ffml).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to save fulfillment line")
+func (fls *SqlFulfillmentLineStore) Upsert(ffml model.FulfillmentLine) (*model.FulfillmentLine, error) {
+	isSaving := ffml.ID == ""
+	if isSaving {
+		model_helper.FulfillmentLinePreSave(&ffml)
 	}
-	return ffml, nil
-}
 
-func (fls *SqlFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
-	var res model.FulfillmentLine
-	if err := fls.GetReplica().First(&res, "Id = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.FulfillmentLineTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", id)
-	}
-	return &res, nil
-}
-
-// BulkUpsert upsert given fulfillment lines
-func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
-	if transaction == nil {
-		transaction = fls.GetMaster()
+	if err := model_helper.FulfillmentLineIsValid(ffml); err != nil {
+		return nil, err
 	}
 
 	var err error
-	for _, line := range fulfillmentLines {
-		if line.Id == "" {
-			err = transaction.Create(line).Error
-		} else {
-			line.FulfillmentID = "" // prevent update
-			err = transaction.Model(line).Updates(line).Error
-		}
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert fulfillment line")
+	if isSaving {
+		err = ffml.Insert(fls.GetMaster(), boil.Infer())
+	} else {
+		_, err = ffml.Update(fls.GetMaster(), boil.Infer())
 	}
 
-	return fulfillmentLines, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return &ffml, nil
 }
 
-// FilterbyOption finds and returns a list of fulfillment lines by given option
-func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error) {
-	query := fls.GetQueryBuilder().
-		Select(model.FulfillmentLineTableName + ".*").
-		From(model.FulfillmentLineTableName).
-		Where(option.Conditions)
-
-	// this variable helps preventing the query from joining `Fulfillments` table multiple times.
-	// var joinedFulfillmentTable bool
-
-	if option.FulfillmentOrderID != nil ||
-		option.FulfillmentStatus != nil {
-		query = query.InnerJoin(model.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)")
-
-		query = query.
-			Where(option.FulfillmentOrderID).
-			Where(option.FulfillmentStatus)
-	}
-
-	queryString, args, err := query.ToSql()
+func (fls *SqlFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
+	line, err := model.FindFulfillmentLine(fls.GetReplica(), id)
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	db := fls.GetReplica()
-	if len(option.Preloads) > 0 {
-		for _, preload := range option.Preloads {
-			db = db.Preload(preload)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.FulfillmentLines, id)
 		}
+		return nil, err
 	}
 
-	var fulfillmentLines model.FulfillmentLines
-	err = db.Raw(queryString, args...).Scan(&fulfillmentLines).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find fulfillment lines by given options")
-	}
-
-	return fulfillmentLines, nil
+	return line, nil
 }
 
-// DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
-func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error {
+func (fls *SqlFulfillmentLineStore) FilterByOptions(option model_helper.FulfillmentLineFilterOption) (model.FulfillmentLineSlice, error) {
+	conds := option.Conditions
+	if option.RelatedFulfillmentConds != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Fulfillments, model.FulfillmentTableColumns.ID, model.FulfillmentLineTableColumns.FulfillmentID)),
+			option.RelatedFulfillmentConds,
+		)
+	}
+
+	for _, load := range option.Preload {
+		conds = append(conds, qm.Load(load))
+	}
+
+	return model.FulfillmentLines(conds...).All(fls.GetReplica())
+}
+
+func (fls *SqlFulfillmentLineStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = fls.GetMaster()
 	}
 
-	args, err := store.BuildSqlizer(option.Conditions, "FulfillmentLine_Delete")
-	if err != nil {
-		return err
-	}
-
-	err = transaction.Delete(&model.FulfillmentLine{}, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete fulfillment lines by given option")
-	}
-
-	return nil
+	_, err := model.FulfillmentLines(model.FulfillmentLineWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

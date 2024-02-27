@@ -4,22 +4,21 @@
 package sub_app_iface
 
 import (
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ChannelService contains methods for working with channels
 type ChannelService interface {
 	// ChannelByOption returns a channel that satisfies given options
-	ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model_helper.AppError)
-	// ChannelsByOption returns a list of channels by given options
-	ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model_helper.AppError)
+	ChannelByOption(option model_helper.ChannelFilterOptions) (*model.Channel, *model_helper.AppError)
 	// ValidateChannel check if a channel with given id is active
 	ValidateChannel(channelID string) (*model.Channel, *model_helper.AppError)
+	ChannelsByOption(option model_helper.ChannelFilterOptions) (model.ChannelSlice, *model_helper.AppError)
 	CleanChannel(channelID *string) (*model.Channel, *model_helper.AppError)
-	DeleteChannels(transaction *gorm.DB, ids ...string) *model_helper.AppError
+	DeleteChannels(transaction boil.ContextTransactor, ids []string) *model_helper.AppError
 	GetDefaultChannel() (*model.Channel, *model_helper.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model_helper.AppError)
-	UpsertChannel(transaction *gorm.DB, channel *model.Channel) (*model.Channel, *model_helper.AppError)
+	UpsertChannel(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, *model_helper.AppError)
 }

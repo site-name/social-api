@@ -14,7 +14,6 @@ func RegisterService(f func(s *Server) error) {
 	serverOpts = append(serverOpts, f)
 }
 
-// registerSubServices register all sub services to App.
 func (s *Server) registerSubServices() error {
 	slog.Info("Registering all sub services...")
 
@@ -28,82 +27,82 @@ func (s *Server) registerSubServices() error {
 	return nil
 }
 
-func (s *Server) PluginService() sub_app_iface.PluginService {
-	return s.Plugin
+func (a *App) PluginService() sub_app_iface.PluginService {
+	return a.srv.Plugin
 }
 
-func (s *Server) OrderService() sub_app_iface.OrderService {
-	return s.Order
+func (a *App) OrderService() sub_app_iface.OrderService {
+	return a.srv.Order
 }
 
-func (s *Server) CsvService() sub_app_iface.CsvService {
-	return s.Csv
+func (a *App) CsvService() sub_app_iface.CsvService {
+	return a.srv.Csv
 }
 
-func (s *Server) ProductService() sub_app_iface.ProductService {
-	return s.Product
+func (a *App) ProductService() sub_app_iface.ProductService {
+	return a.srv.Product
 }
 
-func (s *Server) PaymentService() sub_app_iface.PaymentService {
-	return s.Payment
+func (a *App) PaymentService() sub_app_iface.PaymentService {
+	return a.srv.Payment
 }
 
-func (s *Server) GiftcardService() sub_app_iface.GiftcardService {
-	return s.Giftcard
+func (a *App) GiftcardService() sub_app_iface.GiftcardService {
+	return a.srv.Giftcard
 }
 
-func (s *Server) SeoService() sub_app_iface.SeoService {
-	return s.Seo
+func (a *App) SeoService() sub_app_iface.SeoService {
+	return a.srv.Seo
 }
 
-func (s *Server) ShippingService() sub_app_iface.ShippingService {
-	return s.Shipping
+func (a *App) ShippingService() sub_app_iface.ShippingService {
+	return a.srv.Shipping
 }
 
-func (s *Server) WishlistService() sub_app_iface.WishlistService {
-	return s.Wishlist
+func (a *App) WishlistService() sub_app_iface.WishlistService {
+	return a.srv.Wishlist
 }
 
-func (s *Server) PageService() sub_app_iface.PageService {
-	return s.Page
+func (a *App) PageService() sub_app_iface.PageService {
+	return a.srv.Page
 }
 
-func (s *Server) MenuService() sub_app_iface.MenuService {
-	return s.Menu
+func (a *App) MenuService() sub_app_iface.MenuService {
+	return a.srv.Menu
 }
 
-func (s *Server) AttributeService() sub_app_iface.AttributeService {
-	return s.Attribute
+func (a *App) AttributeService() sub_app_iface.AttributeService {
+	return a.srv.Attribute
 }
 
-func (s *Server) WarehouseService() sub_app_iface.WarehouseService {
-	return s.Warehouse
+func (a *App) WarehouseService() sub_app_iface.WarehouseService {
+	return a.srv.Warehouse
 }
 
-func (s *Server) CheckoutService() sub_app_iface.CheckoutService {
-	return s.Checkout
+func (a *App) CheckoutService() sub_app_iface.CheckoutService {
+	return a.srv.Checkout
 }
 
-func (s *Server) WebhookService() sub_app_iface.WebhookService {
-	return s.Webhook
+func (a *App) WebhookService() sub_app_iface.WebhookService {
+	return a.srv.Webhook
 }
 
-func (s *Server) ChannelService() sub_app_iface.ChannelService {
-	return s.Channel
+func (a *App) ChannelService() sub_app_iface.ChannelService {
+	return a.srv.Channel
 }
 
-func (s *Server) AccountService() sub_app_iface.AccountService {
-	return s.Account
+func (a *App) AccountService() sub_app_iface.AccountService {
+	return a.srv.Account
 }
 
-func (s *Server) InvoiceService() sub_app_iface.InvoiceService {
-	return s.Invoice
+func (a *App) InvoiceService() sub_app_iface.InvoiceService {
+	return a.srv.Invoice
 }
 
-func (s *Server) FileService() sub_app_iface.FileService {
-	return s.File
+func (a *App) FileService() sub_app_iface.FileService {
+	return a.srv.File
 }
 
-func (s *Server) DiscountService() sub_app_iface.DiscountService {
-	return s.Discount
+func (a *App) DiscountService() sub_app_iface.DiscountService {
+	return a.srv.Discount
 }

@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlOrderLineStore struct {
@@ -24,19 +24,33 @@ func (ols *SqlOrderLineStore) Upsert(transaction boil.ContextTransactor, orderLi
 		transaction = ols.GetMaster()
 	}
 
-	var err error
-
-	if orderLine.Id == "" {
-		err = transaction.Create(orderLine).Error
+	isSaving := orderLine.ID == ""
+	if isSaving {
+		model_helper.OrderLinePreSave(&orderLine)
 	} else {
-		orderLine.CreateAt = 0
-		err = transaction.Model(orderLine).Updates(orderLine).Error
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert order line")
+		model_helper.OrderLineCommonPre(&orderLine)
 	}
 
-	return orderLine, nil
+	if err := model_helper.OrderLineIsValid(orderLine); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = orderLine.Insert(transaction, boil.Infer())
+	} else {
+		_, err = orderLine.Update(transaction, boil.Blacklist(
+			model.OrderLineColumns.ID,
+			model.OrderLineColumns.CreatedAt,
+			model.OrderLineColumns.OrderID,
+		))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &orderLine, nil
 }
 
 func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
@@ -61,68 +75,27 @@ func (ols *SqlOrderLineStore) Delete(tx boil.ContextTransactor, orderLineIDs []s
 	return err
 }
 
-func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, error) {
-	query := ols.GetReplica()
-	if len(option.Preload) > 0 {
-		for _, rel := range option.Preload {
-			query = query.Preload(rel)
-		}
-	}
-
-	conditions := squirrel.And{
-		option.Conditions,
-	}
-
+func (ols *SqlOrderLineStore) FilterbyOption(option model_helper.OrderLineFilterOptions) (model.OrderLineSlice, error) {
+	conds := option.Conditions
 	if option.RelatedOrderConditions != nil {
-		query = query.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.OrderTableName,         // 1
-				model.OrderLineTableName,     // 2
-				model.OrderColumnId,          // 3
-				model.OrderLineColumnOrderID, // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Orders, model.OrderTableColumns.ID, model.OrderLineTableColumns.OrderID)),
+			option.RelatedOrderConditions,
 		)
-
-		conditions = append(conditions, option.RelatedOrderConditions)
 	}
 
-	if option.VariantDigitalContentID != nil || option.VariantProductID != nil {
-		query = query.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.ProductVariantTableName,         // 1
-				model.OrderLineTableName,              // 2
-				model.ProductVariantColumnId,          // 3
-				model.OrderLineColumnProductVariantID, // 4
-			),
+	for _, load := range option.Preload {
+		conds = append(conds, qm.Load(load))
+	}
+
+	if option.VariantProductID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductVariantTableColumns.ID, model.OrderLineTableColumns.ProductVariantID)),
+			option.VariantProductID,
 		)
-		conditions = append(conditions, option.VariantProductID)
-
-		if option.VariantDigitalContentID != nil {
-			query = query.Joins(
-				fmt.Sprintf(
-					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-					model.DigitalContentTableName,              // 1
-					model.ProductVariantTableName,              // 2
-					model.DigitalContentColumnProductVariantID, // 3
-					model.ProductVariantColumnId,               // 4
-				),
-			)
-			conditions = append(conditions, option.VariantDigitalContentID)
-		}
 	}
 
-	conds, args, err := conditions.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "please provide valid lookup conditions")
-	}
-
-	var orderLines model.OrderLineSlice
-	err = query.Find(&orderLines, []any{conds, args}...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find order lines by given options")
-	}
-
-	return orderLines, nil
+	return model.OrderLines(conds...).All(ols.GetReplica())
 }

@@ -17,7 +17,7 @@ import (
 )
 
 func (s *Server) ServePluginRequest(w http.ResponseWriter, r *http.Request) {
-	pluginsEnvironment, appErr := s.PluginService().GetPluginsEnvironment()
+	pluginsEnvironment, appErr := s.Plugin.GetPluginsEnvironment()
 	if appErr != nil {
 		s.Log.Error(appErr.Error())
 		w.WriteHeader(appErr.StatusCode)
@@ -52,7 +52,7 @@ func (s *Server) ServePluginPublicRequest(w http.ResponseWriter, r *http.Request
 	vars := mux.Vars(r)
 	pluginID := vars["plugin_id"]
 
-	pluginsEnv, _ := s.PluginService().GetPluginsEnvironment()
+	pluginsEnv, _ := s.Plugin.GetPluginsEnvironment()
 
 	// Check if someone has nullified the pluginsEnv in the meantime
 	if pluginsEnv == nil {
@@ -103,8 +103,8 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 
 	r.Header.Del("Mattermost-User-Id")
 	if token != "" {
-		session, err := s.AccountService().GetSession(token)
-		defer s.AccountService().ReturnSessionToPool(session)
+		session, err := s.Account.GetSession(token)
+		defer s.Account.ReturnSessionToPool(session)
 
 		csrfCheckPassed := false
 

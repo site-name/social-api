@@ -9,9 +9,9 @@ import (
 
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/model"
 )
 
 // FileService contains methods for working with files

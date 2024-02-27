@@ -362,12 +362,12 @@ type (
 		Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error)                                                                                         // Upsert bases on given method's Id to decide update or insert it
 		Get(id string) (*model.ShippingMethod, error)                                                                                                                                         // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) // ApplicableShippingMethods finds all model methods with given conditions
-		GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                                  // GetbyOption finds and returns a model method that satisfy given options
-		FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error)
+		GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                           // GetbyOption finds and returns a model method that satisfy given options
+		FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error)
 		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	ShippingMethodPostalCodeRuleStore interface {
-		Delete(tx boil.ContextTransactor, ids ...string) error
+		Delete(tx boil.ContextTransactor, ids []string) error
 		Save(tx boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error)
 		FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error)
 	}
@@ -453,27 +453,27 @@ type (
 		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)                // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
-		Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error)                  // Upsert inserts or update given translation
-		Get(translationID string) (*model.ProductTranslation, error)                                      // Get finds and returns a product translation by given id
-		FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
+		// Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error)                  // Upsert inserts or update given translation
+		// Get(translationID string) (*model.ProductTranslation, error)                                      // Get finds and returns a product translation by given id
+		// FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
 	}
 	ProductTypeStore interface {
-		ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes, variantAttributes model.AttributeSlice, isDelete bool) error
-		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error)
-		Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) // Save try inserting new product type into database then returns it
-		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error)       // FilterProductTypesByCheckoutToken is used to check if a model requires model
-		ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error)                 // ProductTypesByProductIDs returns all product types belong to given products
-		ProductTypeByProductVariantID(variantID string) (*model.ProductType, error)                 // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
-		GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)             // GetByOption finds and returns a product type with given options
+		// ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes, variantAttributes model.AttributeSlice, isDelete bool) error
+		// Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		// FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error)
+		// Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) // Save try inserting new product type into database then returns it
+		// FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error)       // FilterProductTypesByCheckoutToken is used to check if a model requires model
+		// ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error)                 // ProductTypesByProductIDs returns all product types belong to given products
+		// ProductTypeByProductVariantID(variantID string) (*model.ProductType, error)                 // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
+		// GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)             // GetByOption finds and returns a product type with given options
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
 	CategoryTranslationStore interface{}
 	CategoryStore            interface {
-		Upsert(category *model.Category) (*model.Category, error)                                 // Upsert depends on given category's Id field to decide update or insert it
+		Upsert(category model.Category) (*model.Category, error)                                  // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
-		GetByOption(option *model.CategoryFilterOption) (*model.Category, error)                  // GetByOption finds and returns 1 category satisfy given option
-		FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error)             // FilterByOption finds and returns a list of categories satisfy given option
+		GetByOption(option model_helper.CategoryFilterOption) (*model.Category, error)            // GetByOption finds and returns 1 category satisfy given option
+		FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error)     // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
 		Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error)
@@ -521,34 +521,32 @@ type (
 // order
 type (
 	OrderLineStore interface {
-		Upsert(tx boil.ContextTransactor, orderLine model.OrderLine) (*model.OrderLine, error)  // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*model.OrderLine, error)                                                // Get returns a order line with id of given id
-		FilterbyOption(option model_helper.OrderLineFilterOption) (model.OrderLineSlice, error) // FilterbyOption finds and returns order lines by given option
+		Upsert(tx boil.ContextTransactor, orderLine model.OrderLine) (*model.OrderLine, error)   // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*model.OrderLine, error)                                                 // Get returns a order line with id of given id
+		FilterbyOption(option model_helper.OrderLineFilterOptions) (model.OrderLineSlice, error) // FilterbyOption finds and returns order lines by given option
 	}
 	OrderStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		Get(id string) (*model.Order, error)                                                 // Get find order in database with given id
-		FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error)       // FilterByOption returns a list of orders, filtered by given option
-		BulkUpsert(tx boil.ContextTransactor, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
+		Get(id string) (*model.Order, error)                                                         // Get find order in database with given id
+		FilterByOption(option model_helper.OrderFilterOption) (model_helper.CustomOrderSlice, error) // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(tx boil.ContextTransactor, orders model.OrderSlice) (model.OrderSlice, error)
 	}
 	OrderEventStore interface {
-		Save(tx boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
-		Get(orderEventID string) (*model.OrderEvent, error)                                      // Get finds order event with given id then returns it
-		FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
+		// Save(tx boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
+		// Get(orderEventID string) (*model.OrderEvent, error)                                      // Get finds order event with given id then returns it
+		// FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
 	}
 	FulfillmentLineStore interface {
-		Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error)
+		Upsert(fulfillmentLine model.FulfillmentLine) (*model.FulfillmentLine, error)
 		Get(id string) (*model.FulfillmentLine, error)
-		FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error)                        // FilterbyOption finds and returns a list of fulfillment lines by given option
-		BulkUpsert(tx boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
-		DeleteFulfillmentLinesByOption(tx boil.ContextTransactor, option *model.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
+		Delete(tx boil.ContextTransactor, ids []string) error
+		FilterByOptions(option model_helper.FulfillmentLineFilterOption) (model.FulfillmentLineSlice, error)
 	}
 	FulfillmentStore interface {
-		Upsert(tx boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) // Upsert depends on given fulfillment's Id to decide update or insert it
-		Get(id string) (*model.Fulfillment, error)                                                    // Get finds and return a fulfillment by given id
-		GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error)                // GetByOption returns 1 fulfillment, filtered by given option
-		FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error)           // FilterByOption finds and returns a slice of fulfillments by given option
-		BulkDeleteFulfillments(tx boil.ContextTransactor, fulfillments model.Fulfillments) error      // BulkDeleteFulfillments deletes given fulfillments
+		Upsert(tx boil.ContextTransactor, fulfillment model.Fulfillment) (*model.Fulfillment, error) // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*model.Fulfillment, error)                                                   // Get finds and return a fulfillment by given id
+		FilterByOption(option model_helper.FulfillmentFilterOption) (model.FulfillmentSlice, error)  // FilterByOption finds and returns a slice of fulfillments by given option
+		Delete(tx boil.ContextTransactor, ids []string) error                                        // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 
@@ -590,7 +588,7 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) error
 		BulkUpsert(tx boil.ContextTransactor, giftCards model.GiftcardSlice) (model.GiftcardSlice, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*model.Giftcard, error)                                                       // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error)            // FilterByOption finds giftcards wth option
+		FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error)      // FilterByOption finds giftcards wth option
 		DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error)
 		// AddRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error    // relations must be either []*Order or []*Checkout
 		// RemoveRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error // relations must be either []*Order or []*Checkout
@@ -734,8 +732,8 @@ type PreferenceStore interface {
 	DeleteCategory(userID string, category string) error
 	DeleteCategoryAndName(category string, name string) error
 	PermanentDeleteByUser(userID string) error
-	CleanupFlagsBatch(limit int64) (int64, error)
 	DeleteUnusedFeatures()
+	// CleanupFlagsBatch(limit int64) (int64, error)
 }
 
 type JobStore interface {

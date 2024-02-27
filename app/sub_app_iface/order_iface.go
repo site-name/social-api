@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
@@ -22,10 +23,6 @@ import (
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
-	//	func (a *App) Cloud() einterfaces.CloudInterface {
-	//		return a.srv.Cloud
-	//	}
-	HTTPService() httpservice.HTTPService
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
@@ -49,16 +46,12 @@ type AppIface interface {
 	InvalidateCacheForUser(userID string)
 	// LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	LimitedClientConfigWithComputed() map[string]string
-	// Log returns system logger
-	Log() *slog.Logger
 	// LogAuditRec logs an audit record using default LvlAuditCLI.
 	LogAuditRec(rec *audit.Record, err error)
 	// LogAuditRecWithLevel logs an audit record using specified Level.
 	LogAuditRecWithLevel(rec *audit.Record, level slog.Level, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
-	// NotificationsLog returns system notification log
-	NotificationsLog() *slog.Logger
 	// Publish puplish websocket events
 	Publish(message *model_helper.WebSocketEvent)
 	// ResetPermissionsSystem reset permission system
@@ -67,26 +60,29 @@ type AppIface interface {
 	SaveComplianceReport(job model.Compliance) (*model.Compliance, *model_helper.AppError)
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model_helper.Config, sendConfigChangeClusterMessage bool) (*model_helper.Config, *model_helper.Config, *model_helper.AppError)
-	// Srv returns system server
-	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
 	// UpdateConfig updates config
 	UpdateConfig(f func(*model_helper.Config))
-	// metrics for app
-	Metrics() einterfaces.MetricsInterface
 	AccountMigration() einterfaces.AccountMigrationInterface
+	AccountService() sub_app_iface.AccountService
 	AddConfigListener(listener func(*model_helper.Config, *model_helper.Config)) string
+	AttributeService() sub_app_iface.AttributeService
+	ChannelService() sub_app_iface.ChannelService
+	CheckoutService() sub_app_iface.CheckoutService
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
+	CsvService() sub_app_iface.CsvService
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
+	DiscountService() sub_app_iface.DiscountService
 	DoSystemConsoleRolesCreationMigration()
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
+	FileService() sub_app_iface.FileService
 	GetAudits(userID string, limit int) (model.AuditSlice, *model_helper.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (model.AuditSlice, *model_helper.AppError)
 	GetClusterId() string
@@ -98,23 +94,41 @@ type AppIface interface {
 	GetOpenGraphMetadata(requestURL string) ([]byte, error)
 	GetSystemInstallDate() (int64, *model_helper.AppError)
 	GetWarnMetricsStatus() (map[string]*model_helper.WarnMetricStatus, *model_helper.AppError)
+	GiftcardService() sub_app_iface.GiftcardService
+	HTTPService() httpservice.HTTPService
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model_helper.Config, appCfg *model_helper.Config)
 	ImageProxy() *imageproxy.ImageProxy
 	ImageProxyAdder() func(string) string
 	ImageProxyRemover() func(string) string
+	InvoiceService() sub_app_iface.InvoiceService
 	IsLeader() bool
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
+	Log() *slog.Logger
+	MenuService() sub_app_iface.MenuService
+	Metrics() einterfaces.MetricsInterface
 	NewClusterDiscoveryService() *ClusterDiscoveryService
+	NotificationsLog() *slog.Logger
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, forceAck bool, isBot bool) *model_helper.AppError
+	OrderService() sub_app_iface.OrderService
 	OriginChecker() func(*http.Request) bool
+	PageService() sub_app_iface.PageService
+	PaymentService() sub_app_iface.PaymentService
+	PluginService() sub_app_iface.PluginService
 	PostActionCookieSecret() []byte
+	ProductService() sub_app_iface.ProductService
 	ReloadConfig() error
 	RemoveConfigListener(id string)
 	Saml() einterfaces.SamlInterface
 	SearchEngine() *searchengine.Broker
+	SeoService() sub_app_iface.SeoService
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetServer(srv *Server)
+	ShippingService() sub_app_iface.ShippingService
+	Srv() *Server
 	Timezones() *timezones.Timezones
+	WarehouseService() sub_app_iface.WarehouseService
+	WebhookService() sub_app_iface.WebhookService
+	WishlistService() sub_app_iface.WishlistService
 }

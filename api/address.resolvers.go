@@ -30,28 +30,28 @@ func (r *Resolver) AddressCreate(ctx context.Context, args struct {
 	}
 
 	// create new address:
-	address := new(model.Address)
-	args.Input.PatchAddress(address)
+	var address model.Address
+	args.Input.PatchAddress(&address)
 
-	savedAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(nil, address)
+	savedAddress, appErr := embedCtx.App.AccountService().UpsertAddress(nil, address)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// get current user
-	currentUser, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, currentSession.UserId)
+	currentUser, appErr := embedCtx.App.AccountService().UserById(ctx, currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
 	finalAddress, appErr := pluginManager.ChangeUserAddress(*savedAddress, nil, currentUser)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// add user-address relation:
-	appErr = embedCtx.App.Srv().Store.User().AddRelations(nil, currentSession.UserId, []*model.Address{{Id: finalAddress.Id}}, false)
+	appErr = embedCtx.App.Srv().Store.User().AddRelations(nil, currentSession.UserID, []*model.Address{{Id: finalAddress.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -65,14 +65,9 @@ func (r *Resolver) AddressCreate(ctx context.Context, args struct {
 // NOTE: Users can update their addresses only
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input AddressInput
 }) (*AddressUpdate, error) {
-	// validate params
-	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
-	}
-
 	appErr := args.Input.validate("AddressUpdate")
 	if appErr != nil {
 		return nil, appErr
@@ -82,28 +77,28 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	currentSession := embedCtx.AppContext.Session()
 
 	// check if requester really owns address:
-	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	addresses, appErr := embedCtx.App.AccountService().AddressesByUserId(currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
-	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr != nil && addr.ID == args.Id })
 	if !found || address == nil {
 		return nil, MakeUnauthorizedError("AddressUpdate")
 	}
 
 	args.Input.PatchAddress(address)
 
-	updatedAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(nil, address)
+	updatedAddress, appErr := embedCtx.App.AccountService().UpsertAddress(nil, *address)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, currentSession.UserId)
+	user, appErr := embedCtx.App.AccountService().UserById(ctx, currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
 	_, appErr = pluginManager.CustomerUpdated(*user)
 	if appErr != nil {
 		return nil, appErr
@@ -121,34 +116,29 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 }
 
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
-func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
-	// validate id input
-	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AddressDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
-	}
-
+func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id UUID }) (*AddressDelete, error) {
 	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
 	// delete relation between user and address, address stil exists
-	appErr := embedCtx.App.Srv().Store.User().RemoveRelations(nil, currentSession.UserId, []*model.Address{{Id: args.Id}}, false)
+	appErr := embedCtx.App.Srv().Store.User().RemoveRelations(nil, currentSession.UserID, []*model.Address{{Id: args.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// get current user
-	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, currentSession.UserId)
+	user, appErr := embedCtx.App.AccountService().UserById(ctx, currentSession.UserID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
+	address, appErr := embedCtx.App.AccountService().AddressById(args.Id.String())
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
 	_, appErr = pluginManager.CustomerUpdated(*user)
 	if appErr != nil {
 		return nil, appErr
@@ -163,7 +153,7 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	AddressID string
-	Type      model.AddressTypeEnum
+	Type      AddressTypeEnum
 }) (*AddressSetDefault, error) {
 	// validate params
 	if !model_helper.IsValidId(args.AddressID) {
@@ -177,12 +167,12 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	currentSession := embedCtx.AppContext.Session()
 
 	// check if requester own address
-	updatedUser, appErr := embedCtx.App.Srv().AccountService().UserSetDefaultAddress(currentSession.UserId, args.AddressID, args.Type)
+	updatedUser, appErr := embedCtx.App.AccountService().UserSetDefaultAddress(currentSession.UserID, args.AddressID, args.Type)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	pluginManager := embedCtx.App.PluginService().GetPluginManager()
 	_, appErr = pluginManager.CustomerUpdated(*updatedUser)
 	if appErr != nil {
 		return nil, appErr
@@ -247,14 +237,9 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 }
 
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
-func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
-	// validate params:
-	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Address", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
-	}
-
+func (r *Resolver) Address(ctx context.Context, args struct{ Id UUID }) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
+	address, appErr := embedCtx.App.AccountService().AddressById(args.Id.String())
 	if appErr != nil {
 		return nil, appErr
 	}

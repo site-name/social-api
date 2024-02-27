@@ -21,7 +21,7 @@ type webConnActivityMessage struct {
 func (a *App) InvalidateCacheForUser(userID string) {
 	a.Srv().invalidateCacheForUserSkipClusterSend(userID)
 
-	a.srv.AccountService().InvalidateCacheForUser(userID)
+	a.srv.Account.InvalidateCacheForUser(userID)
 }
 
 // Publish push websocket event to all subscribers

@@ -67,7 +67,6 @@ type AccountService interface {
 	CheckUserPreflightAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	// ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 	ClearAllUsersSessionCacheLocal()
-	ClearStatusCache()
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -120,9 +119,9 @@ type AccountService interface {
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
-	SessionHasPermissionToAll(session model.Session, permissions []*model_helper.Permission) bool
+	SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session model.Session, permissions []*model_helper.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
@@ -151,6 +150,7 @@ type AccountService interface {
 	BroadcastStatus(status model.Status)
 	CheckProviderAttributes(user model.User, patch model_helper.UserPatch) string
 	CheckUserAllAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
+	ClearStatusCache()
 	ClearUserSessionCacheLocal(userID string)
 	CommonCustomerCreateEvent(tx store.ContextRunner, userID *string, orderID *string, eventType model.CustomerEventType, params model_types.JSONString) (*model.CustomerEvent, *model_helper.AppError)
 	CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model_helper.AppError)

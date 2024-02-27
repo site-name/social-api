@@ -14,7 +14,7 @@ func (s *Server) clusterInstallPluginHandler(msg *model_helper.ClusterMessage) {
 	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
-	s.PluginService().InstallPluginFromData(data)
+	s.Plugin.InstallPluginFromData(data)
 }
 
 func (s *Server) clusterRemovePluginHandler(msg *model_helper.ClusterMessage) {
@@ -22,11 +22,11 @@ func (s *Server) clusterRemovePluginHandler(msg *model_helper.ClusterMessage) {
 	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
-	s.PluginService().RemovePluginFromData(data)
+	s.Plugin.RemovePluginFromData(data)
 }
 
 func (s *Server) clusterPluginEventHandler(msg *model_helper.ClusterMessage) {
-	env, appErr := s.PluginService().GetPluginsEnvironment()
+	env, appErr := s.Plugin.GetPluginsEnvironment()
 	if env == nil || appErr != nil {
 		return
 	}
@@ -101,7 +101,7 @@ func (s *Server) clusterUpdateStatusHandler(msg *model_helper.ClusterMessage) {
 
 func (s *Server) clearSessionCacheForAllUsersSkipClusterSend() {
 	slog.Info("Purging sessions cache")
-	s.AccountService().ClearAllUsersSessionCacheLocal()
+	s.Account.ClearAllUsersSessionCacheLocal()
 }
 
 func (s *Server) clusterInvalidateAllCachesHandler(msg *model_helper.ClusterMessage) {
@@ -132,6 +132,6 @@ func (s *Server) invalidateWebConnSessionCacheForUser(userID string) {
 }
 
 func (s *Server) clearSessionCacheForUserSkipClusterSend(userID string) {
-	s.AccountService().ClearUserSessionCacheLocal(userID)
+	s.Account.ClearUserSessionCacheLocal(userID)
 	s.invalidateWebConnSessionCacheForUser(userID)
 }

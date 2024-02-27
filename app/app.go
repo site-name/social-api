@@ -33,10 +33,6 @@ func New(options ...AppOption) *App {
 	return app
 }
 
-// func (a *App) TelemetryId() string {
-// 	return a.Srv().TelemetryId()
-// }
-
 func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 	ipAddress := util.GetIPAddress(r, a.Config().ServiceSettings.TrustedProxyIPHeader)
 	slog.Debug("not found handler triggered", slog.String("path", r.URL.Path), slog.Int("code", 404), slog.String("ip", ipAddress))
@@ -65,17 +61,14 @@ func (s *Server) getSystemInstallDate() (int64, *model_helper.AppError) {
 	return value, nil
 }
 
-// Srv returns system server
 func (a *App) Srv() *Server {
 	return a.srv
 }
 
-// Log returns system logger
 func (a *App) Log() *slog.Logger {
 	return a.srv.Log
 }
 
-// NotificationsLog returns system notification log
 func (a *App) NotificationsLog() *slog.Logger {
 	return a.srv.NotificationsLog
 }
@@ -108,18 +101,10 @@ func (a *App) Saml() einterfaces.SamlInterface {
 	return a.srv.Saml
 }
 
-// metrics for app
 func (a *App) Metrics() einterfaces.MetricsInterface {
 	return a.srv.Metrics
 }
 
-// func (a *App) Notification() einterfaces.NotificationInterface {
-// 	return a.srv.Notification
-// }
-
-//	func (a *App) Cloud() einterfaces.CloudInterface {
-//		return a.srv.Cloud
-//	}
 func (a *App) HTTPService() httpservice.HTTPService {
 	return a.srv.HTTPService
 }
@@ -153,3 +138,15 @@ func (a *App) dbHealthCheckKey() string {
 func (a *App) SetServer(srv *Server) {
 	a.srv = srv
 }
+
+// func (a *App) Notification() einterfaces.NotificationInterface {
+// 	return a.srv.Notification
+// }
+
+//	func (a *App) Cloud() einterfaces.CloudInterface {
+//		return a.srv.Cloud
+//	}
+
+// func (a *App) TelemetryId() string {
+// 	return a.Srv().TelemetryId()
+// }

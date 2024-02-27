@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +42,7 @@ type CheckoutService interface {
 	// BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
 	BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) *goprices.TaxedMoney
 	// BaseCheckoutShippingPrice
-	BaseCheckoutShippingPrice(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError)
+	BaseCheckoutShippingPrice(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError)
 	// BaseCheckoutTotal returns the total cost of the checkout
 	//
 	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
@@ -51,13 +50,11 @@ type CheckoutService interface {
 	// CalculateCheckoutTotalWithGiftcards
 	CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price
-	CalculatePriceForShippingMethod(checkoutInfo *model.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculatePriceForShippingMethod(checkoutInfo *model_helper.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
 	CancelActivePayments(checkout *model.Checkout) *model_helper.AppError
 	// Check if current shipping method is valid
 	CleanDeliveryMethod(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model_helper.AppError)
-	// CheckVariantInStock
-	CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model_helper.AppError)
 	// CheckoutByOption returns a checkout filtered by given option
 	CheckoutByOption(option *model.CheckoutFilterOption) (*model.Checkout, *model_helper.AppError)
 	// CheckoutLastActivePayment returns the most recent payment made for given checkout
@@ -160,12 +157,13 @@ type CheckoutService interface {
 	// UpsertCheckout saves/updates given checkout
 	UpsertCheckouts(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, *model_helper.AppError)
 	BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model_helper.AppError)
-	BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
+	BaseTaxRate(price goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError)
 	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model_helper.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model_helper.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model_helper.AppError)
 	ChangeBillingAddressInCheckout(transaction *gorm.DB, checkout *model.Checkout, address *model.Address) *model_helper.AppError
-	CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model_helper.AppError
+	CheckLinesQuantity(variants model.ProductVariantSlice, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model_helper.CheckoutLineInfos, replace bool) *model_helper.AppError
+	CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model_helper.AppError)
 	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model_helper.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model_helper.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model_helper.AppError)

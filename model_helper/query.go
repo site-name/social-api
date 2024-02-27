@@ -19,12 +19,9 @@ func NewCommonQueryOptions(conditions ...qm.QueryMod) CommonQueryOptions {
 
 type Or squirrel.Or
 
-var _ qm.QueryMod = Or{}
+var _ qm.QueryMod = (*Or)(nil)
 
 func (or Or) Apply(q *queries.Query) {
-	if or == nil {
-		return
-	}
 	clause, args, err := squirrel.Or(or).ToSql()
 	if err != nil {
 		slog.Error("Custom Or ToSql", slog.Err(err))
@@ -33,20 +30,25 @@ func (or Or) Apply(q *queries.Query) {
 	queries.AppendWhere(q, clause, args...)
 }
 
+func (or Or) ToSql() (string, []any, error) {
+	return squirrel.Or(or).ToSql()
+}
+
 type And squirrel.And
 
-var _ qm.QueryMod = And{}
+var _ qm.QueryMod = (*And)(nil)
 
 func (and And) Apply(q *queries.Query) {
-	if and == nil {
-		return
-	}
 	clause, args, err := squirrel.And(and).ToSql()
 	if err != nil {
 		slog.Error("Custom And ToSql", slog.Err(err))
 		return
 	}
 	queries.AppendWhere(q, clause, args...)
+}
+
+func (and And) ToSql() (string, []any, error) {
+	return squirrel.And(and).ToSql()
 }
 
 // JsonbContains buils a query mod that checks if a jsonb field contains a key-value pair

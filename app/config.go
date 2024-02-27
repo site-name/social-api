@@ -348,7 +348,7 @@ func (a *App) ClientConfigWithComputed() map[string]string {
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(a.Srv().AccountService().IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountService().IsFirstUserAccount())
 	// respCfg["MaxPostSize"] = strconv.Itoa(a.srv.MaxPostSize())
 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
 	respCfg["InstallationDate"] = ""
@@ -368,7 +368,7 @@ func (a *App) LimitedClientConfigWithComputed() map[string]string {
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(a.Srv().AccountService().IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountService().IsFirstUserAccount())
 
 	return respCfg
 }
