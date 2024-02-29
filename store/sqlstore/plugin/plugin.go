@@ -24,7 +24,7 @@ func NewSqlPluginStore(s store.Store) store.PluginStore {
 	return &SqlPluginStore{s}
 }
 
-func (ps *SqlPluginStore) SaveOrUpdate(kv *model_helper.PluginKeyValue) (*model_helper.PluginKeyValue, error) {
+func (ps *SqlPluginStore) Upsert(kv model.PluginKeyValue) (*model.PluginKeyValue, error) {
 	if err := kv.IsValid(); err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *model_helper.PluginKeyValue) (*model_
 	return kv, nil
 }
 
-func (ps *SqlPluginStore) CompareAndSet(kv *model_helper.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps *SqlPluginStore) CompareAndSet(kv model.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}
@@ -134,7 +134,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model_helper.PluginKeyValue, oldValu
 	return true, nil
 }
 
-func (ps *SqlPluginStore) CompareAndDelete(kv *model_helper.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps *SqlPluginStore) CompareAndDelete(kv model.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}

@@ -1733,7 +1733,7 @@ func (s *RetryLayerAuditStore) Save(audit model.Audit) error {
 
 }
 
-func (s *RetryLayerCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
+func (s *RetryLayerCategoryStore) FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error) {
 
 	tries := 0
 	for {
@@ -1773,27 +1773,7 @@ func (s *RetryLayerCategoryStore) Get(ctx context.Context, categoryID string, al
 
 }
 
-func (s *RetryLayerCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
-
-	tries := 0
-	for {
-		result, err := s.CategoryStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
+func (s *RetryLayerCategoryStore) Upsert(category model.Category) (*model.Category, error) {
 
 	tries := 0
 	for {
@@ -3585,7 +3565,7 @@ func (s *RetryLayerGiftCardStore) Delete(tx boil.ContextTransactor, ids []string
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
 
 	tries := 0
 	for {
@@ -5011,11 +4991,11 @@ func (s *RetryLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTransactor
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error {
+func (s *RetryLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.PreorderAllocationStore.Delete(tx, preorderAllocationIDs...)
+		err := s.PreorderAllocationStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -5369,226 +5349,6 @@ func (s *RetryLayerProductMediaStore) Upsert(tx boil.ContextTransactor, medias m
 
 }
 
-func (s *RetryLayerProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTranslationStore.FilterByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTranslationStore.Get(translationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTranslationStore.Upsert(translation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.Delete(tx, ids)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
-		if err == nil {
-			return result, resultVar1, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.GetByOption(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.Save(tx, productType)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes model.AttributeSlice, variantAttributes model.AttributeSlice, isDelete bool) error {
-
-	tries := 0
-	for {
-		err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
 func (s *RetryLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
@@ -5814,66 +5574,6 @@ func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing
 	tries := 0
 	for {
 		result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductVariantTranslationStore.FilterByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductVariantTranslationStore.Get(translationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductVariantTranslationStore.Upsert(translation)
 		if err == nil {
 			return result, nil
 		}
@@ -6375,7 +6075,7 @@ func (s *RetryLayerShippingMethodStore) Delete(tx boil.ContextTransactor, ids []
 
 }
 
-func (s *RetryLayerShippingMethodStore) FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
+func (s *RetryLayerShippingMethodStore) FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
 
 	tries := 0
 	for {
@@ -6415,7 +6115,7 @@ func (s *RetryLayerShippingMethodStore) Get(id string) (*model.ShippingMethod, e
 
 }
 
-func (s *RetryLayerShippingMethodStore) GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -6475,7 +6175,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) Delete(tx boil.ContextTran
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
 
 	tries := 0
 	for {
@@ -6535,11 +6235,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(tx boil.ContextTran
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids ...string) error {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids []string) error {
 
 	tries := 0
 	for {
-		err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids...)
+		err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids)
 		if err == nil {
 			return nil
 		}
@@ -6555,7 +6255,7 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTran
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model_helper.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
 
 	tries := 0
 	for {

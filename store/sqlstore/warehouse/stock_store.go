@@ -21,7 +21,6 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-// BulkUpsert performs upserts or inserts given stocks, then returns them
 func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
 	if transaction == nil {
 		transaction = ss.GetMaster()
@@ -52,7 +51,6 @@ func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	return stock, nil
 }
 
-// FilterForChannel finds and returns stocks that satisfy given options
 func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
 	channelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
@@ -139,7 +137,6 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	return nil, returningStocks, nil
 }
 
-// FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	selectFields := []string{model.StockTableName + ".*"}
 	if options.SelectRelatedProductVariant {
@@ -305,7 +302,6 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64
 	return totalCount, returningStocks, nil
 }
 
-// FilterForCountryAndChannel finds and returns stocks with given options
 func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).

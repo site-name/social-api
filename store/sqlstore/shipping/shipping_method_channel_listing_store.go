@@ -2,12 +2,13 @@ package shipping
 
 import (
 	"database/sql"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlShippingMethodChannelListingStore struct {
@@ -18,7 +19,6 @@ func NewSqlShippingMethodChannelListingStore(s store.Store) store.ShippingMethod
 	return &SqlShippingMethodChannelListingStore{s}
 }
 
-// Upsert depends on given listing's Id to decide whether to save or update the listing
 func (s *SqlShippingMethodChannelListingStore) Upsert(transaction boil.ContextTransactor, listings model.ShippingMethodChannelListingSlice) (model.ShippingMethodChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
@@ -58,7 +58,6 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(transaction boil.ContextTr
 	return listings, nil
 }
 
-// Get finds a shipping method channel listing with given listingID
 func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
 	listing, err := model.FindShippingMethodChannelListing(s.GetReplica(), listingID)
 	if err != nil {
@@ -71,37 +70,25 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.Shi
 	return listing, nil
 }
 
-// FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC
-func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
-	query := s.GetQueryBuilder().
-		Select(model.ShippingMethodChannelListingTableName + ".*").
-		From(model.ShippingMethodChannelListingTableName).Where(option.Conditions)
-
-	// parse filter option
+func (s *SqlShippingMethodChannelListingStore) FilterByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
+	conds := option.Conditions
 	if option.ChannelSlug != nil {
-		query = query.
-			InnerJoin(model.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID").
-			Where(option.ChannelSlug)
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.ShippingMethodChannelListingTableColumns.ChannelID)),
+			option.ChannelSlug,
+		)
 	}
 	if option.ShippingMethod_ShippingZoneID_Inner != nil {
-		query = query.
-			InnerJoin(model.ShippingMethodTableName + " ON ShippingMethods.Id = ShippingMethodChannelListings.ShippingMethodID").
-			InnerJoin(model.ShippingZoneTableName + " ON ShippingZones.Id = ShippingMethods.ShippingZoneID").
-			Where(option.ShippingMethod_ShippingZoneID_Inner)
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingMethods, model.ShippingMethodTableColumns.ID, model.ShippingMethodChannelListingTableColumns.ShippingMethodID)),
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZones, model.ShippingZoneTableColumns.ID, model.ShippingMethodTableColumns.ShippingZoneID)),
+			option.ShippingMethod_ShippingZoneID_Inner,
+		)
 	}
 
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_tosql")
-	}
-
-	var res []*model.ShippingMethodChannelListing
-	err = s.GetReplica().Raw(queryString, args...).Scan(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find shipping method channel listings by option")
-	}
-
-	return res, nil
+	return model.ShippingMethodChannelListings(conds...).All(s.GetReplica())
 }
 
 func (s *SqlShippingMethodChannelListingStore) Delete(transaction boil.ContextTransactor, ids []string) error {

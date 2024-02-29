@@ -103,34 +103,3 @@ func (s *SqlShippingZoneStore) Delete(transaction boil.ContextTransactor, ids []
 
 	return res, nil
 }
-
-// func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) error {
-// 	if transaction == nil {
-// 		transaction = s.GetMaster()
-// 	}
-
-// 	var relationsMap = map[string]any{
-// 		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} }),
-// 		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} }),
-// 	}
-
-// 	for _, shippingZone := range zones {
-// 		if shippingZone != nil {
-// 			for assoName, relations := range relationsMap {
-// 				association := transaction.Model(shippingZone).Association(assoName)
-// 				var err error
-// 				switch {
-// 				case delete:
-// 					err = association.Delete(relations)
-// 				default:
-// 					err = association.Append(relations)
-// 				}
-// 				if err != nil {
-// 					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+shippingZone.Id)
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }

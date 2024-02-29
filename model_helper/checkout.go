@@ -31,9 +31,10 @@ func CheckoutAddDiscountAmount(c *model.Checkout, amount decimal.Decimal) {
 }
 
 func CheckoutPreSave(checkout *model.Checkout) {
-	if checkout.CreatedAt == 0 {
-		checkout.CreatedAt = GetMillis()
+	if checkout.Token == "" {
+		checkout.Token = NewId()
 	}
+	checkout.CreatedAt = GetMillis()
 	checkout.UpdatedAt = checkout.CreatedAt
 	checkoutCommonPre(checkout)
 }
@@ -58,6 +59,9 @@ func checkoutCommonPre(c *model.Checkout) {
 }
 
 func CheckoutIsValid(c model.Checkout) *AppError {
+	if !IsValidId(c.Token) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.token.app_error", nil, "please provide valid id", http.StatusBadRequest)
+	}
 	if !IsValidEmail(c.Email) {
 		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.email.app_error", nil, "please provide valid email", http.StatusBadRequest)
 	}
@@ -70,13 +74,39 @@ func CheckoutIsValid(c model.Checkout) *AppError {
 	if c.Quantity < 0 {
 		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.quantity.app_error", nil, "please provide valid quantity value", http.StatusBadRequest)
 	}
+	if !c.UserID.IsNil() && !IsValidId(*c.UserID.String) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
+	}
+	if !IsValidId(c.ChannelID) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
+	}
+	if !c.BillingAddressID.IsNil() && !IsValidId(*c.BillingAddressID.String) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.billing_address_id.app_error", nil, "please provide valid billing address id", http.StatusBadRequest)
+	}
+	if !c.ShippingAddressID.IsNil() && !IsValidId(*c.ShippingAddressID.String) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.shipping_address_id.app_error", nil, "please provide valid shipping address id", http.StatusBadRequest)
+	}
+	if !c.ShippingMethodID.IsNil() && !IsValidId(*c.ShippingMethodID.String) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.shipping_method_id.app_error", nil, "please provide valid shipping method id", http.StatusBadRequest)
+	}
+	if !c.CollectionPointID.IsNil() && !IsValidId(*c.CollectionPointID.String) {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.collection_point_id.app_error", nil, "please provide valid payment method id", http.StatusBadRequest)
+	}
+	if c.Currency.IsValid() != nil {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
+	}
+	if c.LanguageCode.IsValid() != nil {
+		return NewAppError("CheckoutIsValid", "model.checkout.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
+	}
 
 	return nil
 }
 
 func CheckoutLinePreSave(cl *model.CheckoutLine) {
-	if cl.CreatedAt == 0 {
-		cl.CreatedAt = GetMillis()
+	cl.CreatedAt = GetMillis()
+	if cl.ID == "" {
+		cl.ID = NewId()
+
 	}
 }
 
@@ -87,5 +117,12 @@ func CheckoutLineIsValid(cl model.CheckoutLine) *AppError {
 	if cl.Quantity < 0 {
 		return NewAppError("CheckoutLineIsValid", "model.checkout_line.is_valid.quantity.app_error", nil, "please provide valid quantity value", http.StatusBadRequest)
 	}
+	if !IsValidId(cl.CheckoutID) {
+		return NewAppError("CheckoutLineIsValid", "model.checkout_line.is_valid.checkout_id.app_error", nil, "please provide valid checkout id", http.StatusBadRequest)
+	}
+	if !IsValidId(cl.VariantID) {
+		return NewAppError("CheckoutLineIsValid", "model.checkout_line.is_valid.variant_id.app_error", nil, "please provide valid variant id", http.StatusBadRequest)
+	}
+
 	return nil
 }

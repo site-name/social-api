@@ -345,7 +345,7 @@ type (
 	PreorderAllocationStore interface {
 		BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                             // FilterByOption finds and returns a list of preorder allocations filtered using given options
-		Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error                                                        // Delete deletes preorder-allocations by given ids
+		Delete(tx boil.ContextTransactor, ids []string) error                                                                           // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -369,13 +369,13 @@ type (
 	ShippingMethodPostalCodeRuleStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) error
 		Save(tx boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error)
-		FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error)
+		FilterByOptions(options model_helper.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error)
 	}
 	ShippingMethodChannelListingStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) error
 		Upsert(tx boil.ContextTransactor, listings model.ShippingMethodChannelListingSlice) (model.ShippingMethodChannelListingSlice, error) // Upsert depends on given listing's Id to decide whether to save or update the listing
 		Get(id string) (*model.ShippingMethodChannelListing, error)                                                                          // Get finds a model method channel listing with given listingID
-		FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error)               // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
+		FilterByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error)        // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
 	}
 	ShippingMethodTranslationStore interface {
 	}
@@ -425,9 +425,9 @@ type (
 		BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
-		Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
-		Get(translationID string) (*model.ProductVariantTranslation, error)                                             // Get finds and returns 1 product variant translation with given id
-		FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
+		// Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
+		// Get(translationID string) (*model.ProductVariantTranslation, error)                                             // Get finds and returns 1 product variant translation with given id
+		// FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
@@ -469,11 +469,12 @@ type (
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
 	CategoryTranslationStore interface{}
-	CategoryStore            interface {
+
+	CategoryStore interface {
 		Upsert(category model.Category) (*model.Category, error)                                  // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
-		GetByOption(option model_helper.CategoryFilterOption) (*model.Category, error)            // GetByOption finds and returns 1 category satisfy given option
 		FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error)     // FilterByOption finds and returns a list of categories satisfy given option
+		// GetByOption(option model_helper.CategoryFilterOption) (*model.Category, error)            // GetByOption finds and returns 1 category satisfy given option
 	}
 	ProductStore interface {
 		Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error)

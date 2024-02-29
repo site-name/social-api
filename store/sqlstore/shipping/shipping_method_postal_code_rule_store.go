@@ -1,10 +1,10 @@
 package shipping
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlShippingMethodPostalCodeRuleStore struct {
@@ -15,47 +15,55 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 	return &SqlShippingMethodPostalCodeRuleStore{s}
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "ShippingMethodPostalCodeRule_FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-	var res []*model.ShippingMethodPostalCodeRule
-	err = s.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find shipping method postal code rules by given options")
-	}
-
-	return res, nil
-}
-
-func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
-	if transaction == nil {
-		transaction = s.GetMaster()
-	}
-
-	err := transaction.Raw("DELETE FROM "+model.ShippingMethodPostalCodeRuleTableName+" WHERE Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete shipping method postal code rules")
-	}
-
-	return nil
-}
-
-func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction boil.ContextTransactor, rules model.ShippingMethodPostalCodeRuleSlice) (model.ShippingMethodPostalCodeRuleSlice, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
 	for _, rule := range rules {
-		err := transaction.Create(rule).Error
+		if rule == nil {
+			continue
+		}
+
+		isSaving := rule.ID == ""
+		if isSaving {
+			model_helper.ShippingMethodPostalCodeRulePreSave(rule)
+		}
+
+		if err := model_helper.ShippingMethodPostalCodeRuleIsValid(*rule); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = rule.Insert(transaction, boil.Infer())
+		} else {
+			_, err = rule.Update(transaction, boil.Infer())
+		}
+
 		if err != nil {
-			if s.IsUniqueConstraintError(err, []string{"shippingmethodid_start_end_key", "Start", "End", "ShippingMethodID"}) {
-				return nil, store.NewErrInvalidInput(model.ShippingMethodPostalCodeRuleTableName, "", "")
+			if s.IsUniqueConstraintError(err, []string{"shipping_method_postal_code_rules_shipping_method_id_start_end_key", model.ShippingMethodPostalCodeRuleColumns.End, model.ShippingMethodPostalCodeRuleColumns.Start, model.ShippingMethodPostalCodeRuleColumns.ShippingMethodID}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.ShippingMethodPostalCodeRules, "", "duplicate rule")
 			}
-			return nil, errors.Wrap(err, "failed to save shipping method postal code rule")
+			return nil, err
 		}
 	}
 
 	return rules, nil
+}
+
+func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options model_helper.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
+	conds := options.Conditions
+	return model.ShippingMethodPostalCodeRules(conds...).All(s.GetReplica())
+}
+
+func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction boil.ContextTransactor, ids []string) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	_, err := model.ShippingMethodPostalCodeRules(
+		model.ShippingMethodPostalCodeRuleWhere.ID.IN(ids),
+	).DeleteAll(transaction)
+	return err
 }

@@ -35,15 +35,14 @@ func RenderWebError(config *model_helper.Config, w http.ResponseWriter, r *http.
 	}
 	destination := path.Join(subpath, "error") + "?" + queryString + "&s=" + base64.URLEncoding.EncodeToString(signature)
 
-	if status >= 300 && status < 400 {
+	if status >= http.StatusMultipleChoices && status < http.StatusBadRequest {
 		http.Redirect(w, r, destination, status)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(status)
-	fmt.Fprintln(w, fmt.Sprintf(`
-		<!DOCTYPE html>
+	fmt.Fprintf(w, `<!DOCTYPE html>
 		<html>
 			<head>
 			</head>
@@ -58,7 +57,7 @@ func RenderWebError(config *model_helper.Config, w http.ResponseWriter, r *http.
 		template.HTMLEscapeString(template.JSEscapeString(destination)),
 		template.HTMLEscapeString(destination),
 		template.HTMLEscapeString(destination),
-	))
+	)
 }
 
 func OriginChecker(allowedOrigins string) func(*http.Request) bool {

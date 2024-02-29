@@ -1570,7 +1570,7 @@ func (s *TimerLayerAuditStore) Save(audit model.Audit) error {
 	return err
 }
 
-func (s *TimerLayerCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
+func (s *TimerLayerCategoryStore) FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.FilterByOption(option)
@@ -1602,23 +1602,7 @@ func (s *TimerLayerCategoryStore) Get(ctx context.Context, categoryID string, al
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
-	start := timemodule.Now()
-
-	result, err := s.CategoryStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
+func (s *TimerLayerCategoryStore) Upsert(category model.Category) (*model.Category, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.Upsert(category)
@@ -3072,7 +3056,7 @@ func (s *TimerLayerGiftCardStore) Delete(tx boil.ContextTransactor, ids []string
 	return err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
@@ -4223,10 +4207,10 @@ func (s *TimerLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTransactor
 	return result, err
 }
 
-func (s *TimerLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error {
+func (s *TimerLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.PreorderAllocationStore.Delete(tx, preorderAllocationIDs...)
+	err := s.PreorderAllocationStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4543,182 +4527,6 @@ func (s *TimerLayerProductMediaStore) Upsert(tx boil.ContextTransactor, medias m
 	return result, err
 }
 
-func (s *TimerLayerProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTranslationStore.FilterByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.FilterByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTranslationStore.Get(translationID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTranslationStore.Upsert(translation)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.Upsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.Delete(tx, ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Delete", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutToken", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterbyOption", success, elapsed)
-	}
-	return result, resultVar1, err
-}
-
-func (s *TimerLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.GetByOption(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ProductTypeByProductVariantID", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ProductTypesByProductIDs", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.Save(tx, productType)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes model.AttributeSlice, variantAttributes model.AttributeSlice, isDelete bool) error {
-	start := timemodule.Now()
-
-	err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ToggleProductTypeRelations", success, elapsed)
-	}
-	return err
-}
-
 func (s *TimerLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
@@ -4907,54 +4715,6 @@ func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantTranslationStore.FilterByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.FilterByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantTranslationStore.Get(translationID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantTranslationStore.Upsert(translation)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -5358,7 +5118,7 @@ func (s *TimerLayerShippingMethodStore) Delete(tx boil.ContextTransactor, ids []
 	return err
 }
 
-func (s *TimerLayerShippingMethodStore) FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
+func (s *TimerLayerShippingMethodStore) FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.FilterByOptions(options)
@@ -5390,7 +5150,7 @@ func (s *TimerLayerShippingMethodStore) Get(id string) (*model.ShippingMethod, e
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.GetbyOption(options)
@@ -5438,7 +5198,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) Delete(tx boil.ContextTran
 	return err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.FilterByOption(option)
@@ -5486,10 +5246,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(tx boil.ContextTran
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids ...string) error {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
-	err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids...)
+	err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5502,7 +5262,7 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTran
 	return err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model_helper.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)

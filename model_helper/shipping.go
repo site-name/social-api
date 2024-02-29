@@ -14,6 +14,7 @@ func ShippingMethodChannelListingPreSave(listing *model.ShippingMethodChannelLis
 		listing.ID = NewId()
 	}
 	listing.CreatedAt = GetMillis()
+	ShippingMethodChannelListingCommonPre(listing)
 }
 
 func ShippingMethodChannelListingCommonPre(listing *model.ShippingMethodChannelListing) {
@@ -45,6 +46,7 @@ func ShippingMethodPreSave(method *model.ShippingMethod) {
 	if method.ID == "" {
 		method.ID = NewId()
 	}
+	ShippingMethodCommonPre(method)
 }
 
 func ShippingMethodCommonPre(method *model.ShippingMethod) {
@@ -84,9 +86,8 @@ func ShippingZonePreSave(zone *model.ShippingZone) {
 	if zone.ID == "" {
 		zone.ID = NewId()
 	}
-	if zone.CreatedAt == 0 {
-		zone.CreatedAt = GetMillis()
-	}
+	zone.CreatedAt = GetMillis()
+	ShippingZoneCommonPre(zone)
 }
 
 func ShippingZoneCommonPre(zone *model.ShippingZone) {
@@ -117,4 +118,61 @@ type ShippingZoneFilterOption struct {
 	CommonQueryOptions
 	WarehouseID qm.QueryMod // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID...
 	ChannelID   qm.QueryMod // INNER JOIN shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID...
+}
+
+type ShippingMethodFilterOption struct {
+	CommonQueryOptions
+
+	// INNER JOIN ShippingZone ON ...
+	// INNER JOIN ShippingZoneChannels ON ...
+	// INNER JOIN channels ON ...
+	// WHERE channels.Slug ...
+	ShippingZoneChannelSlug qm.QueryMod
+
+	// INNER JOIN ShippingMethodChannelListing ON ...
+	// INNER JOIN channels ON ...
+	// WHERE channels.Slug ...
+	ChannelListingsChannelSlug qm.QueryMod
+
+	// INNER JOIN ShippingZone ON ...
+	// WHERE ShippingZones.Countries ...
+	ShippingZoneCountries qm.QueryMod
+
+	Load []string
+}
+
+type ShippingMethodChannelListingFilterOption struct {
+	CommonQueryOptions
+	ChannelSlug                         qm.QueryMod // INNER JOIN Channels ON ... WHERE Channels.Slug ...
+	ShippingMethod_ShippingZoneID_Inner qm.QueryMod // INNER JOIN ShippingMethods ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Id ...
+}
+
+type ShippingMethodPostalCodeRuleFilterOptions struct {
+	CommonQueryOptions
+}
+
+func ShippingMethodPostalCodeRulePreSave(rule *model.ShippingMethodPostalCodeRule) {
+	if rule.ID == "" {
+		rule.ID = NewId()
+	}
+}
+
+func ShippingMethodPostalCodeRuleIsValid(rule model.ShippingMethodPostalCodeRule) *AppError {
+	if !IsValidId(rule.ID) {
+		return NewAppError("ShippingMethodPostalCodeRole.IsValid", "model.shipping_method_postal_code_rule.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(rule.ShippingMethodID) {
+		return NewAppError("ShippingMethodPostalCodeRole.IsValid", "model.shipping_method_postal_code_rule.is_valid.shipping_method_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if rule.Start == "" {
+		return NewAppError("ShippingMethodPostalCodeRole.IsValid", "model.shipping_method_postal_code_rule.is_valid.start.app_error", nil, "", http.StatusBadRequest)
+	}
+	if rule.End == "" {
+		return NewAppError("ShippingMethodPostalCodeRole.IsValid", "model.shipping_method_postal_code_rule.is_valid.end.app_error", nil, "", http.StatusBadRequest)
+	}
+	if rule.InclusionType.IsValid() != nil {
+		return NewAppError("ShippingMethodPostalCodeRole.IsValid", "model.shipping_method_postal_code_rule.is_valid.inclusion_type.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/stretchr/testify/require"
 )
@@ -18,12 +19,12 @@ func TestApplicableShippingMethods(t *testing.T) {
 			Amount:   decimal.NewFromFloat(56.78),
 			Currency: "USD",
 		},
-		model.NewId(),
-		measurement.ZeroWeight,
+		model_helper.NewId(),
+		&measurement.ZeroWeight,
 		"US",
 		[]string{
-			model.NewId(),
-			model.NewId(),
+			model_helper.NewId(),
+			model_helper.NewId(),
 		},
 	)
 
@@ -70,8 +71,8 @@ func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *
 		"MaximumOrderPriceAmount": priceAmount,
 		"MinimumOrderWeight":      weight.Amount,
 		"MaximumOrderWeight":      weight.Amount,
-		"WeightBasedShippingType": model.WEIGHT_BASED,
-		"PriceBasedShipType":      model.PRICE_BASED,
+		"WeightBasedShippingType": model.ShippingMethodTypeWeight,
+		"PriceBasedShipType":      model.ShippingMethodTypePrice,
 	}
 
 	// check if productIDs is provided:

@@ -2,17 +2,18 @@ package shipping
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlShippingMethodStore struct {
@@ -23,36 +24,48 @@ func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	return &SqlShippingMethodStore{s}
 }
 
-// Upsert bases on given method's Id to decide update or insert it
-func (s *SqlShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *SqlShippingMethodStore) Upsert(transaction boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	err := transaction.Save(method).Error
+	isSaving := method.ID == ""
+	if isSaving {
+		model_helper.ShippingMethodPreSave(&method)
+	} else {
+		model_helper.ShippingMethodCommonPre(&method)
+	}
+
+	if err := model_helper.ShippingMethodIsValid(method); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = method.Insert(transaction, boil.Infer())
+	} else {
+		_, err = method.Update(transaction, boil.Infer())
+	}
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert shipping method with id=%s", method.Id)
+		return nil, err
+	}
+
+	return &method, nil
+}
+
+func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
+	method, err := model.FindShippingMethod(s.GetReplica(), methodID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ShippingMethods, methodID)
+		}
+		return nil, err
 	}
 
 	return method, nil
 }
 
-// Get finds and returns a shipping method with given id
-func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
-	return s.GetbyOption(&model.ShippingMethodFilterOption{
-		Conditions: squirrel.Eq{model.ShippingMethodTableName + ".Id": methodID},
-	})
-}
-
-// ApplicableShippingMethods finds all shipping method for given checkout
-//
-// sql queries here are borrowed. Please check the file shipping_method_store.md
-func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
-	/*
-		NOTE: we also prefetch postal_code_rules, shipping zones for later use
-		please refer to saleor/shipping/models for details
-	*/
-
+func (s *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
 	selectFields := []string{
 		model.ShippingMethodTableName + ".*",
 		model.ShippingZoneTableName + ".*",
@@ -215,112 +228,38 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	return lo.Values(shippingMethodMeetMap), nil
 }
 
-func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {
-	selectFields := []string{model.ShippingMethodTableName + ".*"}
-	if options.SelectRelatedShippingZone {
-		selectFields = append(selectFields, model.ShippingZoneTableName+".*")
-	}
+func (ss *SqlShippingMethodStore) commonQueryBuilder(options model_helper.ShippingMethodFilterOption) []qm.QueryMod {
+	conds := options.Conditions
+	if options.ShippingZoneChannelSlug != nil || options.ShippingZoneCountries != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZones, model.ShippingZoneTableColumns.ID, model.ShippingMethodTableColumns.ShippingZoneID)),
+		)
 
-	query := ss.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.ShippingMethodTableName).Where(options.Conditions)
-
-	for _, opt := range []squirrel.Sqlizer{
-		options.ShippingZoneChannelSlug,
-		options.ShippingZoneCountries,
-		options.ChannelListingsChannelSlug,
-	} {
-		query = query.Where(opt)
-	}
-
-	if options.ShippingZoneChannelSlug != nil ||
-		options.ShippingZoneCountries != nil ||
-		options.SelectRelatedShippingZone {
-		query = query.InnerJoin(model.ShippingZoneTableName + " ON ShippingZones.Id = ShippingMethods.ShippingZoneID")
+		if options.ShippingZoneCountries != nil {
+			conds = append(conds, options.ShippingZoneCountries)
+		}
 
 		if options.ShippingZoneChannelSlug != nil {
-			query = query.
-				InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-				InnerJoin(model.ChannelTableName + " ON Channels.Id = ShippingZoneChannels.ChannelID")
+			conds = append(
+				conds,
+				qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)),
+				qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.ShippingZoneChannelTableColumns.ChannelID)),
+				options.ShippingZoneChannelSlug,
+			)
 		}
 	}
-	if options.ChannelListingsChannelSlug != nil {
-		query = query.
-			InnerJoin(model.ShippingMethodChannelListingTableName + " ON ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id").
-			InnerJoin(model.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID")
+
+	for _, load := range options.Load {
+		conds = append(conds, qm.Load(load))
 	}
 
-	return query
+	return conds
 }
 
-// GetbyOption finds and returns a shipping method that satisfy given options
-func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
-	queryString, args, err := ss.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetbyOption_ToSql")
-	}
-
-	var (
-		res          model.ShippingMethod
-		shippingZone model.ShippingZone
-		scanFields   = ss.ScanFields(&res)
-	)
-	if options.SelectRelatedShippingZone {
-		scanFields = append(scanFields, ss.ShippingZone().ScanFields(&shippingZone)...)
-	}
-
-	err = ss.GetReplica().Raw(queryString, args...).Row().Scan(scanFields...)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, store.NewErrNotFound(model.ShippingMethodTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find shipping method by given options")
-	}
-
-	if options.SelectRelatedShippingZone {
-		res.SetShippingZone(&shippingZone)
-	}
-
-	return &res, nil
-}
-
-func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
-	queryString, args, err := ss.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetbyOption_ToSql")
-	}
-
-	rows, err := ss.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find shipping methods with given options.")
-	}
-	defer rows.Close()
-
-	var shippingMethodMap = map[string]*model.ShippingMethod{}
-
-	for rows.Next() {
-		var (
-			method     model.ShippingMethod
-			zone       model.ShippingZone
-			scanFields = ss.ScanFields(&method)
-		)
-		if options.SelectRelatedShippingZone {
-			scanFields = append(scanFields, ss.ShippingZone().ScanFields(&zone)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan row of shipping method")
-		}
-
-		if options.SelectRelatedShippingZone {
-			method.SetShippingZone(&zone)
-		}
-
-		shippingMethodMap[method.Id] = &method
-	}
-
-	return lo.Values(shippingMethodMap), nil
+func (ss *SqlShippingMethodStore) FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
+	conds := ss.commonQueryBuilder(options)
+	return model.ShippingMethods(conds...).All(ss.GetReplica())
 }
 
 func (s *SqlShippingMethodStore) Delete(transaction boil.ContextTransactor, ids []string) error {

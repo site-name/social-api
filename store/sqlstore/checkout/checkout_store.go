@@ -2,12 +2,14 @@ package checkout
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlCheckoutStore struct {
@@ -82,14 +84,94 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout m
 	// if err != nil {
 	// 	return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", checkout.Token)
 	// }
-	productVariantIDs := checkoutLines.VariantIDs()
+	// productVariantIDs := checkoutLines.VariantIDs()
 
-	checkoutLines, err := model.CheckoutLines(model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token)).All(cs.GetReplica())
-	if err != nil {
-		return nil, err
+	// checkoutLines, err := model.CheckoutLines(model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token)).All(cs.GetReplica())
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	checkoutLines, err := model.CheckoutLines(
+		model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token),
+		qm.Load(fmt.Sprintf(
+			"%s.%s.%s.%s",
+			model.CheckoutLineRels.Variant,
+			model.ProductVariantRels.Product,
+			model.ProductRels.ProductCollections,
+			model.ProductCollectionRels.Collection,
+		)),
+		qm.Load(fmt.Sprintf(
+			"%s.%s.%s",
+			model.CheckoutLineRels.Variant,
+			model.ProductVariantRels.VariantProductVariantChannelListings,
+			model.ProductVariantChannelListingRels.Channel,
+		)),
+	).All(cs.GetReplica())
+
+	var result model_helper.CheckoutLineInfos
+
+	for _, checkoutLine := range checkoutLines {
+		if checkoutLine == nil {
+			continue
+		}
+
+		// var (
+		// 	productVariant *model.ProductVariant
+		// 	product        *model.Product
+		// 	collections    model.CollectionSlice
+		// 	// productCollections model.ProductCollectionSlice
+		// )
+		// productVariant := checkoutLine.R.Variant
+		// product := productVariant.R.Product
+		// collections := product.R.ProductCollections
+		// variantChannelListing := productVariant.R.VariantProductVariantChannelListings[0].R.Channel
+
+		checkoutLineInfo := &model_helper.CheckoutLineInfo{
+			Line: *checkoutLine,
+			// Variant:        *productVariant,
+			// ChannelListing: *variantChannelListing,
+			// Product:        *product,
+			// Collections:    collections,
+		}
+
+		if checkoutLine.R != nil {
+			productVariant := checkoutLine.R.Variant
+
+			if productVariant != nil {
+				checkoutLineInfo.Variant = *productVariant
+
+				if productVariant.R != nil {
+					product := productVariant.R.Product
+
+					if product != nil {
+						checkoutLineInfo.Product = *product
+
+						if product.R != nil {
+							productCollections := product.R.ProductCollections
+
+							if len(productCollections) > 0 {
+								var collections model.CollectionSlice
+
+								for _, prdCl := range productCollections {
+									if prdCl.R != nil && prdCl.R.Collection != nil {
+										collections = append(collections, prdCl.R.Collection)
+									}
+								}
+
+								checkoutLineInfo.Collections = collections
+							}
+						}
+					}
+
+					variantChannelListing := productVariant.R.VariantProductVariantChannelListings
+				}
+			}
+		}
+
 	}
 
-	var c model.CheckoutLine
+	var p model.Product
+	p.R.ProductCollections
 
 	// fetch product variants
 	var (

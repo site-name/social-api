@@ -18,7 +18,6 @@ func NewSqlPluginConfigurationStore(s store.Store) store.PluginConfigurationStor
 	return &SqlPluginConfigurationStore{s}
 }
 
-// Upsert inserts or updates given plugin configuration and returns it
 func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
 	var err error
 
@@ -38,7 +37,6 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 	return config, nil
 }
 
-// Get finds a plugin configuration with given id then returns it
 func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 	var res model.PluginConfiguration
 	err := p.GetReplica().First(&res, "Id = ?", id).Error
@@ -52,7 +50,6 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration
 	return &res, nil
 }
 
-// FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
 	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_FilterByOption")
 	if err != nil {
@@ -87,7 +84,6 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 	return configs, nil
 }
 
-// GetByOptions finds and returns 1 plugin configuration with given options
 func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_GetByOption")
 	if err != nil {

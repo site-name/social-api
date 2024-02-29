@@ -224,54 +224,21 @@ func (n *NullDecimal) Scan(value any) error {
 		return nil
 	}
 
-	switch t := value.(type) {
-	case int:
-		deci := decimal.NewFromInt(int64(t))
-		n.Decimal = &deci
-		return nil
-
-	case int32:
-		deci := decimal.NewFromInt32(t)
-		n.Decimal = &deci
-		return nil
-
-	case int64:
-		deci := decimal.NewFromInt(t)
-		n.Decimal = &deci
-		return nil
-
-	case decimal.Decimal:
-		n.Decimal = &t
-		return nil
-
-	case float64:
-		deci := decimal.NewFromFloat(t)
-		n.Decimal = &deci
-		return nil
-
-	case float32:
-		deci := decimal.NewFromFloat32(t)
-		n.Decimal = &deci
-		return nil
-
-	case string:
-		deci, err := decimal.NewFromString(t)
-		if err != nil {
-			return err
-		}
-		n.Decimal = &deci
-		return nil
-
-	default:
-		return fmt.Errorf("unsupported value with type: %T", value)
+	var deci decimal.Decimal
+	err := deci.Scan(value)
+	if err != nil {
+		return err
 	}
+
+	n.Decimal = &deci
+	return nil
 }
 
 func (n NullDecimal) Value() (driver.Value, error) {
 	if n.Decimal == nil {
 		return nil, nil
 	}
-	return *n.Decimal, nil
+	return n.Decimal.InexactFloat64(), nil
 }
 
 func (n NullDecimal) MarshalJSON() ([]byte, error) {

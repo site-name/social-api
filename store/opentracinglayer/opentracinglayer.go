@@ -1647,7 +1647,7 @@ func (s *OpenTracingLayerAuditStore) Save(audit model.Audit) error {
 	return err
 }
 
-func (s *OpenTracingLayerCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
+func (s *OpenTracingLayerCategoryStore) FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1683,25 +1683,7 @@ func (s *OpenTracingLayerCategoryStore) Get(ctx context.Context, categoryID stri
 	return result, err
 }
 
-func (s *OpenTracingLayerCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.GetByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.CategoryStore.GetByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
+func (s *OpenTracingLayerCategoryStore) Upsert(category model.Category) (*model.Category, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -3329,7 +3311,7 @@ func (s *OpenTracingLayerGiftCardStore) Delete(tx boil.ContextTransactor, ids []
 	return err
 }
 
-func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4620,7 +4602,7 @@ func (s *OpenTracingLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTran
 	return result, err
 }
 
-func (s *OpenTracingLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, preorderAllocationIDs ...string) error {
+func (s *OpenTracingLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -4629,7 +4611,7 @@ func (s *OpenTracingLayerPreorderAllocationStore) Delete(tx boil.ContextTransact
 	}()
 
 	defer span.Finish()
-	err := s.PreorderAllocationStore.Delete(tx, preorderAllocationIDs...)
+	err := s.PreorderAllocationStore.Delete(tx, ids)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4965,204 +4947,6 @@ func (s *OpenTracingLayerProductMediaStore) Upsert(tx boil.ContextTransactor, me
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTranslationStore.FilterByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTranslationStore.FilterByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTranslationStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTranslationStore.Get(translationID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTranslationStore.Upsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTranslationStore.Upsert(translation)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Delete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.Delete(tx, ids)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.FilterProductTypesByCheckoutToken")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.FilterbyOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, resultVar1, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.GetByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.GetByOption(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ProductTypeByProductVariantID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ProductTypesByProductIDs")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) Save(tx boil.ContextTransactor, productType *model.ProductType) (*model.ProductType, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.Save(tx, productType)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductTypeStore) ToggleProductTypeRelations(tx boil.ContextTransactor, productTypeID string, productAttributes model.AttributeSlice, variantAttributes model.AttributeSlice, isDelete bool) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ToggleProductTypeRelations")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
 func (s *OpenTracingLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Delete")
@@ -5371,60 +5155,6 @@ func (s *OpenTracingLayerProductVariantChannelListingStore) Save(variantChannelL
 
 	defer span.Finish()
 	result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantTranslationStore.FilterByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductVariantTranslationStore.FilterByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantTranslationStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductVariantTranslationStore.Get(translationID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantTranslationStore.Upsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductVariantTranslationStore.Upsert(translation)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5878,7 +5608,7 @@ func (s *OpenTracingLayerShippingMethodStore) Delete(tx boil.ContextTransactor, 
 	return err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) FilterByOptions(options model.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
+func (s *OpenTracingLayerShippingMethodStore) FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -5914,7 +5644,7 @@ func (s *OpenTracingLayerShippingMethodStore) Get(id string) (*model.ShippingMet
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) GetbyOption(options model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (s *OpenTracingLayerShippingMethodStore) GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.GetbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -5968,7 +5698,7 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) Delete(tx boil.Conte
 	return err
 }
 
-func (s *OpenTracingLayerShippingMethodChannelListingStore) FilterByOption(option model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
+func (s *OpenTracingLayerShippingMethodChannelListingStore) FilterByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodChannelListingStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -6022,7 +5752,7 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) Upsert(tx boil.Conte
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids ...string) error {
+func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -6031,7 +5761,7 @@ func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.Conte
 	}()
 
 	defer span.Finish()
-	err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids...)
+	err := s.ShippingMethodPostalCodeRuleStore.Delete(tx, ids)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6040,7 +5770,7 @@ func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(tx boil.Conte
 	return err
 }
 
-func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
+func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options model_helper.ShippingMethodPostalCodeRuleFilterOptions) (model.ShippingMethodPostalCodeRuleSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)

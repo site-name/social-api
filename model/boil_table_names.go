@@ -61,6 +61,7 @@ var TableNames = struct {
 	Payments                              string
 	PluginConfigurations                  string
 	PluginKeyValueStore                   string
+	PluginKeyValues                       string
 	Preferences                           string
 	PreorderAllocations                   string
 	ProductChannelListings                string
@@ -173,6 +174,7 @@ var TableNames = struct {
 	Payments:                              "payments",
 	PluginConfigurations:                  "plugin_configurations",
 	PluginKeyValueStore:                   "plugin_key_value_store",
+	PluginKeyValues:                       "plugin_key_values",
 	Preferences:                           "preferences",
 	PreorderAllocations:                   "preorder_allocations",
 	ProductChannelListings:                "product_channel_listings",

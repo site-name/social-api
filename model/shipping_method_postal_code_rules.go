@@ -22,11 +22,11 @@ import (
 
 // ShippingMethodPostalCodeRule is an object representing the database table.
 type ShippingMethodPostalCodeRule struct {
-	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ShippingMethodID string `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
-	Start            string `boil:"start" json:"start" toml:"start" yaml:"start"`
-	End              string `boil:"end" json:"end" toml:"end" yaml:"end"`
-	InclusionType    string `boil:"inclusion_type" json:"inclusion_type" toml:"inclusion_type" yaml:"inclusion_type"`
+	ID               string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ShippingMethodID string        `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
+	Start            string        `boil:"start" json:"start" toml:"start" yaml:"start"`
+	End              string        `boil:"end" json:"end" toml:"end" yaml:"end"`
+	InclusionType    InclusionType `boil:"inclusion_type" json:"inclusion_type" toml:"inclusion_type" yaml:"inclusion_type"`
 
 	R *shippingMethodPostalCodeRuleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodPostalCodeRuleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -62,18 +62,53 @@ var ShippingMethodPostalCodeRuleTableColumns = struct {
 
 // Generated where
 
+type whereHelperInclusionType struct{ field string }
+
+func (w whereHelperInclusionType) EQ(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelperInclusionType) NEQ(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelperInclusionType) LT(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelperInclusionType) LTE(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelperInclusionType) GT(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelperInclusionType) GTE(x InclusionType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelperInclusionType) IN(slice []InclusionType) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperInclusionType) NIN(slice []InclusionType) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var ShippingMethodPostalCodeRuleWhere = struct {
 	ID               whereHelperstring
 	ShippingMethodID whereHelperstring
 	Start            whereHelperstring
 	End              whereHelperstring
-	InclusionType    whereHelperstring
+	InclusionType    whereHelperInclusionType
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"id\""},
 	ShippingMethodID: whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"shipping_method_id\""},
 	Start:            whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"start\""},
 	End:              whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"end\""},
-	InclusionType:    whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"inclusion_type\""},
+	InclusionType:    whereHelperInclusionType{field: "\"shipping_method_postal_code_rules\".\"inclusion_type\""},
 }
 
 // ShippingMethodPostalCodeRuleRels is where relationship names are stored.

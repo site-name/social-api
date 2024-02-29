@@ -6648,6 +6648,46 @@ func (e NullCurrency) Value() (driver.Value, error) {
 	return string(e.Val), nil
 }
 
+type InclusionType string
+
+// Enum values for InclusionType
+const (
+	InclusionTypeInclude InclusionType = "include"
+	InclusionTypeExclude InclusionType = "exclude"
+)
+
+func AllInclusionType() []InclusionType {
+	return []InclusionType{
+		InclusionTypeInclude,
+		InclusionTypeExclude,
+	}
+}
+
+func (e InclusionType) IsValid() error {
+	switch e {
+	case InclusionTypeInclude, InclusionTypeExclude:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e InclusionType) String() string {
+	return string(e)
+}
+
+func (e InclusionType) Ordinal() int {
+	switch e {
+	case InclusionTypeInclude:
+		return 0
+	case InclusionTypeExclude:
+		return 1
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
 type ShippingMethodType string
 
 // Enum values for ShippingMethodType
