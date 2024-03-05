@@ -1,10 +1,10 @@
 package product
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCollectionChannelListingStore struct {
@@ -15,60 +15,52 @@ func NewSqlCollectionChannelListingStore(s store.Store) store.CollectionChannelL
 	return &SqlCollectionChannelListingStore{s}
 }
 
-func (s *SqlCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *SqlCollectionChannelListingStore) Upsert(transaction boil.ContextTransactor, relations model.CollectionChannelListingSlice) (model.CollectionChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	var err error
 	for _, rel := range relations {
-		if rel.Id == "" {
-			err = transaction.Create(rel).Error
+		if rel == nil {
+			continue
+		}
+
+		isSaving := rel.ID == ""
+		if isSaving {
+			model_helper.CollectionChannelListingPreSave(rel)
+		}
+
+		if err := model_helper.CollectionChannelListingIsValid(*rel); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = rel.Insert(transaction, boil.Infer())
 		} else {
-			rel.CreateAt = 0 // prevent update
-			err = transaction.Model(rel).Updates(rel).Error
+			_, err = rel.Update(transaction, boil.Blacklist(model.CollectionChannelListingColumns.CreatedAt))
 		}
 
 		if err != nil {
-			if s.IsUniqueConstraintError(err, []string{"CollectionID", "ChannelID", "collectionchannellistings_collectionid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput("CollectionChannelListings", "collectionID/channelID", "duplicate")
+			if s.IsUniqueConstraintError(err, []string{"collection_channel_listings_collection_id_channel_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.CollectionChannelListings, "collectionID/channelID", "duplicate")
 			}
-			return nil, errors.Wrap(err, "failed to upsert collection channel listing relation")
+			return nil, err
 		}
 	}
 
 	return relations, nil
 }
 
-func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "CollentionChannelListing_FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-	var res []*model.CollectionChannelListing
-	err = s.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find collection channel listings by given options")
-	}
-
-	return res, nil
+func (s *SqlCollectionChannelListingStore) FilterByOptions(options model_helper.CollectionChannelListingFilterOptions) (model.CollectionChannelListingSlice, error) {
+	return model.CollectionChannelListings(options.Conditions...).All(s.GetReplica())
 }
 
-func (s *SqlCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(model.CollectionChannelListingTableName).Where(options.Conditions)
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "Delete_ToSql")
-	}
-
+func (s *SqlCollectionChannelListingStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	err = transaction.Raw(queryStr, args...).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete collection channel listing relations")
-	}
-
-	return nil
+	_, err := model.CollectionChannelListings(model.CollectionChannelListingWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

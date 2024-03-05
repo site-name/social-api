@@ -55,7 +55,9 @@ func OrderPreSave(o *model.Order) {
 	if o.ID == "" {
 		o.ID = NewId()
 	}
-	o.CreatedAt = GetMillis()
+	if o.CreatedAt == 0 {
+		o.CreatedAt = GetMillis()
+	}
 
 	// NOTE: those 2 fields are not placed inside commonPre because they are not editable
 	if !o.ShippingMethodName.IsNil() {
@@ -321,7 +323,9 @@ func OrderScanValues(o *model.Order) []any {
 }
 
 func OrderLinePreSave(ol *model.OrderLine) {
-	ol.CreatedAt = GetMillis()
+	if ol.CreatedAt == 0 {
+		ol.CreatedAt = GetMillis()
+	}
 	if ol.ID == "" {
 		ol.ID = NewId()
 	}
@@ -415,7 +419,9 @@ func FulfillmentPreSave(f *model.Fulfillment) {
 	if f.ID == "" {
 		f.ID = NewId()
 	}
-	f.CreatedAt = GetMillis()
+	if f.CreatedAt == 0 {
+		f.CreatedAt = GetMillis()
+	}
 	FulfillmentCommonPre(f)
 }
 

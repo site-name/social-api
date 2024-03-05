@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS plugin_configurations (
 );
 
 ALTER TABLE ONLY plugin_configurations
+    ADD CONSTRAINT plugin_configurations_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES channels(id);
+
+ALTER TABLE ONLY plugin_configurations
     ADD CONSTRAINT plugin_configurations_identifier_channel_id_key UNIQUE (identifier, channel_id);
 
 CREATE INDEX idx_plugin_configurations_identifier ON plugin_configurations USING btree (identifier);

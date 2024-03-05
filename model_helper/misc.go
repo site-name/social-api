@@ -83,7 +83,9 @@ func OpenExchangeRateCommonPre(rate *model.OpenExchangeRate) {
 	if rate == nil {
 		return
 	}
-	rate.CreatedAt = GetMillis()
+	if rate.CreatedAt == 0 {
+		rate.CreatedAt = GetMillis()
+	}
 	if rate.ID == "" {
 		rate.ID = NewId()
 	}

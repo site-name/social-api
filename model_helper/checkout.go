@@ -34,7 +34,9 @@ func CheckoutPreSave(checkout *model.Checkout) {
 	if checkout.Token == "" {
 		checkout.Token = NewId()
 	}
-	checkout.CreatedAt = GetMillis()
+	if checkout.CreatedAt == 0 {
+		checkout.CreatedAt = GetMillis()
+	}
 	checkout.UpdatedAt = checkout.CreatedAt
 	checkoutCommonPre(checkout)
 }
@@ -103,10 +105,11 @@ func CheckoutIsValid(c model.Checkout) *AppError {
 }
 
 func CheckoutLinePreSave(cl *model.CheckoutLine) {
-	cl.CreatedAt = GetMillis()
+	if cl.CreatedAt == 0 {
+		cl.CreatedAt = GetMillis()
+	}
 	if cl.ID == "" {
 		cl.ID = NewId()
-
 	}
 }
 

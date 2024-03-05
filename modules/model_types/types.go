@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/site-name/decimal"
+	"github.com/volatiletech/null/v8/convert"
 )
 
 const maxPropSizeBytes = 1024 * 1024
@@ -99,23 +100,7 @@ func (n *NullInt64) Scan(value any) error {
 		n.Int64 = nil
 		return nil
 	}
-
-	switch t := value.(type) {
-	case int:
-		t64 := int64(t)
-		n.Int64 = &t64
-		return nil
-	case int32:
-		t64 := int64(t)
-		n.Int64 = &t64
-		return nil
-	case int64:
-		n.Int64 = &t
-		return nil
-
-	default:
-		return fmt.Errorf("unsupported value with type: %T", value)
-	}
+	return convert.ConvertAssign(n.Int64, value)
 }
 
 func (n NullInt64) Value() (driver.Value, error) {

@@ -2,12 +2,13 @@
 package plugin
 
 import (
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlPluginConfigurationStore struct {
@@ -18,97 +19,52 @@ func NewSqlPluginConfigurationStore(s store.Store) store.PluginConfigurationStor
 	return &SqlPluginConfigurationStore{s}
 }
 
-func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
-	var err error
-
-	if config.Id == "" {
-		err = p.GetMaster().Create(config).Error
+func (p *SqlPluginConfigurationStore) Upsert(config model.PluginConfiguration) (*model.PluginConfiguration, error) {
+	isSaving := config.ID == ""
+	if isSaving {
+		model_helper.PluginConfigurationPreSave(&config)
 	} else {
-		err = p.GetMaster().Model(config).Updates(config).Error
+		model_helper.PluginConfigurationCommonPre(&config)
+	}
+
+	if err := model_helper.PluginConfigurationIsValid(config); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = config.Insert(p.GetMaster(), boil.Infer())
+	} else {
+		_, err = config.Update(p.GetMaster(), boil.Infer())
 	}
 
 	if err != nil {
-		if p.IsUniqueConstraintError(err, []string{"Identifier", "ChannelID", "pluginconfigurations_identifier_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(model.PluginConfigurationTableName, "Identifier/ChannelID", "duplicate")
+		if p.IsUniqueConstraintError(err, []string{"plugin_configurations_identifier_channel_id_key", model.PluginConfigurationColumns.Identifier, model.PluginConfigurationColumns.ChannelID}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.PluginConfigurations, model.PluginConfigurationColumns.Identifier, config.Identifier)
 		}
-		return nil, errors.Wrapf(err, "failed to upsert plugin configuration with id=%s", config.Id)
+		return nil, err
 	}
 
-	return config, nil
+	return &config, nil
 }
 
 func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
-	var res model.PluginConfiguration
-	err := p.GetReplica().First(&res, "Id = ?", id).Error
+	record, err := model.FindPluginConfiguration(p.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.PluginConfigurations, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find plugon configuration with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_FilterByOption")
-	if err != nil {
 		return nil, err
 	}
 
-	var configs model.PluginConfigurations
-	err = p.GetReplica().Find(&configs, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
-	}
-
-	// check if we need to prefetch
-	if options.PrefetchRelatedChannel && len(configs) != 0 {
-		channels, err := p.Channel().FilterByOption(&model.ChannelFilterOption{
-			Conditions: squirrel.Eq{model.ChannelTableName + ".Id": configs.ChannelIDs()},
-		})
-
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find related channels of plugin configs")
-		}
-
-		for _, channel := range channels {
-			for _, config := range configs {
-				if channel.Id == config.ChannelID {
-					config.SetRelatedChannel(channel)
-				}
-			}
-		}
-	}
-
-	return configs, nil
+	return record, nil
 }
 
-func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_GetByOption")
-	if err != nil {
-		return nil, err
+func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model_helper.PluginConfigurationFilterOptions) (model.PluginConfigurationSlice, error) {
+	conds := options.Conditions
+	for _, load := range options.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
 
-	var res model.PluginConfiguration
-	err = p.GetReplica().First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find plugin configuration with given options")
-	}
-
-	// check if we need to prefetch
-	if options.PrefetchRelatedChannel && model_helper.IsValidId(res.Id) {
-		channel, err := p.Channel().Get(res.ChannelID)
-
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find related channels of plugin configs")
-		}
-
-		res.SetRelatedChannel(channel)
-	}
-
-	return &res, nil
+	return model.PluginConfigurations(conds...).All(p.GetReplica())
 }

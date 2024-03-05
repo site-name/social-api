@@ -17,7 +17,9 @@ func UploadSessionPreSave(u *model.UploadSession) {
 	if u.ID == "" {
 		u.ID = NewId()
 	}
-	u.CreatedAt = GetMillis()
+	if u.CreatedAt == 0 {
+		u.CreatedAt = GetMillis()
+	}
 	UploadSessionCommonPre(u)
 }
 
@@ -55,7 +57,9 @@ func FileInfoPreSave(f *model.FileInfo) {
 	if f.ID == "" {
 		f.ID = NewId()
 	}
-	f.CreatedAt = GetMillis()
+	if f.CreatedAt == 0 {
+		f.CreatedAt = GetMillis()
+	}
 	f.UpdatedAt = f.CreatedAt
 	fileInfoCommonPre(f)
 }
@@ -175,6 +179,9 @@ func GetEtagForFileInfos(infos model.FileInfoSlice) string {
 func ExportFilePreSave(f *model.ExportFile) {
 	if f.ID == "" {
 		f.ID = NewId()
+	}
+	if f.CreatedAt == 0 {
+		f.CreatedAt = GetMillis()
 	}
 	f.CreatedAt = GetMillis()
 	f.UpdatedAt = f.CreatedAt

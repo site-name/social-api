@@ -8,10 +8,12 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlProductVariantStore struct {
@@ -22,103 +24,80 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	return &SqlProductVariantStore{s}
 }
 
-func (ps *SqlProductVariantStore) Save(tx *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (ps *SqlProductVariantStore) Upsert(tx boil.ContextTransactor, variant model.ProductVariant) (*model.ProductVariant, error) {
 	if tx == nil {
 		tx = ps.GetMaster()
 	}
 
-	if err := tx.Save(variant).Error; err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
-			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
-		}
-		return nil, errors.Wrapf(err, "failed to save product variant with id=%s", variant.Id)
+	isSaving := variant.ID == ""
+	if isSaving {
+		model_helper.ProductVariantPreSave(&variant)
+	} else {
+		model_helper.ProductVariantCommonPre(&variant)
 	}
 
-	return variant, nil
-}
+	if err := model_helper.ProductVariantIsValid(variant); err != nil {
+		return nil, err
+	}
 
-func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
-	var variant model.ProductVariant
-	err := ps.GetReplica().First(&variant, model.ProductVariantColumnId+" = ?", id).Error
+	var err error
+	if isSaving {
+		err = variant.Insert(tx, boil.Infer())
+	} else {
+		_, err = variant.Update(tx, boil.Blacklist(
+			model.ProductVariantColumns.ProductID,
+		))
+	}
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductVariantTableName, id)
+		if ps.IsUniqueConstraintError(err, []string{model.ProductVariantColumns.Sku, "product_variants_sku_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.ProductVariants, model.ProductVariantColumns.Sku, variant.Sku)
 		}
-		return nil, errors.Wrapf(err, "failed to find product variant with id=%s", id)
+		return nil, err
 	}
 
 	return &variant, nil
 }
 
-// GetWeight returns either given variant's weight or the accompany product's weight or product type of accompany product's weight
+func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
+	variant, err := model.FindProductVariant(ps.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductVariants, id)
+		}
+		return nil, err
+	}
+
+	return variant, nil
+}
+
 func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
-	queryString := fmt.Sprintf(`SELECT 
-	%[1]s.%[2]s,
-	%[1]s.%[3]s,
-
-	%[4]s.%[5]s,
-	%[4]s.%[6]s,
-
-	%[7]s.%[8]s,
-	%[7]s.%[9]s
-	FROM
-		%[1]s
-	INNER JOIN %[4]s
-	ON
-		%[4]s.%[10]s = %[1]s.%[11]s
-	INNER JOIN %[7]s
-	ON
-		%[7]s.%[12]s = %[4]s.%[13]s
-	WHERE
-		%[1]s.%[14]s = ?
-	`,
-		model.ProductVariantTableName,        // 1
-		model.ProductVariantColumnWeight,     // 2
-		model.ProductVariantColumnWeightUnit, // 3
-
-		model.ProductTableName,    // 4
-		model.ProductColumnWeight, // 5
-		model.ProductColumnWeight, // 6
-
-		model.ProductTypeTableName,        // 7
-		model.ProductTypeColumnWeight,     // 8
-		model.ProductTypeColumnWeightUnit, // 9
-
-		model.ProductColumnId,               // 10
-		model.ProductVariantColumnProductID, // 11
-
-		model.ProductTypeColumnId,        // 12
-		model.ProductColumnProductTypeID, // 13
-
-		model.ProductVariantColumnId, // 14
-	)
-
 	var (
-		variantWeightAmount *float32
-		variantWeightUnit   measurement.WeightUnit
-
-		productWeightAmount *float32
-		productWeightUnit   measurement.WeightUnit
-
-		productTypeWeightAmount *float32
-		productTypeWeightUnit   measurement.WeightUnit
+		variantWeightAmount, productWeightAmount *float64
+		variantWeightUnit, productWeightUnit     measurement.WeightUnit
 	)
-	err := ps.
-		GetReplica().
-		Raw(queryString, productVariantID).
-		Row().
+
+	err := model.ProductVariants(
+		qm.Select(
+			model.ProductVariantTableColumns.Weight,
+			model.ProductVariantTableColumns.WeightUnit,
+			model.ProductTableColumns.Weight,
+			model.ProductTableColumns.WeightUnit,
+		),
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Products, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID)),
+		model.ProductVariantWhere.ID.EQ(productVariantID),
+	).
+		Query.
+		QueryRow(ps.GetReplica()).
 		Scan(
 			&variantWeightAmount,
 			&variantWeightUnit,
 			&productWeightAmount,
 			&productWeightUnit,
-			&productTypeWeightAmount,
-			&productTypeWeightUnit,
 		)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, store.NewErrNotFound(model.ProductVariantTableName, productVariantID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductVariants, productVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
 	}
@@ -127,49 +106,27 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		return &measurement.Weight{Amount: *variantWeightAmount, Unit: variantWeightUnit}, nil
 	}
 	if productWeightAmount != nil && productWeightUnit != "" {
-		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
+		return &measurement.Weight{Amount: *productWeightAmount, Unit: productWeightUnit}, nil
 	}
-	if productTypeWeightAmount != nil && productTypeWeightUnit != "" {
-		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
-	}
-
 	return nil, errors.Errorf("weight for product variant with id=%s is not set", productVariantID)
 }
 
-// GetByOrderLineID finds and returns a product variant by given orderLineID
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
-	var res model.ProductVariant
-
-	query := fmt.Sprintf(
-		`SELECT %[1]s.*
-	FROM
-		%[1]s
-	INNER JOIN 
-		%[2]s
-	ON 
-		%[1]s.%[3]s = %[2]s.%[4]s
-	WHERE 
-		%[2]s.%[5]s = ?`,
-		model.ProductVariantTableName,  // 1
-		model.OrderLineTableName,       // 2
-		model.ProductVariantColumnId,   // 3
-		model.OrderLineColumnVariantID, // 4
-		model.OrderLineColumnId,        // 5
-	)
-
-	err := vs.GetReplica().Raw(query, orderLineID).Scan(&res).Error
+	variant, err := model.ProductVariants(
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.OrderLines, model.ProductVariantTableColumns.ID, model.OrderLineTableColumns.VariantID)),
+		model.OrderLineWhere.ID.EQ(orderLineID),
+	).One(vs.GetReplica())
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductVariantTableName, "orderLineID="+orderLineID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductVariants, "orderLineID="+orderLineID)
 		}
-		return nil, errors.Wrapf(err, "failed to find product variant with order line id=%s", orderLineID)
+		return nil, err
 	}
 
-	return &res, nil
+	return variant, nil
 }
 
-// FilterByOption finds and returns product variants based on given option
-func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
+func (vs *SqlProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	db := vs.GetReplica()
 	if option.Distinct {
 		db = db.Distinct()
@@ -282,55 +239,55 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 	return res, nil
 }
 
-func (s *SqlProductVariantStore) ToggleProductVariantRelations(
-	tx *gorm.DB,
-	variants model.ProductVariants,
-	medias model.ProductMedias,
-	sales model.Sales,
-	vouchers model.Vouchers,
-	wishlistItems model.WishlistItems,
-	isDelete bool,
-) error {
-	if tx == nil {
-		tx = s.GetMaster()
-	}
+// func (s *SqlProductVariantStore) ToggleProductVariantRelations(
+// 	tx boil.ContextTransactor,
+// 	variants model.ProductVariants,
+// 	medias model.ProductMedias,
+// 	sales model.Sales,
+// 	vouchers model.Vouchers,
+// 	wishlistItems model.WishlistItems,
+// 	isDelete bool,
+// ) error {
+// 	if tx == nil {
+// 		tx = s.GetMaster()
+// 	}
 
-	/*
-		Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
-		Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
-		ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
-		WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
-	*/
+// 	/*
+// 		Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
+// 		Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
+// 		ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
+// 		WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
+// 	*/
 
-	for _, variant := range variants {
-		if variant == nil {
-			continue
-		}
+// 	for _, variant := range variants {
+// 		if variant == nil {
+// 			continue
+// 		}
 
-		for assocName, relations := range map[string]any{
-			"ProductMedias": medias,
-			"Sales":         sales,
-			"Vouchers":      vouchers,
-			"WishlistItems": wishlistItems,
-		} {
-			if relations != nil {
-				var err error
-				if isDelete {
-					err = tx.Model(variant).Association(assocName).Delete(relations)
-				} else {
-					err = tx.Model(variant).Association(assocName).Append(relations)
-				}
-				if err != nil {
-					return errors.Wrap(err, "failed to toggle "+assocName+" product variant relations")
-				}
-			}
-		}
-	}
+// 		for assocName, relations := range map[string]any{
+// 			"ProductMedias": medias,
+// 			"Sales":         sales,
+// 			"Vouchers":      vouchers,
+// 			"WishlistItems": wishlistItems,
+// 		} {
+// 			if relations != nil {
+// 				var err error
+// 				if isDelete {
+// 					err = tx.Model(variant).Association(assocName).Delete(relations)
+// 				} else {
+// 					err = tx.Model(variant).Association(assocName).Append(relations)
+// 				}
+// 				if err != nil {
+// 					return errors.Wrap(err, "failed to toggle "+assocName+" product variant relations")
+// 				}
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error) {
 	query := fmt.Sprintf(
 		`SELECT %[1]s.*
 	FROM
@@ -369,38 +326,29 @@ func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []s
 	return res, nil
 }
 
-func (s *SqlProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (s *SqlProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	if tx == nil {
 		tx = s.GetMaster()
 	}
 
-	// delete draft order lines of variants
-	draftOrderLinesQuery := fmt.Sprintf(
-		`DELETE FROM %[1]s WHERE %[2]s IN (
-			SELECT
-				%[1]s.%[2]s
-			FROM
-				%[1]s
-			INNER JOIN
-				%[3]s ON %[3]s.%[4]s = %[1]s.%[5]s
-			WHERE (
-				%[1]s.%[6]s IN ?
-				AND %[3]s.%[7]s = ?
-			)
-		)`,
-		model.OrderLineTableName,       // 1
-		model.OrderLineColumnId,        // 2
-		model.OrderTableName,           // 3
-		model.OrderColumnId,            // 4
-		model.OrderLineColumnOrderID,   // 5
-		model.OrderLineColumnVariantID, // 6
-		model.OrderColumnStatus,        // 7
-	)
+	_, err := s.GetQueryBuilder().
+		Delete(model.TableNames.OrderLines).
+		Where(squirrel.Expr(
+			fmt.Sprintf("%s IN ?", model.OrderLineColumns.ID),
 
-	err := tx.Exec(draftOrderLinesQuery, ids, model.ORDER_STATUS_DRAFT).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to delete related draft order lines of given variants")
-	}
+			s.GetQueryBuilder(squirrel.Question).
+				Select(model.OrderLineTableColumns.ID).
+				Prefix("(").
+				Suffix(")").
+				From(model.TableNames.OrderLines).
+				InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Orders, model.OrderLineTableColumns.OrderID, model.OrderTableColumns.ID)).
+				Where(squirrel.Eq{
+					model.OrderLineTableColumns.VariantID: ids,
+					model.OrderTableColumns.Status:        model.OrderStatusDraft,
+				}),
+		)).
+		RunWith(tx).
+		Exec()
 
 	// delete assigned attribute values
 	attributeValuesQuery := fmt.Sprintf(

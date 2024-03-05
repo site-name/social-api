@@ -48,7 +48,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms []*model_helper.
 	if c.Err != nil {
 		return
 	}
-	if !c.App.Srv().AccountService().SessionHasPermissionToAll(*c.AppContext.Session(), perms) {
+	if !c.App.AccountService().SessionHasPermissionToAll(*c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }
@@ -59,7 +59,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms []*model_helper.
 	if c.Err != nil {
 		return
 	}
-	if !c.App.Srv().AccountService().SessionHasPermissionToAny(*c.AppContext.Session(), perms) {
+	if !c.App.AccountService().SessionHasPermissionToAny(*c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }
@@ -102,7 +102,7 @@ func (c *Context) MfaRequired() {
 		return
 	}
 
-	user, err := c.App.Srv().AccountService().UserById(context.Background(), c.AppContext.Session().UserID)
+	user, err := c.App.AccountService().UserById(context.Background(), c.AppContext.Session().UserID)
 	if err != nil {
 		c.Err = model_helper.NewAppError("MfaRequired", "api.context.get_user.app_error", nil, err.Error(), http.StatusUnauthorized)
 		return
@@ -152,8 +152,8 @@ func (c *Context) LogErrorByCode(err *model_helper.AppError) {
 // ExtendSessionExpiryIfNeeded will update Session.ExpiresAt based on session lengths in config.
 // Session cookies will be resent to the client with updated max age.
 func (c *Context) ExtendSessionExpiryIfNeeded(w http.ResponseWriter, r *http.Request) {
-	if ok := c.App.Srv().AccountService().ExtendSessionExpiryIfNeeded(c.AppContext.Session()); ok {
-		c.App.Srv().AccountService().AttachSessionCookies(c.AppContext, w, r)
+	if ok := c.App.AccountService().ExtendSessionExpiryIfNeeded(c.AppContext.Session()); ok {
+		c.App.AccountService().AttachSessionCookies(c.AppContext, w, r)
 	}
 }
 
@@ -256,7 +256,7 @@ func NewJSONEncodingError() *model_helper.AppError {
 }
 
 func (c *Context) SetPermissionError(permissions ...*model_helper.Permission) {
-	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions)
+	c.Err = c.App.AccountService().MakePermissionError(c.AppContext.Session(), permissions)
 }
 
 func (c *Context) SetSiteURLHeader(url string) {

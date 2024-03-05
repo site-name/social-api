@@ -20,7 +20,7 @@ func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, catego
 		return query
 	}
 
-	return query.Where(squirrel.Eq{model.ProductTableName + "." + model.ProductColumnCategoryID: categoryIDs})
+	return query.Where(squirrel.Eq{model.ProductTableColumns.CategoryID: categoryIDs})
 }
 
 func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []string) squirrel.SelectBuilder {
@@ -32,9 +32,9 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 		Select(`(1) as "a"`).
 		Prefix("EXISTS (").
 		Suffix(")").
-		From(model.CollectionProductRelationTableName).
-		Where(squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": collectionIDs}).
-		Where(model.CollectionProductRelationTableName + ".ProductID = Products.Id").
+		From(model.TableNames.ProductCollections).
+		Where(squirrel.Eq{model.ProductCollectionTableColumns.CollectionID: collectionIDs}).
+		Where(fmt.Sprintf("%s = %s", model.ProductCollectionTableColumns.ProductID, model.ProductTableColumns.ID)).
 		Limit(1)
 
 	return query.Where(condition)
@@ -46,14 +46,14 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 			SELECT
 				(1) AS "a"
 			FROM 
-				`+model.ProductChannelListingTableName+` PCL
+				`+model.TableNames.ProductChannelListings+` PCL
 			WHERE
 				(
 					EXISTS (
 						SELECT 
 							(1) AS "a"
 						FROM
-							`+model.ChannelTableName+` C
+							`+model.TableNames.Channels+` C
 						WHERE
 							(
 								PCL.ChannelID = C.Id

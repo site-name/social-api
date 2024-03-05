@@ -123,6 +123,7 @@ var ChannelRels = struct {
 	Checkouts                     string
 	CollectionChannelListings     string
 	Orders                        string
+	PluginConfigurations          string
 	ProductChannelListings        string
 	ProductVariantChannelListings string
 	SaleChannelListings           string
@@ -133,6 +134,7 @@ var ChannelRels = struct {
 	Checkouts:                     "Checkouts",
 	CollectionChannelListings:     "CollectionChannelListings",
 	Orders:                        "Orders",
+	PluginConfigurations:          "PluginConfigurations",
 	ProductChannelListings:        "ProductChannelListings",
 	ProductVariantChannelListings: "ProductVariantChannelListings",
 	SaleChannelListings:           "SaleChannelListings",
@@ -146,6 +148,7 @@ type channelR struct {
 	Checkouts                     CheckoutSlice                     `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
 	CollectionChannelListings     CollectionChannelListingSlice     `boil:"CollectionChannelListings" json:"CollectionChannelListings" toml:"CollectionChannelListings" yaml:"CollectionChannelListings"`
 	Orders                        OrderSlice                        `boil:"Orders" json:"Orders" toml:"Orders" yaml:"Orders"`
+	PluginConfigurations          PluginConfigurationSlice          `boil:"PluginConfigurations" json:"PluginConfigurations" toml:"PluginConfigurations" yaml:"PluginConfigurations"`
 	ProductChannelListings        ProductChannelListingSlice        `boil:"ProductChannelListings" json:"ProductChannelListings" toml:"ProductChannelListings" yaml:"ProductChannelListings"`
 	ProductVariantChannelListings ProductVariantChannelListingSlice `boil:"ProductVariantChannelListings" json:"ProductVariantChannelListings" toml:"ProductVariantChannelListings" yaml:"ProductVariantChannelListings"`
 	SaleChannelListings           SaleChannelListingSlice           `boil:"SaleChannelListings" json:"SaleChannelListings" toml:"SaleChannelListings" yaml:"SaleChannelListings"`
@@ -178,6 +181,13 @@ func (r *channelR) GetOrders() OrderSlice {
 		return nil
 	}
 	return r.Orders
+}
+
+func (r *channelR) GetPluginConfigurations() PluginConfigurationSlice {
+	if r == nil {
+		return nil
+	}
+	return r.PluginConfigurations
 }
 
 func (r *channelR) GetProductChannelListings() ProductChannelListingSlice {
@@ -364,6 +374,20 @@ func (o *Channel) Orders(mods ...qm.QueryMod) orderQuery {
 	)
 
 	return Orders(queryMods...)
+}
+
+// PluginConfigurations retrieves all the plugin_configuration's PluginConfigurations with an executor.
+func (o *Channel) PluginConfigurations(mods ...qm.QueryMod) pluginConfigurationQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"plugin_configurations\".\"channel_id\"=?", o.ID),
+	)
+
+	return PluginConfigurations(queryMods...)
 }
 
 // ProductChannelListings retrieves all the product_channel_listing's ProductChannelListings with an executor.
@@ -758,6 +782,112 @@ func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel interfac
 				local.R.Orders = append(local.R.Orders, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderR{}
+				}
+				foreign.R.Channel = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadPluginConfigurations allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+	var slice []*Channel
+	var object *Channel
+
+	if singular {
+		var ok bool
+		object, ok = maybeChannel.(*Channel)
+		if !ok {
+			object = new(Channel)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeChannel))
+			}
+		}
+	} else {
+		s, ok := maybeChannel.(*[]*Channel)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeChannel)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeChannel))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &channelR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &channelR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`plugin_configurations`),
+		qm.WhereIn(`plugin_configurations.channel_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load plugin_configurations")
+	}
+
+	var resultSlice []*PluginConfiguration
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice plugin_configurations")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on plugin_configurations")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for plugin_configurations")
+	}
+
+	if singular {
+		object.R.PluginConfigurations = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &pluginConfigurationR{}
+			}
+			foreign.R.Channel = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ChannelID {
+				local.R.PluginConfigurations = append(local.R.PluginConfigurations, foreign)
+				if foreign.R == nil {
+					foreign.R = &pluginConfigurationR{}
 				}
 				foreign.R.Channel = local
 				break
@@ -1624,6 +1754,58 @@ func (o *Channel) AddOrders(exec boil.Executor, insert bool, related ...*Order) 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderR{
+				Channel: o,
+			}
+		} else {
+			rel.R.Channel = o
+		}
+	}
+	return nil
+}
+
+// AddPluginConfigurations adds the given related objects to the existing relationships
+// of the channel, optionally inserting them as new records.
+// Appends related to o.R.PluginConfigurations.
+// Sets related.R.Channel appropriately.
+func (o *Channel) AddPluginConfigurations(exec boil.Executor, insert bool, related ...*PluginConfiguration) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ChannelID = o.ID
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"plugin_configurations\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+				strmangle.WhereClause("\"", "\"", 2, pluginConfigurationPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ChannelID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &channelR{
+			PluginConfigurations: related,
+		}
+	} else {
+		o.R.PluginConfigurations = append(o.R.PluginConfigurations, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &pluginConfigurationR{
 				Channel: o,
 			}
 		} else {

@@ -1,12 +1,14 @@
 package product
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCollectionStore struct {
@@ -17,36 +19,48 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	return &SqlCollectionStore{s}
 }
 
-// Upsert depends on given collection's Id property to decide update or insert the collection
-func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
-	err := cs.GetMaster().Save(collection).Error
-	if err != nil {
-		if cs.IsUniqueConstraintError(err, []string{"slug_unique_key", "slug"}) {
-			return nil, store.NewErrInvalidInput(model.CollectionTableName, "Slug", collection.Slug)
-		}
-		return nil, errors.Wrap(err, "failed to upsert collection")
+func (cs *SqlCollectionStore) Upsert(collection model.Collection) (*model.Collection, error) {
+	isSaving := collection.ID == ""
+	if isSaving {
+		model_helper.CollectionPreSave(&collection)
+	} else {
+		model_helper.CollectionCommonPre(&collection)
 	}
+
+	if err := model_helper.CollectionIsValid(collection); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = collection.Insert(cs.GetMaster(), boil.Infer())
+	} else {
+		_, err = collection.Update(cs.GetMaster(), boil.Infer())
+	}
+
+	if err != nil {
+		if cs.IsUniqueConstraintError(err, []string{"slug_unique_key", model.CollectionColumns.Slug}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Collections, model.CollectionColumns.Slug, collection.Slug)
+		}
+		return nil, err
+	}
+
+	return &collection, nil
+}
+
+func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
+	collection, err := model.FindCollection(cs.GetReplica(), collectionID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Collections, collectionID)
+		}
+		return nil, err
+	}
+
 	return collection, nil
 }
 
-// Get finds and returns collection with given collectionID
-func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
-	var res model.Collection
-	err := cs.GetReplica().First(&res, "Id = ?", collectionID).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.CollectionTableName, collectionID)
-		}
-		return nil, errors.Wrapf(err, "failed to find collection with id=%s", collectionID)
-	}
-
-	return &res, nil
-}
-
-// FilterByOption finds and returns a list of collections satisfy the given option.
-//
-// NOTE: make sure to provide `ShopID` before calling me.
-func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) {
+func (cs *SqlCollectionStore) FilterByOption(option model_helper.CollectionFilterOptions) (model.CollectionSlice, error) {
 	query := cs.GetQueryBuilder().
 		Select(model.CollectionTableName + ".*").
 		From(model.CollectionTableName).
@@ -257,11 +271,11 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	return totalCount, res, nil
 }
 
-func (s *SqlCollectionStore) Delete(ids ...string) error {
-	err := s.GetMaster().Delete(&model.Collection{}, "Id IN ?", ids).Error
-	if err != nil {
-		errors.Wrap(err, "failed to delete collection(s) by given ids")
+func (s *SqlCollectionStore) Delete(tx boil.ContextTransactor, ids []string) error {
+	if tx == nil {
+		tx = s.GetMaster()
 	}
 
-	return nil
+	_, err := model.Collections(model.CollectionWhere.ID.IN(ids)).DeleteAll(tx)
+	return err
 }

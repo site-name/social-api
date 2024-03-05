@@ -16,7 +16,9 @@ func MenuPreSave(m *model.Menu) {
 	if m.ID == "" {
 		m.ID = NewId()
 	}
-	m.CreatedAt = GetMillis()
+	if m.CreatedAt == 0 {
+		m.CreatedAt = GetMillis()
+	}
 	MenuCommonPre(m)
 }
 

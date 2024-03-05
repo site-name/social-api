@@ -163,10 +163,10 @@ type (
 
 // Plugin
 type PluginStore interface {
-	SaveOrUpdate(keyVal *model.PluginKeyValue) (*model.PluginKeyValue, error)
-	CompareAndSet(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error)
-	CompareAndDelete(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error)
-	SetWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, error)
+	Upsert(keyVal model.PluginKeyValue) (*model.PluginKeyValue, error)
+	CompareAndSet(keyVal model.PluginKeyValue, oldValue []byte) (bool, error)
+	CompareAndDelete(keyVal model.PluginKeyValue, oldValue []byte) (bool, error)
+	SetWithOptions(pluginID string, key string, value []byte, options model_helper.PluginKVSetOptions) (bool, error)
 	Get(pluginID, key string) (*model.PluginKeyValue, error)
 	Delete(pluginID, key string) error
 	DeleteAllForPlugin(PluginID string) error
@@ -291,10 +291,9 @@ type ComplianceStore interface {
 
 // plugin
 type PluginConfigurationStore interface {
-	GetByOptions(options model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error)                   // GetByOptions finds and returns 1 plugin configuration with given options
-	Upsert(config model.PluginConfiguration) (*model.PluginConfiguration, error)                                       // Upsert inserts or updates given plugin configuration and returns it
-	Get(id string) (*model.PluginConfiguration, error)                                                                 // Get finds a plugin configuration with given id then returns it
-	FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) (model.PluginConfigurationSlice, error) // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
+	Upsert(config model.PluginConfiguration) (*model.PluginConfiguration, error)                                              // Upsert inserts or updates given plugin configuration and returns it
+	Get(id string) (*model.PluginConfiguration, error)                                                                        // Get finds a plugin configuration with given id then returns it
+	FilterPluginConfigurations(options model_helper.PluginConfigurationFilterOptions) (model.PluginConfigurationSlice, error) // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 }
 
 // model
@@ -386,37 +385,37 @@ type (
 	CollectionTranslationStore interface {
 	}
 	CollectionChannelListingStore interface {
-		Delete(tx boil.ContextTransactor, options *model.CollectionChannelListingFilterOptions) error
-		Upsert(tx boil.ContextTransactor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error)
-		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
+		Delete(tx boil.ContextTransactor, ids []string) error
+		Upsert(tx boil.ContextTransactor, relations model.CollectionChannelListingSlice) (model.CollectionChannelListingSlice, error)
+		FilterByOptions(options model_helper.CollectionChannelListingFilterOptions) (model.CollectionChannelListingSlice, error)
 	}
 	CollectionStore interface {
-		Upsert(collection *model.Collection) (*model.Collection, error)                          // Upsert depends on given collection's Id property to decide update or insert the collection
-		Get(collectionID string) (*model.Collection, error)                                      // Get finds and returns collection with given collectionID
-		FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
-		Delete(ids ...string) error
+		Upsert(collection model.Collection) (*model.Collection, error)                             // Upsert depends on given collection's Id property to decide update or insert the collection
+		Get(collectionID string) (*model.Collection, error)                                        // Get finds and returns collection with given collectionID
+		FilterByOption(option model_helper.CollectionFilterOptions) (model.CollectionSlice, error) // FilterByOption finds and returns a list of collections satisfy the given option
+		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	CollectionProductStore interface {
-		Delete(tx boil.ContextTransactor, options *model.CollectionProductFilterOptions) error
-		BulkSave(tx boil.ContextTransactor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
-		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
+		// Delete(tx boil.ContextTransactor, options *model.CollectionProductFilterOptions) error
+		// BulkSave(tx boil.ContextTransactor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
+		// FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}
 	ProductMediaStore interface {
-		Upsert(tx boil.ContextTransactor, medias model.ProductMedias) (model.ProductMedias, error) // Upsert depends on given media's Id property to decide insert or update it
-		Get(id string) (*model.ProductMedia, error)                                                // Get finds and returns 1 product media with given id
-		FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error)      // FilterByOption finds and returns a list of product medias with given id
+		Upsert(tx boil.ContextTransactor, medias model.ProductMediumSlice) (model.ProductMediumSlice, error) // Upsert depends on given media's Id property to decide insert or update it
+		Get(id string) (*model.ProductMedium, error)                                                         // Get finds and returns 1 product media with given id
+		FilterByOption(option model_helper.ProductMediaFilterOption) (model.ProductMediumSlice, error)       // FilterByOption finds and returns a list of product medias with given id
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 	}
 	DigitalContentUrlStore interface {
-		Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) // Upsert inserts or updates given digital content url into database then returns it
-		Get(id string) (*model.DigitalContentUrl, error)                              // Get finds and returns a digital content url with given id
-		FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error)
+		Upsert(contentURL model.DigitalContentURL) (*model.DigitalContentURL, error) // Upsert inserts or updates given digital content url into database then returns it
+		Get(id string) (*model.DigitalContentURL, error)                             // Get finds and returns a digital content url with given id
+		FilterByOptions(options model_helper.DigitalContentUrlFilterOptions) (model.DigitalContentURLSlice, error)
 	}
 	DigitalContentStore interface {
-		Delete(tx boil.ContextTransactor, options *model.DigitalContentFilterOption) error
-		Save(content *model.DigitalContent) (*model.DigitalContent, error)                               // Save inserts given digital content into database then returns it
-		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)             // GetByOption finds and returns 1 digital content filtered using given option
-		FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) //
+		Delete(tx boil.ContextTransactor, ids []string) error
+		Save(content model.DigitalContent) (*model.DigitalContent, error)
+		GetByOption(option model_helper.DigitalContentFilterOption) (*model.DigitalContent, error)
+		FilterByOption(option model_helper.DigitalContentFilterOption) (model.DigitalContentSlice, error)
 	}
 	ProductVariantChannelListingStore interface {
 		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                       // Save insert given value into database then returns it with an error
@@ -431,21 +430,21 @@ type (
 	}
 	ProductVariantStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error)
-		Save(tx boil.ContextTransactor, variant *model.ProductVariant) (*model.ProductVariant, error) // Save inserts product variant instance to database
-		Get(id string) (*model.ProductVariant, error)                                                 // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                               // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                           // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error)   // FilterByOption finds and returns product variants based on given option
-		ToggleProductVariantRelations(
-			tx boil.ContextTransactor,
-			variants model.ProductVariants,
-			medias model.ProductMedias,
-			sales model.Sales,
-			vouchers model.Vouchers,
-			wishlistItems model.WishlistItems,
-			isDelete bool,
-		) error
+		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error)
+		Upsert(tx boil.ContextTransactor, variant model.ProductVariant) (*model.ProductVariant, error) // Save inserts product variant instance to database
+		Get(id string) (*model.ProductVariant, error)                                                  // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                            // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error)    // FilterByOption finds and returns product variants based on given option
+		// ToggleProductVariantRelations(
+		// 	tx boil.ContextTransactor,
+		// 	variants model.ProductVariants,
+		// 	medias model.ProductMedias,
+		// 	sales model.Sales,
+		// 	vouchers model.Vouchers,
+		// 	wishlistItems model.WishlistItems,
+		// 	isDelete bool,
+		// ) error
 	}
 	ProductChannelListingStore interface {
 		BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings

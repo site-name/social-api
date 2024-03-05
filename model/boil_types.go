@@ -6540,6 +6540,46 @@ func (e StorePaymentMethod) Ordinal() int {
 	}
 }
 
+type ProductMediaType string
+
+// Enum values for ProductMediaType
+const (
+	ProductMediaTypeVIDEO ProductMediaType = "VIDEO"
+	ProductMediaTypeIMAGE ProductMediaType = "IMAGE"
+)
+
+func AllProductMediaType() []ProductMediaType {
+	return []ProductMediaType{
+		ProductMediaTypeVIDEO,
+		ProductMediaTypeIMAGE,
+	}
+}
+
+func (e ProductMediaType) IsValid() error {
+	switch e {
+	case ProductMediaTypeVIDEO, ProductMediaTypeIMAGE:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e ProductMediaType) String() string {
+	return string(e)
+}
+
+func (e ProductMediaType) Ordinal() int {
+	switch e {
+	case ProductMediaTypeVIDEO:
+		return 0
+	case ProductMediaTypeIMAGE:
+		return 1
+
+	default:
+		panic(errors.New("enum is not valid"))
+	}
+}
+
 // NullCurrency is a nullable Currency enum type. It supports SQL and JSON serialization.
 type NullCurrency struct {
 	Val   Currency

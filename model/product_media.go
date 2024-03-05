@@ -29,7 +29,7 @@ type ProductMedium struct {
 	Ppoi        string                 `boil:"ppoi" json:"ppoi" toml:"ppoi" yaml:"ppoi"`
 	Image       string                 `boil:"image" json:"image" toml:"image" yaml:"image"`
 	Alt         string                 `boil:"alt" json:"alt" toml:"alt" yaml:"alt"`
-	Type        string                 `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Type        ProductMediaType       `boil:"type" json:"type" toml:"type" yaml:"type"`
 	ExternalURL model_types.NullString `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
 	OembedData  model_types.JSONString `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
 	SortOrder   model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
@@ -88,6 +88,41 @@ var ProductMediumTableColumns = struct {
 
 // Generated where
 
+type whereHelperProductMediaType struct{ field string }
+
+func (w whereHelperProductMediaType) EQ(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelperProductMediaType) NEQ(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelperProductMediaType) LT(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelperProductMediaType) LTE(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelperProductMediaType) GT(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelperProductMediaType) GTE(x ProductMediaType) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelperProductMediaType) IN(slice []ProductMediaType) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperProductMediaType) NIN(slice []ProductMediaType) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var ProductMediumWhere = struct {
 	ID          whereHelperstring
 	CreatedAt   whereHelperint64
@@ -95,7 +130,7 @@ var ProductMediumWhere = struct {
 	Ppoi        whereHelperstring
 	Image       whereHelperstring
 	Alt         whereHelperstring
-	Type        whereHelperstring
+	Type        whereHelperProductMediaType
 	ExternalURL whereHelpermodel_types_NullString
 	OembedData  whereHelpermodel_types_JSONString
 	SortOrder   whereHelpermodel_types_NullInt
@@ -106,7 +141,7 @@ var ProductMediumWhere = struct {
 	Ppoi:        whereHelperstring{field: "\"product_media\".\"ppoi\""},
 	Image:       whereHelperstring{field: "\"product_media\".\"image\""},
 	Alt:         whereHelperstring{field: "\"product_media\".\"alt\""},
-	Type:        whereHelperstring{field: "\"product_media\".\"type\""},
+	Type:        whereHelperProductMediaType{field: "\"product_media\".\"type\""},
 	ExternalURL: whereHelpermodel_types_NullString{field: "\"product_media\".\"external_url\""},
 	OembedData:  whereHelpermodel_types_JSONString{field: "\"product_media\".\"oembed_data\""},
 	SortOrder:   whereHelpermodel_types_NullInt{field: "\"product_media\".\"sort_order\""},

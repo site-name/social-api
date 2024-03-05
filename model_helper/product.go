@@ -15,7 +15,9 @@ func ProductPreSave(p *model.Product) {
 	if p.ID == "" {
 		p.ID = NewId()
 	}
-	p.CreatedAt = GetMillis()
+	if p.CreatedAt == 0 {
+		p.CreatedAt = GetMillis()
+	}
 	p.UpdatedAt = p.CreatedAt
 	p.Slug = slug.Make(p.Name)
 }
@@ -175,4 +177,181 @@ type CategoryFilterOption struct {
 	SaleID    qm.QueryMod // INNER JOIN SaleCategories ON ... WHERE SaleCategories.SaleID ...
 	ProductID qm.QueryMod // INNER JOIN Products ON ... WHERE Products.ID ...
 	VoucherID qm.QueryMod // INNER JOIN VoucherCategories ON ... WHERE VoucherCategories.VoucherID ...
+}
+
+type CollectionFilterOptions struct {
+	CommonQueryOptions
+	ProductID                                   qm.QueryMod // INNER JOIN product_cpllections ON ... WHERE product_collections.product_id ...
+	VoucherID                                   qm.QueryMod // INNER JOIN voucher_collections ON ... WHERE voucher_collections.voucher_id ...
+	SaleID                                      qm.QueryMod // INNER JOIN sale_collections ON ... WHERE sale_collections.sale_id ...
+	RelatedCollectionChannelListingConds        qm.QueryMod // INNER JOIN collection_channel_listings ON ... WHERE collection_channel_listings...
+	RelatedCollectionChannelListingChannelConds qm.QueryMod // INNER JOIN collection_channel_listings ON ... INNER JOIN chanel ON ... WHERE channels...
+	AnnotateProductCount                        bool
+}
+
+func CollectionChannelListingPreSave(c *model.CollectionChannelListing) {
+	if c.ID == "" {
+		c.ID = NewId()
+	}
+	if c.CreatedAt == 0 {
+		c.CreatedAt = GetMillis()
+	}
+}
+
+func CollectionChannelListingIsValid(c model.CollectionChannelListing) *AppError {
+	if !IsValidId(c.ID) {
+		return NewAppError("CollectionChannelListing.IsValid", "model.collection_channel_listing.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(c.CollectionID) {
+		return NewAppError("CollectionChannelListing.IsValid", "model.collection_channel_listing.is_valid.collection_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !c.ChannelID.IsNil() && !IsValidId(*c.ChannelID.String) {
+		return NewAppError("CollectionChannelListing.IsValid", "model.collection_channel_listing.is_valid.channel_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if c.CreatedAt <= 0 {
+		return NewAppError("CollectionChannelListing.IsValid", "model.collection_channel_listing.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type CollectionChannelListingFilterOptions struct {
+	CommonQueryOptions
+}
+
+type DigitalContentFilterOption struct {
+	CommonQueryOptions
+}
+
+func DigitalContentPreSave(d *model.DigitalContent) {
+	if d.ID == "" {
+		d.ID = NewId()
+	}
+}
+
+func DigitalContentIsValid(d model.DigitalContent) *AppError {
+	if !IsValidId(d.ID) {
+		return NewAppError("DigitalContent.IsValid", "model.digital_content.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if d.ContentType.IsValid() != nil {
+		return NewAppError("DigitalContent.IsValid", "model.digital_content.is_valid.content_type.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type DigitalContentUrlFilterOptions struct {
+	CommonQueryOptions
+}
+
+func DigitalContentUrlPreSave(d *model.DigitalContentURL) {
+	if d.ID == "" {
+		d.ID = NewId()
+	}
+	if d.CreatedAt == 0 {
+		d.CreatedAt = GetMillis()
+	}
+}
+
+func DigitalContentUrlIsValid(d model.DigitalContentURL) *AppError {
+	if !IsValidId(d.ID) {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(d.Token) {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.token.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(d.ContentID) {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.content_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if d.CreatedAt <= 0 {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if d.DownloadNum < 0 {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.download_num.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !d.LineID.IsNil() && !IsValidId(*d.LineID.String) {
+		return NewAppError("DigitalContentURL.IsValid", "model.digital_content_url.is_valid.line_id.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+func ProductChannelListingPreSave(p *model.ProductChannelListing) {
+	if p.ID == "" {
+		p.ID = NewId()
+	}
+	if p.CreatedAt == 0 {
+		p.CreatedAt = GetMillis()
+	}
+	ProductChannelListingCommonPre(p)
+}
+
+func ProductChannelListingCommonPre(p *model.ProductChannelListing) {
+	if p.Currency.IsValid() != nil {
+		p.Currency = DEFAULT_CURRENCY
+	}
+}
+
+func ProductChannelListingIsValid(p model.ProductChannelListing) *AppError {
+	if !IsValidId(p.ID) {
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(p.ProductID) {
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.product_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(p.ChannelID) {
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.channel_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.CreatedAt <= 0 {
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Currency.IsValid() != nil {
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.currency.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type ProductChannelListingFilterOption struct {
+	CommonQueryOptions
+}
+
+func ProductMediaPreSave(p *model.ProductMedium) {
+	if p.ID == "" {
+		p.ID = NewId()
+	}
+	if p.CreatedAt == 0 {
+		p.CreatedAt = GetMillis()
+	}
+	ProductMediaCommonPre(p)
+}
+
+func ProductMediaCommonPre(p *model.ProductMedium) {
+	p.Alt = SanitizeUnicode(p.Alt)
+	if p.Type.IsValid() != nil {
+		p.Type = model.ProductMediaTypeIMAGE
+	}
+}
+
+func ProductMediaIsValid(p model.ProductMedium) *AppError {
+	if !IsValidId(p.ID) {
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(p.ProductID) {
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.product_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.CreatedAt <= 0 {
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if p.Type.IsValid() != nil {
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.type.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type ProductMediaFilterOption struct {
+	CommonQueryOptions
+	Preloads  []string
+	VariantID qm.QueryMod // INNER JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
 }

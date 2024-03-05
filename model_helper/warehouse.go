@@ -13,7 +13,9 @@ func AllocationPreSave(allocation *model.Allocation) {
 	if allocation.ID == "" {
 		allocation.ID = NewId()
 	}
-	allocation.CreatedAt = GetMillis()
+	if allocation.CreatedAt == 0 {
+		allocation.CreatedAt = GetMillis()
+	}
 }
 
 func AllocationIsValid(allocation model.Allocation) *AppError {
@@ -41,7 +43,9 @@ func WarehousePreSave(w *model.Warehouse) {
 	if w.ID == "" {
 		w.ID = NewId()
 	}
-	w.CreatedAt = GetMillis()
+	if w.CreatedAt == 0 {
+		w.CreatedAt = GetMillis()
+	}
 	WarehouseCommonPre(w)
 }
 

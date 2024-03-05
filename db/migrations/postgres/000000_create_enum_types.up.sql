@@ -1729,7 +1729,18 @@ THEN
 CREATE TYPE warehouse_click_and_collect_option AS ENUM (
     'disabled',
     'local',
-		'all'
+	'all'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'product_media_type')
+THEN
+CREATE TYPE product_media_type AS ENUM (
+    'image',
+    'video'
 );
 END IF;
 END $$;

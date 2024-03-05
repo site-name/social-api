@@ -1,13 +1,14 @@
 package product
 
 import (
+	"database/sql"
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlProductMediaStore struct {
@@ -18,80 +19,76 @@ func NewSqlProductMediaStore(s store.Store) store.ProductMediaStore {
 	return &SqlProductMediaStore{s}
 }
 
-// Upsert depends on given media's Id property to decide insert or update it
-func (ps *SqlProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
+func (ps *SqlProductMediaStore) Upsert(tx boil.ContextTransactor, medias model.ProductMediumSlice) (model.ProductMediumSlice, error) {
 	if tx == nil {
 		tx = ps.GetMaster()
 	}
-	err := tx.Save(medias).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to upsert product medias")
+
+	for _, media := range medias {
+		if media == nil {
+			continue
+		}
+
+		isSaving := media.ID == ""
+		if isSaving {
+			model_helper.ProductMediaPreSave(media)
+		} else {
+			model_helper.ProductMediaCommonPre(media)
+		}
+
+		if err := model_helper.ProductMediaIsValid(*media); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = media.Insert(tx, boil.Infer())
+		} else {
+			_, err = media.Update(tx, boil.Blacklist(
+				model.ProductMediumColumns.CreatedAt,
+			))
+		}
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return medias, nil
 }
 
-// Get finds and returns 1 product media with given id
-func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
-	var res model.ProductMedia
-	err := ps.GetReplica().First(&res, "Id = ?", id).Error
+func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedium, error) {
+	media, err := model.FindProductMedium(ps.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductMediaTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductMedia, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find product media with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-// FilterByOption finds and returns a list of product medias with given id
-func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
-	db := ps.GetReplica()
-	if len(option.Preloads) > 0 {
-		for _, preload := range option.Preloads {
-			db = db.Preload(preload)
-		}
-	}
-
-	conditions := squirrel.And{}
-	if option.Conditions != nil {
-		conditions = append(conditions, option.Conditions)
-	}
-	if option.VariantID != nil {
-		conditions = append(conditions, option.VariantID)
-
-		db = db.Joins(fmt.Sprintf(
-			"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-			model.ProductVariantMediaTableName, // 1
-			model.ProductMediaTableName,        // 2
-			"media_id",                         // 3
-			model.ProductMediaColumnId,         // 4
-		))
-	}
-
-	args, err := store.BuildSqlizer(conditions, "ProductMedia_FilterByOption")
-	if err != nil {
 		return nil, err
 	}
-	var res model.ProductMedias
-	err = db.Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product medias by given option")
-	}
 
-	return res, nil
+	return media, nil
 }
 
-func (p *SqlProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+func (ps *SqlProductMediaStore) FilterByOption(option model_helper.ProductMediaFilterOption) (model.ProductMediumSlice, error) {
+	conds := option.Conditions
+	if option.VariantID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.VariantMedia, model.VariantMediumTableColumns.MediaID, model.ProductMediumTableColumns.ID)),
+			option.VariantID,
+		)
+	}
+
+	for _, load := range option.Preloads {
+		conds = append(conds, qm.Load(load))
+	}
+
+	return model.ProductMedia(conds...).All(ps.GetReplica())
+}
+
+func (p *SqlProductMediaStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	if tx == nil {
 		tx = p.GetMaster()
 	}
-
-	result := tx.Where("Id IN ?", ids).Delete(&model.ProductMedia{})
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to delete product medias by given ids")
-	}
-
-	return result.RowsAffected, nil
+	return model.ProductMedia(model.ProductMediumWhere.ID.IN(ids)).DeleteAll(tx)
 }

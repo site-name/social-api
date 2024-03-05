@@ -130,7 +130,9 @@ func AddressPreSave(a *model.Address) {
 
 	}
 	addressCommonPre(a)
-	a.CreatedAt = GetMillis()
+	if a.CreatedAt == 0 {
+		a.CreatedAt = GetMillis()
+	}
 	a.UpdatedAt = a.CreatedAt
 }
 
@@ -250,7 +252,9 @@ func SessionPreSave(s *model.Session) {
 	if s.Token == "" {
 		s.Token = NewId()
 	}
-	s.CreatedAt = GetMillis()
+	if s.CreatedAt == 0 {
+		s.CreatedAt = GetMillis()
+	}
 	s.LastActivityAt = s.CreatedAt
 	if s.Props == nil {
 		s.Props = model_types.JSONString{}
@@ -486,7 +490,9 @@ func UserPreSave(u *model.User) {
 		u.Password = HashPassword(u.Password)
 	}
 
-	u.CreatedAt = GetMillis()
+	if u.CreatedAt == 0 {
+		u.CreatedAt = GetMillis()
+	}
 	u.UpdatedAt = u.CreatedAt
 }
 
@@ -910,6 +916,9 @@ func StatusIsValid(s model.Status) *AppError {
 // ------------------ term of service ----------------
 
 func TermsOfServicePreSave(t *model.TermsOfService) {
+	if t.ID == "" {
+		t.ID = NewId()
+	}
 	if t.CreatedAt == 0 {
 		t.CreatedAt = GetMillis()
 	}

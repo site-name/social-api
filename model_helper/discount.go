@@ -134,7 +134,9 @@ func SaleIsValid(s model.Sale) *AppError {
 
 func SalePreSave(s *model.Sale) {
 	saleCommonPre(s)
-	s.CreatedAt = GetMillis()
+	if s.CreatedAt == 0 {
+		s.CreatedAt = GetMillis()
+	}
 	s.UpdatedAt = s.CreatedAt
 	if s.ID == "" {
 		s.ID = NewId()
@@ -191,7 +193,9 @@ func VoucherIsValid(v model.Voucher) *AppError {
 }
 
 func VoucherPreSave(v *model.Voucher) {
-	v.CreatedAt = GetMillis()
+	if v.CreatedAt == 0 {
+		v.CreatedAt = GetMillis()
+	}
 	v.UpdatedAt = v.CreatedAt
 	if v.ID == "" {
 		v.ID = NewId()
@@ -227,7 +231,9 @@ func voucherCommonPre(v *model.Voucher) {
 }
 
 func SaleChannelListingPreSave(s *model.SaleChannelListing) {
-	s.CreatedAt = GetMillis()
+	if s.CreatedAt == 0 {
+		s.CreatedAt = GetMillis()
+	}
 	if s.ID == "" {
 		s.ID = NewId()
 	}
@@ -268,7 +274,9 @@ type SaleChannelListingFilterOption struct {
 }
 
 func VoucherChannelListingPreSave(v *model.VoucherChannelListing) {
-	v.CreatedAt = GetMillis()
+	if v.CreatedAt == 0 {
+		v.CreatedAt = GetMillis()
+	}
 	if v.ID == "" {
 		v.ID = NewId()
 	}
@@ -333,7 +341,9 @@ type VoucherChannelListingFilterOption struct {
 }
 
 func VoucherTranslationPreSave(v *model.VoucherTranslation) {
-	v.CreatedAt = GetMillis()
+	if v.CreatedAt == 0 {
+		v.CreatedAt = GetMillis()
+	}
 	if v.ID == "" {
 		v.ID = NewId()
 	}

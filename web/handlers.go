@@ -207,8 +207,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, tokenLocation := app.ParseAuthTokenFromRequest(r)
 
 	if token != "" {
-		session, err := c.App.Srv().AccountService().GetSession(token)
-		defer c.App.Srv().AccountService().ReturnSessionToPool(session)
+		session, err := c.App.AccountService().GetSession(token)
+		defer c.App.AccountService().ReturnSessionToPool(session)
 
 		if err != nil {
 			c.Logger.Info("Invalid session", slog.Err(err))

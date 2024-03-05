@@ -93,15 +93,26 @@ var PluginConfigurationWhere = struct {
 
 // PluginConfigurationRels is where relationship names are stored.
 var PluginConfigurationRels = struct {
-}{}
+	Channel string
+}{
+	Channel: "Channel",
+}
 
 // pluginConfigurationR is where relationships are stored.
 type pluginConfigurationR struct {
+	Channel *Channel `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
 }
 
 // NewStruct creates a new relationship struct
 func (*pluginConfigurationR) NewStruct() *pluginConfigurationR {
 	return &pluginConfigurationR{}
+}
+
+func (r *pluginConfigurationR) GetChannel() *Channel {
+	if r == nil {
+		return nil
+	}
+	return r.Channel
 }
 
 // pluginConfigurationL is where Load methods for each relationship are stored.
@@ -204,6 +215,175 @@ func (q pluginConfigurationQuery) Exists(exec boil.Executor) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+// Channel pointed to by the foreign key.
+func (o *PluginConfiguration) Channel(mods ...qm.QueryMod) channelQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ChannelID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Channels(queryMods...)
+}
+
+// LoadChannel allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (pluginConfigurationL) LoadChannel(e boil.Executor, singular bool, maybePluginConfiguration interface{}, mods queries.Applicator) error {
+	var slice []*PluginConfiguration
+	var object *PluginConfiguration
+
+	if singular {
+		var ok bool
+		object, ok = maybePluginConfiguration.(*PluginConfiguration)
+		if !ok {
+			object = new(PluginConfiguration)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePluginConfiguration)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePluginConfiguration))
+			}
+		}
+	} else {
+		s, ok := maybePluginConfiguration.(*[]*PluginConfiguration)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePluginConfiguration)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePluginConfiguration))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &pluginConfigurationR{}
+		}
+		args[object.ChannelID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &pluginConfigurationR{}
+			}
+
+			args[obj.ChannelID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`channels`),
+		qm.WhereIn(`channels.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Channel")
+	}
+
+	var resultSlice []*Channel
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Channel")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for channels")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Channel = foreign
+		if foreign.R == nil {
+			foreign.R = &channelR{}
+		}
+		foreign.R.PluginConfigurations = append(foreign.R.PluginConfigurations, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
+				if foreign.R == nil {
+					foreign.R = &channelR{}
+				}
+				foreign.R.PluginConfigurations = append(foreign.R.PluginConfigurations, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetChannel of the pluginConfiguration to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.PluginConfigurations.
+func (o *PluginConfiguration) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"plugin_configurations\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
+		strmangle.WhereClause("\"", "\"", 2, pluginConfigurationPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ChannelID = related.ID
+	if o.R == nil {
+		o.R = &pluginConfigurationR{
+			Channel: related,
+		}
+	} else {
+		o.R.Channel = related
+	}
+
+	if related.R == nil {
+		related.R = &channelR{
+			PluginConfigurations: PluginConfigurationSlice{o},
+		}
+	} else {
+		related.R.PluginConfigurations = append(related.R.PluginConfigurations, o)
+	}
+
+	return nil
 }
 
 // PluginConfigurations retrieves all the records using an executor.

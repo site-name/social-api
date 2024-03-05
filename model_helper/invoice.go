@@ -11,7 +11,9 @@ func InvoicePreSave(invoice *model.Invoice) {
 	if invoice.ID == "" {
 		invoice.ID = NewId()
 	}
-	invoice.CreatedAt = GetMillis()
+	if invoice.CreatedAt == 0 {
+		invoice.CreatedAt = GetMillis()
+	}
 	invoice.UpdatedAt = invoice.CreatedAt
 }
 
@@ -46,7 +48,9 @@ func InvoiceEventPreSave(invoiceEvent *model.InvoiceEvent) {
 	if invoiceEvent.ID == "" {
 		invoiceEvent.ID = NewId()
 	}
-	invoiceEvent.CreatedAt = GetMillis()
+	if invoiceEvent.CreatedAt == 0 {
+		invoiceEvent.CreatedAt = GetMillis()
+	}
 }
 
 func InvoiceEventIsValid(invoiceEvent model.InvoiceEvent) *AppError {

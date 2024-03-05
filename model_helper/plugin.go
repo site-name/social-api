@@ -35,3 +35,8 @@ func PluginConfigurationIsValid(p model.PluginConfiguration) *AppError {
 	}
 	return nil
 }
+
+type PluginConfigurationFilterOptions struct {
+	CommonQueryOptions
+	Preloads []string
+}

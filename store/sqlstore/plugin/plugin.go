@@ -1,15 +1,20 @@
 package plugin
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
-	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (
@@ -25,109 +30,97 @@ func NewSqlPluginStore(s store.Store) store.PluginStore {
 }
 
 func (ps *SqlPluginStore) Upsert(kv model.PluginKeyValue) (*model.PluginKeyValue, error) {
-	if err := kv.IsValid(); err != nil {
+	if err := model_helper.PluginKeyValueIsValid(kv); err != nil {
 		return nil, err
 	}
 
-	if kv.Value == nil {
+	if !kv.Pvalue.Valid {
 		// Setting a key to nil is the same as removing it
-		err := ps.Delete(kv.PluginId, kv.Key)
+		err := ps.Delete(kv.PluginID, kv.Pkey)
 		if err != nil {
 			return nil, err
 		}
 
-		return kv, nil
+		return &kv, nil
 	}
 
-	query := ps.GetQueryBuilder().
-		Insert(model_helper.PluginKeyValueStoreTableName).
-		Columns("PluginId", "PKey", "PValue", "ExpireAt").
-		Values(kv.PluginId, kv.Key, kv.Value, kv.ExpireAt).
-		SuffixExpr(
-			squirrel.Expr("ON CONFLICT (pluginid, pkey) DO UPDATE SET PValue = ?, ExpireAt = ?", kv.Value, kv.ExpireAt),
-		)
-
-	queryString, args, err := query.ToSql()
+	_, err := queries.Raw(
+		fmt.Sprintf(
+			`INSERT INTO %[1]s (
+				%[2]s, 
+				%[3]s, 
+				%[4]s, 
+				%[5]s
+			) VALUES (
+				$1, $2, $3, $4
+			) ON CONFLICT (
+				%[2]s,
+				%[3]s
+			) DO UPDATE SET %[4]s = $3, %[5]s = $4`,
+			model.TableNames.PluginKeyValueStore, // 1
+			model.PluginKeyValueColumns.PluginID, // 2
+			model.PluginKeyValueColumns.Pkey,     // 3
+			model.PluginKeyValueColumns.Pvalue,   // 4
+			model.PluginKeyValueColumns.ExpireAt, // 5
+		),
+		kv.PluginID,
+		kv.Pkey,
+		kv.Pvalue,
+		kv.ExpireAt,
+	).Exec(ps.GetMaster())
 	if err != nil {
-		return nil, errors.Wrap(err, "plugin_tosql")
-	}
-
-	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to upsert PluginKeyValue")
 	}
 
-	return kv, nil
+	return &kv, nil
 }
 
 func (ps *SqlPluginStore) CompareAndSet(kv model.PluginKeyValue, oldValue []byte) (bool, error) {
-	if err := kv.IsValid(); err != nil {
-		return false, err
+	if err := model_helper.PluginKeyValueIsValid(kv); err != nil {
+		return false, nil
 	}
 
-	if kv.Value == nil {
+	if kv.Pvalue.Valid == false {
 		// Setting a key to nil is the same as removing it
 		return ps.CompareAndDelete(kv, oldValue)
 	}
 
 	if oldValue == nil {
 		// Delete any existing, expired value.
-		query := ps.GetQueryBuilder().
-			Delete("PluginKeyValueStore").
-			Where(sq.Eq{"PluginId": kv.PluginId}).
-			Where(sq.Eq{"PKey": kv.Key}).
-			Where(sq.NotEq{"ExpireAt": int(0)}).
-			Where(sq.Lt{"ExpireAt": model_helper.GetMillis()})
-
-		queryString, args, err := query.ToSql()
+		_, err := model.PluginKeyValues(
+			model.PluginKeyValueWhere.PluginID.EQ(kv.PluginID),
+			model.PluginKeyValueWhere.Pkey.EQ(kv.Pkey),
+			model.PluginKeyValueWhere.ExpireAt.NEQ(model_types.NewNullInt64(0)),
+			model.PluginKeyValueWhere.ExpireAt.LT(model_types.NewNullInt64(model_helper.GetMillis())),
+		).DeleteAll(ps.GetMaster())
 		if err != nil {
-			return false, errors.Wrap(err, "plugin_tosql")
+			return false, err
 		}
 
-		if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
-			return false, errors.Wrap(err, "failed to delete PluginKeyValue")
-		}
-
-		// Insert if oldValue is nil
-		queryString, args, err = ps.GetQueryBuilder().
-			Insert("PluginKeyValueStore").
-			Columns("PluginId", "PKey", "PValue", "ExpireAt").
-			Values(kv.PluginId, kv.Key, kv.Value, kv.ExpireAt).ToSql()
+		err = kv.Insert(ps.GetMaster(), boil.Infer())
 		if err != nil {
-			return false, errors.Wrap(err, "plugin_tosql")
-		}
-		if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
-			// If the error is from unique constraints violation, it's the result of a
-			// race condition, return false and no error. Otherwise we have a real error and
-			// need to return it.
-			if ps.IsUniqueConstraintError(err, []string{"PRIMARY", "PluginId", "Key", "PKey", "pkey"}) {
+			if ps.IsUniqueConstraintError(err, []string{"PRIMARY", model.PluginKeyValueColumns.PluginID, model.PluginKeyValueColumns.Pkey}) {
 				return false, nil
 			}
-			return false, errors.Wrap(err, "failed to insert PluginKeyValue")
+			return false, err
 		}
 	} else {
 		currentTime := model_helper.GetMillis()
 
-		// Update if oldValue is not nil
-		query := ps.GetQueryBuilder().
-			Update("PluginKeyValueStore").
-			Set("PValue", kv.Value).
-			Set("ExpireAt", kv.ExpireAt).
-			Where(sq.Eq{"PluginId": kv.PluginId}).
-			Where(sq.Eq{"PKey": kv.Key}).
-			Where(sq.Eq{"PValue": oldValue}).
-			Where(sq.Or{
-				sq.Eq{"ExpireAt": int(0)},
-				sq.Gt{"ExpireAt": currentTime},
-			})
-
-		queryString, args, err := query.ToSql()
+		_, err := model.PluginKeyValues(
+			model.PluginKeyValueWhere.PluginID.EQ(kv.PluginID),
+			model.PluginKeyValueWhere.Pkey.EQ(kv.Pkey),
+			model.PluginKeyValueWhere.Pvalue.EQ(null.Bytes{Bytes: oldValue, Valid: true}),
+			model_helper.Or{
+				squirrel.Eq{model.PluginKeyValueColumns.ExpireAt: 0},
+				squirrel.Gt{model.PluginKeyValueColumns.ExpireAt: currentTime},
+			},
+		).UpdateAll(ps.GetMaster(), model.M{
+			model.PluginKeyValueColumns.Pvalue:   kv.Pvalue,
+			model.PluginKeyValueColumns.ExpireAt: kv.ExpireAt,
+		})
 		if err != nil {
-			return false, errors.Wrap(err, "plugin_tosql")
-		}
-
-		err = ps.GetMaster().Raw(queryString, args...).Error
-		if err != nil {
-			return false, errors.Wrap(err, "failed to update PluginKeyValue")
+			return false, err
 		}
 	}
 
@@ -135,31 +128,23 @@ func (ps *SqlPluginStore) CompareAndSet(kv model.PluginKeyValue, oldValue []byte
 }
 
 func (ps *SqlPluginStore) CompareAndDelete(kv model.PluginKeyValue, oldValue []byte) (bool, error) {
-	if err := kv.IsValid(); err != nil {
-		return false, err
+	if err := model_helper.PluginKeyValueIsValid(kv); err != nil {
+		return false, nil
 	}
 
 	if oldValue == nil {
 		// nil can't be stored. Return showing that we didn't do anything
 		return false, nil
 	}
-
-	query := ps.GetQueryBuilder().
-		Delete("PluginKeyValueStore").
-		Where(sq.Eq{"PluginId": kv.PluginId}).
-		Where(sq.Eq{"PKey": kv.Key}).
-		Where(sq.Eq{"PValue": oldValue}).
-		Where(sq.Or{
-			sq.Eq{"ExpireAt": int(0)},
-			sq.Gt{"ExpireAt": model_helper.GetMillis()},
-		})
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return false, errors.Wrap(err, "plugin_tosql")
-	}
-
-	err = ps.GetMaster().Raw(queryString, args...).Error
+	_, err := model.PluginKeyValues(
+		model.PluginKeyValueWhere.PluginID.EQ(kv.PluginID),
+		model.PluginKeyValueWhere.Pkey.EQ(kv.Pkey),
+		model.PluginKeyValueWhere.Pvalue.EQ(null.Bytes{Bytes: oldValue, Valid: true}),
+		model_helper.Or{
+			squirrel.Eq{model.PluginKeyValueColumns.ExpireAt: 0},
+			squirrel.Gt{model.PluginKeyValueColumns.ExpireAt: model_helper.GetMillis()},
+		},
+	).DeleteAll(ps.GetMaster())
 	if err != nil {
 		return false, errors.Wrap(err, "failed to delete PluginKeyValue")
 	}
@@ -172,16 +157,13 @@ func (ps *SqlPluginStore) SetWithOptions(pluginId string, key string, value []by
 		return false, err
 	}
 
-	kv, err := model_helper.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
-	if err != nil {
-		return false, err
-	}
+	kv := model_helper.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
 
 	if opt.Atomic {
-		return ps.CompareAndSet(kv, opt.OldValue)
+		return ps.CompareAndSet(*kv, opt.OldValue)
 	}
 
-	savedKv, nErr := ps.SaveOrUpdate(kv)
+	savedKv, nErr := ps.Upsert(*kv)
 	if nErr != nil {
 		return false, nErr
 	}
@@ -190,79 +172,46 @@ func (ps *SqlPluginStore) SetWithOptions(pluginId string, key string, value []by
 }
 
 func (ps *SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error) {
-	currentTime := model.GetMillis()
-	query := ps.GetQueryBuilder().Select("PluginId, PKey, PValue, ExpireAt").
-		From("PluginKeyValueStore").
-		Where(sq.Eq{"PluginId": pluginId}).
-		Where(sq.Eq{"PKey": key}).
-		Where(sq.Or{sq.Eq{"ExpireAt": 0}, sq.Gt{"ExpireAt": currentTime}})
-	queryString, args, err := query.ToSql()
+	record, err := model.PluginKeyValues(
+		model.PluginKeyValueWhere.PluginID.EQ(pluginId),
+		model.PluginKeyValueWhere.Pkey.EQ(key),
+		model_helper.Or{
+			squirrel.Eq{model.PluginKeyValueColumns.ExpireAt: 0},
+			squirrel.Gt{model.PluginKeyValueColumns.ExpireAt: model_helper.GetMillis()},
+		},
+	).One(ps.GetReplica())
 	if err != nil {
-		return nil, errors.Wrap(err, "plugin_tosql")
-	}
-
-	var kv model.PluginKeyValue
-
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&kv).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("PluginKeyValue", fmt.Sprintf("pluginId=%s, key=%s", pluginId, key))
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.PluginKeyValueStore, "conds")
 		}
-		return nil, errors.Wrapf(err, "failed to get PluginKeyValue with pluginId=%s and key=%s", pluginId, key)
+		return nil, err
 	}
 
-	return &kv, nil
+	return record, nil
 }
 
 func (ps *SqlPluginStore) Delete(pluginId, key string) error {
-	query := ps.GetQueryBuilder().
-		Delete("PluginKeyValueStore").
-		Where(sq.Eq{"PluginId": pluginId}).
-		Where(sq.Eq{"Pkey": key})
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "plugin_tosql")
-	}
-
-	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
-		return errors.Wrapf(err, "failed to delete PluginKeyValue with pluginId=%s and key=%s", pluginId, key)
-	}
-	return nil
+	_, err := model.PluginKeyValues(
+		model.PluginKeyValueWhere.PluginID.EQ(pluginId),
+		model.PluginKeyValueWhere.Pkey.EQ(key),
+	).DeleteAll(ps.GetMaster())
+	return err
 }
 
 func (ps *SqlPluginStore) DeleteAllForPlugin(pluginId string) error {
-	query := ps.GetQueryBuilder().
-		Delete("PluginKeyValueStore").
-		Where(sq.Eq{"PluginId": pluginId})
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "plugin_tosql")
-	}
-
-	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
-		return errors.Wrapf(err, "failed to get all PluginKeyValues with pluginId=%s ", pluginId)
-	}
-	return nil
+	_, err := model.PluginKeyValues(
+		model.PluginKeyValueWhere.PluginID.EQ(pluginId),
+	).DeleteAll(ps.GetMaster())
+	return err
 }
 
 func (ps *SqlPluginStore) DeleteAllExpired() error {
 	currentTime := model_helper.GetMillis()
-	query := ps.GetQueryBuilder().
-		Delete("PluginKeyValueStore").
-		Where(sq.NotEq{"ExpireAt": 0}).
-		Where(sq.Lt{"ExpireAt": currentTime})
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "plugin_tosql")
-	}
-
-	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
-		return errors.Wrap(err, "failed to delete all expired PluginKeyValues")
-	}
-	return nil
+	_, err := model.PluginKeyValues(
+		model.PluginKeyValueWhere.ExpireAt.NEQ(model_types.NewNullInt64(0)),
+		model.PluginKeyValueWhere.ExpireAt.LT(model_types.NewNullInt64(currentTime)),
+	).DeleteAll(ps.GetMaster())
+	return err
 }
 
 func (ps *SqlPluginStore) List(pluginId string, offset int, limit int) ([]string, error) {
@@ -276,26 +225,19 @@ func (ps *SqlPluginStore) List(pluginId string, offset int, limit int) ([]string
 
 	var keys []string
 
-	query := ps.GetQueryBuilder().
-		Select("Pkey").
-		From("PluginKeyValueStore").
-		Where(sq.Eq{"PluginId": pluginId}).
-		Where(sq.Or{
-			sq.Eq{"ExpireAt": int(0)},
-			sq.Gt{"ExpireAt": model_helper.GetMillis()},
-		}).
-		OrderBy("PKey").
-		Limit(uint64(limit)).
-		Offset(uint64(offset))
-
-	queryString, args, err := query.ToSql()
+	err := model.PluginKeyValues(
+		qm.Select(model.PluginKeyValueColumns.Pkey),
+		model.PluginKeyValueWhere.PluginID.EQ(pluginId),
+		model_helper.Or{
+			squirrel.Eq{model.PluginKeyValueColumns.ExpireAt: 0},
+			squirrel.Gt{model.PluginKeyValueColumns.ExpireAt: model_helper.GetMillis()},
+		},
+		qm.OrderBy(fmt.Sprintf("%s %s", model.PluginKeyValueColumns.Pkey, model_helper.ASC)),
+		qm.Limit(limit),
+		qm.Offset(offset),
+	).Query.Bind(context.Background(), ps.GetReplica(), &keys)
 	if err != nil {
-		return nil, errors.Wrap(err, "plugin_tosql")
-	}
-
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&keys).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get PluginKeyValues with pluginId=%s", pluginId)
+		return nil, errors.Wrap(err, "failed to find plugin keys of plugins")
 	}
 
 	return keys, nil

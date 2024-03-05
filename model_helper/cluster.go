@@ -138,6 +138,6 @@ func ClusterDiscoveryPreSave(c *model.ClusterDiscovery) {
 	}
 	if c.CreatedAt == 0 {
 		c.CreatedAt = GetMillis()
-		c.LastPingAt = c.CreatedAt
 	}
+	c.LastPingAt = c.CreatedAt
 }

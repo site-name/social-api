@@ -13,7 +13,9 @@ func ShippingMethodChannelListingPreSave(listing *model.ShippingMethodChannelLis
 	if listing.ID == "" {
 		listing.ID = NewId()
 	}
-	listing.CreatedAt = GetMillis()
+	if listing.CreatedAt == 0 {
+		listing.CreatedAt = GetMillis()
+	}
 	ShippingMethodChannelListingCommonPre(listing)
 }
 
@@ -86,7 +88,9 @@ func ShippingZonePreSave(zone *model.ShippingZone) {
 	if zone.ID == "" {
 		zone.ID = NewId()
 	}
-	zone.CreatedAt = GetMillis()
+	if zone.CreatedAt == 0 {
+		zone.CreatedAt = GetMillis()
+	}
 	ShippingZoneCommonPre(zone)
 }
 

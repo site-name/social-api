@@ -47,10 +47,14 @@ func WishlistItemIsValid(wi model.WishlistItem) *AppError {
 
 func WishlistPreSave(w *model.Wishlist) {
 	w.ID = NewId()
-	w.CreatedAt = GetMillis()
+	if w.CreatedAt == 0 {
+		w.CreatedAt = GetMillis()
+	}
 }
 
 func WishlistItemPreSave(wi *model.WishlistItem) {
 	wi.ID = NewId()
-	wi.CreatedAt = GetMillis()
+	if wi.CreatedAt == 0 {
+		wi.CreatedAt = GetMillis()
+	}
 }

@@ -23,7 +23,9 @@ func PaymentPreSave(p *model.Payment) {
 	if p.ID == "" {
 		p.ID = NewId()
 	}
-	p.CreatedAt = GetMillis()
+	if p.CreatedAt == 0 {
+		p.CreatedAt = GetMillis()
+	}
 	p.UpdatedAt = p.CreatedAt
 	paymentCommonPre(p)
 }
@@ -162,7 +164,9 @@ func PaymentTransactionPreSave(pt *model.PaymentTransaction) {
 	if pt.ID == "" {
 		pt.ID = NewId()
 	}
-	pt.CreatedAt = GetMillis()
+	if pt.CreatedAt == 0 {
+		pt.CreatedAt = GetMillis()
+	}
 	PaymentTransactionCommonPre(pt)
 }
 

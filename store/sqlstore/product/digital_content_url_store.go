@@ -1,10 +1,12 @@
 package product
 
 import (
-	"github.com/pkg/errors"
+	"database/sql"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlDigitalContentUrlStore struct {
@@ -15,47 +17,51 @@ func NewSqlDigitalContentUrlStore(s store.Store) store.DigitalContentUrlStore {
 	return &SqlDigitalContentUrlStore{s}
 }
 
-// Upsert inserts or updates given digital content url into database then returns it
-func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) {
-	err := ps.GetMaster().Save(contentURL).Error
+func (ps *SqlDigitalContentUrlStore) Upsert(contentURL model.DigitalContentURL) (*model.DigitalContentURL, error) {
+	isSaving := contentURL.ID == ""
+	if isSaving {
+		model_helper.DigitalContentUrlPreSave(&contentURL)
+	}
+
+	if err := model_helper.DigitalContentUrlIsValid(contentURL); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = contentURL.Insert(ps.GetMaster(), boil.Infer())
+	} else {
+		_, err = contentURL.Update(ps.GetMaster(), boil.Blacklist(
+			model.DigitalContentURLColumns.CreatedAt,
+			model.DigitalContentURLColumns.Token,
+		))
+	}
+
 	if err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"Token", "digitalcontenturls_token_key"}) {
-			return nil, store.NewErrInvalidInput(model.DigitalContentURLTableName, "Token", contentURL.Token)
+		if ps.IsUniqueConstraintError(err, []string{model.DigitalContentURLColumns.Token, "digital_content_urls_token_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.DigitalContentUrls, model.DigitalContentURLColumns.Token, contentURL.Token)
 		}
-		if ps.IsUniqueConstraintError(err, []string{"LineID", "digitalcontenturls_lineid_key"}) {
-			return nil, store.NewErrInvalidInput(model.DigitalContentURLTableName, "LineID", contentURL.LineID)
+		if ps.IsUniqueConstraintError(err, []string{model.DigitalContentURLColumns.LineID, "digital_content_urls_line_id_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.DigitalContentUrls, model.DigitalContentURLColumns.LineID, contentURL.LineID)
 		}
-		return nil, errors.Wrapf(err, "failed to upsert content url with id=%s", contentURL.Id)
+		return nil, err
+	}
+
+	return &contentURL, nil
+}
+
+func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentURL, error) {
+	contentURL, err := model.FindDigitalContentURL(ps.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.DigitalContentUrls, id)
+		}
+		return nil, err
 	}
 
 	return contentURL, nil
 }
 
-// Get finds and returns a digital content url with given id
-func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
-	var res model.DigitalContentUrl
-
-	err := ps.GetReplica().First(&res, "Id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.DigitalContentURLTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find digital content url with id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "DigitalContentUrl_FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-
-	var res []*model.DigitalContentUrl
-	err = s.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find digital content urls by options")
-	}
-	return res, nil
+func (s *SqlDigitalContentUrlStore) FilterByOptions(options model_helper.DigitalContentUrlFilterOptions) (model.DigitalContentURLSlice, error) {
+	return model.DigitalContentUrls(options.Conditions...).All(s.GetReplica())
 }

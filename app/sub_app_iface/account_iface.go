@@ -119,9 +119,9 @@ type AccountService interface {
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
-	SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool
+	SessionHasPermissionToAll(session model.Session, permissions []*model_helper.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []*model_helper.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days

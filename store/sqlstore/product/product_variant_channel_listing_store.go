@@ -15,7 +15,6 @@ func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariant
 	return &SqlProductVariantChannelListingStore{s}
 }
 
-// Save insert given value into database then returns it with an error
 func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
 	err := ps.GetMaster().Create(variantChannelListing).Error
 	if err != nil {
@@ -28,7 +27,6 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 	return variantChannelListing, nil
 }
 
-// Get finds and returns 1 product variant channel listing based on given variantChannelListingID
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
 	var res model.ProductVariantChannelListing
 	err := ps.GetReplica().First(&res, "Id = ?", variantChannelListingID).Error
@@ -42,7 +40,6 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 	return &res, nil
 }
 
-// FilterbyOption finds and returns all product variant channel listings filterd using given option
 func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	// NOTE: In the scan fields creation below, the order of fields must be identical to the order of select fiels
 	selectFields := []string{model.ProductVariantChannelListingTableName + ".*"}
@@ -152,7 +149,6 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 	return res, nil
 }
 
-// BulkUpsert performs bulk upsert given product variant channel listings then returns them
 func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	if transaction == nil {
 		transaction = ps.GetMaster()

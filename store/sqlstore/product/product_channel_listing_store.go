@@ -1,13 +1,15 @@
 package product
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlProductChannelListingStore struct {
@@ -18,26 +20,41 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 	return &SqlProductChannelListingStore{s}
 }
 
-// BulkUpsert performs bulk upsert on given product channel listings
-func (ps *SqlProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (ps *SqlProductChannelListingStore) BulkUpsert(transaction boil.ContextTransactor, listings model.ProductChannelListingSlice) (model.ProductChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = ps.GetMaster()
 	}
 
 	for _, listing := range listings {
-		var err error
+		if listing == nil {
+			continue
+		}
 
-		if listing.Id == "" {
-			err = transaction.Create(listing).Error
+		isSaving := listing.ID == ""
+		if isSaving {
+			model_helper.ProductChannelListingPreSave(listing)
 		} else {
-			err = transaction.Model(listing).Updates(listing).Error
+			model_helper.ProductChannelListingCommonPre(listing)
+		}
+
+		if err := model_helper.ProductChannelListingIsValid(*listing); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = listing.Insert(transaction, boil.Infer())
+		} else {
+			_, err = listing.Update(transaction, boil.Blacklist(
+				model.ProductChannelListingColumns.CreatedAt,
+			))
 		}
 
 		if err != nil {
-			if ps.IsUniqueConstraintError(err, []string{"ProductID", "ChannelID", "productid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(model.ProductChannelListingTableName, "ProductID/ChannelID", "duplicate")
+			if ps.IsUniqueConstraintError(err, []string{model.ProductChannelListingTableColumns.ProductID, model.ProductChannelListingColumns.ChannelID, "product_channel_listings_product_id_channel_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.ProductChannelListings, "ProductID/ChannelID", "duplicate")
 			}
-			return nil, errors.Wrapf(err, "failed to upsert product channel listing with id=%s", listing.Id)
+			return nil, err
 		}
 	}
 
@@ -45,21 +62,18 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listin
 }
 
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductChannelListing, error) {
-	var res model.ProductChannelListing
-
-	err := ps.GetReplica().First(&res, "Id = ?", listingID).Error
+	listing, err := model.FindProductChannelListing(ps.GetReplica(), listingID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductChannelListingTableName, listingID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductChannelListings, listingID)
 		}
-		return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listingID)
+		return nil, err
 	}
 
-	return &res, nil
+	return listing, nil
 }
 
-// FilterByOption finds and returns all ProductChannelListings filtered by given option
-func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
+func (ps *SqlProductChannelListingStore) FilterByOption(option model_helper.ProductChannelListingFilterOption) (model.ProductChannelListingSlice, error) {
 	db := ps.GetReplica()
 	conditions := squirrel.And{}
 	for _, preload := range option.Preloads {
