@@ -7,7 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -1634,10 +1634,10 @@ func (s *TimerLayerChannelStore) DeleteChannels(tx boil.ContextTransactor, ids [
 	return err
 }
 
-func (s *TimerLayerChannelStore) Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
+func (s *TimerLayerChannelStore) FilterByOptions(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ChannelStore.Find(conds)
+	result, err := s.ChannelStore.FilterByOptions(conds)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1645,7 +1645,7 @@ func (s *TimerLayerChannelStore) Find(conds model_helper.ChannelFilterOptions) (
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Find", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -1662,22 +1662,6 @@ func (s *TimerLayerChannelStore) Get(id string) (*model.Channel, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerChannelStore) GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelStore.GetByOptions(conds)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -1986,7 +1970,7 @@ func (s *TimerLayerCollectionStore) Delete(tx boil.ContextTransactor, ids []stri
 	return err
 }
 
-func (s *TimerLayerCollectionStore) FilterByOption(option model_helper.CollectionFilterOptions) (model.CollectionSlice, error) {
+func (s *TimerLayerCollectionStore) FilterByOption(option model_helper.CollectionFilterOptions) (model_helper.CustomCollectionSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionStore.FilterByOption(option)
@@ -3008,10 +2992,10 @@ func (s *TimerLayerGiftCardStore) Delete(tx boil.ContextTransactor, ids []string
 	return err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(option model_helper.GiftcardFilterOption) (model.GiftcardSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
+	result, err := s.GiftCardStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3021,7 +3005,7 @@ func (s *TimerLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFil
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.FilterByOption", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *TimerLayerGiftCardStore) GetById(id string) (*model.Giftcard, error) {
@@ -4159,7 +4143,7 @@ func (s *TimerLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, id
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
+func (s *TimerLayerPreorderAllocationStore) FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreorderAllocationStore.FilterByOption(options)
@@ -4175,7 +4159,7 @@ func (s *TimerLayerPreorderAllocationStore) FilterByOption(options model.Preorde
 	return result, err
 }
 
-func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
 	result := s.ProductStore.AdvancedFilterQueryBuilder(input)
@@ -4191,7 +4175,7 @@ func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportP
 	return result
 }
 
-func (s *TimerLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+func (s *TimerLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.CountByCategoryIDs(categoryIDs)
@@ -4207,7 +4191,7 @@ func (s *TimerLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*mo
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error) {
+func (s *TimerLayerProductStore) FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.FilterByOption(option)
@@ -4223,7 +4207,7 @@ func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
+func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.FilterByQuery(query)
@@ -4239,23 +4223,7 @@ func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (mo
 	return result, err
 }
 
-func (s *TimerLayerProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
+func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) (model.ProductSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.NotPublishedProducts(channelID)
@@ -4303,7 +4271,7 @@ func (s *TimerLayerProductStore) PublishedWithVariants(channelIdOrSlug string) s
 	return result
 }
 
-func (s *TimerLayerProductStore) Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error) {
+func (s *TimerLayerProductStore) Save(tx boil.ContextTransactor, product model.Product) (*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.Save(tx, product)
@@ -4351,23 +4319,7 @@ func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug stri
 	return result
 }
 
-func (s *TimerLayerProductChannelListingStore) BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductChannelListingStore.BulkUpsert(tx, listings)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.BulkUpsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) FilterByOption(option model_helper.ProductChannelListingFilterOption) (model.ProductChannelListingSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductChannelListingStore.FilterByOption(option)
@@ -4395,6 +4347,22 @@ func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*mo
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.ProductChannelListingSlice) (model.ProductChannelListingSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductChannelListingStore.Upsert(tx, listings)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -4575,23 +4543,7 @@ func (s *TimerLayerProductVariantStore) Upsert(tx boil.ContextTransactor, varian
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantChannelListingStore.BulkUpsert(tx, variantChannelListings)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.BulkUpsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
@@ -4623,10 +4575,10 @@ func (s *TimerLayerProductVariantChannelListingStore) Get(variantChannelListingI
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) Upsert(tx boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
+	result, err := s.ProductVariantChannelListingStore.Upsert(tx, variantChannelListings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4634,7 +4586,7 @@ func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -5550,10 +5502,10 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error) {
+func (s *TimerLayerStockStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.Delete(tx, options)
+	result, err := s.StockStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5566,7 +5518,7 @@ func (s *TimerLayerStockStore) Delete(tx boil.ContextTransactor, options model.S
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterByOption(options model.StockFilterOption) (int64, model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.StockStore.FilterByOption(options)
@@ -5582,7 +5534,7 @@ func (s *TimerLayerStockStore) FilterByOption(options model.StockFilterOption) (
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForChannel(options model.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.StockStore.FilterForChannel(options)
@@ -5598,7 +5550,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options model.StockFilterForChan
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterForCountryAndChannel(options)
@@ -5614,7 +5566,7 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model.StockFil
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
@@ -5630,7 +5582,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options m
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(options)

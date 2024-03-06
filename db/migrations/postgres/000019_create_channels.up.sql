@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS channels (
   is_active boolean NOT NULL,
   slug varchar(255) NOT NULL,
   currency Currency NOT NULL,
-  default_country country_code NOT NULL
+  default_country country_code NOT NULL,
+
+  annotations jsonb -- This is a JSONB column that will store the annotations of the channel
 );
 
 ALTER TABLE ONLY channels

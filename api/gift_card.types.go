@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"

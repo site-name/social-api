@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"golang.org/x/text/currency"
 	"gorm.io/gorm"

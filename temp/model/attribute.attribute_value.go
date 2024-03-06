@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 )

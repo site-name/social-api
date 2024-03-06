@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"

@@ -5,14 +5,14 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlGiftCardStore struct {
@@ -74,115 +74,43 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.Giftcard, error) {
 	return giftcard, nil
 }
 
-func (gs *SqlGiftCardStore) FilterByOption(option model_helper.GiftcardFilterOption) (int64, model.GiftcardSlice, error) {
-	query := gs.
-		GetQueryBuilder().
-		Select(model.GiftcardTableName + ".*").
-		From(model.GiftcardTableName).
-		Where(option.Conditions)
+func (gs *SqlGiftCardStore) commonQueryBuilder(option model_helper.GiftcardFilterOption) []qm.QueryMod {
+	conds := option.Conditions
 
 	if option.OrderID != nil {
-		query = query.
-			InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.GiftCardID = %[2]s.Id", model.OrderGiftCardTableName, model.GiftcardTableName)).
-			Where(option.OrderID)
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.OrderGiftcards, model.OrderGiftcardTableColumns.GiftcardID, model.GiftcardTableColumns.ID)),
+			option.OrderID,
+		)
 	}
 	if option.CheckoutToken != nil {
-		subSelect := gs.GetQueryBuilder(squirrel.Question).
-			Select("GiftcardID").
-			From(model.GiftcardCheckoutTableName).
-			Where(option.CheckoutToken)
-
-		query = query.Where(squirrel.Expr("GiftCards.Id IN ?", subSelect))
-	}
-	if option.SelectForUpdate && option.Transaction != nil {
-		query = query.Suffix("FOR UPDATE")
-	}
-	if option.Distinct {
-		query = query.Distinct()
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.GiftcardCheckouts, model.GiftcardCheckoutTableColumns.GiftcardID, model.GiftcardTableColumns.ID)),
+			option.CheckoutToken,
+		)
 	}
 
-	// those annotations are used for pagination sorting
-	if option.AnnotateRelatedProductName || option.AnnotateRelatedProductSlug {
-		query = query.InnerJoin(model.ProductTableName + " ON Products.Id = GiftCards.ProductID")
+	var annotations = model_helper.AnnotationAggregator{}
+	if option.AnnotateRelatedProductNameAndSlug {
+		conds = append(conds, qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Products, model.ProductTableColumns.ID, model.GiftcardTableColumns.ProductID)))
 
-		if option.AnnotateRelatedProductName {
-			query = query.Column(`Products.Name AS "GiftCards.RelatedProductName"`)
-		}
-		if option.AnnotateRelatedProductSlug {
-			query = query.Column(`Products.Slug AS "GiftCards.RelatedProductSlug"`)
-		}
+		annotations[model_helper.GiftcardAnnotationKeys.RelatedProductName] = model.ProductTableColumns.Name
+		annotations[model_helper.GiftcardAnnotationKeys.RelatedProductSlug] = model.ProductTableColumns.Slug
+	}
+	if option.AnnotateUsedByFirstNameAndLastNames {
+		conds = append(conds, qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Users, model.UserTableColumns.ID, model.GiftcardTableColumns.UsedByID)))
+
+		annotations[model_helper.GiftcardAnnotationKeys.RelatedUsedByFirstName] = model.UserTableColumns.FirstName
+		annotations[model_helper.GiftcardAnnotationKeys.RelatedUsedBylastName] = model.UserTableColumns.LastName
 	}
 
-	if option.AnnotateUsedByFirstName || option.AnnotateUsedByLastName {
-		query = query.InnerJoin(model.UserTableName + " ON GiftCards.UsedByID = Users.Id")
+	return append(conds, annotations)
+}
 
-		if option.AnnotateUsedByFirstName {
-			query = query.Column(`Users.FirstName AS "GiftCards.RelatedUsedByFirstName"`)
-		}
-		if option.AnnotateUsedByLastName {
-			query = query.Column(`Users.LastName AS "GiftCards.RelatedUsedByLastName"`)
-		}
-	}
-
-	var totalCount int64
-	if option.CountTotal {
-		countQuery, args, err := gs.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "FilterByOption_CountTotal_ToSql")
-		}
-
-		err = gs.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "failed to count total giftcards by options")
-		}
-	}
-
-	// check pagination
-	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "query_toSql")
-	}
-
-	runner := gs.GetReplica()
-	if option.Transaction != nil {
-		runner = option.Transaction
-	}
-
-	rows, err := runner.Raw(queryString, args...).Rows()
-	if err != nil {
-		return 0, nil, errors.Wrap(err, "failed to count total number of giftcards by options")
-	}
-	defer rows.Close()
-
-	var res model.Giftcards
-	for rows.Next() {
-		var gc model.Giftcard
-		var scanFields = gs.ScanFields(&gc)
-
-		if option.AnnotateRelatedProductName {
-			scanFields = append(scanFields, &gc.RelatedProductName)
-		}
-		if option.AnnotateRelatedProductSlug {
-			scanFields = append(scanFields, &gc.RelatedProductSlug)
-		}
-		if option.AnnotateUsedByFirstName {
-			scanFields = append(scanFields, &gc.RelatedUsedByFirstName)
-		}
-		if option.AnnotateUsedByLastName {
-			scanFields = append(scanFields, &gc.RelatedUsedByLastName)
-		}
-
-		err := rows.Scan(scanFields...)
-		if err != nil {
-			return 0, nil, errors.Wrap(err, "failed to scan a row of giftcard")
-		}
-
-		res = append(res, &gc)
-	}
-
-	return totalCount, res, nil
+func (gs *SqlGiftCardStore) FilterByOption(option model_helper.GiftcardFilterOption) (model.GiftcardSlice, error) {
+	return model.Giftcards(gs.commonQueryBuilder(option)...).All(gs.GetReplica())
 }
 
 func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.OrderLineSlice, error) {
@@ -238,20 +166,12 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	     "order_orderline"."id" ASC
 	*/
 
-	// select exists product type with kind == "gift_card":
-	productTypeQuery := gs.GetQueryBuilder(squirrel.Question).
-		Select(`(1) AS "a"`).
-		From(model.ProductTypeTableName).
-		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
-		Where("ProductTypes.Id = Products.ProductTypeID").
-		Prefix("EXISTS (").Suffix(")").
-		Limit(1)
-
 	productQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		From(model.TableNames.Products).
-		Where(productTypeQuery).
-		Where("Products.Id = ProductVariants.ProductID").
+		Where(squirrel.Eq{
+			model.ProductTableColumns.ID: model.ProductVariantTableColumns.ProductID,
+		}).
 		Prefix("EXISTS (").Suffix(")").
 		Limit(1)
 
@@ -259,14 +179,16 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 		Select(`(1) AS "a"`).
 		From(model.TableNames.ProductVariants).
 		Where(productQuery).
-		Where("ProductVariants.Id = Orderlines.VariantID").
+		Where(squirrel.Eq{
+			model.ProductVariantTableColumns.ID: model.OrderLineTableColumns.VariantID,
+		}).
 		Prefix("EXISTS (").Suffix(")").
 		Limit(1)
 
 	orderLineQuery := gs.GetQueryBuilder().
 		Select("*").
 		From(model.TableNames.OrderLines).
-		Where(squirrel.Eq{"Orderlines.Id": orderLineIDs}).
+		Where(squirrel.Eq{model.OrderLineTableColumns.ID: orderLineIDs}).
 		Where(productVariantQuery)
 
 	queryString, args, err := orderLineQuery.ToSql()
@@ -275,7 +197,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	}
 
 	var res model.OrderLineSlice
-	err = gs.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	err = queries.Raw(queryString, args...).Bind(context.Background(), gs.GetReplica(), &res)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given ids")
 	}
@@ -286,7 +208,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 // DeactivateOrderGiftcards update giftcards
 // which have giftcard events with type == 'bought', parameters.order_id == given order id
 // by setting their IsActive attribute to false
-func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
+func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error) {
 	query := fmt.Sprintf(
 		`UPDATE %[1]s SET
 			%[2]s = false

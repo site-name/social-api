@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/sitename/sitename/app"
@@ -300,19 +300,19 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		Locale:    locale,
 	}
 
-	ruser, err := a.Srv().AccountService().CreateUser(request.Context{}, user)
+	ruser, err := a.AccountService().CreateUser(request.Context{}, user)
 	if ruser == nil {
 		return errors.New("Unable to create user. Error: " + err.Error())
 	}
 
 	if systemAdmin {
-		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(*ruser, "system_user system_admin", false); err != nil {
+		if _, err := a.AccountService().UpdateUserRolesWithUser(*ruser, "system_user system_admin", false); err != nil {
 			return errors.New("Unable to make user system admin. Error: " + err.Error())
 		}
 	} else {
 		// This else case exists to prevent the first user created from being
 		// created as a system admin unless explicitly specified.
-		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(*ruser, "system_user", false); err != nil {
+		if _, err := a.AccountService().UpdateUserRolesWithUser(*ruser, "system_user", false); err != nil {
 			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
 		}
 	}
@@ -403,7 +403,7 @@ func changeUserActiveStatus(a *app.App, user *model.User, userArg string, activa
 	if model_helper.UserIsSSO(*user) {
 		fmt.Println("You must also deactivate this user in the SSO provider or they will be reactivated on next login or sync.")
 	}
-	updatedUser, err := a.Srv().AccountService().UpdateActive(&request.Context{}, *user, activate)
+	updatedUser, err := a.AccountService().UpdateActive(&request.Context{}, *user, activate)
 	if err != nil {
 		return fmt.Errorf("Unable to change activation status of user: %v", userArg)
 	}
@@ -508,7 +508,7 @@ func migrateAuthToSamlCmdF(command *cobra.Command, args []string) error {
 	if !autoFlag {
 		matchesFile = args[2]
 
-		file, e := ioutil.ReadFile(matchesFile)
+		file, e := os.ReadFile(matchesFile)
 		if e != nil {
 			return errors.New("Invalid users file.")
 		}
@@ -581,7 +581,7 @@ func deleteAllUsersCommandF(command *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := a.Srv().AccountService().PermanentDeleteAllUsers(&request.Context{}); err != nil {
+	if err := a.AccountService().PermanentDeleteAllUsers(&request.Context{}); err != nil {
 		return err
 	}
 	CommandPrettyPrintln("All user accounts successfully deleted.")
@@ -626,7 +626,7 @@ func deleteUserCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.Srv().AccountService().PermanentDeleteUser(&request.Context{}, *user); err != nil {
+		if err := a.AccountService().PermanentDeleteUser(&request.Context{}, *user); err != nil {
 			return err
 		}
 
@@ -655,7 +655,7 @@ func resetUserMfaCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.Srv().AccountService().DeactivateMfa(user.ID); err != nil {
+		if err := a.AccountService().DeactivateMfa(user.ID); err != nil {
 			return err
 		}
 
@@ -694,7 +694,7 @@ func updateUserEmailCmdF(command *cobra.Command, args []string) error {
 	}
 
 	user.Email = newEmail
-	_, errUpdate := a.Srv().AccountService().UpdateUser(*user, true)
+	_, errUpdate := a.AccountService().UpdateUser(*user, true)
 	if errUpdate != nil {
 		return errors.New(errUpdate.Message)
 	}

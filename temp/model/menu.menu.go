@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/mattermost/squirrel"
 	"gorm.io/gorm"
 )
 

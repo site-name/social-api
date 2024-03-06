@@ -1,16 +1,20 @@
 package product
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlProductStore struct {
@@ -21,135 +25,88 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return &SqlProductStore{s}
 }
 
-// Save inserts given product into database then returns it
-func (ps *SqlProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+func (ps *SqlProductStore) Save(tx boil.ContextTransactor, product model.Product) (*model.Product, error) {
 	if tx == nil {
 		tx = ps.GetMaster()
 	}
-	if err := tx.Save(product).Error; err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
-			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
-		}
-		if ps.IsUniqueConstraintError(err, []string{"Slug", "products_slug_key", "idx_products_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Product", "slug", product.Slug)
-		}
-		return nil, errors.Wrapf(err, "failed to save Product with productId=%s", product.Id)
+
+	isSaving := product.ID == ""
+	if isSaving {
+		model_helper.ProductPreSave(&product)
+	} else {
+		model_helper.ProductPreUpdate(&product)
 	}
 
-	return product, nil
+	if err := model_helper.ProductIsValid(product); err != nil {
+		return nil, err
+	}
+
+	var err error
+	if isSaving {
+		err = product.Insert(tx, boil.Infer())
+	} else {
+		_, err = product.Update(tx, boil.Blacklist(model.ProductColumns.CreatedAt))
+	}
+
+	if err != nil {
+		if ps.IsUniqueConstraintError(err, []string{model.ProductColumns.Name, "products_name_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Products, model.ProductColumns.Name, product.Name)
+		}
+		if ps.IsUniqueConstraintError(err, []string{model.ProductColumns.Slug, "products_slug_key"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.Products, model.ProductColumns.Slug, product.Slug)
+		}
+		return nil, err
+	}
+
+	return &product, nil
 }
 
-func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (*gorm.DB, squirrel.Sqlizer) {
-	db := ps.GetReplica()
-	conditions := squirrel.And{}
-
-	if option.Conditions != nil {
-		conditions = append(conditions, option.Conditions)
-	}
-	if option.Limit > 0 {
-		db = db.Limit(int(option.Limit))
-	}
-	for _, preload := range option.Preloads {
-		db = db.Preload(preload)
-	}
-
+func (ps *SqlProductStore) commonQueryBuilder(option model_helper.ProductFilterOption) []qm.QueryMod {
+	conds := option.Conditions
 	if option.ProductVariantID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.ProductVariantTableName,       // 1
-				model.ProductTableName,              // 2
-				model.ProductVariantColumnProductID, // 3
-				model.ProductColumnId,               // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID)),
+			option.ProductVariantID,
 		)
-		conditions = append(conditions, option.ProductVariantID)
 	} else if option.HasNoProductVariants {
-		db = db.Joins(
-			fmt.Sprintf(
-				"LEFT JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.ProductVariantTableName,       // 1
-				model.ProductTableName,              // 2
-				model.ProductVariantColumnProductID, // 3
-				model.ProductColumnId,               // 4
-			),
+		conds = append(
+			conds,
+			qm.LeftOuterJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID)),
+			qm.Where(fmt.Sprintf("%s IS NULL", model.ProductVariantTableColumns.ProductID)),
 		)
-		conditions = append(conditions, squirrel.Expr(model.ProductVariantTableName+"."+model.ProductVariantColumnProductID+" IS NULL"))
 	}
 	if option.VoucherID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.VoucherProductTableName, // 1
-				model.ProductTableName,        // 2
-				"product_id",                  // 3
-				model.ProductColumnId,         // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.VoucherProducts, model.VoucherProductTableColumns.ProductID, model.ProductTableColumns.ID)),
+			option.VoucherID,
 		)
-		conditions = append(conditions, option.VoucherID)
 	}
 	if option.SaleID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.SaleProductTableName, // 1
-				model.ProductTableName,     // 2
-				"product_id",               // 3
-				model.ProductColumnId,      // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.SaleProducts, model.SaleProductTableColumns.ProductID, model.ProductTableColumns.ID)),
+			option.SaleID,
 		)
-		conditions = append(conditions, option.SaleID)
 	}
 	if option.CollectionID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.CollectionProductRelationTableName, // 1
-				model.ProductTableName,                   // 2
-				model.CollectionProductColumnProductID,   // 3
-				model.ProductColumnId,                    // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductCollections, model.ProductCollectionTableColumns.ProductID, model.ProductTableColumns.ID)),
+			option.CollectionID,
 		)
-		conditions = append(conditions, option.CollectionID)
+	}
+	for _, load := range option.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
 
-	return db, conditions
+	return conds
 }
 
-// FilterByOption finds and returns all products that satisfy given option
-func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
-	db, conditions := ps.commonQueryBuilder(option)
-	args, err := store.BuildSqlizer(conditions, "Product_FilterByOption")
-	if err != nil {
-		return nil, err
-	}
-	var products model.Products
-	err = db.Find(&products, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find productswith given options")
-	}
-
-	return products, nil
-}
-
-// GetByOption finds and returns 1 product that satisfies given option
-func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
-	option.Limit = 0
-	db, conditions := ps.commonQueryBuilder(option)
-	args, err := store.BuildSqlizer(conditions, "Product_GetByOption")
-	if err != nil {
-		return nil, err
-	}
-	var res model.Product
-	err = db.First(&res, args...).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductTableName, "option")
-		}
-		return nil, errors.Wrap(err, "failed to find product by given option")
-	}
-
-	return &res, nil
+func (ps *SqlProductStore) FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error) {
+	conditions := ps.commonQueryBuilder(option)
+	return model.Products(conditions...).All(ps.GetReplica())
 }
 
 // channelQuery is a utility function to compose a filter query on `Channels` table.
@@ -180,7 +137,7 @@ func (ps *SqlProductStore) channelQuery(channelSlugOrID string, isActive *bool, 
 // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
 //
 // refer to ./product_store_doc.md (line 1)
-func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
+func (ps *SqlProductStore) PublishedProducts(channelSlug string) (model.ProductSlice, error) {
 	channelQuery := ps.channelQuery(channelSlug, model.GetPointerOfValue(true), model.ProductChannelListingTableName)
 
 	today := util.StartOfDay(time.Now())
@@ -355,7 +312,7 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 }
 
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) {
+func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) (model.ProductSlice, error) {
 	if transaction == nil {
 		return nil, store.NewErrInvalidInput("SelectForUpdateDiscountedPricesOfCatalogues", "transaction", nil)
 	}
@@ -563,38 +520,30 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	return query
 }
 
-// FilterByQuery finds and returns products with given query, limit, createdAtGt
-func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
+func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.ProductSlice, error) {
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByQuery_ToSql")
 	}
 
-	var products model.Products
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
+	var products model.ProductSlice
+	err = queries.Raw(queryString, args...).Bind(context.Background(), ps.GetReplica(), &products)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
+		return nil, errors.Wrap(err, "failed to find products by given query")
 	}
+
 	return products, nil
 }
 
-func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
-	var res []*model.ProductCountByCategoryID
-	query := fmt.Sprintf(
-		`SELECT
-			%[1]s.%[2]s,
-			COUNT(%[1]s.%[3]s) AS ProductCount
-		FROM
-			%[1]s
-		WHERE
-			%[1]s.%[2]s IN ?
-		GROUP BY %[1]s.%[2]s`,
-
-		model.ProductTableName,        // 1
-		model.ProductColumnCategoryID, // 2
-		model.ProductColumnId,         // 3
-	)
-	err := s.GetMaster().Raw(query, categoryIDs).Scan(&res).Error
+func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error) {
+	var res []*model_helper.ProductCountByCategoryID
+	err := model.Products(
+		qm.Select(
+			model.ProductTableColumns.CategoryID,
+			fmt.Sprintf("COUNT (%s) as %q", model.ProductTableColumns.ID, "product_count"),
+		),
+		qm.GroupBy(model.ProductTableColumns.CategoryID),
+	).Bind(context.Background(), s.GetReplica(), &res)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to count products by given category ids")
 	}

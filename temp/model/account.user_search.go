@@ -1,6 +1,6 @@
 package model
 
-import "github.com/Masterminds/squirrel"
+import "github.com/mattermost/squirrel"
 
 const USER_SEARCH_MAX_LIMIT = 1000
 const USER_SEARCH_DEFAULT_LIMIT = 100

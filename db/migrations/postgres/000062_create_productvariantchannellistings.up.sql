@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS product_variant_channel_listings (
   price_amount decimal(12,3),
   cost_price_amount decimal(12,3),
   preorder_quantity_threshold integer,
-  created_at bigint NOT NULL
+  created_at bigint NOT NULL,
+
+  annotations jsonb
 );
 
 ALTER TABLE ONLY product_variant_channel_listings

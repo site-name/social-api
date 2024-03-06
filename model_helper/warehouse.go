@@ -93,3 +93,56 @@ type WarehouseFilterOption struct {
 type CustomAllocation struct {
 	model.Allocation
 }
+
+type StockFilterOptionsForCountryAndChannel struct {
+	CountryCode      model.CountryCode
+	ChannelSlug      string
+	WarehouseID      string
+	ProductVariantID string
+	ProductID        string
+
+	// additional fields
+	Id                     qm.QueryMod
+	WarehouseIDFilter      qm.QueryMod
+	ProductVariantIDFilter qm.QueryMod
+
+	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+}
+
+type StockFilterOption struct {
+	CommonQueryOptions
+
+	Warehouse_ShippingZone_countries qm.QueryMod // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
+	Warehouse_ShippingZone_ChannelID qm.QueryMod // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... INNER JOIN ShippingZoneChannels WHERE ShippingZoneChannels.ChannelID ...
+
+	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
+	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
+
+	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+
+	// NOTE: If Set, store use OR ILIKEs to check this value against:
+	//
+	// relevant product of this stock's name (INNER JOIN ProductVariants ON ... INNER JOIN Products ON ... WHERE Products.Name ...),
+	//
+	// relevant product variant's name (INNER JOIN ProductVariants ON ... WHERE ProductVariants.Name ...),
+	//
+	// relevent warehouse's name (INNER JOIN Warehouses ON ... WHERE Warehouses.Name ...),
+	//
+	// company name of relevent address of relevent warehouse of this stock (INNER JOIN Warehouses ON ... INNER JOIN Addresses ON ... WHERE Addresses.CompanyName ...)
+	Search string
+}
+
+type StockFilterForChannelOption struct {
+	CommonQueryOptions
+	ChannelID                   string
+	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
+
+	ReturnQueryOnly bool // if true, only the squirrel query will be returned, no execution will be performed
+}
+
+type PreorderAllocationFilterOption struct {
+	CommonQueryOptions
+
+	SelectRelated_OrderLine       bool // INNER JOIN OrderLines ON ...
+	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...
+}

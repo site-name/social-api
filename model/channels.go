@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -22,12 +23,13 @@ import (
 
 // Channel is an object representing the database table.
 type Channel struct {
-	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name           string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	IsActive       bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
-	Slug           string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Currency       Currency    `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	DefaultCountry CountryCode `boil:"default_country" json:"default_country" toml:"default_country" yaml:"default_country"`
+	ID             string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name           string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	IsActive       bool                   `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
+	Slug           string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Currency       Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	DefaultCountry CountryCode            `boil:"default_country" json:"default_country" toml:"default_country" yaml:"default_country"`
+	Annotations    model_types.JSONString `boil:"annotations" json:"-" toml:"-" yaml:"-"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L channelL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,6 +42,7 @@ var ChannelColumns = struct {
 	Slug           string
 	Currency       string
 	DefaultCountry string
+	Annotations    string
 }{
 	ID:             "id",
 	Name:           "name",
@@ -47,6 +50,7 @@ var ChannelColumns = struct {
 	Slug:           "slug",
 	Currency:       "currency",
 	DefaultCountry: "default_country",
+	Annotations:    "annotations",
 }
 
 var ChannelTableColumns = struct {
@@ -56,6 +60,7 @@ var ChannelTableColumns = struct {
 	Slug           string
 	Currency       string
 	DefaultCountry string
+	Annotations    string
 }{
 	ID:             "channels.id",
 	Name:           "channels.name",
@@ -63,6 +68,7 @@ var ChannelTableColumns = struct {
 	Slug:           "channels.slug",
 	Currency:       "channels.currency",
 	DefaultCountry: "channels.default_country",
+	Annotations:    "channels.annotations",
 }
 
 // Generated where
@@ -109,6 +115,7 @@ var ChannelWhere = struct {
 	Slug           whereHelperstring
 	Currency       whereHelperCurrency
 	DefaultCountry whereHelperCountryCode
+	Annotations    whereHelpermodel_types_JSONString
 }{
 	ID:             whereHelperstring{field: "\"channels\".\"id\""},
 	Name:           whereHelperstring{field: "\"channels\".\"name\""},
@@ -116,6 +123,7 @@ var ChannelWhere = struct {
 	Slug:           whereHelperstring{field: "\"channels\".\"slug\""},
 	Currency:       whereHelperCurrency{field: "\"channels\".\"currency\""},
 	DefaultCountry: whereHelperCountryCode{field: "\"channels\".\"default_country\""},
+	Annotations:    whereHelpermodel_types_JSONString{field: "\"channels\".\"annotations\""},
 }
 
 // ChannelRels is where relationship names are stored.
@@ -236,9 +244,9 @@ func (r *channelR) GetVoucherChannelListings() VoucherChannelListingSlice {
 type channelL struct{}
 
 var (
-	channelAllColumns            = []string{"id", "name", "is_active", "slug", "currency", "default_country"}
+	channelAllColumns            = []string{"id", "name", "is_active", "slug", "currency", "default_country", "annotations"}
 	channelColumnsWithoutDefault = []string{"id", "name", "is_active", "slug", "currency", "default_country"}
-	channelColumnsWithDefault    = []string{}
+	channelColumnsWithDefault    = []string{"annotations"}
 	channelPrimaryKeyColumns     = []string{"id"}
 	channelGeneratedColumns      = []string{}
 )

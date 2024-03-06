@@ -23,6 +23,7 @@ func ChannelCommonPre(channel *model.Channel) {
 	if channel.DefaultCountry.IsValid() != nil {
 		channel.DefaultCountry = DEFAULT_COUNTRY
 	}
+	channel.Annotations = nil
 }
 
 func ChannelIsValid(channel model.Channel) *AppError {
@@ -42,4 +43,10 @@ func ChannelIsValid(channel model.Channel) *AppError {
 		return NewAppError("ChannelIsValid", "model.channel.is_valid.default_country.app_error", nil, "", http.StatusBadRequest)
 	}
 	return nil
+}
+
+var ChannelAnnotationKeys = struct {
+	HasOrders string
+}{
+	HasOrders: "has_orders",
 }

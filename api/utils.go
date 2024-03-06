@@ -17,7 +17,7 @@ import (
 
 	"cmp"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"

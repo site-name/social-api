@@ -1,10 +1,13 @@
 package product
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlProductVariantChannelListingStore struct {
@@ -15,32 +18,19 @@ func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariant
 	return &SqlProductVariantChannelListingStore{s}
 }
 
-func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
-	err := ps.GetMaster().Create(variantChannelListing).Error
-	if err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListing.Id)
-		}
-		return nil, errors.Wrapf(err, "failed to save product variant channel listing with id=%s", variantChannelListing.Id)
-	}
-
-	return variantChannelListing, nil
-}
-
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
-	var res model.ProductVariantChannelListing
-	err := ps.GetReplica().First(&res, "Id = ?", variantChannelListingID).Error
+	listing, err := model.FindProductVariantChannelListing(ps.GetReplica(), variantChannelListingID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListingID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.ProductVariantChannelListings, variantChannelListingID)
 		}
-		return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", variantChannelListingID)
+		return nil, err
 	}
 
-	return &res, nil
+	return listing, nil
 }
 
-func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
 	// NOTE: In the scan fields creation below, the order of fields must be identical to the order of select fiels
 	selectFields := []string{model.ProductVariantChannelListingTableName + ".*"}
 	if option.SelectRelatedChannel {
@@ -149,7 +139,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 	return res, nil
 }
 
-func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) Upsert(transaction boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) {
 	if transaction == nil {
 		transaction = ps.GetMaster()
 	}

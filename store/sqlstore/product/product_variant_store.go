@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
@@ -238,54 +238,6 @@ func (vs *SqlProductVariantStore) FilterByOption(option model_helper.ProductVari
 	}
 	return res, nil
 }
-
-// func (s *SqlProductVariantStore) ToggleProductVariantRelations(
-// 	tx boil.ContextTransactor,
-// 	variants model.ProductVariants,
-// 	medias model.ProductMedias,
-// 	sales model.Sales,
-// 	vouchers model.Vouchers,
-// 	wishlistItems model.WishlistItems,
-// 	isDelete bool,
-// ) error {
-// 	if tx == nil {
-// 		tx = s.GetMaster()
-// 	}
-
-// 	/*
-// 		Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
-// 		Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
-// 		ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
-// 		WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
-// 	*/
-
-// 	for _, variant := range variants {
-// 		if variant == nil {
-// 			continue
-// 		}
-
-// 		for assocName, relations := range map[string]any{
-// 			"ProductMedias": medias,
-// 			"Sales":         sales,
-// 			"Vouchers":      vouchers,
-// 			"WishlistItems": wishlistItems,
-// 		} {
-// 			if relations != nil {
-// 				var err error
-// 				if isDelete {
-// 					err = tx.Model(variant).Association(assocName).Delete(relations)
-// 				} else {
-// 					err = tx.Model(variant).Association(assocName).Append(relations)
-// 				}
-// 				if err != nil {
-// 					return errors.Wrap(err, "failed to toggle "+assocName+" product variant relations")
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error) {
 	query := fmt.Sprintf(

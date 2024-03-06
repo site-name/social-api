@@ -7,7 +7,7 @@ package payment
 import (
 	"net/http"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"

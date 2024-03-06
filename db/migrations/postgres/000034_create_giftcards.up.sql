@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS giftcards (
   initial_balance_amount decimal(12,3),
   current_balance_amount decimal(12,3),
   metadata jsonb,
-  private_metadata jsonb
+  private_metadata jsonb,
+
+  annotations jsonb -- This field is used to store additional information about the gift card, such as the sender's name, the recipient's name, etc.
 );
 
 ALTER TABLE ONLY giftcards

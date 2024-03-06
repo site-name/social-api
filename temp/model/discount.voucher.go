@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/site-name/decimal"
 	"gorm.io/gorm"
 )

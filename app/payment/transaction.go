@@ -3,7 +3,7 @@ package payment
 import (
 	"net/http"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"gorm.io/gorm"

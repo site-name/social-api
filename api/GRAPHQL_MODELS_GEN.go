@@ -9,8 +9,8 @@ import (
 	"unsafe"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"

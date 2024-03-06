@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

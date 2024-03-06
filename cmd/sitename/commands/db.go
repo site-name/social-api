@@ -203,7 +203,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 	}
 
 	for _, cate := range categories {
-		_, err = sqlStore.Category().Upsert(cate)
+		_, err = sqlStore.Category().Upsert(*cate)
 		if err != nil {
 			slog.Error("failed to insert category", slog.String("name", cate.Name))
 			return err

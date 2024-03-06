@@ -3,10 +3,12 @@ package model_helper
 import (
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/strmangle"
 )
 
 type CommonQueryOptions struct {
@@ -62,15 +64,54 @@ func JsonbContains(field string, key string, value any) qm.QueryMod {
 		template = "{%q:%v}"
 	}
 
-	return qm.Where(fmt.Sprintf("%s::jsonb @> ?", field), fmt.Sprintf(template, key, value))
+	return qmhelper.WhereQueryMod{
+		Clause: fmt.Sprintf("%s::jsonb @> ?", field),
+		Args:   []any{fmt.Sprintf(template, key, value)},
+	}
 }
 
 // JsonbHasKey builds a query mod that checks if a jsonb field contains a key
 func JsonbHasKey(field string, key string) qm.QueryMod {
-	return qm.Where(fmt.Sprintf("%s::jsonb -> '%s' IS NOT NULL", field, key))
+	return qmhelper.WhereQueryMod{
+		Clause: fmt.Sprintf("%s::jsonb -> '%s' IS NOT NULL", field, key),
+	}
 }
 
 // JsonbHasNoKey builds a query mod that checks if a jsonb field does not contain a key
 func JsonbHasNoKey(field string, key string) qm.QueryMod {
-	return qm.Where(fmt.Sprintf("%s::jsonb -> '%s' IS NULL", field, key))
+	return qmhelper.WhereQueryMod{
+		Clause: fmt.Sprintf("%s::jsonb -> '%s' IS NULL", field, key),
+	}
+}
+
+// AnnotationAggregator is a query modifier that adds annotations to the query.
+// E.g:
+//
+//	AnnotationAggregator{
+//		"another": `1 + 2`,
+//	}
+//
+// When applied to a query, it will produce:
+//
+//	`SELECT JSON_BUILD_OBJECT('another', 1 + 2) AS "annotations"``
+type AnnotationAggregator map[string]string
+
+func (a AnnotationAggregator) Apply(q *queries.Query) {
+	if a == nil || len(a) == 0 {
+		return
+	}
+
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+
+	counter := 0
+	for key, value := range a {
+		if counter > 0 {
+			buf.WriteByte(',')
+		}
+		buf.WriteString(fmt.Sprintf("'%s', %s", key, value))
+		counter++
+	}
+
+	queries.AppendSelect(q, fmt.Sprintf(`JSON_BUILD_OBJECT(%s) AS "annotations"`, buf.String()))
 }

@@ -1,6 +1,6 @@
 package model
 
-import "github.com/Masterminds/squirrel"
+import "github.com/mattermost/squirrel"
 
 // NOTE: Embed me in some database query lookup structs
 type GraphqlPaginationValues struct {

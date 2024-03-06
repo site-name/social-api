@@ -31,6 +31,7 @@ type ProductVariantChannelListing struct {
 	CostPriceAmount           model_types.NullDecimal `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
 	PreorderQuantityThreshold model_types.NullInt     `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
 	CreatedAt                 int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Annotations               model_types.JSONString  `boil:"annotations" json:"-" toml:"-" yaml:"-"`
 
 	R *productVariantChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,6 +46,7 @@ var ProductVariantChannelListingColumns = struct {
 	CostPriceAmount           string
 	PreorderQuantityThreshold string
 	CreatedAt                 string
+	Annotations               string
 }{
 	ID:                        "id",
 	VariantID:                 "variant_id",
@@ -54,6 +56,7 @@ var ProductVariantChannelListingColumns = struct {
 	CostPriceAmount:           "cost_price_amount",
 	PreorderQuantityThreshold: "preorder_quantity_threshold",
 	CreatedAt:                 "created_at",
+	Annotations:               "annotations",
 }
 
 var ProductVariantChannelListingTableColumns = struct {
@@ -65,6 +68,7 @@ var ProductVariantChannelListingTableColumns = struct {
 	CostPriceAmount           string
 	PreorderQuantityThreshold string
 	CreatedAt                 string
+	Annotations               string
 }{
 	ID:                        "product_variant_channel_listings.id",
 	VariantID:                 "product_variant_channel_listings.variant_id",
@@ -74,6 +78,7 @@ var ProductVariantChannelListingTableColumns = struct {
 	CostPriceAmount:           "product_variant_channel_listings.cost_price_amount",
 	PreorderQuantityThreshold: "product_variant_channel_listings.preorder_quantity_threshold",
 	CreatedAt:                 "product_variant_channel_listings.created_at",
+	Annotations:               "product_variant_channel_listings.annotations",
 }
 
 // Generated where
@@ -125,6 +130,7 @@ var ProductVariantChannelListingWhere = struct {
 	CostPriceAmount           whereHelpermodel_types_NullDecimal
 	PreorderQuantityThreshold whereHelpermodel_types_NullInt
 	CreatedAt                 whereHelperint64
+	Annotations               whereHelpermodel_types_JSONString
 }{
 	ID:                        whereHelperstring{field: "\"product_variant_channel_listings\".\"id\""},
 	VariantID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"variant_id\""},
@@ -134,6 +140,7 @@ var ProductVariantChannelListingWhere = struct {
 	CostPriceAmount:           whereHelpermodel_types_NullDecimal{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
 	PreorderQuantityThreshold: whereHelpermodel_types_NullInt{field: "\"product_variant_channel_listings\".\"preorder_quantity_threshold\""},
 	CreatedAt:                 whereHelperint64{field: "\"product_variant_channel_listings\".\"created_at\""},
+	Annotations:               whereHelpermodel_types_JSONString{field: "\"product_variant_channel_listings\".\"annotations\""},
 }
 
 // ProductVariantChannelListingRels is where relationship names are stored.
@@ -174,9 +181,9 @@ func (r *productVariantChannelListingR) GetVariant() *ProductVariant {
 type productVariantChannelListingL struct{}
 
 var (
-	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "created_at"}
+	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "created_at", "annotations"}
 	productVariantChannelListingColumnsWithoutDefault = []string{"id", "variant_id", "channel_id", "created_at"}
-	productVariantChannelListingColumnsWithDefault    = []string{"currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold"}
+	productVariantChannelListingColumnsWithDefault    = []string{"currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "annotations"}
 	productVariantChannelListingPrimaryKeyColumns     = []string{"id"}
 	productVariantChannelListingGeneratedColumns      = []string{}
 )

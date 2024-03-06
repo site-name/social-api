@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"gorm.io/gorm"
 )
 

@@ -13,7 +13,7 @@ import (
 
 	model "github.com/sitename/sitename/model"
 
-	squirrel "github.com/Masterminds/squirrel"
+	squirrel "github.com/mattermost/squirrel"
 
 	store "github.com/sitename/sitename/store"
 )

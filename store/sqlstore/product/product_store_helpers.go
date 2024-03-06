@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
@@ -116,38 +116,56 @@ func (ps *SqlProductStore) filterVariantPrice(
 		Lte *float64
 	}, channelIdOrSlug string,
 ) squirrel.SelectBuilder {
-	channelQuery := ps.GetQueryBuilder(squirrel.Question).
+	channelQuery := ps.
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ChannelTableName).
-		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductVariantChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
+		From(model.TableNames.Channels).
+		Where(squirrel.And{
+			squirrel.Or{
+				squirrel.Eq{model.ChannelTableColumns.ID: channelIdOrSlug},
+				squirrel.Eq{model.ChannelTableColumns.Slug: channelIdOrSlug},
+			},
+			squirrel.Eq{model.ProductVariantChannelListingTableColumns.ChannelID: model.ChannelTableColumns.ID},
+		}).
 		Limit(1).
 		Suffix(")")
 
-	productVariantChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
+	productVariantChannelListingQuery := ps.
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductVariantChannelListingTableName).
+		From(model.TableNames.ProductVariantChannelListings).
 		Where(channelQuery).
-		Where("ProductVariantChannelListings.VariantID = ProductVariants.Id").
+		Where(squirrel.Eq{
+			model.ProductVariantChannelListingTableColumns.VariantID: model.ProductVariantTableColumns.ID,
+		}).
 		Limit(1).
 		Suffix(")")
 
 	if priceRange.Lte != nil {
 		productVariantChannelListingQuery = productVariantChannelListingQuery.
-			Where("ProductVariantChannelListings.PriceAmount <= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Lte)
+			Where(squirrel.Or{
+				squirrel.Eq{model.ProductVariantChannelListingTableColumns.PriceAmount: nil},
+				squirrel.LtOrEq{model.ProductVariantChannelListingTableColumns.PriceAmount: *priceRange.Lte},
+			})
 	}
 	if priceRange.Gte != nil {
 		productVariantChannelListingQuery = productVariantChannelListingQuery.
-			Where("ProductVariantChannelListings.PriceAmount >= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Gte)
+			Where(squirrel.Or{
+				squirrel.Eq{model.ProductVariantChannelListingTableColumns.PriceAmount: nil},
+				squirrel.GtOrEq{model.ProductVariantChannelListingTableColumns.PriceAmount: *priceRange.Gte},
+			})
 	}
 
 	productVariantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
-		From(model.ProductVariantTableName).
+		From(model.TableNames.ProductVariants).
 		Prefix("EXISTS (").
 		Where(productVariantChannelListingQuery).
-		Where("ProductVariants.ProductID = Products.Id").
+		Where(squirrel.Eq{
+			model.ProductVariantTableColumns.ProductID: model.ProductTableColumns.ID,
+		}).
 		Limit(1).
 		Suffix(")")
 
@@ -165,27 +183,41 @@ func (ps *SqlProductStore) filterMinimalPrice(
 	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ChannelTableName).
-		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
+		From(model.TableNames.Channels).
+		Where(squirrel.And{
+			squirrel.Eq{model.ChannelTableColumns.ID: model.ProductChannelListingTableColumns.ChannelID},
+			squirrel.Or{
+				squirrel.Eq{model.ChannelTableColumns.ID: channelIdOrSlug},
+				squirrel.Eq{model.ChannelTableColumns.Slug: channelIdOrSlug},
+			},
+		}).
 		Limit(1).
 		Suffix(")")
 
 	productChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductChannelListingTableName).
+		From(model.TableNames.ProductChannelListings).
 		Where(channelQuery).
-		Where("ProductChannelListings.ProductID = Products.Id").
+		Where(squirrel.Eq{
+			model.ProductChannelListingTableColumns.ProductID: model.ProductTableColumns.ID,
+		}).
 		Limit(1).
 		Suffix(")")
 
 	if priceRange.Lte != nil {
 		productChannelListingQuery = productChannelListingQuery.
-			Where("ProductChannelListings.DiscountedPriceAmount IS NULL OR ProductChannelListings.DiscountedPriceAmount <= ?", *priceRange.Lte)
+			Where(squirrel.Or{
+				squirrel.Eq{model.ProductChannelListingTableColumns.DiscountedPriceAmount: nil},
+				squirrel.LtOrEq{model.ProductChannelListingTableColumns.DiscountedPriceAmount: *priceRange.Lte},
+			})
 	}
 	if priceRange.Gte != nil {
 		productChannelListingQuery = productChannelListingQuery.
-			Where("ProductChannelListings.DiscountedPriceAmount IS NULL OR ProductChannelListings.DiscountedPriceAmount >= ?", *priceRange.Gte)
+			Where(squirrel.Or{
+				squirrel.Eq{model.ProductChannelListingTableColumns.DiscountedPriceAmount: nil},
+				squirrel.GtOrEq{model.ProductChannelListingTableColumns.DiscountedPriceAmount: *priceRange.Gte},
+			})
 	}
 
 	return query.Where(productChannelListingQuery)

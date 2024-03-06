@@ -100,7 +100,7 @@ func (n *NullInt64) Scan(value any) error {
 		n.Int64 = nil
 		return nil
 	}
-	return convert.ConvertAssign(n.Int64, value)
+	return convert.ConvertAssign(&n.Int64, value)
 }
 
 func (n NullInt64) Value() (driver.Value, error) {
@@ -319,22 +319,7 @@ func (f *NullFloat32) Scan(value any) error {
 		f.Float32 = nil
 		return nil
 	}
-
-	switch t := value.(type) {
-	case float32:
-		f.Float32 = &t
-		return nil
-	case int:
-		tf32 := float32(t)
-		f.Float32 = &tf32
-		return nil
-	case int32:
-		tf32 := float32(t)
-		f.Float32 = &tf32
-		return nil
-	default:
-		return fmt.Errorf("unsupported value type: %T", value)
-	}
+	return convert.ConvertAssign(&f.Float32, value)
 }
 
 func (f NullFloat32) Value() (driver.Value, error) {
@@ -342,7 +327,7 @@ func (f NullFloat32) Value() (driver.Value, error) {
 		return nil, nil
 	}
 
-	return *f.Float32, nil
+	return float64(*f.Float32), nil
 }
 
 func (n NullFloat32) MarshalJSON() ([]byte, error) {

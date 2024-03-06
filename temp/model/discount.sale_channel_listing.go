@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/site-name/decimal"
 	"golang.org/x/text/currency"
 	"gorm.io/gorm"

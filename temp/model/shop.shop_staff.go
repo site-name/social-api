@@ -3,7 +3,7 @@ package model
 import (
 	"net/http"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/site-name/decimal"
 	"gorm.io/gorm"
 )

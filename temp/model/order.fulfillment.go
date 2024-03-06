@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"gorm.io/gorm"

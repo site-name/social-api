@@ -7,8 +7,8 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
+	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -1813,11 +1813,11 @@ func (s *RetryLayerChannelStore) DeleteChannels(tx boil.ContextTransactor, ids [
 
 }
 
-func (s *RetryLayerChannelStore) Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
+func (s *RetryLayerChannelStore) FilterByOptions(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.Find(conds)
+		result, err := s.ChannelStore.FilterByOptions(conds)
 		if err == nil {
 			return result, nil
 		}
@@ -1838,26 +1838,6 @@ func (s *RetryLayerChannelStore) Get(id string) (*model.Channel, error) {
 	tries := 0
 	for {
 		result, err := s.ChannelStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerChannelStore) GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelStore.GetByOptions(conds)
 		if err == nil {
 			return result, nil
 		}
@@ -2253,7 +2233,7 @@ func (s *RetryLayerCollectionStore) Delete(tx boil.ContextTransactor, ids []stri
 
 }
 
-func (s *RetryLayerCollectionStore) FilterByOption(option model_helper.CollectionFilterOptions) (model.CollectionSlice, error) {
+func (s *RetryLayerCollectionStore) FilterByOption(option model_helper.CollectionFilterOptions) (model_helper.CustomCollectionSlice, error) {
 
 	tries := 0
 	for {
@@ -3505,21 +3485,21 @@ func (s *RetryLayerGiftCardStore) Delete(tx boil.ContextTransactor, ids []string
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(option model_helper.GiftcardFilterOption) (model.GiftcardSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
+		result, err := s.GiftCardStore.FilterByOption(option)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 
@@ -4931,7 +4911,7 @@ func (s *RetryLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, id
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
+func (s *RetryLayerPreorderAllocationStore) FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
 
 	tries := 0
 	for {
@@ -4951,13 +4931,13 @@ func (s *RetryLayerPreorderAllocationStore) FilterByOption(options model.Preorde
 
 }
 
-func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder {
 
 	return s.ProductStore.AdvancedFilterQueryBuilder(input)
 
 }
 
-func (s *RetryLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+func (s *RetryLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error) {
 
 	tries := 0
 	for {
@@ -4977,7 +4957,7 @@ func (s *RetryLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*mo
 
 }
 
-func (s *RetryLayerProductStore) FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error) {
+func (s *RetryLayerProductStore) FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
@@ -4997,7 +4977,7 @@ func (s *RetryLayerProductStore) FilterByOption(option *model.ProductFilterOptio
 
 }
 
-func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
+func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
@@ -5017,27 +4997,7 @@ func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (mo
 
 }
 
-func (s *RetryLayerProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
+func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) (model.ProductSlice, error) {
 
 	tries := 0
 	for {
@@ -5083,7 +5043,7 @@ func (s *RetryLayerProductStore) PublishedWithVariants(channelIdOrSlug string) s
 
 }
 
-func (s *RetryLayerProductStore) Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error) {
+func (s *RetryLayerProductStore) Save(tx boil.ContextTransactor, product model.Product) (*model.Product, error) {
 
 	tries := 0
 	for {
@@ -5129,27 +5089,7 @@ func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug stri
 
 }
 
-func (s *RetryLayerProductChannelListingStore) BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductChannelListingStore.BulkUpsert(tx, listings)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) FilterByOption(option model_helper.ProductChannelListingFilterOption) (model.ProductChannelListingSlice, error) {
 
 	tries := 0
 	for {
@@ -5174,6 +5114,26 @@ func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*mo
 	tries := 0
 	for {
 		result, err := s.ProductChannelListingStore.Get(channelListingID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductChannelListingStore) Upsert(tx boil.ContextTransactor, listings model.ProductChannelListingSlice) (model.ProductChannelListingSlice, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductChannelListingStore.Upsert(tx, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -5409,27 +5369,7 @@ func (s *RetryLayerProductVariantStore) Upsert(tx boil.ContextTransactor, varian
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductVariantChannelListingStore.BulkUpsert(tx, variantChannelListings)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -5469,11 +5409,11 @@ func (s *RetryLayerProductVariantChannelListingStore) Get(variantChannelListingI
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) Upsert(tx boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
+		result, err := s.ProductVariantChannelListingStore.Upsert(tx, variantChannelListings)
 		if err == nil {
 			return result, nil
 		}
@@ -6615,11 +6555,11 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error) {
+func (s *RetryLayerStockStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.Delete(tx, options)
+		result, err := s.StockStore.Delete(tx, ids)
 		if err == nil {
 			return result, nil
 		}
@@ -6635,7 +6575,7 @@ func (s *RetryLayerStockStore) Delete(tx boil.ContextTransactor, options model.S
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(options model.StockFilterOption) (int64, model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -6655,7 +6595,7 @@ func (s *RetryLayerStockStore) FilterByOption(options model.StockFilterOption) (
 
 }
 
-func (s *RetryLayerStockStore) FilterForChannel(options model.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -6675,7 +6615,7 @@ func (s *RetryLayerStockStore) FilterForChannel(options model.StockFilterForChan
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -6695,7 +6635,7 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(options model.StockFil
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {
@@ -6715,7 +6655,7 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options m
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 
 	tries := 0
 	for {

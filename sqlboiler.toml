@@ -8,6 +8,7 @@ no-auto-timestamps = true
 no-hooks = true
 debug = false
 no-context = true
+tag-ignore = "annotations"
 
 [psql]
   dbname = "sitename_test"

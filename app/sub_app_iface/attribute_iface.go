@@ -5,7 +5,7 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model_helper"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 

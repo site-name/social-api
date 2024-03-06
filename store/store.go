@@ -6,7 +6,7 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
@@ -324,15 +324,15 @@ type (
 		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
 	}
 	StockStore interface {
-		Delete(tx boil.ContextTransactor, options model.StockFilterOption) (int64, error)
-		Get(stockID string) (*model.Stock, error)                                                                               // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)              // FilterForCountryAndChannel finds and returns stocks with given options
-		FilterVariantStocksForCountry(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
-		FilterProductStocksForCountryAndChannel(options model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
-		ChangeQuantity(stockID string, quantity int) error                                                                      // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(options model.StockFilterOption) (int64, model.StockSlice, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error)                                // BulkUpsert performs upserts or inserts given stocks, then returns them
-		FilterForChannel(options model.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error)                 // FilterForChannel finds and returns stocks that satisfy given options
+		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
+		Get(stockID string) (*model.Stock, error)                                                                                      // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)              // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                                             // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error)                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error)                 // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
 		BulkUpsert(tx boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) // BulkUpsert performs update, insert given allocations then returns them afterward
@@ -343,7 +343,7 @@ type (
 	}
 	PreorderAllocationStore interface {
 		BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) // BulkCreate bulk inserts given preorderAllocations and returns them
-		FilterByOption(options model.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                             // FilterByOption finds and returns a list of preorder allocations filtered using given options
+		FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                      // FilterByOption finds and returns a list of preorder allocations filtered using given options
 		Delete(tx boil.ContextTransactor, ids []string) error                                                                           // Delete deletes preorder-allocations by given ids
 	}
 )
@@ -390,9 +390,9 @@ type (
 		FilterByOptions(options model_helper.CollectionChannelListingFilterOptions) (model.CollectionChannelListingSlice, error)
 	}
 	CollectionStore interface {
-		Upsert(collection model.Collection) (*model.Collection, error)                             // Upsert depends on given collection's Id property to decide update or insert the collection
-		Get(collectionID string) (*model.Collection, error)                                        // Get finds and returns collection with given collectionID
-		FilterByOption(option model_helper.CollectionFilterOptions) (model.CollectionSlice, error) // FilterByOption finds and returns a list of collections satisfy the given option
+		Upsert(collection model.Collection) (*model.Collection, error)                                          // Upsert depends on given collection's Id property to decide update or insert the collection
+		Get(collectionID string) (*model.Collection, error)                                                     // Get finds and returns collection with given collectionID
+		FilterByOption(option model_helper.CollectionFilterOptions) (model_helper.CustomCollectionSlice, error) // FilterByOption finds and returns a list of collections satisfy the given option
 		Delete(tx boil.ContextTransactor, ids []string) error
 	}
 	CollectionProductStore interface {
@@ -418,10 +418,9 @@ type (
 		FilterByOption(option model_helper.DigitalContentFilterOption) (model.DigitalContentSlice, error)
 	}
 	ProductVariantChannelListingStore interface {
-		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                       // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                   // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                              // FilterbyOption finds and returns all product variant channel listings filterd using given option
-		BulkUpsert(tx boil.ContextTransactor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
+		FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                               // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		Upsert(tx boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
 		// Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
@@ -436,20 +435,11 @@ type (
 		GetWeight(productVariantID string) (*measurement.Weight, error)                                // GetWeight returns weight of given product variant
 		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                            // GetByOrderLineID finds and returns a product variant by given orderLineID
 		FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error)    // FilterByOption finds and returns product variants based on given option
-		// ToggleProductVariantRelations(
-		// 	tx boil.ContextTransactor,
-		// 	variants model.ProductVariants,
-		// 	medias model.ProductMedias,
-		// 	sales model.Sales,
-		// 	vouchers model.Vouchers,
-		// 	wishlistItems model.WishlistItems,
-		// 	isDelete bool,
-		// ) error
 	}
 	ProductChannelListingStore interface {
-		BulkUpsert(tx boil.ContextTransactor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
+		Upsert(tx boil.ContextTransactor, listings model.ProductChannelListingSlice) (model.ProductChannelListingSlice, error) // BulkUpsert performs bulk upsert on given product channel listings
 		Get(channelListingID string) (*model.ProductChannelListing, error)                                                     // Get try finding a product channel listing, then returns it with an error
-		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)                // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
+		FilterByOption(option model_helper.ProductChannelListingFilterOption) (model.ProductChannelListingSlice, error)        // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
 		// Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error)                  // Upsert inserts or update given translation
@@ -468,25 +458,22 @@ type (
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
 	CategoryTranslationStore interface{}
-
-	CategoryStore interface {
+	CategoryStore            interface {
 		Upsert(category model.Category) (*model.Category, error)                                  // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
 		FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error)     // FilterByOption finds and returns a list of categories satisfy given option
-		// GetByOption(option model_helper.CategoryFilterOption) (*model.Category, error)            // GetByOption finds and returns 1 category satisfy given option
 	}
 	ProductStore interface {
-		Save(tx boil.ContextTransactor, product *model.Product) (*model.Product, error)
-		GetByOption(option *model.ProductFilterOption) (*model.Product, error)                                                                                          // GetByOption finds and returns 1 product that satisfies given option
-		FilterByOption(option *model.ProductFilterOption) (model.ProductSlice, error)                                                                                   // FilterByOption finds and returns all products that satisfy given option
+		Save(tx boil.ContextTransactor, product model.Product) (*model.Product, error)
+		FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error)                                                                             // FilterByOption finds and returns all products that satisfy given option
 		PublishedProducts(channelSlug string) (model.ProductSlice, error)                                                                                               // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
-		NotPublishedProducts(channelID string) (model.Products, error)                                                                                                  // NotPublishedProducts finds all not published products belong to given channel
+		NotPublishedProducts(channelID string) (model.ProductSlice, error)                                                                                              // NotPublishedProducts finds all not published products belong to given channel
 		PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder                                                                                            // PublishedWithVariants finds and returns products.
 		VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                                  // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) (model.ProductSlice, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                                                     // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                                             // FilterByQuery finds and returns products with given query, limit, createdAtGt
-		CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error)
+		AdvancedFilterQueryBuilder(input model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder                                                               // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+		FilterByQuery(query squirrel.SelectBuilder) (model.ProductSlice, error)                                                                                         // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error)
 	}
 )
 
@@ -498,7 +485,6 @@ type (
 		FilterByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, error)                              // FilterByOption finds and returns a list of payments that satisfy given option
 		UpdatePaymentsOfCheckout(tx boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
 		PaymentOwnedByUser(userID, paymentID string) (bool, error)
-		// Update(tx boil.ContextTransactor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
 	}
 	PaymentTransactionStore interface {
 		Upsert(tx boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database
@@ -588,10 +574,8 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) error
 		BulkUpsert(tx boil.ContextTransactor, giftCards model.GiftcardSlice) (model.GiftcardSlice, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*model.Giftcard, error)                                                       // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option model_helper.GiftCardFilterOption) (int64, model.GiftcardSlice, error)      // FilterByOption finds giftcards wth option
+		FilterByOption(option model_helper.GiftcardFilterOption) (model.GiftcardSlice, error)             // FilterByOption finds giftcards wth option
 		DeactivateOrderGiftcards(tx boil.ContextTransactor, orderID string) ([]string, error)
-		// AddRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error    // relations must be either []*Order or []*Checkout
-		// RemoveRelations(tx boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) error // relations must be either []*Order or []*Checkout
 	}
 	GiftcardEventStore interface {
 		Get(id string) (*model.GiftcardEvent, error)                                                         // Get finds and returns a giftcard event found by given id
@@ -640,8 +624,6 @@ type (
 		FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) // FilterVouchersByOption finds vouchers bases on given option.
 		ExpiredVouchers(date timemodule.Time) (model.VoucherSlice, error)                                        // ExpiredVouchers finds and returns vouchers that are expired before given date
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		// ToggleVoucherRelations(tx boil.ContextTransactor, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
-		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 	}
 	VoucherCustomerStore interface {
 		Save(voucherCustomer model.VoucherCustomer) (*model.VoucherCustomer, error)                           // Save inserts given voucher customer instance into database ands returns it
@@ -686,9 +668,8 @@ type (
 // channel
 type ChannelStore interface {
 	Get(id string) (*model.Channel, error)
-	GetByOptions(conds model_helper.ChannelFilterOptions) (*model.Channel, error)
 	Upsert(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, error)
-	Find(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error)
+	FilterByOptions(conds model_helper.ChannelFilterOptions) (model.ChannelSlice, error)
 	DeleteChannels(tx boil.ContextTransactor, ids []string) error
 }
 
@@ -808,13 +789,6 @@ type (
 		IsEmpty() (bool, error)
 		Get(ctx context.Context, id string) (*model.User, error)
 		Find(options model_helper.UserFilterOptions) (model.UserSlice, error)
-
-		// FilterByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (int64, model.UserSlice, error)
-		// GetByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (*model.User, error)
-		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		// RemoveRelations(tx boil.ContextTransactor, userID string, relations any, customerNoteOnUser bool) error
-		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		// AddRelations(tx boil.ContextTransactor, userID string, relations any, customerNoteOnUser bool) error
 	}
 	TokenStore interface {
 		Save(token model.Token) (*model.Token, error)

@@ -2,6 +2,7 @@ package model_helper
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
@@ -35,6 +36,21 @@ func productCommonPre(p *model.Product) {
 	}
 }
 
+type ProductFilterOption struct {
+	CommonQueryOptions
+	HasNoProductVariants bool
+	ProductVariantID     qm.QueryMod
+	VoucherID            qm.QueryMod
+	SaleID               qm.QueryMod
+	CollectionID         qm.QueryMod
+	Preloads             []string
+}
+
+type ProductCountByCategoryID struct {
+	CategoryID   string `json:"category_id"`
+	ProductCount uint64 `json:"product_count"`
+}
+
 func ProductPreUpdate(p *model.Product) {
 	p.UpdatedAt = GetMillis()
 	productCommonPre(p)
@@ -42,28 +58,28 @@ func ProductPreUpdate(p *model.Product) {
 
 func ProductIsValid(p model.Product) *AppError {
 	if !IsValidId(p.ID) {
-		return NewAppError("Product.IsValid", "model.product.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.id.app_error", nil, "please provide valid id", http.StatusBadRequest)
 	}
 	if !IsValidId(p.CategoryID) {
-		return NewAppError("Product.IsValid", "model.product.is_valid.category_id.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.category_id.app_error", nil, "please provide valid category id", http.StatusBadRequest)
 	}
 	if p.CreatedAt <= 0 {
-		return NewAppError("Product.IsValid", "model.product.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.created_at.app_error", nil, "please specify create time", http.StatusBadRequest)
 	}
 	if p.UpdatedAt <= 0 {
-		return NewAppError("Product.IsValid", "model.product.is_valid.updated_at.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.updated_at.app_error", nil, "please specify update time", http.StatusBadRequest)
 	}
 	if !p.DefaultVariantID.IsNil() && !IsValidId(*p.DefaultVariantID.String) {
-		return NewAppError("Product.IsValid", "model.product.is_valid.default_variant_id.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.default_variant_id.app_error", nil, "please provide valid default variant id", http.StatusBadRequest)
 	}
 	if p.Name == "" {
-		return NewAppError("Product.IsValid", "model.product.is_valid.name.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.name.app_error", nil, "please rovide valid name", http.StatusBadRequest)
 	}
 	if !slug.IsSlug(p.Slug) {
-		return NewAppError("Product.IsValid", "model.product.is_valid.slug.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.slug.app_error", nil, "please provide valid slug", http.StatusBadRequest)
 	}
 	if measurement.WEIGHT_UNIT_STRINGS[measurement.WeightUnit(p.WeightUnit)] == "" {
-		return NewAppError("Product.IsValid", "model.product.is_valid.weight_unit.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("Product.IsValid", "model.product.is_valid.weight_unit.app_error", nil, "please provide valid weignt unit", http.StatusBadRequest)
 	}
 
 	return nil
@@ -179,14 +195,18 @@ type CategoryFilterOption struct {
 	VoucherID qm.QueryMod // INNER JOIN VoucherCategories ON ... WHERE VoucherCategories.VoucherID ...
 }
 
+// NOTE: client code doesn't need to pass in select mods, store code handles that
 type CollectionFilterOptions struct {
 	CommonQueryOptions
-	ProductID                                   qm.QueryMod // INNER JOIN product_cpllections ON ... WHERE product_collections.product_id ...
-	VoucherID                                   qm.QueryMod // INNER JOIN voucher_collections ON ... WHERE voucher_collections.voucher_id ...
-	SaleID                                      qm.QueryMod // INNER JOIN sale_collections ON ... WHERE sale_collections.sale_id ...
-	RelatedCollectionChannelListingConds        qm.QueryMod // INNER JOIN collection_channel_listings ON ... WHERE collection_channel_listings...
-	RelatedCollectionChannelListingChannelConds qm.QueryMod // INNER JOIN collection_channel_listings ON ... INNER JOIN chanel ON ... WHERE channels...
-	AnnotateProductCount                        bool
+	ProductID                                             qm.QueryMod // INNER JOIN product_cpllections ON ... WHERE product_collections.product_id ...
+	VoucherID                                             qm.QueryMod // INNER JOIN voucher_collections ON ... WHERE voucher_collections.voucher_id ...
+	SaleID                                                qm.QueryMod // INNER JOIN sale_collections ON ... WHERE sale_collections.sale_id ...
+	RelatedCollectionChannelListingConds                  qm.QueryMod // INNER JOIN collection_channel_listings ON ... WHERE collection_channel_listings...
+	RelatedCollectionChannelListingChannelConds           qm.QueryMod // INNER JOIN collection_channel_listings ON ... INNER JOIN chanel ON ... WHERE channels...
+	AnnotateProductCount                                  bool
+	AnnotateIsPublished                                   bool
+	AnnotatePublicationDate                               bool
+	ChannelSlugForIsPublishedAndPublicationDateAnnotation string
 }
 
 func CollectionChannelListingPreSave(c *model.CollectionChannelListing) {
@@ -314,6 +334,9 @@ func ProductChannelListingIsValid(p model.ProductChannelListing) *AppError {
 
 type ProductChannelListingFilterOption struct {
 	CommonQueryOptions
+	ProductVariantID         qm.QueryMod // INNER JOIN products ON ... INNER JOIN product_variants ON ... WHERE product_variants.id ...
+	RelatedChannelConditions qm.QueryMod // INNER JOIN channels ON ... WHERE channels ...
+	Preloads                 []string
 }
 
 func ProductMediaPreSave(p *model.ProductMedium) {
@@ -355,3 +378,22 @@ type ProductMediaFilterOption struct {
 	Preloads  []string
 	VariantID qm.QueryMod // INNER JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
 }
+
+var CustomCollectionColumns = struct {
+	ProductCount    string
+	IsPublished     string
+	PublicationDate string
+}{
+	ProductCount:    "product_count",
+	IsPublished:     "is_published",
+	PublicationDate: "publication_date",
+}
+
+type CustomCollection struct {
+	model.Collection `boil:",bind"`
+	ProductCount     *int       `boil:"product_count" json:"product_count"`
+	IsPublished      *bool      `boil:"is_published" json:"is_published"`
+	PublicationDate  *time.Time `boil:"publication_date" json:"publication_date"`
+}
+
+type CustomCollectionSlice []*CustomCollection
