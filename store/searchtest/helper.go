@@ -1,7 +1,6 @@
 package searchtest
 
 import (
-	"context"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -192,7 +191,7 @@ func (th *SearchTestHelper) deleteUser(user *model.User) error {
 }
 
 func (th *SearchTestHelper) cleanAllUsers() error {
-	_, users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{})
+	users, err := th.Store.User().Find(model_helper.UserFilterOptions{})
 	if err != nil {
 		return err
 	}
@@ -377,7 +376,7 @@ func (th *SearchTestHelper) createFileInfo(creatorID, postID, name, content, ext
 		creationTime = createAt
 	}
 	fileInfoModel := th.createFileInfoModel(creatorID, postID, name, content, extension, mimeType, creationTime, size)
-	return th.Store.FileInfo().Upsert(fileInfoModel)
+	return th.Store.FileInfo().Upsert(*fileInfoModel)
 }
 
 // func (th *SearchTestHelper) createReply(userID, message, hashtags string, parent *model.Post, createAt int64, pinned bool) (*model.Post, error) {

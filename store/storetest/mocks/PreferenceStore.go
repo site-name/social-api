@@ -14,30 +14,6 @@ type PreferenceStore struct {
 	mock.Mock
 }
 
-// CleanupFlagsBatch provides a mock function with given fields: limit
-func (_m *PreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
-	ret := _m.Called(limit)
-
-	var r0 int64
-	var r1 error
-	if rf, ok := ret.Get(0).(func(int64) (int64, error)); ok {
-		return rf(limit)
-	}
-	if rf, ok := ret.Get(0).(func(int64) int64); ok {
-		r0 = rf(limit)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(limit)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Delete provides a mock function with given fields: userID, category, name
 func (_m *PreferenceStore) Delete(userID string, category string, name string) error {
 	ret := _m.Called(userID, category, name)
@@ -112,19 +88,19 @@ func (_m *PreferenceStore) Get(userID string, category string, name string) (*mo
 }
 
 // GetAll provides a mock function with given fields: userID
-func (_m *PreferenceStore) GetAll(userID string) (model.Preferences, error) {
+func (_m *PreferenceStore) GetAll(userID string) (model.PreferenceSlice, error) {
 	ret := _m.Called(userID)
 
-	var r0 model.Preferences
+	var r0 model.PreferenceSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (model.Preferences, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (model.PreferenceSlice, error)); ok {
 		return rf(userID)
 	}
-	if rf, ok := ret.Get(0).(func(string) model.Preferences); ok {
+	if rf, ok := ret.Get(0).(func(string) model.PreferenceSlice); ok {
 		r0 = rf(userID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.Preferences)
+			r0 = ret.Get(0).(model.PreferenceSlice)
 		}
 	}
 
@@ -138,19 +114,19 @@ func (_m *PreferenceStore) GetAll(userID string) (model.Preferences, error) {
 }
 
 // GetCategory provides a mock function with given fields: userID, category
-func (_m *PreferenceStore) GetCategory(userID string, category string) (model.Preferences, error) {
+func (_m *PreferenceStore) GetCategory(userID string, category string) (model.PreferenceSlice, error) {
 	ret := _m.Called(userID, category)
 
-	var r0 model.Preferences
+	var r0 model.PreferenceSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) (model.Preferences, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, string) (model.PreferenceSlice, error)); ok {
 		return rf(userID, category)
 	}
-	if rf, ok := ret.Get(0).(func(string, string) model.Preferences); ok {
+	if rf, ok := ret.Get(0).(func(string, string) model.PreferenceSlice); ok {
 		r0 = rf(userID, category)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.Preferences)
+			r0 = ret.Get(0).(model.PreferenceSlice)
 		}
 	}
 
@@ -178,11 +154,11 @@ func (_m *PreferenceStore) PermanentDeleteByUser(userID string) error {
 }
 
 // Save provides a mock function with given fields: preferences
-func (_m *PreferenceStore) Save(preferences model.Preferences) error {
+func (_m *PreferenceStore) Save(preferences model.PreferenceSlice) error {
 	ret := _m.Called(preferences)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(model.Preferences) error); ok {
+	if rf, ok := ret.Get(0).(func(model.PreferenceSlice) error); ok {
 		r0 = rf(preferences)
 	} else {
 		r0 = ret.Error(0)

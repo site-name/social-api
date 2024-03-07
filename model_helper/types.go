@@ -14,3 +14,7 @@ type ChannelFilterOptions struct {
 	VoucherID         qm.QueryMod // INNER JOIN voucher_channel_listings vcl ON ... WHERE vcl.voucher_id ...
 	AnnotateHasOrders bool        // this tells the store to annotate if the channels has order(s) attached
 }
+
+type VatFilterOptions struct {
+	CommonQueryOptions
+}

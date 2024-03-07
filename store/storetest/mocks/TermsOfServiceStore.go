@@ -67,15 +67,15 @@ func (_m *TermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfSer
 }
 
 // Save provides a mock function with given fields: termsOfService
-func (_m *TermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+func (_m *TermsOfServiceStore) Save(termsOfService model.TermsOfService) (*model.TermsOfService, error) {
 	ret := _m.Called(termsOfService)
 
 	var r0 *model.TermsOfService
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.TermsOfService) (*model.TermsOfService, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.TermsOfService) (*model.TermsOfService, error)); ok {
 		return rf(termsOfService)
 	}
-	if rf, ok := ret.Get(0).(func(*model.TermsOfService) *model.TermsOfService); ok {
+	if rf, ok := ret.Get(0).(func(model.TermsOfService) *model.TermsOfService); ok {
 		r0 = rf(termsOfService)
 	} else {
 		if ret.Get(0) != nil {
@@ -83,7 +83,7 @@ func (_m *TermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*mode
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.TermsOfService) error); ok {
+	if rf, ok := ret.Get(1).(func(model.TermsOfService) error); ok {
 		r1 = rf(termsOfService)
 	} else {
 		r1 = ret.Error(1)

@@ -15,19 +15,19 @@ type AuditStore struct {
 }
 
 // Get provides a mock function with given fields: userID, offset, limit
-func (_m *AuditStore) Get(userID string, offset int, limit int) (model.Audits, error) {
+func (_m *AuditStore) Get(userID string, offset int, limit int) (model.AuditSlice, error) {
 	ret := _m.Called(userID, offset, limit)
 
-	var r0 model.Audits
+	var r0 model.AuditSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, int, int) (model.Audits, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, int, int) (model.AuditSlice, error)); ok {
 		return rf(userID, offset, limit)
 	}
-	if rf, ok := ret.Get(0).(func(string, int, int) model.Audits); ok {
+	if rf, ok := ret.Get(0).(func(string, int, int) model.AuditSlice); ok {
 		r0 = rf(userID, offset, limit)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.Audits)
+			r0 = ret.Get(0).(model.AuditSlice)
 		}
 	}
 
@@ -55,11 +55,11 @@ func (_m *AuditStore) PermanentDeleteByUser(userID string) error {
 }
 
 // Save provides a mock function with given fields: audit
-func (_m *AuditStore) Save(audit *model.Audit) error {
+func (_m *AuditStore) Save(audit model.Audit) error {
 	ret := _m.Called(audit)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.Audit) error); ok {
+	if rf, ok := ret.Get(0).(func(model.Audit) error); ok {
 		r0 = rf(audit)
 	} else {
 		r0 = ret.Error(0)

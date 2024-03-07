@@ -104,9 +104,7 @@ func (us *SqlUserStore) GetEtagForProfiles() string {
 			qm.Select(model.UserColumns.UpdatedAt),
 			qm.OrderBy(fmt.Sprintf("%s DESC", model.UserColumns.UpdatedAt)),
 			qm.Limit(1),
-		).
-		QueryRowContext(us.Context(), us.GetReplica()).
-		Scan(&updatedAt)
+		).Bind(context.Background(), us.GetReplica(), &updatedAt)
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, model_helper.GetMillis())
 	}
@@ -664,9 +662,7 @@ func (us *SqlUserStore) InferSystemInstallDate() (int64, error) {
 			qm.OrderBy(model.UserColumns.CreatedAt),
 			model.UserWhere.CreatedAt.NEQ(0),
 			qm.Limit(1),
-		).
-		QueryRowContext(us.Context(), us.GetReplica()).
-		Scan(&createAt)
+		).Bind(context.Background(), us.GetReplica(), &createAt)
 }
 
 func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model_helper.UserForIndexing, error) {

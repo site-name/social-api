@@ -41,15 +41,15 @@ func (_m *ShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
 }
 
 // Upsert provides a mock function with given fields: translation
-func (_m *ShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
+func (_m *ShopTranslationStore) Upsert(translation model.ShopTranslation) (*model.ShopTranslation, error) {
 	ret := _m.Called(translation)
 
 	var r0 *model.ShopTranslation
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ShopTranslation) (*model.ShopTranslation, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.ShopTranslation) (*model.ShopTranslation, error)); ok {
 		return rf(translation)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ShopTranslation) *model.ShopTranslation); ok {
+	if rf, ok := ret.Get(0).(func(model.ShopTranslation) *model.ShopTranslation); ok {
 		r0 = rf(translation)
 	} else {
 		if ret.Get(0) != nil {
@@ -57,7 +57,7 @@ func (_m *ShopTranslationStore) Upsert(translation *model.ShopTranslation) (*mod
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ShopTranslation) error); ok {
+	if rf, ok := ret.Get(1).(func(model.ShopTranslation) error); ok {
 		r1 = rf(translation)
 	} else {
 		r1 = ret.Error(1)

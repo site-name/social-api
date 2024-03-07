@@ -7,11 +7,10 @@ package mocks
 import (
 	context "context"
 
-	gorm "gorm.io/gorm"
-
+	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
 
-	model "github.com/sitename/sitename/model"
+	model_helper "github.com/sitename/sitename/model_helper"
 
 	store "github.com/sitename/sitename/store"
 )
@@ -21,38 +20,22 @@ type UserStore struct {
 	mock.Mock
 }
 
-// AddRelations provides a mock function with given fields: transaction, userID, relations, customerNoteOnUser
-func (_m *UserStore) AddRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model_helper.AppError {
-	ret := _m.Called(transaction, userID, relations, customerNoteOnUser)
-
-	var r0 *model_helper.AppError
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model_helper.AppError); ok {
-		r0 = rf(transaction, userID, relations, customerNoteOnUser)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model_helper.AppError)
-		}
-	}
-
-	return r0
-}
-
 // AnalyticsActiveCount provides a mock function with given fields: time, options
-func (_m *UserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+func (_m *UserStore) AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error) {
 	ret := _m.Called(time, options)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, model.UserCountOptions) (int64, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64, model_helper.UserCountOptions) (int64, error)); ok {
 		return rf(time, options)
 	}
-	if rf, ok := ret.Get(0).(func(int64, model.UserCountOptions) int64); ok {
+	if rf, ok := ret.Get(0).(func(int64, model_helper.UserCountOptions) int64); ok {
 		r0 = rf(time, options)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(int64, model.UserCountOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, model_helper.UserCountOptions) error); ok {
 		r1 = rf(time, options)
 	} else {
 		r1 = ret.Error(1)
@@ -62,21 +45,21 @@ func (_m *UserStore) AnalyticsActiveCount(time int64, options model.UserCountOpt
 }
 
 // AnalyticsActiveCountForPeriod provides a mock function with given fields: startTime, endTime, options
-func (_m *UserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+func (_m *UserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error) {
 	ret := _m.Called(startTime, endTime, options)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, int64, model.UserCountOptions) (int64, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64, int64, model_helper.UserCountOptions) (int64, error)); ok {
 		return rf(startTime, endTime, options)
 	}
-	if rf, ok := ret.Get(0).(func(int64, int64, model.UserCountOptions) int64); ok {
+	if rf, ok := ret.Get(0).(func(int64, int64, model_helper.UserCountOptions) int64); ok {
 		r0 = rf(startTime, endTime, options)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(int64, int64, model.UserCountOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, int64, model_helper.UserCountOptions) error); ok {
 		r1 = rf(startTime, endTime, options)
 	} else {
 		r1 = ret.Error(1)
@@ -201,21 +184,21 @@ func (_m *UserStore) ClearCaches() {
 }
 
 // Count provides a mock function with given fields: options
-func (_m *UserStore) Count(options model.UserCountOptions) (int64, error) {
+func (_m *UserStore) Count(options model_helper.UserCountOptions) (int64, error) {
 	ret := _m.Called(options)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(model.UserCountOptions) (int64, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.UserCountOptions) (int64, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(model.UserCountOptions) int64); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.UserCountOptions) int64); ok {
 		r0 = rf(options)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(model.UserCountOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.UserCountOptions) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -224,57 +207,24 @@ func (_m *UserStore) Count(options model.UserCountOptions) (int64, error) {
 	return r0, r1
 }
 
-// FilterByOptions provides a mock function with given fields: ctx, options
-func (_m *UserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
-	ret := _m.Called(ctx, options)
-
-	var r0 int64
-	var r1 []*model.User
-	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) (int64, []*model.User, error)); ok {
-		return rf(ctx, options)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) int64); ok {
-		r0 = rf(ctx, options)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, *model.UserFilterOptions) []*model.User); ok {
-		r1 = rf(ctx, options)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*model.User)
-		}
-	}
-
-	if rf, ok := ret.Get(2).(func(context.Context, *model.UserFilterOptions) error); ok {
-		r2 = rf(ctx, options)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
-// GetAllProfiles provides a mock function with given fields: options
-func (_m *UserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+// Find provides a mock function with given fields: options
+func (_m *UserStore) Find(options model_helper.UserFilterOptions) (model.UserSlice, error) {
 	ret := _m.Called(options)
 
-	var r0 []*model.User
+	var r0 model.UserSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.UserGetOptions) ([]*model.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.UserFilterOptions) (model.UserSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.UserGetOptions) []*model.User); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.UserFilterOptions) model.UserSlice); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).(model.UserSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.UserGetOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.UserFilterOptions) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -283,25 +233,51 @@ func (_m *UserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.Use
 	return r0, r1
 }
 
-// GetByOptions provides a mock function with given fields: ctx, options
-func (_m *UserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
-	ret := _m.Called(ctx, options)
+// Get provides a mock function with given fields: ctx, id
+func (_m *UserStore) Get(ctx context.Context, id string) (*model.User, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *model.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) (*model.User, error)); ok {
-		return rf(ctx, options)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*model.User, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) *model.User); ok {
-		r0 = rf(ctx, options)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *model.User); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *model.UserFilterOptions) error); ok {
-		r1 = rf(ctx, options)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAllProfiles provides a mock function with given fields: options
+func (_m *UserStore) GetAllProfiles(options model_helper.UserGetOptions) (model.UserSlice, error) {
+	ret := _m.Called(options)
+
+	var r0 model.UserSlice
+	var r1 error
+	if rf, ok := ret.Get(0).(func(model_helper.UserGetOptions) (model.UserSlice, error)); ok {
+		return rf(options)
+	}
+	if rf, ok := ret.Get(0).(func(model_helper.UserGetOptions) model.UserSlice); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(model.UserSlice)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(model_helper.UserGetOptions) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -323,13 +299,13 @@ func (_m *UserStore) GetEtagForAllProfiles() string {
 	return r0
 }
 
-// GetEtagForProfiles provides a mock function with given fields: teamID
-func (_m *UserStore) GetEtagForProfiles(teamID string) string {
-	ret := _m.Called(teamID)
+// GetEtagForProfiles provides a mock function with given fields:
+func (_m *UserStore) GetEtagForProfiles() string {
+	ret := _m.Called()
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(teamID)
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -363,50 +339,24 @@ func (_m *UserStore) GetForLogin(loginID string, allowSignInWithUsername bool, a
 	return r0, r1
 }
 
-// GetKnownUsers provides a mock function with given fields: userID
-func (_m *UserStore) GetKnownUsers(userID string) ([]string, error) {
-	ret := _m.Called(userID)
-
-	var r0 []string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]string, error)); ok {
-		return rf(userID)
-	}
-	if rf, ok := ret.Get(0).(func(string) []string); ok {
-		r0 = rf(userID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetProfileByIds provides a mock function with given fields: ctx, userIds, options, allowFromCache
-func (_m *UserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (_m *UserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error) {
 	ret := _m.Called(ctx, userIds, options, allowFromCache)
 
-	var r0 []*model.User
+	var r0 model.UserSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, []string, *store.UserGetByIdsOpts, bool) ([]*model.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []string, store.UserGetByIdsOpts, bool) (model.UserSlice, error)); ok {
 		return rf(ctx, userIds, options, allowFromCache)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, []string, *store.UserGetByIdsOpts, bool) []*model.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []string, store.UserGetByIdsOpts, bool) model.UserSlice); ok {
 		r0 = rf(ctx, userIds, options, allowFromCache)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).(model.UserSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, []string, *store.UserGetByIdsOpts, bool) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, []string, store.UserGetByIdsOpts, bool) error); ok {
 		r1 = rf(ctx, userIds, options, allowFromCache)
 	} else {
 		r1 = ret.Error(1)
@@ -441,44 +391,20 @@ func (_m *UserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
 	return r0, r1
 }
 
-// GetUnreadCount provides a mock function with given fields: userID
-func (_m *UserStore) GetUnreadCount(userID string) (int64, error) {
-	ret := _m.Called(userID)
-
-	var r0 int64
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (int64, error)); ok {
-		return rf(userID)
-	}
-	if rf, ok := ret.Get(0).(func(string) int64); ok {
-		r0 = rf(userID)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetUsersBatchForIndexing provides a mock function with given fields: startTime, endTime, limit
-func (_m *UserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (_m *UserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model_helper.UserForIndexing, error) {
 	ret := _m.Called(startTime, endTime, limit)
 
-	var r0 []*model.UserForIndexing
+	var r0 []*model_helper.UserForIndexing
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, int64, int) ([]*model.UserForIndexing, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64, int64, int) ([]*model_helper.UserForIndexing, error)); ok {
 		return rf(startTime, endTime, limit)
 	}
-	if rf, ok := ret.Get(0).(func(int64, int64, int) []*model.UserForIndexing); ok {
+	if rf, ok := ret.Get(0).(func(int64, int64, int) []*model_helper.UserForIndexing); ok {
 		r0 = rf(startTime, endTime, limit)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.UserForIndexing)
+			r0 = ret.Get(0).([]*model_helper.UserForIndexing)
 		}
 	}
 
@@ -558,22 +484,6 @@ func (_m *UserStore) PermanentDelete(userID string) error {
 	return r0
 }
 
-// RemoveRelations provides a mock function with given fields: transaction, userID, relations, customerNoteOnUser
-func (_m *UserStore) RemoveRelations(transaction *gorm.DB, userID string, relations interface{}, customerNoteOnUser bool) *model_helper.AppError {
-	ret := _m.Called(transaction, userID, relations, customerNoteOnUser)
-
-	var r0 *model_helper.AppError
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, interface{}, bool) *model_helper.AppError); ok {
-		r0 = rf(transaction, userID, relations, customerNoteOnUser)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model_helper.AppError)
-		}
-	}
-
-	return r0
-}
-
 // ResetAuthDataToEmailForUsers provides a mock function with given fields: service, userIDs, includeDeleted, dryRun
 func (_m *UserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
 	ret := _m.Called(service, userIDs, includeDeleted, dryRun)
@@ -613,15 +523,15 @@ func (_m *UserStore) ResetLastPictureUpdate(userID string) error {
 }
 
 // Save provides a mock function with given fields: user
-func (_m *UserStore) Save(user *model.User) (*model.User, error) {
+func (_m *UserStore) Save(user model.User) (*model.User, error) {
 	ret := _m.Called(user)
 
 	var r0 *model.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.User) (*model.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.User) (*model.User, error)); ok {
 		return rf(user)
 	}
-	if rf, ok := ret.Get(0).(func(*model.User) *model.User); ok {
+	if rf, ok := ret.Get(0).(func(model.User) *model.User); ok {
 		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
@@ -629,7 +539,7 @@ func (_m *UserStore) Save(user *model.User) (*model.User, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.User) error); ok {
+	if rf, ok := ret.Get(1).(func(model.User) error); ok {
 		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
@@ -638,40 +548,24 @@ func (_m *UserStore) Save(user *model.User) (*model.User, error) {
 	return r0, r1
 }
 
-// ScanFields provides a mock function with given fields: user
-func (_m *UserStore) ScanFields(user *model.User) []interface{} {
-	ret := _m.Called(user)
-
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(*model.User) []interface{}); ok {
-		r0 = rf(user)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
-		}
-	}
-
-	return r0
-}
-
 // Search provides a mock function with given fields: term, options
-func (_m *UserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (_m *UserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
 	ret := _m.Called(term, options)
 
-	var r0 []*model.User
+	var r0 model.UserSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, *model.UserSearchOptions) ([]*model.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, *model_helper.UserSearchOptions) (model.UserSlice, error)); ok {
 		return rf(term, options)
 	}
-	if rf, ok := ret.Get(0).(func(string, *model.UserSearchOptions) []*model.User); ok {
+	if rf, ok := ret.Get(0).(func(string, *model_helper.UserSearchOptions) model.UserSlice); ok {
 		r0 = rf(term, options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).(model.UserSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, *model.UserSearchOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(string, *model_helper.UserSearchOptions) error); ok {
 		r1 = rf(term, options)
 	} else {
 		r1 = ret.Error(1)
@@ -681,23 +575,23 @@ func (_m *UserStore) Search(term string, options *model.UserSearchOptions) ([]*m
 }
 
 // Update provides a mock function with given fields: user, allowRoleUpdate
-func (_m *UserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
+func (_m *UserStore) Update(user model.User, allowRoleUpdate bool) (*model_helper.UserUpdate, error) {
 	ret := _m.Called(user, allowRoleUpdate)
 
-	var r0 *model.UserUpdate
+	var r0 *model_helper.UserUpdate
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.User, bool) (*model.UserUpdate, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.User, bool) (*model_helper.UserUpdate, error)); ok {
 		return rf(user, allowRoleUpdate)
 	}
-	if rf, ok := ret.Get(0).(func(*model.User, bool) *model.UserUpdate); ok {
+	if rf, ok := ret.Get(0).(func(model.User, bool) *model_helper.UserUpdate); ok {
 		r0 = rf(user, allowRoleUpdate)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.UserUpdate)
+			r0 = ret.Get(0).(*model_helper.UserUpdate)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.User, bool) error); ok {
+	if rf, ok := ret.Get(1).(func(model.User, bool) error); ok {
 		r1 = rf(user, allowRoleUpdate)
 	} else {
 		r1 = ret.Error(1)
@@ -744,13 +638,13 @@ func (_m *UserStore) UpdateFailedPasswordAttempts(userID string, attempts int) e
 	return r0
 }
 
-// UpdateLastPictureUpdate provides a mock function with given fields: userID
-func (_m *UserStore) UpdateLastPictureUpdate(userID string) error {
-	ret := _m.Called(userID)
+// UpdateLastPictureUpdate provides a mock function with given fields: userID, updateMillis
+func (_m *UserStore) UpdateLastPictureUpdate(userID string, updateMillis int64) error {
+	ret := _m.Called(userID, updateMillis)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(userID)
+	if rf, ok := ret.Get(0).(func(string, int64) error); ok {
+		r0 = rf(userID, updateMillis)
 	} else {
 		r0 = ret.Error(0)
 	}

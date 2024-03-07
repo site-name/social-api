@@ -72,19 +72,19 @@ func (_m *SessionStore) Get(ctx context.Context, sessionIDOrToken string) (*mode
 }
 
 // GetSessions provides a mock function with given fields: userID
-func (_m *SessionStore) GetSessions(userID string) ([]*model.Session, error) {
+func (_m *SessionStore) GetSessions(userID string) (model.SessionSlice, error) {
 	ret := _m.Called(userID)
 
-	var r0 []*model.Session
+	var r0 model.SessionSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*model.Session, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (model.SessionSlice, error)); ok {
 		return rf(userID)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*model.Session); ok {
+	if rf, ok := ret.Get(0).(func(string) model.SessionSlice); ok {
 		r0 = rf(userID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Session)
+			r0 = ret.Get(0).(model.SessionSlice)
 		}
 	}
 
@@ -98,19 +98,19 @@ func (_m *SessionStore) GetSessions(userID string) ([]*model.Session, error) {
 }
 
 // GetSessionsExpired provides a mock function with given fields: thresholdMillis, mobileOnly, unnotifiedOnly
-func (_m *SessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
+func (_m *SessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) (model.SessionSlice, error) {
 	ret := _m.Called(thresholdMillis, mobileOnly, unnotifiedOnly)
 
-	var r0 []*model.Session
+	var r0 model.SessionSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, bool, bool) ([]*model.Session, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64, bool, bool) (model.SessionSlice, error)); ok {
 		return rf(thresholdMillis, mobileOnly, unnotifiedOnly)
 	}
-	if rf, ok := ret.Get(0).(func(int64, bool, bool) []*model.Session); ok {
+	if rf, ok := ret.Get(0).(func(int64, bool, bool) model.SessionSlice); ok {
 		r0 = rf(thresholdMillis, mobileOnly, unnotifiedOnly)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Session)
+			r0 = ret.Get(0).(model.SessionSlice)
 		}
 	}
 
@@ -124,19 +124,19 @@ func (_m *SessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly boo
 }
 
 // GetSessionsWithActiveDeviceIds provides a mock function with given fields: userID
-func (_m *SessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error) {
+func (_m *SessionStore) GetSessionsWithActiveDeviceIds(userID string) (model.SessionSlice, error) {
 	ret := _m.Called(userID)
 
-	var r0 []*model.Session
+	var r0 model.SessionSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*model.Session, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (model.SessionSlice, error)); ok {
 		return rf(userID)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*model.Session); ok {
+	if rf, ok := ret.Get(0).(func(string) model.SessionSlice); ok {
 		r0 = rf(userID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Session)
+			r0 = ret.Get(0).(model.SessionSlice)
 		}
 	}
 
@@ -149,13 +149,13 @@ func (_m *SessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.
 	return r0, r1
 }
 
-// PermanentDeleteSessionsByUser provides a mock function with given fields: teamID
-func (_m *SessionStore) PermanentDeleteSessionsByUser(teamID string) error {
-	ret := _m.Called(teamID)
+// PermanentDeleteSessionsByUser provides a mock function with given fields: userID
+func (_m *SessionStore) PermanentDeleteSessionsByUser(userID string) error {
+	ret := _m.Called(userID)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(teamID)
+		r0 = rf(userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -192,15 +192,15 @@ func (_m *SessionStore) RemoveAllSessions() error {
 }
 
 // Save provides a mock function with given fields: session
-func (_m *SessionStore) Save(session *model.Session) (*model.Session, error) {
+func (_m *SessionStore) Save(session model.Session) (*model.Session, error) {
 	ret := _m.Called(session)
 
 	var r0 *model.Session
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.Session) (*model.Session, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.Session) (*model.Session, error)); ok {
 		return rf(session)
 	}
-	if rf, ok := ret.Get(0).(func(*model.Session) *model.Session); ok {
+	if rf, ok := ret.Get(0).(func(model.Session) *model.Session); ok {
 		r0 = rf(session)
 	} else {
 		if ret.Get(0) != nil {
@@ -208,7 +208,7 @@ func (_m *SessionStore) Save(session *model.Session) (*model.Session, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.Session) error); ok {
+	if rf, ok := ret.Get(1).(func(model.Session) error); ok {
 		r1 = rf(session)
 	} else {
 		r1 = ret.Error(1)
@@ -284,11 +284,11 @@ func (_m *SessionStore) UpdateLastActivityAt(sessionID string, time int64) error
 }
 
 // UpdateProps provides a mock function with given fields: session
-func (_m *SessionStore) UpdateProps(session *model.Session) error {
+func (_m *SessionStore) UpdateProps(session model.Session) error {
 	ret := _m.Called(session)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.Session) error); ok {
+	if rf, ok := ret.Get(0).(func(model.Session) error); ok {
 		r0 = rf(session)
 	} else {
 		r0 = ret.Error(0)

@@ -7,6 +7,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -21,7 +22,7 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
+func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks model.StockSlice) (model.StockSlice, error) {
 	if transaction == nil {
 		transaction = ss.GetMaster()
 	}
@@ -51,48 +52,56 @@ func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	return stock, nil
 }
 
-func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
+func (ss *SqlStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 	channelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ChannelTableName).
-		Where("Channels.Id = ?", options.ChannelID).
-		Where("Channels.Id = ShippingZoneChannels.ChannelID").
+		From(model.TableNames.Channels).
+		Where(squirrel.Eq{
+			model.ChannelTableColumns.ID: model.ShippingZoneChannelTableColumns.ChannelID,
+			model.ChannelTableColumns.ID: options.ChannelID,
+		}).
 		Limit(1).
 		Suffix(")")
 
 	shippingZoneChannelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ShippingZoneChannelTableName).
+		From(model.TableNames.ShippingZoneChannels).
 		Where(channelQuery).
-		Where("ShippingZoneChannels.ShippingZoneID = WarehouseShippingZones.ShippingZoneID").
+		Where(squirrel.Eq{
+			model.ShippingZoneChannelTableColumns.ShippingZoneID: model.WarehouseShippingZoneTableColumns.ShippingZoneID,
+		}).
 		Limit(1).
 		Suffix(")")
 
 	warehouseShippingZoneQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.WarehouseShippingZoneTableName).
+		From(model.TableNames.WarehouseShippingZones).
 		Where(shippingZoneChannelQuery).
-		Where("WarehouseShippingZones.WarehouseID = Stocks.WarehouseID").
+		Where(squirrel.Eq{
+			model.WarehouseShippingZoneTableColumns.WarehouseID: model.StockTableColumns.WarehouseID,
+		}).
 		Limit(1).
 		Suffix(")")
 
-	selectFields := []string{model.StockTableName + ".*"}
+	selectFields := []string{model.TableNames.Stocks + ".*"}
 	// check if we need select related data:
 	if options.SelectRelatedProductVariant {
-		selectFields = append(selectFields, model.ProductVariantTableName+".*")
+		selectFields = append(selectFields, model.TableNames.ProductVariants+".*")
 	}
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.StockTableName).
-		Where(warehouseShippingZoneQuery).Where(options.Conditions)
+		From(model.TableNames.Stocks).
+		Where(warehouseShippingZoneQuery).
+		Where(options.Conditions)
 
 	// parse options
 	if options.SelectRelatedProductVariant {
-		query = query.InnerJoin(model.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)")
+		query = query.
+			InnerJoin(fmt.Sprintf("%s ON (%s = %s)", model.TableNames.ProductVariants, model.StockTableColumns.ProductVariantID, model.ProductVariantTableColumns.ID))
 	}
 
 	if options.ReturnQueryOnly {
@@ -110,7 +119,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	}
 	defer rows.Close()
 
-	var returningStocks []*model.Stock
+	var returningStocks model.StockSlice
 
 	for rows.Next() {
 		var (
@@ -137,7 +146,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	return nil, returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
+func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64, model.StockSlice, error) {
 	selectFields := []string{model.StockTableName + ".*"}
 	if options.SelectRelatedProductVariant {
 		selectFields = append(selectFields, model.ProductVariantTableName+".*")
@@ -302,7 +311,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64
 	return totalCount, returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
 		PlaceholderFormat(squirrel.Question)
@@ -407,31 +416,31 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterOp
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	return ss.FilterForCountryAndChannel(options)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	// TODO: finish me
 	return ss.FilterForCountryAndChannel(options)
 }
 
 func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, channelSlug string) squirrel.SelectBuilder {
 	query := ss.GetQueryBuilder().
-		Select("Warehouses.Id").
-		From(model.WarehouseTableName)
+		Select(model.WarehouseTableColumns.ID).
+		From(model.TableNames.Warehouses)
 
 	if countryCode != "" {
 		query = query.
-			InnerJoin(model.WarehouseShippingZoneTableName+" ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
-			InnerJoin(model.ShippingZoneTableName+" ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
-			Where("ShippingZones.Countries::text LIKE ?", "%"+countryCode+"%")
+			InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.WarehouseShippingZones, model.WarehouseTableColumns.ID, model.WarehouseShippingZoneTableColumns.WarehouseID)).
+			InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZones, model.ShippingZoneTableColumns.ID, model.WarehouseShippingZoneTableColumns.ShippingZoneID)).
+			Where(squirrel.Like{model.ShippingZoneTableColumns.Countries: fmt.Sprintf("%%%s%%", countryCode)})
 	}
 	if channelSlug != "" {
 		query = query.
-			InnerJoin(model.ShippingZoneChannelTableName+" ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-			InnerJoin(model.ChannelTableName+" ON Channels.Id = ShippingZoneChannels.ChannelID").
-			Where("Channels.Slug = ?", channelSlug)
+			InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)).
+			InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.ShippingZoneChannelTableColumns.ChannelID)).
+			Where(squirrel.Eq{model.ChannelTableColumns.Slug: channelSlug})
 	}
 
 	return query

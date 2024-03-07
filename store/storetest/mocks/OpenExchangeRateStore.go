@@ -15,23 +15,23 @@ type OpenExchangeRateStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: rates
-func (_m *OpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
+func (_m *OpenExchangeRateStore) BulkUpsert(rates model.OpenExchangeRateSlice) (model.OpenExchangeRateSlice, error) {
 	ret := _m.Called(rates)
 
-	var r0 []*model.OpenExchangeRate
+	var r0 model.OpenExchangeRateSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.OpenExchangeRateSlice) (model.OpenExchangeRateSlice, error)); ok {
 		return rf(rates)
 	}
-	if rf, ok := ret.Get(0).(func([]*model.OpenExchangeRate) []*model.OpenExchangeRate); ok {
+	if rf, ok := ret.Get(0).(func(model.OpenExchangeRateSlice) model.OpenExchangeRateSlice); ok {
 		r0 = rf(rates)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.OpenExchangeRate)
+			r0 = ret.Get(0).(model.OpenExchangeRateSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func([]*model.OpenExchangeRate) error); ok {
+	if rf, ok := ret.Get(1).(func(model.OpenExchangeRateSlice) error); ok {
 		r1 = rf(rates)
 	} else {
 		r1 = ret.Error(1)
@@ -41,19 +41,19 @@ func (_m *OpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]
 }
 
 // GetAll provides a mock function with given fields:
-func (_m *OpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
+func (_m *OpenExchangeRateStore) GetAll() (model.OpenExchangeRateSlice, error) {
 	ret := _m.Called()
 
-	var r0 []*model.OpenExchangeRate
+	var r0 model.OpenExchangeRateSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]*model.OpenExchangeRate, error)); ok {
+	if rf, ok := ret.Get(0).(func() (model.OpenExchangeRateSlice, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() []*model.OpenExchangeRate); ok {
+	if rf, ok := ret.Get(0).(func() model.OpenExchangeRateSlice); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.OpenExchangeRate)
+			r0 = ret.Get(0).(model.OpenExchangeRateSlice)
 		}
 	}
 

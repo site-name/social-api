@@ -963,3 +963,15 @@ type UsersStats struct {
 type UserFilterOptions struct {
 	CommonQueryOptions
 }
+
+type UserAccessTokenFilterOptions struct {
+	CommonQueryOptions
+}
+
+type CustomerEventFilterOptions struct {
+	CommonQueryOptions
+}
+
+type StaffNotificationRecipientFilterOptions struct {
+	CommonQueryOptions
+}

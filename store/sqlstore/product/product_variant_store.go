@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -126,156 +127,82 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.P
 	return variant, nil
 }
 
-func (vs *SqlProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
-	db := vs.GetReplica()
-	if option.Distinct {
-		db = db.Distinct()
+func (vs *SqlProductVariantStore) commonQueryBuilder(option model_helper.ProductVariantFilterOptions) []qm.QueryMod {
+	conds := option.Conditions
+	for _, load := range option.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
-
-	for _, preload := range option.Preloads {
-		db = db.Preload(preload)
+	if option.VoucherID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.VoucherProductVariants, model.VoucherProductVariantTableColumns.ProductVariantID, model.ProductVariantTableColumns.ID)),
+			option.VoucherID,
+		)
 	}
-
-	conditions := squirrel.And{}
-	if option.Conditions != nil {
-		conditions = append(conditions, option.Conditions)
+	if option.SaleID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.SaleProductVariants, model.SaleProductVariantTableColumns.ProductVariantID, model.ProductVariantTableColumns.ID)),
+			option.SaleID,
+		)
 	}
-
-	if option.RelatedProductVariantChannelListingConditions != nil ||
+	if option.RelatedProductVariantChannelListingConds != nil ||
 		option.ProductVariantChannelListingChannelSlug != nil {
-
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.ProductVariantChannelListingTableName,       // 1
-				model.ProductVariantTableName,                     // 2
-				model.ProductVariantChannelListingColumnVariantID, // 3
-				model.ProductVariantColumnId,                      // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariantChannelListings, model.ProductVariantChannelListingTableColumns.VariantID, model.ProductVariantTableColumns.ID)),
 		)
 
-		if option.RelatedProductVariantChannelListingConditions != nil {
-			conditions = append(conditions, option.RelatedProductVariantChannelListingConditions)
+		if option.RelatedProductVariantChannelListingConds != nil {
+			conds = append(conds, option.RelatedProductVariantChannelListingConds)
 		}
 
 		if option.ProductVariantChannelListingChannelSlug != nil {
-			conditions = append(conditions, option.ProductVariantChannelListingChannelSlug)
-			db = db.Joins(
-				fmt.Sprintf(
-					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-					model.ChannelTableName,                            // 1
-					model.ProductVariantChannelListingTableName,       // 2
-					model.ChannelColumnId,                             // 3
-					model.ProductVariantChannelListingColumnChannelID, // 4
-				),
+			conds = append(
+				conds,
+				qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ProductVariantChannelListingTableColumns.ChannelID, model.ChannelTableColumns.ID)),
+				option.ProductVariantChannelListingChannelSlug,
 			)
 		}
 	}
-
 	if option.WishlistID != nil ||
 		option.WishlistItemID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.WishlistItemProductVariantTableName, // 1
-				model.ProductVariantTableName,             // 2
-				"product_variant_id",                      // 3
-				model.ProductVariantColumnId,              // 4
-			),
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.WishlistItemProductVariants, model.WishlistItemProductVariantTableColumns.ProductVariantID, model.ProductVariantTableColumns.ID)),
 		)
 
 		if option.WishlistItemID != nil {
-			conditions = append(conditions, option.WishlistItemID)
+			conds = append(conds, option.WishlistItemID)
 		}
+
 		if option.WishlistID != nil {
-			db = db.Joins(
-				fmt.Sprintf(
-					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-					model.WishlistItemTableName,               // 1
-					model.WishlistItemProductVariantTableName, // 2
-					"wishlist_item_id",                        // 3
-					model.WishlistItemColumnId,                // 4
-				),
+			conds = append(
+				conds,
+				qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.WishlistItems, model.WishlistItemTableColumns.ID, model.WishlistItemProductVariantTableColumns.WishlistItemID)),
+				option.WishlistID,
 			)
-			conditions = append(conditions, option.WishlistID)
 		}
 	}
 
-	if option.VoucherID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.VoucherProductVariantTableName, // 1
-				model.ProductVariantTableName,        // 2
-				"product_variant_id",                 // 3
-				model.ProductVariantColumnId,         // 4
-			),
-		)
-		conditions = append(conditions, option.VoucherID)
-	}
+	return conds
+}
 
-	if option.SaleID != nil {
-		db = db.Joins(
-			fmt.Sprintf(
-				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.SaleProductVariantTableName, // 1
-				model.ProductVariantTableName,     // 2
-				"product_variant_id",              // 3
-				model.ProductVariantColumnId,      // 4
-			),
-		)
-		conditions = append(conditions, option.SaleID)
-	}
-
-	args, err := store.BuildSqlizer(conditions, "Productvariant_FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-	var res model.ProductVariants
-	err = db.Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variants iwth given options")
-	}
-	return res, nil
+func (vs *SqlProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) {
+	conds := vs.commonQueryBuilder(option)
+	return model.ProductVariants(conds...).All(vs.GetReplica())
 }
 
 func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error) {
-	query := fmt.Sprintf(
-		`SELECT %[1]s.*
-	FROM
-		%[1]s
-	INNER JOIN
-		%[2]s
-	ON
-		%[1]s.%[3]s = %[2]s.%[4]s
-	INNER JOIN
-		%[5]s
-	ON
-		%[5]s.%[6]s = %[2]s.%[4]s
-	WHERE
-		%[5]s.%[7]s = ?      -- productChannelListing.ChannelId
-		AND %[5]s.%[8]s <= ? -- productChannelListing.AvailableForPurchase
-		AND %[1]s.%[9]s IN ? -- productVariant.Id`,
+	startOfDay := util.MillisFromTime(util.StartOfDay(time.Now().UTC()))
 
-		model.ProductVariantTableName,                         // 1
-		model.ProductTableName,                                // 2
-		model.ProductVariantColumnProductID,                   // 3
-		model.ProductColumnId,                                 // 4
-		model.ProductChannelListingTableName,                  // 5
-		model.ProductChannelListingColumnProductID,            // 6
-		model.ProductChannelListingColumnChannelID,            // 7
-		model.ProductChannelListingColumnAvailableForPurchase, // 8
-		model.ProductVariantColumnId,                          // 9
-	)
-
-	now := util.StartOfDay(time.Now())
-	var res model.ProductVariants
-	err := s.GetReplica().Raw(query, channelID, now, variantIds).Scan(&res).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find availabe for purchase product variants")
-	}
-
-	return res, nil
+	return model.ProductVariants(
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Products, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID)),
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductChannelListings, model.ProductChannelListingTableColumns.ProductID, model.ProductTableColumns.ID)),
+		model.ProductChannelListingWhere.ChannelID.EQ(channelID),
+		model.ProductChannelListingWhere.AvailableForPurchase.LTE(model_types.NewNullInt64(startOfDay)),
+		model.ProductVariantWhere.ID.IN(variantIds),
+	).All(s.GetReplica())
 }
 
 func (s *SqlProductVariantStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
@@ -283,6 +210,7 @@ func (s *SqlProductVariantStore) Delete(tx boil.ContextTransactor, ids []string)
 		tx = s.GetMaster()
 	}
 
+	// delete related order lines with status draft
 	_, err := s.GetQueryBuilder().
 		Delete(model.TableNames.OrderLines).
 		Where(squirrel.Expr(
@@ -301,49 +229,51 @@ func (s *SqlProductVariantStore) Delete(tx boil.ContextTransactor, ids []string)
 		)).
 		RunWith(tx).
 		Exec()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to delete draft order lines related to given variants")
+	}
+
+	// TODO: consider what to deleted along with variants
 
 	// delete assigned attribute values
-	attributeValuesQuery := fmt.Sprintf(
-		`DELETE FROM %[1]s WHERE %[2]s IN (
-			SELECT
-				%[1]s.%[2]s
-			FROM
-				%[1]s
-			INNER JOIN
-				%[3]s ON %[3]s.%[4]s = %[1]s.%[5]s
-			INNER JOIN
-				%[6]s ON %[6]s.%[7]s = %[1]s.%[2]s
-			INNER JOIN
-				%[8]s ON %[8]s.%[9]s = %[6]s.%[10]s
-			WHERE (
-				%[3]s.%[11]s IN ?
-				AND %[8]s.%[12]s IN ?
-			)
-		)`,
-		model.AttributeValueTableName,                         // 1
-		model.AttributeValueColumnId,                          // 2
-		model.AttributeTableName,                              // 3
-		model.AttributeColumnId,                               // 4
-		model.AttributeValueColumnAttributeID,                 // 5
-		model.AssignedVariantAttributeValueTableName,          // 6
-		model.AssignedVariantAttributeValueColumnValueID,      // 7
-		model.AssignedVariantAttributeTableName,               // 8
-		model.AssignedVariantAttributeColumnId,                // 9
-		model.AssignedVariantAttributeValueColumnAssignmentID, // 10
-		model.AttributeColumnInputType,                        // 11
-		model.AssignedVariantAttributeColumnVariantID,         // 12
-	)
+	// attributeValuesQuery := fmt.Sprintf(
+	// 	`DELETE FROM %[1]s WHERE %[2]s IN (
+	// 		SELECT
+	// 			%[1]s.%[2]s
+	// 		FROM
+	// 			%[1]s
+	// 		INNER JOIN
+	// 			%[3]s ON %[3]s.%[4]s = %[1]s.%[5]s
+	// 		INNER JOIN
+	// 			%[6]s ON %[6]s.%[7]s = %[1]s.%[2]s
+	// 		INNER JOIN
+	// 			%[8]s ON %[8]s.%[9]s = %[6]s.%[10]s
+	// 		WHERE (
+	// 			%[3]s.%[11]s IN ?
+	// 			AND %[8]s.%[12]s IN ?
+	// 		)
+	// 	)`,
+	// 	model.AttributeValueTableName,                         // 1
+	// 	model.AttributeValueColumnId,                          // 2
+	// 	model.AttributeTableName,                              // 3
+	// 	model.AttributeColumnId,                               // 4
+	// 	model.AttributeValueColumnAttributeID,                 // 5
+	// 	model.AssignedVariantAttributeValueTableName,          // 6
+	// 	model.AssignedVariantAttributeValueColumnValueID,      // 7
+	// 	model.AssignedVariantAttributeTableName,               // 8
+	// 	model.AssignedVariantAttributeColumnId,                // 9
+	// 	model.AssignedVariantAttributeValueColumnAssignmentID, // 10
+	// 	model.AttributeColumnInputType,                        // 11
+	// 	model.AssignedVariantAttributeColumnVariantID,         // 12
+	// )
 
-	err = tx.Exec(attributeValuesQuery, model.TYPES_WITH_UNIQUE_VALUES, ids).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to delete attribute values related to given variants")
-	}
+	// err = tx.Exec(attributeValuesQuery, model.TYPES_WITH_UNIQUE_VALUES, ids).Error
+	// if err != nil {
+	// 	return 0, errors.Wrap(err, "failed to delete attribute values related to given variants")
+	// }
 
 	// delete variants
-	tx = tx.Exec("DELETE FROM "+model.ProductVariantTableName+" WHERE Id IN ?", ids)
-	if tx.Error != nil {
-		return 0, errors.Wrap(tx.Error, "failed to delete given variants")
-	}
-
-	return tx.RowsAffected, nil
+	return model.ProductVariants(
+		model.ProductVariantWhere.ID.IN(ids),
+	).DeleteAll(tx)
 }

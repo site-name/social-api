@@ -15,19 +15,19 @@ type SystemStore struct {
 }
 
 // Get provides a mock function with given fields:
-func (_m *SystemStore) Get() (model.StringMAP, error) {
+func (_m *SystemStore) Get() (map[string]string, error) {
 	ret := _m.Called()
 
-	var r0 model.StringMAP
+	var r0 map[string]string
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (model.StringMAP, error)); ok {
+	if rf, ok := ret.Get(0).(func() (map[string]string, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() model.StringMAP); ok {
+	if rf, ok := ret.Get(0).(func() map[string]string); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.StringMAP)
+			r0 = ret.Get(0).(map[string]string)
 		}
 	}
 
@@ -67,15 +67,15 @@ func (_m *SystemStore) GetByName(name string) (*model.System, error) {
 }
 
 // InsertIfExists provides a mock function with given fields: system
-func (_m *SystemStore) InsertIfExists(system *model.System) (*model.System, error) {
+func (_m *SystemStore) InsertIfExists(system model.System) (*model.System, error) {
 	ret := _m.Called(system)
 
 	var r0 *model.System
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.System) (*model.System, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.System) (*model.System, error)); ok {
 		return rf(system)
 	}
-	if rf, ok := ret.Get(0).(func(*model.System) *model.System); ok {
+	if rf, ok := ret.Get(0).(func(model.System) *model.System); ok {
 		r0 = rf(system)
 	} else {
 		if ret.Get(0) != nil {
@@ -83,7 +83,7 @@ func (_m *SystemStore) InsertIfExists(system *model.System) (*model.System, erro
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.System) error); ok {
+	if rf, ok := ret.Get(1).(func(model.System) error); ok {
 		r1 = rf(system)
 	} else {
 		r1 = ret.Error(1)
@@ -119,11 +119,11 @@ func (_m *SystemStore) PermanentDeleteByName(name string) (*model.System, error)
 }
 
 // Save provides a mock function with given fields: system
-func (_m *SystemStore) Save(system *model.System) error {
+func (_m *SystemStore) Save(system model.System) error {
 	ret := _m.Called(system)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.System) error); ok {
+	if rf, ok := ret.Get(0).(func(model.System) error); ok {
 		r0 = rf(system)
 	} else {
 		r0 = ret.Error(0)
@@ -133,11 +133,11 @@ func (_m *SystemStore) Save(system *model.System) error {
 }
 
 // SaveOrUpdate provides a mock function with given fields: system
-func (_m *SystemStore) SaveOrUpdate(system *model.System) error {
+func (_m *SystemStore) SaveOrUpdate(system model.System) error {
 	ret := _m.Called(system)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.System) error); ok {
+	if rf, ok := ret.Get(0).(func(model.System) error); ok {
 		r0 = rf(system)
 	} else {
 		r0 = ret.Error(0)
@@ -147,11 +147,11 @@ func (_m *SystemStore) SaveOrUpdate(system *model.System) error {
 }
 
 // SaveOrUpdateWithWarnMetricHandling provides a mock function with given fields: system
-func (_m *SystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System) error {
+func (_m *SystemStore) SaveOrUpdateWithWarnMetricHandling(system model.System) error {
 	ret := _m.Called(system)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.System) error); ok {
+	if rf, ok := ret.Get(0).(func(model.System) error); ok {
 		r0 = rf(system)
 	} else {
 		r0 = ret.Error(0)
@@ -161,11 +161,11 @@ func (_m *SystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System) 
 }
 
 // Update provides a mock function with given fields: system
-func (_m *SystemStore) Update(system *model.System) error {
+func (_m *SystemStore) Update(system model.System) error {
 	ret := _m.Called(system)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.System) error); ok {
+	if rf, ok := ret.Get(0).(func(model.System) error); ok {
 		r0 = rf(system)
 	} else {
 		r0 = ret.Error(0)

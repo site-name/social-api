@@ -2,12 +2,13 @@ package product
 
 import (
 	"database/sql"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlProductVariantChannelListingStore struct {
@@ -16,6 +17,47 @@ type SqlProductVariantChannelListingStore struct {
 
 func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariantChannelListingStore {
 	return &SqlProductVariantChannelListingStore{s}
+}
+
+func (ps *SqlProductVariantChannelListingStore) Upsert(transaction boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) {
+	if transaction == nil {
+		transaction = ps.GetMaster()
+	}
+
+	for _, listing := range variantChannelListings {
+		if listing == nil {
+			continue
+		}
+
+		isSaving := listing.ID == ""
+		if isSaving {
+			model_helper.ProductVariantChannelListingPreSave(listing)
+		} else {
+			model_helper.ProductVariantChannelListingCommonPre(listing)
+		}
+
+		if err := model_helper.ProductVariantChannelListingIsValid(*listing); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = listing.Insert(transaction, boil.Infer())
+		} else {
+			_, err = listing.Update(transaction, boil.Blacklist(
+				model.ProductVariantChannelListingColumns.CreatedAt,
+			))
+		}
+
+		if err != nil {
+			if ps.IsUniqueConstraintError(err, []string{"product_variant_channel_listings_variant_id_channel_id_key", model.ProductVariantChannelListingColumns.VariantID}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.ProductVariantChannelListings, "VariantID/ChannelID", "duplicate")
+			}
+			return nil, err
+		}
+	}
+
+	return variantChannelListings, nil
 }
 
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
@@ -30,130 +72,34 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 	return listing, nil
 }
 
-func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
-	// NOTE: In the scan fields creation below, the order of fields must be identical to the order of select fiels
-	selectFields := []string{model.ProductVariantChannelListingTableName + ".*"}
-	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, model.ChannelTableName+".*")
+func (ps *SqlProductVariantChannelListingStore) commonQueryBuilder(option model_helper.ProductVariantChannelListingFilterOption) []qm.QueryMod {
+	conds := option.Conditions
+	conds = append(conds, qm.Select(model.TableNames.ProductVariantChannelListings+".*"))
+
+	for _, load := range option.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
-	if option.SelectRelatedProductVariant {
-		selectFields = append(selectFields, model.ProductVariantTableName+".*")
+	if option.VariantProductID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductVariantTableColumns.ID, model.ProductVariantChannelListingTableColumns.VariantID)),
+			option.VariantProductID,
+		)
 	}
+
+	var annotations = model_helper.AnnotationAggregator{}
 	if option.AnnotateAvailablePreorderQuantity {
-		selectFields = append(selectFields, `ProductVariantChannelListings.PreorderQuantityThreshold - COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS availablePreorderQuantity`)
+		annotations[model_helper.ProductVariantChannelListingAnnotationKeys.AvailablePreorderQuantity] = fmt.Sprintf("%s - COALESCE( SUM( %s ), 0)", model.ProductVariantChannelListingTableColumns.PreorderQuantityThreshold, model.PreorderAllocationTableColumns.Quantity)
 	}
 	if option.AnnotatePreorderQuantityAllocated {
-		selectFields = append(selectFields, `COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS preorderQuantityAllocated`)
+		annotations[model_helper.ProductVariantChannelListingAnnotationKeys.PreorderQuantityAllocated] = fmt.Sprintf("COALESCE( SUM( %s ), 0)", model.PreorderAllocationTableColumns.Quantity)
 	}
+	conds = append(conds, annotations)
 
-	query := ps.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.ProductVariantChannelListingTableName).Where(option.Conditions).Where(option.VariantProductID)
-
-	var groupBy []string
-
-	// parse option
-	if option.SelectForUpdate && option.Transaction != nil {
-		var forUpdateOf string
-		if option.SelectForUpdateOf != "" {
-			forUpdateOf = " OF " + option.SelectForUpdateOf
-		}
-		query = query.Suffix("FOR UPDATE" + forUpdateOf)
-	}
-
-	if option.SelectRelatedChannel {
-		query = query.
-			InnerJoin(model.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID")
-		groupBy = append(groupBy, "Channels.Id")
-	}
-	if option.SelectRelatedProductVariant || option.VariantProductID != nil {
-		query = query.
-			InnerJoin(model.ProductVariantTableName + " ON ProductVariants.Id = ProductVariantChannelListings.variantID")
-	}
-
-	if option.AnnotateAvailablePreorderQuantity ||
-		option.AnnotatePreorderQuantityAllocated {
-		query = query.LeftJoin(model.PreOrderAllocationTableName + " ON PreorderAllocations.ProductVariantChannelListingID = ProductVariantChannelListings.Id")
-		groupBy = append(groupBy, "ProductVariantChannelListings.Id")
-	}
-
-	if len(groupBy) > 0 {
-		query = query.GroupBy(groupBy...)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
-	}
-
-	rows, err := ps.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variant channel listings")
-	}
-	defer rows.Close()
-
-	var res model.ProductVariantChannelListings
-
-	for rows.Next() {
-		var (
-			channel                   model.Channel
-			variantChannelListing     model.ProductVariantChannelListing
-			availablePreorderQuantity int
-			preorderQuantityAllocated int
-			scanFields                = ps.ScanFields(&variantChannelListing) // order of fields must be identical to select fields above
-			variant                   model.ProductVariant
-		)
-		if option.SelectRelatedChannel {
-			scanFields = append(scanFields, ps.Channel().ScanFields(&channel)...)
-		}
-		if option.SelectRelatedProductVariant {
-			scanFields = append(scanFields, ps.ProductVariant().ScanFields(&variant)...)
-		}
-		if option.AnnotateAvailablePreorderQuantity {
-			scanFields = append(scanFields, &availablePreorderQuantity)
-		}
-		if option.AnnotatePreorderQuantityAllocated {
-			scanFields = append(scanFields, &preorderQuantityAllocated)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of product variant channel listing")
-		}
-
-		if option.SelectRelatedChannel {
-			variantChannelListing.SetChannel(&channel)
-		}
-		if option.SelectRelatedProductVariant {
-			variantChannelListing.SetVariant(&variant)
-		}
-		if option.AnnotateAvailablePreorderQuantity {
-			variantChannelListing.Set_availablePreorderQuantity(availablePreorderQuantity)
-		}
-		if option.AnnotatePreorderQuantityAllocated {
-			variantChannelListing.Set_preorderQuantityAllocated(preorderQuantityAllocated)
-		}
-		res = append(res, &variantChannelListing)
-	}
-
-	return res, nil
+	return conds
 }
 
-func (ps *SqlProductVariantChannelListingStore) Upsert(transaction boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) {
-	if transaction == nil {
-		transaction = ps.GetMaster()
-	}
-
-	for _, listing := range variantChannelListings {
-		err := transaction.Save(listing).Error
-
-		if err != nil {
-			if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(model.ProductVariantChannelListingTableName, "VariantID/ChannelID", "duplicate")
-			}
-			return nil, errors.Wrapf(err, "failed to upsert a product variant channel listing with id=%s", listing.Id)
-		}
-	}
-
-	return variantChannelListings, nil
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
+	conds := ps.commonQueryBuilder(option)
+	return model.ProductVariantChannelListings(conds...).All(ps.GetReplica())
 }

@@ -2439,7 +2439,7 @@ func (s *OpenTracingLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
+func (s *OpenTracingLayerCustomerEventStore) FilterByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerEventStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -2448,7 +2448,7 @@ func (s *OpenTracingLayerCustomerEventStore) FilterByOptions(queryMods ...qm.Que
 	}()
 
 	defer span.Finish()
-	result, err := s.CustomerEventStore.FilterByOptions(queryMods...)
+	result, err := s.CustomerEventStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3437,7 +3437,7 @@ func (s *OpenTracingLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEve
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
+func (s *OpenTracingLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.Count")
 	s.Root.Store.SetContext(newCtx)
@@ -3446,7 +3446,7 @@ func (s *OpenTracingLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.Count(mods...)
+	result, err := s.JobStore.Count(mods)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3473,7 +3473,7 @@ func (s *OpenTracingLayerJobStore) Delete(id string) (string, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
+func (s *OpenTracingLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.FindAll")
 	s.Root.Store.SetContext(newCtx)
@@ -3482,7 +3482,7 @@ func (s *OpenTracingLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice,
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.FindAll(mods...)
+	result, err := s.JobStore.FindAll(mods)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3491,7 +3491,7 @@ func (s *OpenTracingLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice,
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
+func (s *OpenTracingLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -3500,7 +3500,7 @@ func (s *OpenTracingLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) 
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.Get(mods...)
+	result, err := s.JobStore.Get(mods)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4857,7 +4857,7 @@ func (s *OpenTracingLayerProductVariantStore) Delete(tx boil.ContextTransactor, 
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error) {
+func (s *OpenTracingLayerProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4965,7 +4965,7 @@ func (s *OpenTracingLayerProductVariantStore) Upsert(tx boil.ContextTransactor, 
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -5860,7 +5860,7 @@ func (s *OpenTracingLayerShopTranslationStore) Upsert(translation model.ShopTran
 	return result, err
 }
 
-func (s *OpenTracingLayerStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
+func (s *OpenTracingLayerStaffNotificationRecipientStore) FilterByOptions(options model_helper.StaffNotificationRecipientFilterOptions) (model.StaffNotificationRecipientSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -5869,7 +5869,7 @@ func (s *OpenTracingLayerStaffNotificationRecipientStore) FilterByOptions(option
 	}()
 
 	defer span.Finish()
-	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options...)
+	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7190,7 +7190,7 @@ func (s *OpenTracingLayerUserAccessTokenStore) Get(tokenID string) (*model.UserA
 	return result, err
 }
 
-func (s *OpenTracingLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
+func (s *OpenTracingLayerUserAccessTokenStore) GetAll(conds model_helper.UserAccessTokenFilterOptions) (model.UserAccessTokenSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAccessTokenStore.GetAll")
 	s.Root.Store.SetContext(newCtx)
@@ -7199,7 +7199,7 @@ func (s *OpenTracingLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (mod
 	}()
 
 	defer span.Finish()
-	result, err := s.UserAccessTokenStore.GetAll(conds...)
+	result, err := s.UserAccessTokenStore.GetAll(conds)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7298,7 +7298,7 @@ func (s *OpenTracingLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string)
 	return err
 }
 
-func (s *OpenTracingLayerVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
+func (s *OpenTracingLayerVatStore) FilterByOptions(options model_helper.VatFilterOptions) (model.VatSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VatStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -7307,7 +7307,7 @@ func (s *OpenTracingLayerVatStore) FilterByOptions(options ...qm.QueryMod) (mode
 	}()
 
 	defer span.Finish()
-	result, err := s.VatStore.FilterByOptions(options...)
+	result, err := s.VatStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

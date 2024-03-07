@@ -36,21 +36,22 @@ type Store struct {
 	WarehouseStore  mocks.WarehouseStore
 	StockStore      mocks.StockStore
 
-	AuditStore            mocks.AuditStore
-	ClusterDiscoveryStore mocks.ClusterDiscoveryStore
-	ComplianceStore       mocks.ComplianceStore
-	SystemStore           mocks.SystemStore
-	PreferenceStore       mocks.PreferenceStore
-	TokenStore            mocks.TokenStore
-	StatusStore           mocks.StatusStore
-	FileInfoStore         mocks.FileInfoStore
-	UploadSessionStore    mocks.UploadSessionStore
-	JobStore              mocks.JobStore
-	PluginStore           mocks.PluginStore
+	AuditStore                  mocks.AuditStore
+	ClusterDiscoveryStore       mocks.ClusterDiscoveryStore
+	ComplianceStore             mocks.ComplianceStore
+	SystemStore                 mocks.SystemStore
+	PreferenceStore             mocks.PreferenceStore
+	TokenStore                  mocks.TokenStore
+	StatusStore                 mocks.StatusStore
+	FileInfoStore               mocks.FileInfoStore
+	UploadSessionStore          mocks.UploadSessionStore
+	JobStore                    mocks.JobStore
+	PluginStore                 mocks.PluginStore
+	CustomProductAttributeStore mocks.CustomProductAttributeStore
 }
 
 // FinalizeTransaction implements store.Store.
-func (*Store) FinalizeTransaction(tx store.ContextRunner) {}
+func (*Store) FinalizeTransaction(tx boil.ContextTransactor) {}
 
 func (s *Store) SetContext(ctx context.Context) { s.context = ctx }
 func (s *Store) Context() context.Context       { return s.context }
@@ -64,6 +65,10 @@ func (s *Store) Stock() store.StockStore           { return &s.StockStore }
 
 func (s *Store) App() store.AppStore           { return &s.AppStore }
 func (s *Store) AppToken() store.AppTokenStore { return &s.AppTokenStore }
+
+func (s *Store) CustomProductAttribute() store.CustomProductAttributeStore {
+	return &s.CustomProductAttributeStore
+}
 
 func (*Store) AssignedPageAttribute() store.AssignedPageAttributeStore {
 	panic("unimplemented")
@@ -81,13 +86,13 @@ func (*Store) AssignedProductAttributeValue() store.AssignedProductAttributeValu
 	panic("unimplemented")
 }
 
-func (*Store) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	panic("unimplemented")
-}
+// func (*Store) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
+// 	panic("unimplemented")
+// }
 
-func (*Store) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	panic("unimplemented")
-}
+// func (*Store) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
+// 	panic("unimplemented")
+// }
 
 func (*Store) Attribute() store.AttributeStore {
 	panic("unimplemented")
@@ -97,9 +102,9 @@ func (*Store) AttributePage() store.AttributePageStore {
 	panic("unimplemented")
 }
 
-func (*Store) AttributeProduct() store.AttributeProductStore {
-	panic("unimplemented")
-}
+// func (*Store) AttributeProduct() store.AttributeProductStore {
+// 	panic("unimplemented")
+// }
 
 func (*Store) AttributeTranslation() store.AttributeTranslationStore {
 	panic("unimplemented")
@@ -113,9 +118,9 @@ func (*Store) AttributeValueTranslation() store.AttributeValueTranslationStore {
 	panic("unimplemented")
 }
 
-func (*Store) AttributeVariant() store.AttributeVariantStore {
-	panic("unimplemented")
-}
+// func (*Store) AttributeVariant() store.AttributeVariantStore {
+// 	panic("unimplemented")
+// }
 
 func (*Store) Audit() store.AuditStore {
 	panic("unimplemented")

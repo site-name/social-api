@@ -69,19 +69,19 @@ func (_m *RoleStore) Get(roleID string) (*model.Role, error) {
 }
 
 // GetAll provides a mock function with given fields:
-func (_m *RoleStore) GetAll() ([]*model.Role, error) {
+func (_m *RoleStore) GetAll() (model.RoleSlice, error) {
 	ret := _m.Called()
 
-	var r0 []*model.Role
+	var r0 model.RoleSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]*model.Role, error)); ok {
+	if rf, ok := ret.Get(0).(func() (model.RoleSlice, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() []*model.Role); ok {
+	if rf, ok := ret.Get(0).(func() model.RoleSlice); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Role)
+			r0 = ret.Get(0).(model.RoleSlice)
 		}
 	}
 
@@ -121,19 +121,19 @@ func (_m *RoleStore) GetByName(ctx context.Context, name string) (*model.Role, e
 }
 
 // GetByNames provides a mock function with given fields: names
-func (_m *RoleStore) GetByNames(names []string) ([]*model.Role, error) {
+func (_m *RoleStore) GetByNames(names []string) (model.RoleSlice, error) {
 	ret := _m.Called(names)
 
-	var r0 []*model.Role
+	var r0 model.RoleSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]string) ([]*model.Role, error)); ok {
+	if rf, ok := ret.Get(0).(func([]string) (model.RoleSlice, error)); ok {
 		return rf(names)
 	}
-	if rf, ok := ret.Get(0).(func([]string) []*model.Role); ok {
+	if rf, ok := ret.Get(0).(func([]string) model.RoleSlice); ok {
 		r0 = rf(names)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Role)
+			r0 = ret.Get(0).(model.RoleSlice)
 		}
 	}
 
@@ -160,16 +160,16 @@ func (_m *RoleStore) PermanentDeleteAll() error {
 	return r0
 }
 
-// Save provides a mock function with given fields: role
-func (_m *RoleStore) Save(role *model.Role) (*model.Role, error) {
+// Upsert provides a mock function with given fields: role
+func (_m *RoleStore) Upsert(role model.Role) (*model.Role, error) {
 	ret := _m.Called(role)
 
 	var r0 *model.Role
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.Role) (*model.Role, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.Role) (*model.Role, error)); ok {
 		return rf(role)
 	}
-	if rf, ok := ret.Get(0).(func(*model.Role) *model.Role); ok {
+	if rf, ok := ret.Get(0).(func(model.Role) *model.Role); ok {
 		r0 = rf(role)
 	} else {
 		if ret.Get(0) != nil {
@@ -177,7 +177,7 @@ func (_m *RoleStore) Save(role *model.Role) (*model.Role, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.Role) error); ok {
+	if rf, ok := ret.Get(1).(func(model.Role) error); ok {
 		r1 = rf(role)
 	} else {
 		r1 = ret.Error(1)

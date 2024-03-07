@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlCustomerEventStore struct {
@@ -57,6 +56,6 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	return model.CustomerEvents().Count(cs.GetReplica())
 }
 
-func (cs *SqlCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
-	return model.CustomerEvents(queryMods...).All(cs.GetReplica())
+func (cs *SqlCustomerEventStore) FilterByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, error) {
+	return model.CustomerEvents(options.Conditions...).All(cs.GetReplica())
 }

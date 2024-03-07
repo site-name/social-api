@@ -12,7 +12,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Store is database gateway of the system
@@ -74,7 +73,7 @@ type Store interface {
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore       //
 	OrderDiscount() OrderDiscountStore                                 //
 	VoucherCustomer() VoucherCustomerStore                             //
-	Giftcard() GiftCardStore                                           // giftcard
+	GiftCard() GiftCardStore                                           // giftcard
 	GiftcardEvent() GiftcardEventStore                                 //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
 	Invoice() InvoiceStore                                             //
@@ -129,6 +128,7 @@ type Store interface {
 	AttributePage() AttributePageStore                                 //
 	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
 	AssignedProductAttribute() AssignedProductAttributeStore           //
+	CustomProductAttribute() CustomProductAttributeStore               //
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
 	Plugin() PluginStore                                               //
@@ -157,7 +157,7 @@ type (
 	}
 	VatStore interface {
 		Upsert(tx boil.ContextTransactor, vats model.VatSlice) (model.VatSlice, error)
-		FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error)
+		FilterByOptions(options model_helper.VatFilterOptions) (model.VatSlice, error)
 	}
 )
 
@@ -419,7 +419,7 @@ type (
 	}
 	ProductVariantChannelListingStore interface {
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                   // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                               // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error)                      // FilterbyOption finds and returns all product variant channel listings filterd using given option
 		Upsert(tx boil.ContextTransactor, variantChannelListings model.ProductVariantChannelListingSlice) (model.ProductVariantChannelListingSlice, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
@@ -430,11 +430,11 @@ type (
 	ProductVariantStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
 		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error)
-		Upsert(tx boil.ContextTransactor, variant model.ProductVariant) (*model.ProductVariant, error) // Save inserts product variant instance to database
-		Get(id string) (*model.ProductVariant, error)                                                  // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                            // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error)    // FilterByOption finds and returns product variants based on given option
+		Upsert(tx boil.ContextTransactor, variant model.ProductVariant) (*model.ProductVariant, error)     // Save inserts product variant instance to database
+		Get(id string) (*model.ProductVariant, error)                                                      // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                    // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                                // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) // FilterByOption finds and returns product variants based on given option
 	}
 	ProductChannelListingStore interface {
 		Upsert(tx boil.ContextTransactor, listings model.ProductChannelListingSlice) (model.ProductChannelListingSlice, error) // BulkUpsert performs bulk upsert on given product channel listings
@@ -722,9 +722,9 @@ type JobStore interface {
 	UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error)
 	UpdateStatus(id string, status model.JobStatus) (*model.Job, error)
 	UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) // update job status from current status to new status
-	Get(mods ...qm.QueryMod) (*model.Job, error)
-	FindAll(mods ...qm.QueryMod) (model.JobSlice, error)
-	Count(mods ...qm.QueryMod) (int64, error)
+	Get(mods model_helper.JobFilterOptions) (*model.Job, error)
+	FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error)
+	Count(mods model_helper.JobFilterOptions) (int64, error)
 	Delete(id string) (string, error)
 	// GetAllPage(offset int, limit int) ([]*model.Job, error)
 	// GetAllByType(jobType string) ([]*model.Job, error)
@@ -802,7 +802,7 @@ type (
 		DeleteAllForUser(userID string) error
 		Delete(tokenID string) error
 		Get(tokenID string) (*model.UserAccessToken, error)
-		GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error)
+		GetAll(conds model_helper.UserAccessTokenFilterOptions) (model.UserAccessTokenSlice, error)
 		GetByToken(tokenString string) (*model.UserAccessToken, error)
 		Search(term string) (model.UserAccessTokenSlice, error)
 		UpdateTokenEnable(tokenID string) error
@@ -812,11 +812,11 @@ type (
 		Upsert(tx boil.ContextTransactor, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
-		FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error)
+		FilterByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, error)
 	}
 	StaffNotificationRecipientStore interface {
 		Save(notificationRecipient model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)
-		FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error)
+		FilterByOptions(options model_helper.StaffNotificationRecipientFilterOptions) (model.StaffNotificationRecipientSlice, error)
 	}
 	CustomerNoteStore interface {
 		Upsert(note model.CustomerNote) (*model.CustomerNote, error) // Save insert given customer note into database and returns it

@@ -170,9 +170,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout m
 
 	}
 
-	var p model.Product
-	p.R.ProductCollections
-
 	// fetch product variants
 	var (
 		productIDs        []string

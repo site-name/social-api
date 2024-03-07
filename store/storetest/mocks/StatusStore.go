@@ -41,19 +41,19 @@ func (_m *StatusStore) Get(userID string) (*model.Status, error) {
 }
 
 // GetByIds provides a mock function with given fields: userIds
-func (_m *StatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
+func (_m *StatusStore) GetByIds(userIds []string) (model.StatusSlice, error) {
 	ret := _m.Called(userIds)
 
-	var r0 []*model.Status
+	var r0 model.StatusSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]string) ([]*model.Status, error)); ok {
+	if rf, ok := ret.Get(0).(func([]string) (model.StatusSlice, error)); ok {
 		return rf(userIds)
 	}
-	if rf, ok := ret.Get(0).(func([]string) []*model.Status); ok {
+	if rf, ok := ret.Get(0).(func([]string) model.StatusSlice); ok {
 		r0 = rf(userIds)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Status)
+			r0 = ret.Get(0).(model.StatusSlice)
 		}
 	}
 
@@ -104,20 +104,6 @@ func (_m *StatusStore) ResetAll() error {
 	return r0
 }
 
-// SaveOrUpdate provides a mock function with given fields: status
-func (_m *StatusStore) SaveOrUpdate(status *model.Status) error {
-	ret := _m.Called(status)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.Status) error); ok {
-		r0 = rf(status)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // UpdateLastActivityAt provides a mock function with given fields: userID, lastActivityAt
 func (_m *StatusStore) UpdateLastActivityAt(userID string, lastActivityAt int64) error {
 	ret := _m.Called(userID, lastActivityAt)
@@ -130,6 +116,32 @@ func (_m *StatusStore) UpdateLastActivityAt(userID string, lastActivityAt int64)
 	}
 
 	return r0
+}
+
+// Upsert provides a mock function with given fields: status
+func (_m *StatusStore) Upsert(status model.Status) (*model.Status, error) {
+	ret := _m.Called(status)
+
+	var r0 *model.Status
+	var r1 error
+	if rf, ok := ret.Get(0).(func(model.Status) (*model.Status, error)); ok {
+		return rf(status)
+	}
+	if rf, ok := ret.Get(0).(func(model.Status) *model.Status); ok {
+		r0 = rf(status)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Status)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(model.Status) error); ok {
+		r1 = rf(status)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewStatusStore interface {

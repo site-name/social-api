@@ -5,9 +5,12 @@
 package mocks
 
 import (
-	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
-	gorm "gorm.io/gorm"
+	boil "github.com/volatiletech/sqlboiler/v4/boil"
+
+	model "github.com/sitename/sitename/model"
+
+	model_helper "github.com/sitename/sitename/model_helper"
 
 	squirrel "github.com/mattermost/squirrel"
 )
@@ -17,25 +20,25 @@ type StockStore struct {
 	mock.Mock
 }
 
-// BulkUpsert provides a mock function with given fields: transaction, stocks
-func (_m *StockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
-	ret := _m.Called(transaction, stocks)
+// BulkUpsert provides a mock function with given fields: tx, stocks
+func (_m *StockStore) BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
+	ret := _m.Called(tx, stocks)
 
-	var r0 []*model.Stock
+	var r0 model.StockSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []*model.Stock) ([]*model.Stock, error)); ok {
-		return rf(transaction, stocks)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.StockSlice) (model.StockSlice, error)); ok {
+		return rf(tx, stocks)
 	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []*model.Stock) []*model.Stock); ok {
-		r0 = rf(transaction, stocks)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.StockSlice) model.StockSlice); ok {
+		r0 = rf(tx, stocks)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Stock)
+			r0 = ret.Get(0).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, []*model.Stock) error); ok {
-		r1 = rf(transaction, stocks)
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, model.StockSlice) error); ok {
+		r1 = rf(tx, stocks)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -57,23 +60,23 @@ func (_m *StockStore) ChangeQuantity(stockID string, quantity int) error {
 	return r0
 }
 
-// Delete provides a mock function with given fields: tx, options
-func (_m *StockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
-	ret := _m.Called(tx, options)
+// Delete provides a mock function with given fields: tx, ids
+func (_m *StockStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	ret := _m.Called(tx, ids)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.StockFilterOption) (int64, error)); ok {
-		return rf(tx, options)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string) (int64, error)); ok {
+		return rf(tx, ids)
 	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.StockFilterOption) int64); ok {
-		r0 = rf(tx, options)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string) int64); ok {
+		r0 = rf(tx, ids)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.StockFilterOption) error); ok {
-		r1 = rf(tx, options)
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, []string) error); ok {
+		r1 = rf(tx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -82,30 +85,30 @@ func (_m *StockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int
 }
 
 // FilterByOption provides a mock function with given fields: options
-func (_m *StockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
+func (_m *StockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
 	ret := _m.Called(options)
 
 	var r0 int64
-	var r1 []*model.Stock
+	var r1 model.StockSlice
 	var r2 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) (int64, []*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOption) (int64, model.StockSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) int64); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOption) int64); ok {
 		r0 = rf(options)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOption) []*model.Stock); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.StockFilterOption) model.StockSlice); ok {
 		r1 = rf(options)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*model.Stock)
+			r1 = ret.Get(1).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(*model.StockFilterOption) error); ok {
+	if rf, ok := ret.Get(2).(func(model_helper.StockFilterOption) error); ok {
 		r2 = rf(options)
 	} else {
 		r2 = ret.Error(2)
@@ -115,16 +118,16 @@ func (_m *StockStore) FilterByOption(options *model.StockFilterOption) (int64, [
 }
 
 // FilterForChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
+func (_m *StockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
 	ret := _m.Called(options)
 
 	var r0 squirrel.Sqlizer
-	var r1 []*model.Stock
+	var r1 model.StockSlice
 	var r2 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForChannelOption) squirrel.Sqlizer); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterForChannelOption) squirrel.Sqlizer); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
@@ -132,15 +135,15 @@ func (_m *StockStore) FilterForChannel(options *model.StockFilterForChannelOptio
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterForChannelOption) []*model.Stock); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.StockFilterForChannelOption) model.StockSlice); ok {
 		r1 = rf(options)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*model.Stock)
+			r1 = ret.Get(1).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(*model.StockFilterForChannelOption) error); ok {
+	if rf, ok := ret.Get(2).(func(model_helper.StockFilterForChannelOption) error); ok {
 		r2 = rf(options)
 	} else {
 		r2 = ret.Error(2)
@@ -150,23 +153,23 @@ func (_m *StockStore) FilterForChannel(options *model.StockFilterForChannelOptio
 }
 
 // FilterForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	ret := _m.Called(options)
 
-	var r0 []*model.Stock
+	var r0 model.StockSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) model.StockSlice); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Stock)
+			r0 = ret.Get(0).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -176,23 +179,23 @@ func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterOptio
 }
 
 // FilterProductStocksForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	ret := _m.Called(options)
 
-	var r0 []*model.Stock
+	var r0 model.StockSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) model.StockSlice); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Stock)
+			r0 = ret.Get(0).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -202,23 +205,23 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.Sto
 }
 
 // FilterVariantStocksForCountry provides a mock function with given fields: options
-func (_m *StockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
 	ret := _m.Called(options)
 
-	var r0 []*model.Stock
+	var r0 model.StockSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.StockFilterOptionsForCountryAndChannel) model.StockSlice); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Stock)
+			r0 = ret.Get(0).(model.StockSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -251,22 +254,6 @@ func (_m *StockStore) Get(stockID string) (*model.Stock, error) {
 	}
 
 	return r0, r1
-}
-
-// ScanFields provides a mock function with given fields: stock
-func (_m *StockStore) ScanFields(stock *model.Stock) []interface{} {
-	ret := _m.Called(stock)
-
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(*model.Stock) []interface{}); ok {
-		r0 = rf(stock)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
-		}
-	}
-
-	return r0
 }
 
 type mockConstructorTestingTNewStockStore interface {

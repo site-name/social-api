@@ -41,15 +41,15 @@ func (_m *CsvExportFileStore) Get(id string) (*model.ExportFile, error) {
 }
 
 // Save provides a mock function with given fields: file
-func (_m *CsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
+func (_m *CsvExportFileStore) Save(file model.ExportFile) (*model.ExportFile, error) {
 	ret := _m.Called(file)
 
 	var r0 *model.ExportFile
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ExportFile) (*model.ExportFile, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.ExportFile) (*model.ExportFile, error)); ok {
 		return rf(file)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ExportFile) *model.ExportFile); ok {
+	if rf, ok := ret.Get(0).(func(model.ExportFile) *model.ExportFile); ok {
 		r0 = rf(file)
 	} else {
 		if ret.Get(0) != nil {
@@ -57,7 +57,7 @@ func (_m *CsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, e
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ExportFile) error); ok {
+	if rf, ok := ret.Get(1).(func(model.ExportFile) error); ok {
 		r1 = rf(file)
 	} else {
 		r1 = ret.Error(1)

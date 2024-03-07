@@ -397,3 +397,69 @@ type CustomCollection struct {
 }
 
 type CustomCollectionSlice []*CustomCollection
+
+type ProductVariantFilterOptions struct {
+	CommonQueryOptions
+	WishlistItemID qm.QueryMod // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
+	WishlistID     qm.QueryMod // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
+
+	VoucherID qm.QueryMod // INNER JOIN voucher_product_variants ON ... WHERE voucher_product_variants.voucher_id ...
+	SaleID    qm.QueryMod // INNER JOIN sale_product_variants ON ... WHERE sale_product_variants.sale_id ...
+
+	RelatedProductVariantChannelListingConds qm.QueryMod // INNER JOIN product_variant_channel_listings ON ... WHERE product_variant_channel_listings ...
+	ProductVariantChannelListingChannelSlug  qm.QueryMod // INNER JOIN `product_variant_channel_listings` ON ... INNER JOIN channels ON ... WHERE channels.slug ...
+
+	Preloads []string
+}
+
+func ProductVariantChannelListingPreSave(p *model.ProductVariantChannelListing) {
+	if p.ID == "" {
+		p.ID = NewId()
+	}
+	if p.CreatedAt == 0 {
+		p.CreatedAt = GetMillis()
+	}
+	ProductVariantChannelListingCommonPre(p)
+}
+
+func ProductVariantChannelListingCommonPre(p *model.ProductVariantChannelListing) {
+	p.Annotations = nil
+}
+
+func ProductVariantChannelListingIsValid(p model.ProductVariantChannelListing) *AppError {
+	if !IsValidId(p.ID) {
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.id.app_error", nil, "please provide valid id", http.StatusBadRequest)
+	}
+	if !IsValidId(p.VariantID) {
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.variant_id.app_error", nil, "please provide valid variant id", http.StatusBadRequest)
+	}
+	if !IsValidId(p.ChannelID) {
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
+	}
+	if p.CreatedAt <= 0 {
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.created_at.app_error", nil, "please specify creation time", http.StatusBadRequest)
+	}
+	if p.Currency.Valid && p.Currency.Val.IsValid() != nil {
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type ProductVariantChannelListingFilterOption struct {
+	CommonQueryOptions
+
+	VariantProductID qm.QueryMod // INNER JOIN product_variants ON ... WHERE product_variants.product_id ...
+	Preloads         []string
+
+	AnnotatePreorderQuantityAllocated bool
+	AnnotateAvailablePreorderQuantity bool
+}
+
+var ProductVariantChannelListingAnnotationKeys = struct {
+	AvailablePreorderQuantity string
+	PreorderQuantityAllocated string
+}{
+	AvailablePreorderQuantity: "available_preorder_quantity",
+	PreorderQuantityAllocated: "preorder_quantity_allocated",
+}

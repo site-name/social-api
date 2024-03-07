@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlJobStore struct {
@@ -32,8 +31,8 @@ func (jss SqlJobStore) Save(job model.Job) (*model.Job, error) {
 	return &job, nil
 }
 
-func (j SqlJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
-	return model.Jobs(mods...).All(j.GetReplica())
+func (j SqlJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
+	return model.Jobs(mods.Conditions...).All(j.GetReplica())
 }
 
 func (jss SqlJobStore) UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error) {
@@ -87,8 +86,8 @@ func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model
 	return true, nil
 }
 
-func (jss SqlJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
-	job, err := model.Jobs(mods...).One(jss.GetReplica())
+func (jss SqlJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
+	job, err := model.Jobs(mods.Conditions...).One(jss.GetReplica())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Jobs, "mods")
@@ -98,8 +97,8 @@ func (jss SqlJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
 	return job, nil
 }
 
-func (j SqlJobStore) Count(mods ...qm.QueryMod) (int64, error) {
-	return model.Jobs(mods...).Count(j.GetReplica())
+func (j SqlJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
+	return model.Jobs(mods.Conditions...).Count(j.GetReplica())
 }
 
 func (jss SqlJobStore) Delete(id string) (string, error) {

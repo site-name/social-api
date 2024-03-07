@@ -28,3 +28,7 @@ func JobPreSave(m *model.Job) {
 		m.CreatedAt = GetMillis()
 	}
 }
+
+type JobFilterOptions struct {
+	CommonQueryOptions
+}

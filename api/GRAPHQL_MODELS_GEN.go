@@ -878,11 +878,11 @@ type CheckoutEmailUpdate struct {
 }
 
 type CheckoutError struct {
-	Field       *string                `json:"field"`
-	Message     *string                `json:"message"`
-	Code        CheckoutErrorCode      `json:"code"`
-	Variants    []string               `json:"variants"`
-	AddressType *model.AddressTypeEnum `json:"addressType"`
+	Field       *string                       `json:"field"`
+	Message     *string                       `json:"message"`
+	Code        CheckoutErrorCode             `json:"code"`
+	Variants    []string                      `json:"variants"`
+	AddressType *model_helper.AddressTypeEnum `json:"addressType"`
 }
 
 type CheckoutLanguageCodeUpdate struct {
@@ -1369,11 +1369,11 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 
 	// if we are creating draft order
 	// then we need to create an event about order dreation
-	_, appErr = embedCtx.App.Srv().OrderService().
+	_, appErr = embedCtx.App.OrderService().
 		CommonCreateOrderEvent(transaction, &model.OrderEventOption{
-			OrderID: order.Id,
+			OrderID: order.ID,
 			UserID:  &embedCtx.AppContext.Session().UserId,
-			Type:    model.ORDER_EVENT_TYPE_DRAFT_CREATED,
+			Type:    model_.ORDER_EVENT_TYPE_DRAFT_CREATED,
 		})
 	if appErr != nil {
 		return appErr
@@ -1382,13 +1382,13 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 	// save lines
 	if len(d.Lines) > 0 {
 		// find user
-		user, appErr := embedCtx.App.Srv().AccountService().UserById(context.Background(), embedCtx.AppContext.Session().UserId)
+		user, appErr := embedCtx.App.AccountService().UserById(context.Background(), embedCtx.AppContext.Session().UserID)
 		if appErr != nil {
 			return appErr
 		}
 
 		var variantIds = lo.Map(d.Lines, func(item *OrderLineCreateInput, _ int) string { return item.VariantID })
-		variants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+		variants, appErr := embedCtx.App.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
 			Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": variantIds},
 		})
 		if appErr != nil {
@@ -1416,7 +1416,7 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 			}
 		}
 
-		_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(transaction, &model.OrderEventOption{
+		_, appErr = embedCtx.App.OrderService().CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 			OrderID: order.Id,
 			Type:    model.ORDER_EVENT_TYPE_ADDED_PRODUCTS,
 			UserID:  &embedCtx.AppContext.Session().UserId,
@@ -6584,7 +6584,7 @@ func (e ProductFieldEnum) IsValid() bool {
 
 type ProductMediaType = model.ProductMediaType
 
-type ProductOrderField = model.ProductOrderField
+type ProductOrderField = model_helper.ProductOrderField
 
 type ProductTypeConfigurable string
 

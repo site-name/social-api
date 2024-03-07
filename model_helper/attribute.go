@@ -194,6 +194,7 @@ func AttributeIsValid(a model.Attribute) *AppError {
 
 type AttributeValueFilterOptions struct {
 	CommonQueryOptions
+	Preloads []string
 }
 
 type AttributeCategoryFilterOptions struct {

@@ -72,7 +72,7 @@ func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*w.addressID)
+	address, appErr := embedCtx.App.AccountService().AddressById(*w.addressID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -88,7 +88,7 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouses, appErr := embedCtx.App.Srv().
+	warehouses, appErr := embedCtx.App.
 		WarehouseService().
 		WarehousesByOption(&model.WarehouseFilterOption{
 			Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": ids},
@@ -235,7 +235,7 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	_, stocks, appErr := embedCtx.App.Srv().
+	_, stocks, appErr := embedCtx.App.
 		WarehouseService().
 		StocksByOption(&model.StockFilterOption{
 			Conditions:             squirrel.Eq{model.StockTableName + ".Id": ids},
@@ -273,7 +273,7 @@ func systemAllocationToGraphqlAllocation(a *model.Allocation) *Allocation {
 	}
 
 	return &Allocation{
-		ID: a.Id,
+		ID: a.ID,
 		a:  a,
 	}
 }
@@ -306,7 +306,7 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
+	allocations, appErr := embedCtx.App.WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
 		Conditions: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLineIDs},
 	})
 	if appErr != nil {

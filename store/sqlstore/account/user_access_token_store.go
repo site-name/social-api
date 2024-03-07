@@ -114,8 +114,8 @@ func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, e
 	return token, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
-	return model.UserAccessTokens(conds...).All(s.GetReplica())
+func (s *SqlUserAccessTokenStore) GetAll(options model_helper.UserAccessTokenFilterOptions) (model.UserAccessTokenSlice, error) {
+	return model.UserAccessTokens(options.Conditions...).All(s.GetReplica())
 }
 
 func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {

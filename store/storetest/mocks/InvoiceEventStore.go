@@ -14,17 +14,17 @@ type InvoiceEventStore struct {
 	mock.Mock
 }
 
-// Get provides a mock function with given fields: invoiceEventID
-func (_m *InvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
-	ret := _m.Called(invoiceEventID)
+// Get provides a mock function with given fields: id
+func (_m *InvoiceEventStore) Get(id string) (*model.InvoiceEvent, error) {
+	ret := _m.Called(id)
 
 	var r0 *model.InvoiceEvent
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string) (*model.InvoiceEvent, error)); ok {
-		return rf(invoiceEventID)
+		return rf(id)
 	}
 	if rf, ok := ret.Get(0).(func(string) *model.InvoiceEvent); ok {
-		r0 = rf(invoiceEventID)
+		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.InvoiceEvent)
@@ -32,7 +32,7 @@ func (_m *InvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, er
 	}
 
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(invoiceEventID)
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -41,15 +41,15 @@ func (_m *InvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, er
 }
 
 // Upsert provides a mock function with given fields: invoiceEvent
-func (_m *InvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
+func (_m *InvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*model.InvoiceEvent, error) {
 	ret := _m.Called(invoiceEvent)
 
 	var r0 *model.InvoiceEvent
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.InvoiceEvent) (*model.InvoiceEvent, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.InvoiceEvent) (*model.InvoiceEvent, error)); ok {
 		return rf(invoiceEvent)
 	}
-	if rf, ok := ret.Get(0).(func(*model.InvoiceEvent) *model.InvoiceEvent); ok {
+	if rf, ok := ret.Get(0).(func(model.InvoiceEvent) *model.InvoiceEvent); ok {
 		r0 = rf(invoiceEvent)
 	} else {
 		if ret.Get(0) != nil {
@@ -57,7 +57,7 @@ func (_m *InvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.In
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.InvoiceEvent) error); ok {
+	if rf, ok := ret.Get(1).(func(model.InvoiceEvent) error); ok {
 		r1 = rf(invoiceEvent)
 	} else {
 		r1 = ret.Error(1)

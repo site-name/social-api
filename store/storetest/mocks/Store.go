@@ -7,11 +7,11 @@ package mocks
 import (
 	context "context"
 
-	gorm "gorm.io/gorm"
+	boil "github.com/volatiletech/sqlboiler/v4/boil"
 
 	mock "github.com/stretchr/testify/mock"
 
-	model "github.com/sitename/sitename/model"
+	model_helper "github.com/sitename/sitename/model_helper"
 
 	squirrel "github.com/mattermost/squirrel"
 
@@ -151,38 +151,6 @@ func (_m *Store) AssignedProductAttributeValue() store.AssignedProductAttributeV
 	return r0
 }
 
-// AssignedVariantAttribute provides a mock function with given fields:
-func (_m *Store) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
-	ret := _m.Called()
-
-	var r0 store.AssignedVariantAttributeStore
-	if rf, ok := ret.Get(0).(func() store.AssignedVariantAttributeStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.AssignedVariantAttributeStore)
-		}
-	}
-
-	return r0
-}
-
-// AssignedVariantAttributeValue provides a mock function with given fields:
-func (_m *Store) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
-	ret := _m.Called()
-
-	var r0 store.AssignedVariantAttributeValueStore
-	if rf, ok := ret.Get(0).(func() store.AssignedVariantAttributeValueStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.AssignedVariantAttributeValueStore)
-		}
-	}
-
-	return r0
-}
-
 // Attribute provides a mock function with given fields:
 func (_m *Store) Attribute() store.AttributeStore {
 	ret := _m.Called()
@@ -209,22 +177,6 @@ func (_m *Store) AttributePage() store.AttributePageStore {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(store.AttributePageStore)
-		}
-	}
-
-	return r0
-}
-
-// AttributeProduct provides a mock function with given fields:
-func (_m *Store) AttributeProduct() store.AttributeProductStore {
-	ret := _m.Called()
-
-	var r0 store.AttributeProductStore
-	if rf, ok := ret.Get(0).(func() store.AttributeProductStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.AttributeProductStore)
 		}
 	}
 
@@ -273,22 +225,6 @@ func (_m *Store) AttributeValueTranslation() store.AttributeValueTranslationStor
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(store.AttributeValueTranslationStore)
-		}
-	}
-
-	return r0
-}
-
-// AttributeVariant provides a mock function with given fields:
-func (_m *Store) AttributeVariant() store.AttributeVariantStore {
-	ret := _m.Called()
-
-	var r0 store.AttributeVariantStore
-	if rf, ok := ret.Get(0).(func() store.AttributeVariantStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.AttributeVariantStore)
 		}
 	}
 
@@ -360,15 +296,15 @@ func (_m *Store) Channel() store.ChannelStore {
 }
 
 // CheckIntegrity provides a mock function with given fields:
-func (_m *Store) CheckIntegrity() <-chan model.IntegrityCheckResult {
+func (_m *Store) CheckIntegrity() <-chan model_helper.IntegrityCheckResult {
 	ret := _m.Called()
 
-	var r0 <-chan model.IntegrityCheckResult
-	if rf, ok := ret.Get(0).(func() <-chan model.IntegrityCheckResult); ok {
+	var r0 <-chan model_helper.IntegrityCheckResult
+	if rf, ok := ret.Get(0).(func() <-chan model_helper.IntegrityCheckResult); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan model.IntegrityCheckResult)
+			r0 = ret.Get(0).(<-chan model_helper.IntegrityCheckResult)
 		}
 	}
 
@@ -556,6 +492,22 @@ func (_m *Store) CsvExportFile() store.CsvExportFileStore {
 	return r0
 }
 
+// CustomProductAttribute provides a mock function with given fields:
+func (_m *Store) CustomProductAttribute() store.CustomProductAttributeStore {
+	ret := _m.Called()
+
+	var r0 store.CustomProductAttributeStore
+	if rf, ok := ret.Get(0).(func() store.CustomProductAttributeStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.CustomProductAttributeStore)
+		}
+	}
+
+	return r0
+}
+
 // CustomerEvent provides a mock function with given fields:
 func (_m *Store) CustomerEvent() store.CustomerEventStore {
 	ret := _m.Called()
@@ -589,15 +541,15 @@ func (_m *Store) CustomerNote() store.CustomerNoteStore {
 }
 
 // DBXFromContext provides a mock function with given fields: ctx
-func (_m *Store) DBXFromContext(ctx context.Context) *gorm.DB {
+func (_m *Store) DBXFromContext(ctx context.Context) boil.ContextExecutor {
 	ret := _m.Called(ctx)
 
-	var r0 *gorm.DB
-	if rf, ok := ret.Get(0).(func(context.Context) *gorm.DB); ok {
+	var r0 boil.ContextExecutor
+	if rf, ok := ret.Get(0).(func(context.Context) boil.ContextExecutor); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*gorm.DB)
+			r0 = ret.Get(0).(boil.ContextExecutor)
 		}
 	}
 
@@ -722,7 +674,7 @@ func (_m *Store) FileInfo() store.FileInfoStore {
 }
 
 // FinalizeTransaction provides a mock function with given fields: tx
-func (_m *Store) FinalizeTransaction(tx *gorm.DB) {
+func (_m *Store) FinalizeTransaction(tx boil.ContextTransactor) {
 	_m.Called(tx)
 }
 
@@ -782,22 +734,16 @@ func (_m *Store) GetDbVersion(numerical bool) (string, error) {
 	return r0, r1
 }
 
-// GetMaster provides a mock function with given fields: noTimeout
-func (_m *Store) GetMaster(noTimeout ...bool) *gorm.DB {
-	_va := make([]interface{}, len(noTimeout))
-	for _i := range noTimeout {
-		_va[_i] = noTimeout[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
+// GetMaster provides a mock function with given fields:
+func (_m *Store) GetMaster() store.ContextRunner {
+	ret := _m.Called()
 
-	var r0 *gorm.DB
-	if rf, ok := ret.Get(0).(func(...bool) *gorm.DB); ok {
-		r0 = rf(noTimeout...)
+	var r0 store.ContextRunner
+	if rf, ok := ret.Get(0).(func() store.ContextRunner); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*gorm.DB)
+			r0 = ret.Get(0).(store.ContextRunner)
 		}
 	}
 
@@ -824,22 +770,16 @@ func (_m *Store) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderForma
 	return r0
 }
 
-// GetReplica provides a mock function with given fields: noTimeout
-func (_m *Store) GetReplica(noTimeout ...bool) *gorm.DB {
-	_va := make([]interface{}, len(noTimeout))
-	for _i := range noTimeout {
-		_va[_i] = noTimeout[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
+// GetReplica provides a mock function with given fields:
+func (_m *Store) GetReplica() boil.ContextExecutor {
+	ret := _m.Called()
 
-	var r0 *gorm.DB
-	if rf, ok := ret.Get(0).(func(...bool) *gorm.DB); ok {
-		r0 = rf(noTimeout...)
+	var r0 boil.ContextExecutor
+	if rf, ok := ret.Get(0).(func() boil.ContextExecutor); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*gorm.DB)
+			r0 = ret.Get(0).(boil.ContextExecutor)
 		}
 	}
 

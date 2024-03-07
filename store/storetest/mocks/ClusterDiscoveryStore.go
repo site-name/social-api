@@ -29,21 +29,21 @@ func (_m *ClusterDiscoveryStore) Cleanup() error {
 }
 
 // Delete provides a mock function with given fields: discovery
-func (_m *ClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (_m *ClusterDiscoveryStore) Delete(discovery model.ClusterDiscovery) (bool, error) {
 	ret := _m.Called(discovery)
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) (bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) (bool, error)); ok {
 		return rf(discovery)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) bool); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) bool); ok {
 		r0 = rf(discovery)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ClusterDiscovery) error); ok {
+	if rf, ok := ret.Get(1).(func(model.ClusterDiscovery) error); ok {
 		r1 = rf(discovery)
 	} else {
 		r1 = ret.Error(1)
@@ -53,21 +53,21 @@ func (_m *ClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool
 }
 
 // Exists provides a mock function with given fields: discovery
-func (_m *ClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (_m *ClusterDiscoveryStore) Exists(discovery model.ClusterDiscovery) (bool, error) {
 	ret := _m.Called(discovery)
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) (bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) (bool, error)); ok {
 		return rf(discovery)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) bool); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) bool); ok {
 		r0 = rf(discovery)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ClusterDiscovery) error); ok {
+	if rf, ok := ret.Get(1).(func(model.ClusterDiscovery) error); ok {
 		r1 = rf(discovery)
 	} else {
 		r1 = ret.Error(1)
@@ -77,19 +77,19 @@ func (_m *ClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool
 }
 
 // GetAll provides a mock function with given fields: discoveryType, clusterName
-func (_m *ClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (_m *ClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) (model.ClusterDiscoverySlice, error) {
 	ret := _m.Called(discoveryType, clusterName)
 
-	var r0 []*model.ClusterDiscovery
+	var r0 model.ClusterDiscoverySlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) ([]*model.ClusterDiscovery, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, string) (model.ClusterDiscoverySlice, error)); ok {
 		return rf(discoveryType, clusterName)
 	}
-	if rf, ok := ret.Get(0).(func(string, string) []*model.ClusterDiscovery); ok {
+	if rf, ok := ret.Get(0).(func(string, string) model.ClusterDiscoverySlice); ok {
 		r0 = rf(discoveryType, clusterName)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.ClusterDiscovery)
+			r0 = ret.Get(0).(model.ClusterDiscoverySlice)
 		}
 	}
 
@@ -103,11 +103,11 @@ func (_m *ClusterDiscoveryStore) GetAll(discoveryType string, clusterName string
 }
 
 // Save provides a mock function with given fields: discovery
-func (_m *ClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (_m *ClusterDiscoveryStore) Save(discovery model.ClusterDiscovery) error {
 	ret := _m.Called(discovery)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) error); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) error); ok {
 		r0 = rf(discovery)
 	} else {
 		r0 = ret.Error(0)
@@ -117,11 +117,11 @@ func (_m *ClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
 }
 
 // SetLastPingAt provides a mock function with given fields: discovery
-func (_m *ClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (_m *ClusterDiscoveryStore) SetLastPingAt(discovery model.ClusterDiscovery) error {
 	ret := _m.Called(discovery)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.ClusterDiscovery) error); ok {
+	if rf, ok := ret.Get(0).(func(model.ClusterDiscovery) error); ok {
 		r0 = rf(discovery)
 	} else {
 		r0 = ret.Error(0)

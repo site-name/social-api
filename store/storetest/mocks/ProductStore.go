@@ -5,9 +5,12 @@
 package mocks
 
 import (
-	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
-	gorm "gorm.io/gorm"
+	boil "github.com/volatiletech/sqlboiler/v4/boil"
+
+	model "github.com/sitename/sitename/model"
+
+	model_helper "github.com/sitename/sitename/model_helper"
 
 	squirrel "github.com/mattermost/squirrel"
 )
@@ -18,11 +21,11 @@ type ProductStore struct {
 }
 
 // AdvancedFilterQueryBuilder provides a mock function with given fields: input
-func (_m *ProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (_m *ProductStore) AdvancedFilterQueryBuilder(input model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	ret := _m.Called(input)
 
 	var r0 squirrel.SelectBuilder
-	if rf, ok := ret.Get(0).(func(*model.ExportProductsFilterOptions) squirrel.SelectBuilder); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder); ok {
 		r0 = rf(input)
 	} else {
 		r0 = ret.Get(0).(squirrel.SelectBuilder)
@@ -32,19 +35,19 @@ func (_m *ProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFi
 }
 
 // CountByCategoryIDs provides a mock function with given fields: categoryIDs
-func (_m *ProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+func (_m *ProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error) {
 	ret := _m.Called(categoryIDs)
 
-	var r0 []*model.ProductCountByCategoryID
+	var r0 []*model_helper.ProductCountByCategoryID
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]string) ([]*model.ProductCountByCategoryID, error)); ok {
+	if rf, ok := ret.Get(0).(func([]string) ([]*model_helper.ProductCountByCategoryID, error)); ok {
 		return rf(categoryIDs)
 	}
-	if rf, ok := ret.Get(0).(func([]string) []*model.ProductCountByCategoryID); ok {
+	if rf, ok := ret.Get(0).(func([]string) []*model_helper.ProductCountByCategoryID); ok {
 		r0 = rf(categoryIDs)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.ProductCountByCategoryID)
+			r0 = ret.Get(0).([]*model_helper.ProductCountByCategoryID)
 		}
 	}
 
@@ -58,23 +61,23 @@ func (_m *ProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.Produ
 }
 
 // FilterByOption provides a mock function with given fields: option
-func (_m *ProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
+func (_m *ProductStore) FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.Product
+	var r0 model.ProductSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ProductFilterOption) ([]*model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.ProductFilterOption) (model.ProductSlice, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ProductFilterOption) []*model.Product); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.ProductFilterOption) model.ProductSlice); ok {
 		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Product)
+			r0 = ret.Get(0).(model.ProductSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ProductFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(model_helper.ProductFilterOption) error); ok {
 		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
@@ -84,19 +87,19 @@ func (_m *ProductStore) FilterByOption(option *model.ProductFilterOption) ([]*mo
 }
 
 // FilterByQuery provides a mock function with given fields: query
-func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
+func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.ProductSlice, error) {
 	ret := _m.Called(query)
 
-	var r0 model.Products
+	var r0 model.ProductSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder) (model.Products, error)); ok {
+	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder) (model.ProductSlice, error)); ok {
 		return rf(query)
 	}
-	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder) model.Products); ok {
+	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder) model.ProductSlice); ok {
 		r0 = rf(query)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.Products)
+			r0 = ret.Get(0).(model.ProductSlice)
 		}
 	}
 
@@ -109,46 +112,20 @@ func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Produ
 	return r0, r1
 }
 
-// GetByOption provides a mock function with given fields: option
-func (_m *ProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
-	ret := _m.Called(option)
-
-	var r0 *model.Product
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ProductFilterOption) (*model.Product, error)); ok {
-		return rf(option)
-	}
-	if rf, ok := ret.Get(0).(func(*model.ProductFilterOption) *model.Product); ok {
-		r0 = rf(option)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Product)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(*model.ProductFilterOption) error); ok {
-		r1 = rf(option)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // NotPublishedProducts provides a mock function with given fields: channelID
-func (_m *ProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
+func (_m *ProductStore) NotPublishedProducts(channelID string) (model.ProductSlice, error) {
 	ret := _m.Called(channelID)
 
-	var r0 model.Products
+	var r0 model.ProductSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (model.Products, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (model.ProductSlice, error)); ok {
 		return rf(channelID)
 	}
-	if rf, ok := ret.Get(0).(func(string) model.Products); ok {
+	if rf, ok := ret.Get(0).(func(string) model.ProductSlice); ok {
 		r0 = rf(channelID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.Products)
+			r0 = ret.Get(0).(model.ProductSlice)
 		}
 	}
 
@@ -162,19 +139,19 @@ func (_m *ProductStore) NotPublishedProducts(channelID string) (model.Products, 
 }
 
 // PublishedProducts provides a mock function with given fields: channelSlug
-func (_m *ProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
+func (_m *ProductStore) PublishedProducts(channelSlug string) (model.ProductSlice, error) {
 	ret := _m.Called(channelSlug)
 
-	var r0 []*model.Product
+	var r0 model.ProductSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (model.ProductSlice, error)); ok {
 		return rf(channelSlug)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*model.Product); ok {
+	if rf, ok := ret.Get(0).(func(string) model.ProductSlice); ok {
 		r0 = rf(channelSlug)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Product)
+			r0 = ret.Get(0).(model.ProductSlice)
 		}
 	}
 
@@ -202,15 +179,15 @@ func (_m *ProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.S
 }
 
 // Save provides a mock function with given fields: tx, product
-func (_m *ProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+func (_m *ProductStore) Save(tx boil.ContextTransactor, product model.Product) (*model.Product, error) {
 	ret := _m.Called(tx, product)
 
 	var r0 *model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.Product) (*model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.Product) (*model.Product, error)); ok {
 		return rf(tx, product)
 	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.Product) *model.Product); ok {
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.Product) *model.Product); ok {
 		r0 = rf(tx, product)
 	} else {
 		if ret.Get(0) != nil {
@@ -218,7 +195,7 @@ func (_m *ProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Produc
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.Product) error); ok {
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, model.Product) error); ok {
 		r1 = rf(tx, product)
 	} else {
 		r1 = ret.Error(1)
@@ -227,41 +204,25 @@ func (_m *ProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Produc
 	return r0, r1
 }
 
-// ScanFields provides a mock function with given fields: product
-func (_m *ProductStore) ScanFields(product *model.Product) []interface{} {
-	ret := _m.Called(product)
+// SelectForUpdateDiscountedPricesOfCatalogues provides a mock function with given fields: tx, productIDs, categoryIDs, collectionIDs, variantIDs
+func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(tx boil.ContextTransactor, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) (model.ProductSlice, error) {
+	ret := _m.Called(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(*model.Product) []interface{}); ok {
-		r0 = rf(product)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
-		}
-	}
-
-	return r0
-}
-
-// SelectForUpdateDiscountedPricesOfCatalogues provides a mock function with given fields: transaction, productIDs, categoryIDs, collectionIDs, variantIDs
-func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
-	ret := _m.Called(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
-
-	var r0 []*model.Product
+	var r0 model.ProductSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []string, []string, []string, []string) ([]*model.Product, error)); ok {
-		return rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string, []string, []string, []string) (model.ProductSlice, error)); ok {
+		return rf(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []string, []string, []string, []string) []*model.Product); ok {
-		r0 = rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string, []string, []string, []string) model.ProductSlice); ok {
+		r0 = rf(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Product)
+			r0 = ret.Get(0).(model.ProductSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, []string, []string, []string, []string) error); ok {
-		r1 = rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, []string, []string, []string, []string) error); ok {
+		r1 = rf(tx, productIDs, categoryIDs, collectionIDs, variantIDs)
 	} else {
 		r1 = ret.Error(1)
 	}

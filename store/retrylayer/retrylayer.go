@@ -2613,11 +2613,11 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
+func (s *RetryLayerCustomerEventStore) FilterByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.FilterByOptions(queryMods...)
+		result, err := s.CustomerEventStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -3705,11 +3705,11 @@ func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*
 
 }
 
-func (s *RetryLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
+func (s *RetryLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.Count(mods...)
+		result, err := s.JobStore.Count(mods)
 		if err == nil {
 			return result, nil
 		}
@@ -3745,11 +3745,11 @@ func (s *RetryLayerJobStore) Delete(id string) (string, error) {
 
 }
 
-func (s *RetryLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
+func (s *RetryLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.FindAll(mods...)
+		result, err := s.JobStore.FindAll(mods)
 		if err == nil {
 			return result, nil
 		}
@@ -3765,11 +3765,11 @@ func (s *RetryLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error
 
 }
 
-func (s *RetryLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
+func (s *RetryLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.Get(mods...)
+		result, err := s.JobStore.Get(mods)
 		if err == nil {
 			return result, nil
 		}
@@ -5249,7 +5249,7 @@ func (s *RetryLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []
 
 }
 
-func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error) {
+func (s *RetryLayerProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) {
 
 	tries := 0
 	for {
@@ -5369,7 +5369,7 @@ func (s *RetryLayerProductVariantStore) Upsert(tx boil.ContextTransactor, varian
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
 
 	tries := 0
 	for {
@@ -6355,11 +6355,11 @@ func (s *RetryLayerShopTranslationStore) Upsert(translation model.ShopTranslatio
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options model_helper.StaffNotificationRecipientFilterOptions) (model.StaffNotificationRecipientSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.StaffNotificationRecipientStore.FilterByOptions(options...)
+		result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -7799,11 +7799,11 @@ func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
+func (s *RetryLayerUserAccessTokenStore) GetAll(conds model_helper.UserAccessTokenFilterOptions) (model.UserAccessTokenSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserAccessTokenStore.GetAll(conds...)
+		result, err := s.UserAccessTokenStore.GetAll(conds)
 		if err == nil {
 			return result, nil
 		}
@@ -7919,11 +7919,11 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
-func (s *RetryLayerVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
+func (s *RetryLayerVatStore) FilterByOptions(options model_helper.VatFilterOptions) (model.VatSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.VatStore.FilterByOptions(options...)
+		result, err := s.VatStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

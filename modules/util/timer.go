@@ -22,15 +22,11 @@ func NewTime(t time.Time) *time.Time {
 }
 
 func MillisFromTime(t time.Time) int64 {
-	return t.UnixNano() / int64(time.Millisecond)
+	return t.UnixMilli()
 }
 
 func TimeFromMillis(millis int64) time.Time {
-	return time.Unix(0, millis*int64(time.Millisecond))
-}
-
-func TimePointerFromMillis(millis int64) time.Time {
-	return TimeFromMillis(millis)
+	return time.UnixMilli(millis)
 }
 
 func StartOfDay(t time.Time) time.Time {

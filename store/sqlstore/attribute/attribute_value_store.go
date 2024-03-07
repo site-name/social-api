@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlAttributeValueStore struct {
@@ -15,30 +16,6 @@ type SqlAttributeValueStore struct {
 
 func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	return &SqlAttributeValueStore{s}
-}
-
-func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
-	av, err := model.FindAttributeValue(as.GetReplica(), id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(model.TableNames.AttributeValues, id)
-		}
-		return nil, err
-	}
-
-	return av, nil
-}
-
-// FilterByOptions finds and returns all matched attribute values based on given options
-func (as *SqlAttributeValueStore) FilterByOptions(option model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, error) {
-	return model.AttributeValues(option.Conditions...).All(as.GetReplica())
-}
-
-func (as *SqlAttributeValueStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
-	if tx == nil {
-		tx = as.GetMaster()
-	}
-	return model.AttributeValues(model.AttributeValueWhere.ID.IN(ids)).DeleteAll(tx)
 }
 
 func (as *SqlAttributeValueStore) Upsert(transaction boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, error) {
@@ -77,6 +54,33 @@ func (as *SqlAttributeValueStore) Upsert(transaction boil.ContextTransactor, val
 	}
 
 	return values, nil
+}
+
+func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
+	av, err := model.FindAttributeValue(as.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AttributeValues, id)
+		}
+		return nil, err
+	}
+
+	return av, nil
+}
+
+func (as *SqlAttributeValueStore) FilterByOptions(option model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, error) {
+	conds := option.Conditions
+	for _, load := range option.Preloads {
+		conds = append(conds, qm.Load(load))
+	}
+	return model.AttributeValues(conds...).All(as.GetReplica())
+}
+
+func (as *SqlAttributeValueStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	if tx == nil {
+		tx = as.GetMaster()
+	}
+	return model.AttributeValues(model.AttributeValueWhere.ID.IN(ids)).DeleteAll(tx)
 }
 
 func (as *SqlAttributeValueStore) Count(options model_helper.AttributeValueFilterOptions) (int64, error) {

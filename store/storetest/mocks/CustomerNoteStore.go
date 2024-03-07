@@ -40,16 +40,16 @@ func (_m *CustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: note
-func (_m *CustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
+// Upsert provides a mock function with given fields: note
+func (_m *CustomerNoteStore) Upsert(note model.CustomerNote) (*model.CustomerNote, error) {
 	ret := _m.Called(note)
 
 	var r0 *model.CustomerNote
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.CustomerNote) (*model.CustomerNote, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.CustomerNote) (*model.CustomerNote, error)); ok {
 		return rf(note)
 	}
-	if rf, ok := ret.Get(0).(func(*model.CustomerNote) *model.CustomerNote); ok {
+	if rf, ok := ret.Get(0).(func(model.CustomerNote) *model.CustomerNote); ok {
 		r0 = rf(note)
 	} else {
 		if ret.Get(0) != nil {
@@ -57,7 +57,7 @@ func (_m *CustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.CustomerNote) error); ok {
+	if rf, ok := ret.Get(1).(func(model.CustomerNote) error); ok {
 		r1 = rf(note)
 	} else {
 		r1 = ret.Error(1)

@@ -5,7 +5,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlStaffNotificationRecipientStore struct {
@@ -30,6 +29,6 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record model.StaffNotificatio
 	return &record, nil
 }
 
-func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
-	return model.StaffNotificationRecipients(options...).All(s.GetReplica())
+func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options model_helper.StaffNotificationRecipientFilterOptions) (model.StaffNotificationRecipientSlice, error) {
+	return model.StaffNotificationRecipients(options.Conditions...).All(s.GetReplica())
 }

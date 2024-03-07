@@ -3,9 +3,9 @@ package shop
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type sqlVatStore struct {
@@ -37,6 +37,6 @@ func (s *sqlVatStore) Upsert(tx boil.ContextTransactor, vats model.VatSlice) (mo
 	return vats, nil
 }
 
-func (s *sqlVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
-	return model.Vats(options...).All(s.GetReplica())
+func (s *sqlVatStore) FilterByOptions(options model_helper.VatFilterOptions) (model.VatSlice, error) {
+	return model.Vats(options.Conditions...).All(s.GetReplica())
 }

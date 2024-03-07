@@ -5,9 +5,12 @@
 package mocks
 
 import (
-	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
-	gorm "gorm.io/gorm"
+	boil "github.com/volatiletech/sqlboiler/v4/boil"
+
+	model "github.com/sitename/sitename/model"
+
+	model_helper "github.com/sitename/sitename/model_helper"
 
 	time "time"
 )
@@ -17,23 +20,23 @@ type DiscountVoucherStore struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: transaction, ids
-func (_m *DiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
-	ret := _m.Called(transaction, ids)
+// Delete provides a mock function with given fields: tx, ids
+func (_m *DiscountVoucherStore) Delete(tx boil.ContextTransactor, ids []string) (int64, error) {
+	ret := _m.Called(tx, ids)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) (int64, error)); ok {
-		return rf(transaction, ids)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string) (int64, error)); ok {
+		return rf(tx, ids)
 	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) int64); ok {
-		r0 = rf(transaction, ids)
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, []string) int64); ok {
+		r0 = rf(tx, ids)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, []string) error); ok {
-		r1 = rf(transaction, ids)
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, []string) error); ok {
+		r1 = rf(tx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -42,23 +45,23 @@ func (_m *DiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int6
 }
 
 // ExpiredVouchers provides a mock function with given fields: date
-func (_m *DiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, error) {
+func (_m *DiscountVoucherStore) ExpiredVouchers(date time.Time) (model.VoucherSlice, error) {
 	ret := _m.Called(date)
 
-	var r0 []*model.Voucher
+	var r0 model.VoucherSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*time.Time) ([]*model.Voucher, error)); ok {
+	if rf, ok := ret.Get(0).(func(time.Time) (model.VoucherSlice, error)); ok {
 		return rf(date)
 	}
-	if rf, ok := ret.Get(0).(func(*time.Time) []*model.Voucher); ok {
+	if rf, ok := ret.Get(0).(func(time.Time) model.VoucherSlice); ok {
 		r0 = rf(date)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Voucher)
+			r0 = ret.Get(0).(model.VoucherSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*time.Time) error); ok {
+	if rf, ok := ret.Get(1).(func(time.Time) error); ok {
 		r1 = rf(date)
 	} else {
 		r1 = ret.Error(1)
@@ -68,57 +71,24 @@ func (_m *DiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Vouch
 }
 
 // FilterVouchersByOption provides a mock function with given fields: option
-func (_m *DiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
+func (_m *DiscountVoucherStore) FilterVouchersByOption(option model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error) {
 	ret := _m.Called(option)
 
-	var r0 int64
-	var r1 []*model.Voucher
-	var r2 error
-	if rf, ok := ret.Get(0).(func(*model.VoucherFilterOption) (int64, []*model.Voucher, error)); ok {
+	var r0 model_helper.CustomVoucherSlice
+	var r1 error
+	if rf, ok := ret.Get(0).(func(model_helper.VoucherFilterOption) (model_helper.CustomVoucherSlice, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.VoucherFilterOption) int64); ok {
+	if rf, ok := ret.Get(0).(func(model_helper.VoucherFilterOption) model_helper.CustomVoucherSlice); ok {
 		r0 = rf(option)
 	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	if rf, ok := ret.Get(1).(func(*model.VoucherFilterOption) []*model.Voucher); ok {
-		r1 = rf(option)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*model.Voucher)
-		}
-	}
-
-	if rf, ok := ret.Get(2).(func(*model.VoucherFilterOption) error); ok {
-		r2 = rf(option)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
-// Get provides a mock function with given fields: voucherID
-func (_m *DiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
-	ret := _m.Called(voucherID)
-
-	var r0 *model.Voucher
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*model.Voucher, error)); ok {
-		return rf(voucherID)
-	}
-	if rf, ok := ret.Get(0).(func(string) *model.Voucher); ok {
-		r0 = rf(voucherID)
-	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Voucher)
+			r0 = ret.Get(0).(model_helper.CustomVoucherSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(voucherID)
+	if rf, ok := ret.Get(1).(func(model_helper.VoucherFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -126,46 +96,42 @@ func (_m *DiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	return r0, r1
 }
 
-// ScanFields provides a mock function with given fields: voucher
-func (_m *DiscountVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
-	ret := _m.Called(voucher)
+// Get provides a mock function with given fields: id
+func (_m *DiscountVoucherStore) Get(id string) (*model.Voucher, error) {
+	ret := _m.Called(id)
 
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(*model.Voucher) []interface{}); ok {
-		r0 = rf(voucher)
+	var r0 *model.Voucher
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (*model.Voucher, error)); ok {
+		return rf(id)
+	}
+	if rf, ok := ret.Get(0).(func(string) *model.Voucher); ok {
+		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
+			r0 = ret.Get(0).(*model.Voucher)
 		}
 	}
 
-	return r0
-}
-
-// ToggleVoucherRelations provides a mock function with given fields: transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete
-func (_m *DiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
-	ret := _m.Called(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, model.Vouchers, []string, []string, []string, []string, bool) error); ok {
-		r0 = rf(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(id)
 	} else {
-		r0 = ret.Error(0)
+		r1 = ret.Error(1)
 	}
 
-	return r0
+	return r0, r1
 }
 
 // Upsert provides a mock function with given fields: voucher
-func (_m *DiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
+func (_m *DiscountVoucherStore) Upsert(voucher model.Voucher) (*model.Voucher, error) {
 	ret := _m.Called(voucher)
 
 	var r0 *model.Voucher
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.Voucher) (*model.Voucher, error)); ok {
+	if rf, ok := ret.Get(0).(func(model.Voucher) (*model.Voucher, error)); ok {
 		return rf(voucher)
 	}
-	if rf, ok := ret.Get(0).(func(*model.Voucher) *model.Voucher); ok {
+	if rf, ok := ret.Get(0).(func(model.Voucher) *model.Voucher); ok {
 		r0 = rf(voucher)
 	} else {
 		if ret.Get(0) != nil {
@@ -173,7 +139,7 @@ func (_m *DiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.Voucher) error); ok {
+	if rf, ok := ret.Get(1).(func(model.Voucher) error); ok {
 		r1 = rf(voucher)
 	} else {
 		r1 = ret.Error(1)

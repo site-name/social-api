@@ -60,7 +60,7 @@ type ProductFilterInput struct {
 		Gte *float64
 		Lte *float64
 	}
-	ProductTypes          []string
+	// ProductTypes          []string
 	GiftCard              *bool
 	Ids                   []string
 	HasPreorderedVariants *bool

@@ -41,6 +41,7 @@ type Giftcard struct {
 	CurrentBalanceAmount model_types.NullDecimal `boil:"current_balance_amount" json:"current_balance_amount,omitempty" toml:"current_balance_amount" yaml:"current_balance_amount,omitempty"`
 	Metadata             model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata      model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Annotations          model_types.JSONString  `boil:"annotations" json:"-" toml:"-" yaml:"-"`
 
 	R *giftcardR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -65,6 +66,7 @@ var GiftcardColumns = struct {
 	CurrentBalanceAmount string
 	Metadata             string
 	PrivateMetadata      string
+	Annotations          string
 }{
 	ID:                   "id",
 	Code:                 "code",
@@ -84,6 +86,7 @@ var GiftcardColumns = struct {
 	CurrentBalanceAmount: "current_balance_amount",
 	Metadata:             "metadata",
 	PrivateMetadata:      "private_metadata",
+	Annotations:          "annotations",
 }
 
 var GiftcardTableColumns = struct {
@@ -105,6 +108,7 @@ var GiftcardTableColumns = struct {
 	CurrentBalanceAmount string
 	Metadata             string
 	PrivateMetadata      string
+	Annotations          string
 }{
 	ID:                   "giftcards.id",
 	Code:                 "giftcards.code",
@@ -124,6 +128,7 @@ var GiftcardTableColumns = struct {
 	CurrentBalanceAmount: "giftcards.current_balance_amount",
 	Metadata:             "giftcards.metadata",
 	PrivateMetadata:      "giftcards.private_metadata",
+	Annotations:          "giftcards.annotations",
 }
 
 // Generated where
@@ -147,6 +152,7 @@ var GiftcardWhere = struct {
 	CurrentBalanceAmount whereHelpermodel_types_NullDecimal
 	Metadata             whereHelpermodel_types_JSONString
 	PrivateMetadata      whereHelpermodel_types_JSONString
+	Annotations          whereHelpermodel_types_JSONString
 }{
 	ID:                   whereHelperstring{field: "\"giftcards\".\"id\""},
 	Code:                 whereHelperstring{field: "\"giftcards\".\"code\""},
@@ -166,6 +172,7 @@ var GiftcardWhere = struct {
 	CurrentBalanceAmount: whereHelpermodel_types_NullDecimal{field: "\"giftcards\".\"current_balance_amount\""},
 	Metadata:             whereHelpermodel_types_JSONString{field: "\"giftcards\".\"metadata\""},
 	PrivateMetadata:      whereHelpermodel_types_JSONString{field: "\"giftcards\".\"private_metadata\""},
+	Annotations:          whereHelpermodel_types_JSONString{field: "\"giftcards\".\"annotations\""},
 }
 
 // GiftcardRels is where relationship names are stored.
@@ -246,9 +253,9 @@ func (r *giftcardR) GetOrderGiftcards() OrderGiftcardSlice {
 type giftcardL struct{}
 
 var (
-	giftcardAllColumns            = []string{"id", "code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "created_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
+	giftcardAllColumns            = []string{"id", "code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "created_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata", "annotations"}
 	giftcardColumnsWithoutDefault = []string{"id", "code", "created_at", "currency"}
-	giftcardColumnsWithDefault    = []string{"created_by_id", "used_by_id", "created_by_email", "used_by_email", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
+	giftcardColumnsWithDefault    = []string{"created_by_id", "used_by_id", "created_by_email", "used_by_email", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata", "annotations"}
 	giftcardPrimaryKeyColumns     = []string{"id"}
 	giftcardGeneratedColumns      = []string{}
 )

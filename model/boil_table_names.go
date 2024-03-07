@@ -107,9 +107,9 @@ var TableNames = struct {
 	VoucherChannelListings                string
 	VoucherCollections                    string
 	VoucherCustomers                      string
+	VoucherProductVariants                string
 	VoucherProducts                       string
 	VoucherTranslations                   string
-	VoucherproductVariants                string
 	Vouchers                              string
 	WarehouseShippingZones                string
 	Warehouses                            string
@@ -220,9 +220,9 @@ var TableNames = struct {
 	VoucherChannelListings:                "voucher_channel_listings",
 	VoucherCollections:                    "voucher_collections",
 	VoucherCustomers:                      "voucher_customers",
+	VoucherProductVariants:                "voucher_product_variants",
 	VoucherProducts:                       "voucher_products",
 	VoucherTranslations:                   "voucher_translations",
-	VoucherproductVariants:                "voucherproduct_variants",
 	Vouchers:                              "vouchers",
 	WarehouseShippingZones:                "warehouse_shipping_zones",
 	Warehouses:                            "warehouses",

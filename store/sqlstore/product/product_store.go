@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/mattermost/squirrel"
 	"github.com/pkg/errors"
@@ -119,17 +118,24 @@ func (ps *SqlProductStore) channelQuery(channelSlugOrID string, isActive *bool, 
 	var channelActiveExpr string
 	if isActive != nil {
 		if *isActive {
-			channelActiveExpr = fmt.Sprintf("%s.%s AND ", model.ChannelTableName, model.ChannelColumnIsActive)
+			channelActiveExpr = fmt.Sprintf("%s AND ", model.ChannelTableColumns.IsActive)
 		} else {
-			channelActiveExpr = fmt.Sprintf("NOT %s.%s AND ", model.ChannelTableName, model.ChannelColumnIsActive)
+			channelActiveExpr = fmt.Sprintf("NOT %s AND ", model.ChannelTableColumns.IsActive)
 		}
 	}
 	return ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ChannelTableName).
-		Where(channelActiveExpr+"(Channels.Slug = ? OR Channels.Id = ?) AND Channels.Id = ?.ChannelID", channelSlugOrID, channelSlugOrID, compareToTable).
+		From(model.TableNames.Channels).
+		Where(squirrel.Expr(channelActiveExpr)).
+		Where(squirrel.And{
+			squirrel.Or{
+				squirrel.Eq{model.ChannelTableColumns.Slug: channelSlugOrID},
+				squirrel.Eq{model.ChannelTableColumns.ID: channelSlugOrID},
+			},
+			squirrel.Eq{model.ChannelTableColumns.ID: compareToTable + ".channel_id"},
+		}).
 		Suffix(")").
 		Limit(1)
 }
@@ -138,40 +144,35 @@ func (ps *SqlProductStore) channelQuery(channelSlugOrID string, isActive *bool, 
 //
 // refer to ./product_store_doc.md (line 1)
 func (ps *SqlProductStore) PublishedProducts(channelSlug string) (model.ProductSlice, error) {
-	channelQuery := ps.channelQuery(channelSlug, model.GetPointerOfValue(true), model.ProductChannelListingTableName)
+	channelQuery := ps.channelQuery(channelSlug, model_helper.GetPointerOfValue(true), model.TableNames.ProductChannelListings)
 
-	today := util.StartOfDay(time.Now())
+	today := util.MillisFromTime(util.StartOfDay(model_helper.GetTimeUTCNow()))
 
 	productChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductChannelListingTableName).
-		Where(
-			fmt.Sprintf(`(
-					%[1]s.%[2]s <= ?
-					OR %[1]s.%[2]s IS NULL
-				)
-				AND %[1]s.%[3]s
-				AND %[1]s.%[4]s = %[5]s.%[6]s`,
-
-				model.ProductChannelListingTableName,       // 1
-				model.PublishableColumnPublicationDate,     // 2
-				model.PublishableColumnIsPublished,         // 3
-				model.ProductChannelListingColumnProductID, // 4
-				model.ProductTableName,                     // 5
-				model.ProductColumnId,                      // 6
+		From(model.TableNames.ProductChannelListings).
+		Where(squirrel.Expr(
+			fmt.Sprintf(
+				`(%[1]s <= ? OR %[1]s IS NULL)
+				AND %[2]s
+				AND %[3]s = %[4]s`,
+				model.ProductChannelListingTableColumns.PublicationDate, // 1
+				model.ProductChannelListingTableColumns.IsPublished,     // 2
+				model.ProductChannelListingTableColumns.ProductID,       // 3
+				model.ProductTableColumns.ID,                            // 4
 			),
 			today,
-		).
+		)).
 		Where(channelQuery).
 		Suffix(")").
 		Limit(1)
 
 	query := ps.
 		GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		From(model.ProductTableName).
+		Select(model.TableNames.Products + ".*").
+		From(model.TableNames.Products).
 		Where(productChannelListingQuery)
 
 	queryString, args, err := query.ToSql()
@@ -179,8 +180,8 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) (model.ProductS
 		return nil, errors.Wrap(err, "FilterPublishedProducts_ToSql")
 	}
 
-	var res model.Products
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	var res model.ProductSlice
+	err = queries.Raw(queryString, args...).Bind(context.Background(), ps.GetReplica(), &res)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
 	}
@@ -191,71 +192,58 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) (model.ProductS
 // FilterNotPublishedProducts finds all not published products belong to given channel
 //
 // refer to ./product_store_doc.md (line 45)
-func (ps *SqlProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
-	today := util.StartOfDay(time.Now()) // start of day
+func (ps *SqlProductStore) NotPublishedProducts(channelID string) (model.ProductSlice, error) {
+	today := util.MillisFromTime(util.StartOfDay(model_helper.GetTimeUTCNow()))
 
-	queryString, args, err := ps.GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		From(model.ProductTableName).
-		InnerJoin(
-			fmt.Sprintf(
-				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-				model.ProductChannelListingTableName,       // 1
-				model.ProductTableName,                     // 2
-				model.ProductChannelListingColumnProductID, // 3
-				model.ProductColumnId,                      // 4
-			),
-		).
-		Where(squirrel.Or{
-			squirrel.And{
-				squirrel.Expr(model.ProductChannelListingTableName+"."+model.PublishableColumnPublicationDate+" > ?", today),
-				squirrel.Expr(model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished),
+	return model.Products(
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductChannelListings, model.ProductTableColumns.ID, model.ProductChannelListingTableColumns.ProductID)),
+		model_helper.Or{
+			model_helper.And{
+				squirrel.Gt{model.ProductChannelListingTableColumns.PublicationDate: today},
+				squirrel.Expr(model.ProductChannelListingTableColumns.IsPublished),
 			},
-			squirrel.Expr("NOT " + model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished),
-			squirrel.Expr(model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished + " IS NULL"),
-		}).
-		ToSql()
-
-	if err != nil {
-		return nil, errors.Wrap(err, "NotPublishedProducts_ToSql")
-	}
-
-	var res model.Products
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find not published product with channel id=%s", channelID)
-	}
-
-	return res, nil
+			squirrel.Expr("NOT " + model.ProductChannelListingTableColumns.IsPublished),
+			squirrel.Expr(model.ProductChannelListingTableColumns.IsPublished + " IS NULL"),
+		},
+	).All(ps.GetReplica())
 }
 
 // PublishedWithVariants finds and returns products.
 //
 // refer to ./product_store_doc.md (line 157)
 func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
-	channelQuery1 := ps.channelQuery(channelIdOrSlug, model.GetPointerOfValue(true), model.ProductChannelListingTableName)
-	today := util.StartOfDay(time.Now())
+	channelQuery1 := ps.channelQuery(channelIdOrSlug, model_helper.GetPointerOfValue(true), model.TableNames.ProductChannelListings)
+	today := util.MillisFromTime(util.StartOfDay(model_helper.GetTimeUTCNow()))
 
 	productChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductChannelListingTableName).
-		Where("ProductChannelListings.PublicationDate IS NULL OR ProductChannelListings.PublicationDate <= ?", today).
-		Where("ProductChannelListings.IsPublished AND ProductChannelListings.ProductID = Products.Id").
+		From(model.TableNames.ProductChannelListings).
+		Where(squirrel.Or{
+			squirrel.Expr(model.ProductChannelListingTableColumns.PublicationDate + " IS NULL"),
+			squirrel.LtOrEq{model.ProductChannelListingTableColumns.PublicationDate: today},
+		}).
+		Where(squirrel.And{
+			squirrel.Expr(model.ProductChannelListingTableColumns.IsPublished),
+			squirrel.Eq{model.ProductChannelListingTableColumns.ProductID: model.ProductTableColumns.ID},
+		}).
 		Where(channelQuery1).
 		Suffix(")").
 		Limit(1)
 
-	channelQuery2 := ps.channelQuery(channelIdOrSlug, model.GetPointerOfValue(true), model.ProductVariantChannelListingTableName)
+	channelQuery2 := ps.channelQuery(channelIdOrSlug, model_helper.GetPointerOfValue(true), model.TableNames.ProductVariantChannelListings)
 
 	productVariantChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductVariantChannelListingTableName).
+		From(model.TableNames.ProductVariantChannelListings).
 		Where(channelQuery2).
-		Where("ProductVariantChannelListings.PriceAmount IS NOT NULL AND ProductVariantChannelListings.VariantID = ProductVariants.Id").
+		Where(squirrel.And{
+			squirrel.Expr(model.ProductVariantChannelListingTableColumns.PriceAmount + " IS NOT NULL"),
+			squirrel.Eq{model.ProductVariantChannelListingTableColumns.VariantID: model.ProductVariantTableColumns.ID},
+		}).
 		Suffix(")").
 		Limit(1)
 
@@ -263,15 +251,15 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(model.ProductVariantTableName).
+		From(model.TableNames.ProductVariants).
 		Where(productVariantChannelListingQuery).
-		Where("Products.Id = ProductVariants.ProductID").
+		Where(squirrel.Eq{model.ProductVariantTableColumns.ProductID: model.ProductTableColumns.ID}).
 		Suffix(")").
 		Limit(1)
 
 	return ps.GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		From(model.ProductTableName).
+		Select(model.TableNames.Products + ".*").
+		From(model.TableNames.Products).
 		Where(productChannelListingQuery).
 		Where(productVariantQuery)
 }
@@ -287,24 +275,24 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 	// check if requesting user has right to view products
 	if userHasOneOfProductpermissions {
 		if channelSlugOrID == "" {
-			return ps.GetQueryBuilder().Select(model.ProductTableName + ".*").From(model.ProductTableName) // find all
+			return ps.GetQueryBuilder().Select(model.TableNames.Products + ".*").From(model.TableNames.Products) // find all
 		}
 
-		channelQuery := ps.channelQuery(channelSlugOrID, nil, model.ProductChannelListingTableName)
+		channelQuery := ps.channelQuery(channelSlugOrID, nil, model.TableNames.ProductChannelListings)
 		productChannelListingQuery := ps.
 			GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
-			From(model.ProductChannelListingTableName).
+			From(model.TableNames.ProductChannelListings).
 			Where(channelQuery).
-			Where("ProductChannelListings.ProductID = Products.Id").
+			Where(squirrel.Eq{model.ProductChannelListingTableColumns.ProductID: model.ProductTableColumns.ID}).
 			Suffix(")").
 			Limit(1)
 
 		return ps.
 			GetQueryBuilder().
-			Select(model.ProductTableName + ".*").
-			From(model.ProductTableName).
+			Select(model.TableNames.Products + ".*").
+			From(model.TableNames.Products).
 			Where(productChannelListingQuery)
 	}
 
@@ -314,63 +302,42 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) (model.ProductSlice, error) {
 	if transaction == nil {
-		return nil, store.NewErrInvalidInput("SelectForUpdateDiscountedPricesOfCatalogues", "transaction", nil)
-	}
-	query := ps.GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		Distinct().
-		From(model.ProductTableName)
-
-	if transaction != nil {
-		query = query.Suffix("FOR UPDATE")
+		transaction = ps.GetMaster()
 	}
 
-	orCondition := squirrel.Or{}
+	conds := []qm.QueryMod{}
+	orConds := model_helper.Or{}
 
 	if len(productIDs) > 0 {
-		orCondition = append(orCondition, squirrel.Eq{"Products.Id": productIDs})
+		orConds = append(orConds, squirrel.Eq{model.ProductTableColumns.ID: productIDs})
 	}
 	if len(categoryIDs) > 0 {
-		orCondition = append(orCondition, squirrel.Eq{"Products.CategoryID": categoryIDs})
+		orConds = append(orConds, squirrel.Eq{model.ProductTableColumns.CategoryID: categoryIDs})
 	}
 	if len(collectionIDs) > 0 {
-		query = query.InnerJoin(model.CollectionProductRelationTableName + " ON (Products.Id = ProductCollections.ProductID)")
-		orCondition = append(orCondition, squirrel.Eq{"ProductCollections.CollectionID": collectionIDs})
+		conds = append(conds, qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductCollections, model.ProductTableColumns.ID, model.ProductCollectionTableColumns.ProductID)))
+		orConds = append(orConds, squirrel.Eq{model.ProductCollectionTableColumns.CollectionID: collectionIDs})
 	}
 	if len(variantIDs) > 0 {
-		query = query.InnerJoin(model.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID")
-		orCondition = append(orCondition, squirrel.Eq{model.ProductVariantTableName + ".Id": variantIDs})
+		conds = append(conds, qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductTableColumns.ID, model.ProductVariantTableColumns.ProductID)))
+		orConds = append(orConds, squirrel.Eq{model.ProductVariantTableColumns.ID: variantIDs})
 	}
 
-	if len(orCondition) > 0 {
-		query = query.Where(orCondition)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
-	}
-
-	var products model.Products
-	err = transaction.Raw(queryString, args...).Scan(&products).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find products by given params")
-	}
-
-	return products, nil
+	conds = append(conds, orConds)
+	return model.Products(conds...).All(transaction)
 }
 
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input model_helper.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		From(model.ProductTableName)
+		Select(model.TableNames.Products + ".*").
+		From(model.TableNames.Products)
 
 	if input.Scope == "all" {
 		return query
 	}
 	if input.Scope == "ids" {
-		return query.Where(squirrel.Eq{"Products.Id": input.Ids})
+		return query.Where(squirrel.Eq{model.ProductTableColumns.ID: input.Ids})
 	}
 
 	var channelIdOrSlug string
@@ -390,10 +357,10 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	}
 	if input.Filter.HasCategory != nil {
 		// default to has no category
-		condition := fmt.Sprintf("%s.%s IS NULL", model.ProductTableName, model.ProductColumnCategoryID)
+		condition := fmt.Sprintf("%s IS NULL", model.ProductTableColumns.CategoryID)
 
 		if *input.Filter.HasCategory {
-			condition = fmt.Sprintf("%s.%s IS NOT NULL", model.ProductTableName, model.ProductColumnCategoryID)
+			condition = fmt.Sprintf("%s IS NOT NULL", model.ProductTableColumns.CategoryID)
 		}
 		query = query.Where(condition)
 	}
@@ -409,9 +376,9 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	if input.Filter.StockAvailability != nil {
 		query = ps.filterStockAvailability(query, *input.Filter.StockAvailability, channelIdOrSlug)
 	}
-	if len(input.Filter.ProductTypes) > 0 {
-		query = ps.filterProductTypes(query, input.Filter.ProductTypes)
-	}
+	// if len(input.Filter.ProductTypes) > 0 {
+	// 	query = ps.filterProductTypes(query, input.Filter.ProductTypes)
+	// }
 	if input.Filter.Stocks != nil {
 		query = ps.filterStocks(query, *input.Filter.Stocks)
 	}
@@ -427,17 +394,17 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	if input.Filter.Search != nil {
 		query = ps.filterSearch(query, *input.Filter.Search)
 	}
-	if meta := input.Filter.Metadata; len(meta) > 0 {
+	if len(input.Filter.Metadata) > 0 {
 		conditions := []string{}
 
-		for _, pair := range meta {
+		for _, pair := range input.Filter.Metadata {
 			if pair != nil && pair.Key != "" {
 				if pair.Value == "" {
-					expr := fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key)
+					expr := fmt.Sprintf(`%s::jsonb ? '%s'`, model.ProductTableColumns.Metadata, pair.Key)
 					conditions = append(conditions, expr)
 					continue
 				}
-				expr := fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'`, pair.Key, pair.Value)
+				expr := fmt.Sprintf(`%s::jsonb @> '{%q:%q}'`, model.ProductTableColumns.Metadata, pair.Key, pair.Value)
 				conditions = append(conditions, expr)
 			}
 		}
@@ -447,72 +414,123 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	// filter by SortBy
 	if input.SortBy != nil && input.SortBy.Field != nil {
 		switch *input.SortBy.Field {
-		case model.ProductOrderFieldPrice:
+		case model_helper.ProductOrderFieldPrice:
 			query = query.
-				Column(`MIN(
-					ProductVariantChannelListings.PriceAmount
-				) FILTER (
-					WHERE (
-						(Channel.Id = ? OR Channel.Slug = ?)
-						AND ProductVariantChannelListings.PriceAmount IS NOT NULL
-					)
-				) AS MinVariantsPriceAmount`, channelIdOrSlug, channelIdOrSlug).
-				LeftJoin(model.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID").
-				LeftJoin(model.ProductVariantChannelListingTableName + " ON ProductVariants.Id = ProductVariantChannelListings.VariantID").
-				LeftJoin(model.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID").
-				GroupBy("Products.Id").
+				Column(
+					fmt.Sprintf(
+						`MIN (%s) FILTER (
+							WHERE (
+								(%s = ? OR %s = ?)
+								AND %s IS NOT NULL
+							)
+						) AS MinVariantsPriceAmount`,
+						model.ProductVariantChannelListingTableColumns.PriceAmount,
+						model.ChannelTableColumns.ID,
+						model.ChannelTableColumns.Slug,
+						model.ProductVariantChannelListingTableColumns.PriceAmount,
+					),
+					channelIdOrSlug,
+					channelIdOrSlug,
+				).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariants, model.ProductTableColumns.ID, model.ProductVariantTableColumns.ProductID)).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductVariantChannelListings, model.ProductVariantTableColumns.ID, model.ProductVariantChannelListingTableColumns.VariantID)).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.ProductVariantChannelListingTableColumns.ChannelID)).
+				GroupBy(model.ProductTableColumns.ID).
 				OrderBy("MinVariantsPriceAmount " + string(input.SortBy.Direction))
 
-		case model.ProductOrderFieldMinimalPrice:
+		case model_helper.ProductOrderFieldMinimalPrice:
 			query = query.
-				Column(`MIN(
-				ProductChannelListings.DiscountedPriceAmount
-			) FILTER (
-				WHERE Channels.Slug = ? OR Channels.Id = ?
-			) AS DiscountedPriceAmount`, channelIdOrSlug, channelIdOrSlug).
-				LeftJoin(model.ProductChannelListingTableName + " ON ProductChannelListings.ProductID = Products.Id").
-				LeftJoin(model.ChannelTableName + " ON Channels.Id = ProductChannelListings.ChannelID").
+				Column(
+					fmt.Sprintf(
+						`MIN (%s) FILTER (
+							WHERE %s = ? OR %s = ?
+						) AS DiscountedPriceAmount`,
+						model.ProductChannelListingTableColumns.DiscountedPriceAmount,
+						model.ChannelTableColumns.ID,
+						model.ChannelTableColumns.Slug,
+					),
+					channelIdOrSlug,
+					channelIdOrSlug,
+				).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductChannelListings, model.ProductTableColumns.ID, model.ProductChannelListingTableColumns.ProductID)).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Channels, model.ChannelTableColumns.ID, model.ProductChannelListingTableColumns.ChannelID)).
 				OrderBy("DiscountedPriceAmount " + string(input.SortBy.Direction)).
-				GroupBy("Products.Id")
+				GroupBy(model.ProductTableColumns.ID)
 
-		case model.ProductOrderFieldPublished:
+		case model_helper.ProductOrderFieldPublished:
 			query = query.
-				Column(`(
-					SELECT PC.IsPublished
-					FROM ProductChannelListings PC
-					INNER JOIN Channels C ON C.Id = PC.ChannelID
-					WHERE (
-						(C.Slug = ? OR C.Id = ?)
-						AND PC.ProductID = Products.Id
-					)
-					ORDER BY PC.Id ASC
-					LIMIT 1
-				) AS IsPublished`, channelIdOrSlug, channelIdOrSlug).
+				Column(
+					fmt.Sprintf(
+						`(
+							SELECT %[1]s
+							FROM %[2]s
+							INNER JOIN %[3]s ON %[4]s = %[5]s
+							WHERE (
+								(%[6]s = ? OR %[7]s = ?)
+								AND %[8]s = %[9]s
+							)
+							ORDER BY %[10]s ASC
+							LIMIT 1
+						) AS IsPublished`,
+						model.ProductChannelListingTableColumns.IsPublished, // 1
+						model.TableNames.ProductChannelListings,             // 2
+						model.TableNames.Channels,                           // 3
+						model.ChannelTableColumns.ID,                        // 4
+						model.ProductChannelListingTableColumns.ChannelID,   // 5
+						model.ChannelTableColumns.ID,                        // 6
+						model.ChannelTableColumns.Slug,                      // 7
+						model.ProductChannelListingTableColumns.ProductID,   // 8
+						model.ProductTableColumns.ID,                        // 9
+						model.ProductChannelListingTableColumns.ID,          // 10
+					),
+					channelIdOrSlug,
+					channelIdOrSlug,
+				).
 				OrderBy("IsPublished " + string(input.SortBy.Direction))
 
-		case model.ProductOrderFieldPublicationDate:
+		case model_helper.ProductOrderFieldPublicationDate:
 			query = query.
-				Column(`(
-					SELECT PC.PublicationDate
-					FROM ProductChannelListings PC
-					INNER JOIN Channels C ON C.Id = PC.ChannelID
-					WHERE (
-						(C.Id = ? OR C.Slug = ?)
-						AND PC.ProductID = Products.Id
-					)
-					ORDER BY PC.Id ASC
-					LIMIT 1
-				) AS PublicationDate`, channelIdOrSlug, channelIdOrSlug).
+				Column(
+					fmt.Sprintf(
+						`(
+							SELECT %[1]s
+							FROM %[2]s
+							INNER JOIN %[3]s ON %[4]s = %[5]s
+							WHERE (
+								(%[6]s = ? OR %[7]s = ?)
+								AND %[8]s = %[9]s
+							)
+							ORDER BY %[10]s ASC
+							LIMIT 1
+						) AS PublicationDate`,
+						model.ProductChannelListingTableColumns.PublicationDate, // 1
+						model.TableNames.ProductChannelListings,                 // 2
+						model.TableNames.Channels,                               // 3
+						model.ChannelTableColumns.ID,                            // 4
+						model.ProductChannelListingTableColumns.ChannelID,       // 5
+						model.ChannelTableColumns.ID,                            // 6
+						model.ChannelTableColumns.Slug,                          // 7
+						model.ProductChannelListingTableColumns.ProductID,       // 8
+						model.ProductTableColumns.ID,                            // 9
+						model.ProductChannelListingTableColumns.PublicationDate, // 10
+					),
+					channelIdOrSlug,
+					channelIdOrSlug,
+				).
 				OrderBy("PublicationDate " + string(input.SortBy.Direction))
 
-		case model.ProductOrderFieldCollection:
+		case model_helper.ProductOrderFieldCollection:
 			// model.CollectionProductRelationTableName
 			query = query.
-				Column(`DENSE_RANK() OVER (
-					ORDER BY ProductCollections.SortOrder ASC NULLS LAST,
-					ProductCollections.Id
-				) AS SortOrder`).
-				LeftJoin(model.CollectionProductRelationTableName + " ON Products.Id = ProductCollections.ProductID").
+				Column(
+					fmt.Sprintf(
+						`DENSE_RANK() OVER (
+							ORDER BY %s ASC NULLS LAST,
+						) AS SortOrder,`,
+						model.ProductCollectionTableColumns.SortOrder,
+					),
+				).
+				LeftJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductCollections, model.ProductTableColumns.ID, model.ProductCollectionTableColumns.ProductID)).
 				OrderBy("SortOrder " + string(input.SortBy.Direction))
 		}
 	}

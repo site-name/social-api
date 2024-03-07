@@ -19,6 +19,20 @@ func NewCommonQueryOptions(conditions ...qm.QueryMod) CommonQueryOptions {
 	return CommonQueryOptions{Conditions: conditions}
 }
 
+var _ qm.QueryMod = (*SelectBuilder)(nil)
+
+type SelectBuilder squirrel.SelectBuilder
+
+func (s SelectBuilder) Apply(q *queries.Query) {
+	query, args, err := squirrel.SelectBuilder(s).ToSql()
+	if err != nil {
+		slog.Error("Custom SelectBuilder ToSql", slog.Err(err))
+		return
+	}
+
+	queries.AppendWhere(q, query, args...)
+}
+
 type Or squirrel.Or
 
 var _ qm.QueryMod = (*Or)(nil)
@@ -94,10 +108,10 @@ func JsonbHasNoKey(field string, key string) qm.QueryMod {
 // When applied to a query, it will produce:
 //
 //	`SELECT JSON_BUILD_OBJECT('another', 1 + 2) AS "annotations"``
-type AnnotationAggregator map[string]string
+type AnnotationAggregator map[string]any
 
 func (a AnnotationAggregator) Apply(q *queries.Query) {
-	if a == nil || len(a) == 0 {
+	if len(a) == 0 {
 		return
 	}
 
@@ -109,7 +123,7 @@ func (a AnnotationAggregator) Apply(q *queries.Query) {
 		if counter > 0 {
 			buf.WriteByte(',')
 		}
-		buf.WriteString(fmt.Sprintf("'%s', %s", key, value))
+		buf.WriteString(fmt.Sprintf("'%s', %v", key, value))
 		counter++
 	}
 

@@ -25,6 +25,7 @@ type ProductCollection struct {
 	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
 	CollectionID string `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
 	ProductID    string `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	SortOrder    int    `boil:"sort_order" json:"sort_order" toml:"sort_order" yaml:"sort_order"`
 
 	R *productCollectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productCollectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,20 +35,24 @@ var ProductCollectionColumns = struct {
 	ID           string
 	CollectionID string
 	ProductID    string
+	SortOrder    string
 }{
 	ID:           "id",
 	CollectionID: "collection_id",
 	ProductID:    "product_id",
+	SortOrder:    "sort_order",
 }
 
 var ProductCollectionTableColumns = struct {
 	ID           string
 	CollectionID string
 	ProductID    string
+	SortOrder    string
 }{
 	ID:           "product_collections.id",
 	CollectionID: "product_collections.collection_id",
 	ProductID:    "product_collections.product_id",
+	SortOrder:    "product_collections.sort_order",
 }
 
 // Generated where
@@ -56,10 +61,12 @@ var ProductCollectionWhere = struct {
 	ID           whereHelperstring
 	CollectionID whereHelperstring
 	ProductID    whereHelperstring
+	SortOrder    whereHelperint
 }{
 	ID:           whereHelperstring{field: "\"product_collections\".\"id\""},
 	CollectionID: whereHelperstring{field: "\"product_collections\".\"collection_id\""},
 	ProductID:    whereHelperstring{field: "\"product_collections\".\"product_id\""},
+	SortOrder:    whereHelperint{field: "\"product_collections\".\"sort_order\""},
 }
 
 // ProductCollectionRels is where relationship names are stored.
@@ -100,8 +107,8 @@ func (r *productCollectionR) GetProduct() *Product {
 type productCollectionL struct{}
 
 var (
-	productCollectionAllColumns            = []string{"id", "collection_id", "product_id"}
-	productCollectionColumnsWithoutDefault = []string{"id", "collection_id", "product_id"}
+	productCollectionAllColumns            = []string{"id", "collection_id", "product_id", "sort_order"}
+	productCollectionColumnsWithoutDefault = []string{"id", "collection_id", "product_id", "sort_order"}
 	productCollectionColumnsWithDefault    = []string{}
 	productCollectionPrimaryKeyColumns     = []string{"id"}
 	productCollectionGeneratedColumns      = []string{}

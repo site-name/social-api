@@ -2274,10 +2274,10 @@ func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error) {
+func (s *TimerLayerCustomerEventStore) FilterByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.CustomerEventStore.FilterByOptions(queryMods...)
+	result, err := s.CustomerEventStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3168,10 +3168,10 @@ func (s *TimerLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*
 	return result, err
 }
 
-func (s *TimerLayerJobStore) Count(mods ...qm.QueryMod) (int64, error) {
+func (s *TimerLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.Count(mods...)
+	result, err := s.JobStore.Count(mods)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3200,10 +3200,10 @@ func (s *TimerLayerJobStore) Delete(id string) (string, error) {
 	return result, err
 }
 
-func (s *TimerLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
+func (s *TimerLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.FindAll(mods...)
+	result, err := s.JobStore.FindAll(mods)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3216,10 +3216,10 @@ func (s *TimerLayerJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error
 	return result, err
 }
 
-func (s *TimerLayerJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
+func (s *TimerLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.Get(mods...)
+	result, err := s.JobStore.Get(mods)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4447,7 +4447,7 @@ func (s *TimerLayerProductVariantStore) Delete(tx boil.ContextTransactor, ids []
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, error) {
+func (s *TimerLayerProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.FilterByOption(option)
@@ -4543,7 +4543,7 @@ func (s *TimerLayerProductVariantStore) Upsert(tx boil.ContextTransactor, varian
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option model_helper.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListingSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
@@ -5342,10 +5342,10 @@ func (s *TimerLayerShopTranslationStore) Upsert(translation model.ShopTranslatio
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options model_helper.StaffNotificationRecipientFilterOptions) (model.StaffNotificationRecipientSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options...)
+	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6540,10 +6540,10 @@ func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
+func (s *TimerLayerUserAccessTokenStore) GetAll(conds model_helper.UserAccessTokenFilterOptions) (model.UserAccessTokenSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserAccessTokenStore.GetAll(conds...)
+	result, err := s.UserAccessTokenStore.GetAll(conds)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6636,10 +6636,10 @@ func (s *TimerLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 	return err
 }
 
-func (s *TimerLayerVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
+func (s *TimerLayerVatStore) FilterByOptions(options model_helper.VatFilterOptions) (model.VatSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.VatStore.FilterByOptions(options...)
+	result, err := s.VatStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
