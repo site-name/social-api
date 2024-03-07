@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
@@ -70,101 +69,42 @@ func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	return allocation, nil
 }
 
-func (as *SqlAllocationStore) FilterByOption(option model_helper.AllocationFilterOption) (model.AllocationSlice, error) {
-	// define fields to select:
-	selectFields := []string{model.AllocationTableName + ".*"}
-	if option.SelectedRelatedStock {
-		selectFields = append(selectFields, model.StockTableName+".*")
-	}
-	if option.SelectRelatedOrderLine {
-		selectFields = append(selectFields, model.OrderLineTableName+".*")
-	}
-
-	query := as.GetQueryBuilder().
-		Select(selectFields...).
-		From(model.AllocationTableName).
-		Where(option.Conditions)
-
-	if option.AnnotateStockAvailableQuantity || option.SelectedRelatedStock {
-		query = query.InnerJoin(model.StockTableName + " ON Stocks.Id = Allocations.StockID")
-
-		if option.AnnotateStockAvailableQuantity {
-			query = query.
-				Column(`Stocks.Quantity - COALESCE( SUM( Allocations.QuantityAllocated ), 0 ) AS StockAvailableQuantity`).
-				LeftJoin(model.AllocationTableName+" ON Allocations.StockID = Stocks.Id").
-				GroupBy("Allocations.Id", "Stocks.Quantity")
-		}
-	}
-
-	// parse options
-	if option.SelectRelatedOrderLine ||
-		option.OrderLineOrderID != nil {
-		query = query.InnerJoin(model.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
-		if option.OrderLineOrderID != nil {
-			query = query.Where(option.OrderLineOrderID)
-		}
-	}
-
-	if option.LockForUpdate && option.Transaction != nil {
-		suf := "FOR UPDATE"
-		if option.ForUpdateOf != "" {
-			suf += " OF " + option.ForUpdateOf
-		}
-		query = query.Suffix(suf)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
-	}
-
-	runner := as.GetReplica()
-	if option.Transaction != nil {
-		runner = option.Transaction
-	}
-
-	rows, err := runner.Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find allocations with given option")
-	}
-	defer rows.Close()
-
-	var returnAllocations model.Allocations
-
-	for rows.Next() {
-		var (
-			allocation model.Allocation
-			orderLine  model.OrderLine
-			stock      model.Stock
-			scanFields = as.ScanFields(&allocation)
+func (as *SqlAllocationStore) commonQueryBuilder(options model_helper.AllocationFilterOption) []qm.QueryMod {
+	conds := options.Conditions
+	if options.OrderLineOrderID != nil {
+		conds = append(
+			conds,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.OrderLines, model.AllocationTableColumns.OrderLineID, model.OrderLineTableColumns.ID)),
+			options.OrderLineOrderID,
 		)
-
-		// NOTE: scan order must be identical to select order (like above)
-		if option.SelectedRelatedStock {
-			scanFields = append(scanFields, as.Stock().ScanFields(&stock)...)
-		}
-		if option.SelectRelatedOrderLine {
-			scanFields = append(scanFields, as.OrderLine().ScanFields(&orderLine)...)
-		}
-		if option.AnnotateStockAvailableQuantity {
-			scanFields = append(scanFields, &allocation.StockAvailableQuantity)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of allocation")
-		}
-
-		if option.SelectRelatedOrderLine {
-			allocation.OrderLine = &orderLine
-		}
-		if option.SelectedRelatedStock {
-			allocation.Stock = &stock
-		}
-		returnAllocations = append(returnAllocations, &allocation)
+	}
+	for _, load := range options.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
 
-	return returnAllocations, nil
+	// TODO: check if joining conditions below is valid
+
+	if options.AnnotateStockAvailableQuantity {
+		var annotations = model_helper.AnnotationAggregator{
+			model_helper.AllocationAnnotationKeys.AvailableQuantity: fmt.Sprintf("%s - COALESCE( SUM(%s), 0 )", model.StockTableColumns.Quantity, model.AllocationTableColumns.QuantityAllocated),
+		}
+
+		conds = append(
+			conds,
+			qm.Select(model.TableNames.Allocations+".*"), // NOTE: this is needed
+			annotations,
+			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Stocks, model.AllocationTableColumns.StockID, model.StockTableColumns.ID)),
+			qm.LeftOuterJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Allocations, model.AllocationTableColumns.StockID, model.StockTableColumns.ID)),
+			qm.GroupBy(model.AllocationTableColumns.ID+","+model.StockTableColumns.Quantity),
+		)
+	}
+
+	return conds
+}
+
+func (as *SqlAllocationStore) FilterByOption(option model_helper.AllocationFilterOption) (model.AllocationSlice, error) {
+	conds := as.commonQueryBuilder(option)
+	return model.Allocations(conds...).All(as.GetReplica())
 }
 
 func (as *SqlAllocationStore) Delete(transaction boil.ContextTransactor, ids []string) error {

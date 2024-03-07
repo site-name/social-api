@@ -3491,7 +3491,7 @@ func (s *OpenTracingLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
+func (s *OpenTracingLayerJobStore) Get(id string) (*model.Job, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -3500,7 +3500,7 @@ func (s *OpenTracingLayerJobStore) Get(mods model_helper.JobFilterOptions) (*mod
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.Get(mods)
+	result, err := s.JobStore.Get(id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6058,7 +6058,7 @@ func (s *OpenTracingLayerStockStore) Delete(tx boil.ContextTransactor, ids []str
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
+func (s *OpenTracingLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -6067,13 +6067,13 @@ func (s *OpenTracingLayerStockStore) FilterByOption(options model_helper.StockFi
 	}()
 
 	defer span.Finish()
-	result, resultVar1, err := s.StockStore.FilterByOption(options)
+	result, err := s.StockStore.FilterByOption(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *OpenTracingLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {

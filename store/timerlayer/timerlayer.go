@@ -3216,10 +3216,10 @@ func (s *TimerLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.
 	return result, err
 }
 
-func (s *TimerLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
+func (s *TimerLayerJobStore) Get(id string) (*model.Job, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.Get(mods)
+	result, err := s.JobStore.Get(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5518,10 +5518,10 @@ func (s *TimerLayerStockStore) Delete(tx boil.ContextTransactor, ids []string) (
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.StockStore.FilterByOption(options)
+	result, err := s.StockStore.FilterByOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5531,7 +5531,7 @@ func (s *TimerLayerStockStore) FilterByOption(options model_helper.StockFilterOp
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterByOption", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *TimerLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {

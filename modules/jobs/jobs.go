@@ -35,7 +35,7 @@ func (srv *JobServer) CreateJob(jobType model.JobType, jobData map[string]any) (
 
 // Get job with given id
 func (srv *JobServer) GetJob(id string) (*model.Job, *model_helper.AppError) {
-	job, err := srv.Store.Job().Get(model.JobWhere.ID.EQ(id))
+	job, err := srv.Store.Job().Get(id)
 	if err != nil {
 		var nfErr *store.ErrNotFound
 		switch {

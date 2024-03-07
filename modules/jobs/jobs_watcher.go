@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -66,7 +67,11 @@ func (watcher *Watcher) Stop() {
 
 // sitting there waiting for new
 func (watcher *Watcher) PollAndNotify() {
-	jobs, err := watcher.srv.Store.Job().FindAll(model.JobWhere.Status.EQ(model.JobStatusPending))
+	jobs, err := watcher.srv.Store.Job().FindAll(model_helper.JobFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.JobWhere.Status.EQ(model.JobStatusPending),
+		),
+	})
 	if err != nil {
 		slog.Error("Error occured getting all pending statuses.", slog.Err(err))
 		return

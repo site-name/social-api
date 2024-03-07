@@ -5,7 +5,7 @@ go 1.21
 require (
 	code.sajari.com/docconv v1.3.5
 	github.com/99designs/gqlgen v0.17.34
-	github.com/Masterminds/squirrel v1.5.4
+	github.com/AllenDang/giu v0.7.0
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
 	github.com/aws/aws-sdk-go v1.44.289
 	github.com/blang/semver v3.5.1+incompatible
@@ -70,11 +70,11 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.15.0
 	github.com/volatiletech/strmangle v0.0.6
 	golang.org/x/crypto v0.14.0
-	golang.org/x/image v0.8.0
-	golang.org/x/net v0.11.0
+	golang.org/x/image v0.12.0
+	golang.org/x/net v0.17.0
 	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.13.0
-	golang.org/x/tools v0.10.0
+	golang.org/x/tools v0.12.0
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/olivere/elastic.v6 v6.2.37
 	gopkg.in/yaml.v2 v2.4.0
@@ -83,13 +83,24 @@ require (
 )
 
 require (
+	fyne.io/fyne/v2 v2.4.4 // indirect
+	github.com/AllenDang/go-findfont v0.0.0-20200702051237-9f180485aeb8 // indirect
+	github.com/AllenDang/imgui-go v1.12.1-0.20221124025851-59b862ca5a0c // indirect
+	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
+	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/mazznoer/csscolorparser v0.1.3 // indirect
+	github.com/napsy/go-css v0.0.0-20221107082635-4ed403047a64 // indirect
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
+	github.com/sahilm/fuzzy v0.1.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
+	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.36.3 // indirect
 	modernc.org/ccgo/v3 v3.16.9 // indirect
@@ -215,7 +226,7 @@ require (
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
-	golang.org/x/mod v0.11.0 // indirect
+	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	google.golang.org/grpc v1.53.0 // indirect

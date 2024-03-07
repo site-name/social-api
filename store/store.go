@@ -330,7 +330,7 @@ type (
 		FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
 		FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
 		ChangeQuantity(stockID string, quantity int) error                                                                             // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error)                                               // FilterByOption finds and returns a slice of stocks that satisfy given option
 		BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error)                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
 		FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error)                 // FilterForChannel finds and returns stocks that satisfy given options
 	}
@@ -722,7 +722,7 @@ type JobStore interface {
 	UpdateOptimistically(job model.Job, currentStatus model.JobStatus) (bool, error)
 	UpdateStatus(id string, status model.JobStatus) (*model.Job, error)
 	UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) // update job status from current status to new status
-	Get(mods model_helper.JobFilterOptions) (*model.Job, error)
+	Get(id string) (*model.Job, error)
 	FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error)
 	Count(mods model_helper.JobFilterOptions) (int64, error)
 	Delete(id string) (string, error)

@@ -90,25 +90,25 @@ func (_m *JobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice,
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: mods
-func (_m *JobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
-	ret := _m.Called(mods)
+// Get provides a mock function with given fields: id
+func (_m *JobStore) Get(id string) (*model.Job, error) {
+	ret := _m.Called(id)
 
 	var r0 *model.Job
 	var r1 error
-	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) (*model.Job, error)); ok {
-		return rf(mods)
+	if rf, ok := ret.Get(0).(func(string) (*model.Job, error)); ok {
+		return rf(id)
 	}
-	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) *model.Job); ok {
-		r0 = rf(mods)
+	if rf, ok := ret.Get(0).(func(string) *model.Job); ok {
+		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.Job)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(model_helper.JobFilterOptions) error); ok {
-		r1 = rf(mods)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}

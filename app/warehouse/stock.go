@@ -93,7 +93,7 @@ func (a *ServiceWarehouse) GetStockById(stockID string) (*model.Stock, *model_he
 }
 
 // FilterStocksForChannel returns a slice of stocks that filtered using given options
-func (a *ServiceWarehouse) FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model_helper.AppError) {
+func (a *ServiceWarehouse) FilterStocksForChannel(option model_helper.StockFilterForChannelOption) ([]*model.Stock, *model_helper.AppError) {
 	_, stocks, err := a.srv.Store.Stock().FilterForChannel(option)
 
 	if err != nil {

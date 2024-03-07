@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gosimple/slug"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -36,7 +37,15 @@ func AllocationIsValid(allocation model.Allocation) *AppError {
 
 type AllocationFilterOption struct {
 	CommonQueryOptions
-	OrderLineOrderID qm.QueryMod
+	OrderLineOrderID               qm.QueryMod
+	Preloads                       []string
+	AnnotateStockAvailableQuantity bool
+}
+
+var AllocationAnnotationKeys = struct {
+	AvailableQuantity string
+}{
+	AvailableQuantity: "available_quantity",
 }
 
 func WarehousePreSave(w *model.Warehouse) {
@@ -115,9 +124,6 @@ type StockFilterOption struct {
 	Warehouse_ShippingZone_countries qm.QueryMod // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
 	Warehouse_ShippingZone_ChannelID qm.QueryMod // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... INNER JOIN ShippingZoneChannels WHERE ShippingZoneChannels.ChannelID ...
 
-	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
-	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
-
 	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 
 	// NOTE: If Set, store use OR ILIKEs to check this value against:
@@ -130,10 +136,12 @@ type StockFilterOption struct {
 	//
 	// company name of relevent address of relevent warehouse of this stock (INNER JOIN Warehouses ON ... INNER JOIN Addresses ON ... WHERE Addresses.CompanyName ...)
 	Search string
+
+	Preloads []string
 }
 
 type StockFilterForChannelOption struct {
-	CommonQueryOptions
+	Conditions                  squirrel.Sqlizer
 	ChannelID                   string
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 
@@ -145,4 +153,10 @@ type PreorderAllocationFilterOption struct {
 
 	SelectRelated_OrderLine       bool // INNER JOIN OrderLines ON ...
 	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...
+}
+
+var StockAnnotationKeys = struct {
+	AvailableQuantity string
+}{
+	AvailableQuantity: "available_quantity",
 }

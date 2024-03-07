@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS allocations (
   created_at bigint NOT NULL,
   order_line_id varchar(36) NOT NULL,
   stock_id varchar(36) NOT NULL,
-  quantity_allocated integer NOT NULL
+  quantity_allocated integer NOT NULL,
+
+  annotations jsonb -- this is a JSON object that can store any additional data you want
 );
 
 ALTER TABLE ONLY allocations

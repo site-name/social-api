@@ -3765,11 +3765,11 @@ func (s *RetryLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.
 
 }
 
-func (s *RetryLayerJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
+func (s *RetryLayerJobStore) Get(id string) (*model.Job, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.Get(mods)
+		result, err := s.JobStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
@@ -6575,21 +6575,21 @@ func (s *RetryLayerStockStore) Delete(tx boil.ContextTransactor, ids []string) (
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (int64, model.StockSlice, error) {
+func (s *RetryLayerStockStore) FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.StockStore.FilterByOption(options)
+		result, err := s.StockStore.FilterByOption(options)
 		if err == nil {
-			return result, resultVar1, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, err
+			return result, err
 		}
 	}
 

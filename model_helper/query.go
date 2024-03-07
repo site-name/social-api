@@ -19,19 +19,19 @@ func NewCommonQueryOptions(conditions ...qm.QueryMod) CommonQueryOptions {
 	return CommonQueryOptions{Conditions: conditions}
 }
 
-var _ qm.QueryMod = (*SelectBuilder)(nil)
+// var _ qm.QueryMod = (*SelectBuilder)(nil)
 
-type SelectBuilder squirrel.SelectBuilder
+// type SelectBuilder squirrel.SelectBuilder
 
-func (s SelectBuilder) Apply(q *queries.Query) {
-	query, args, err := squirrel.SelectBuilder(s).ToSql()
-	if err != nil {
-		slog.Error("Custom SelectBuilder ToSql", slog.Err(err))
-		return
-	}
+// func (s SelectBuilder) Apply(q *queries.Query) {
+// 	query, args, err := squirrel.SelectBuilder(s).ToSql()
+// 	if err != nil {
+// 		slog.Error("Custom SelectBuilder ToSql", slog.Err(err))
+// 		return
+// 	}
 
-	queries.AppendWhere(q, query, args...)
-}
+// 	queries.AppendWhere(q, query, args...)
+// }
 
 type Or squirrel.Or
 

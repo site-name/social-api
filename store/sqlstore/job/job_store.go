@@ -86,8 +86,8 @@ func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model
 	return true, nil
 }
 
-func (jss SqlJobStore) Get(mods model_helper.JobFilterOptions) (*model.Job, error) {
-	job, err := model.Jobs(mods.Conditions...).One(jss.GetReplica())
+func (jss SqlJobStore) Get(id string) (*model.Job, error) {
+	job, err := model.FindJob(jss.GetReplica(), id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.TableNames.Jobs, "mods")
