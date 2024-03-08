@@ -718,9 +718,8 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		return query
 	}
 
-	channelQuery, _, _ := ps.Stock().FilterForChannel(model_helper.StockFilterForChannelOption{
-		ChannelID:       channelIdOrSlug,
-		ReturnQueryOnly: true,
+	channelQuery := ps.Stock().GetFilterForChannelQuery(model_helper.StockFilterForChannelOption{
+		ChannelID: channelIdOrSlug,
 	})
 
 	productVariantIDsQuery := ps.GetQueryBuilder(squirrel.Question).

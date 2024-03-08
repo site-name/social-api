@@ -3,10 +3,8 @@ package shipping
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/samber/lo"
+	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
@@ -65,167 +63,130 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, er
 	return method, nil
 }
 
-func (s *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
-	selectFields := []string{
-		model.ShippingMethodTableName + ".*",
-		model.ShippingZoneTableName + ".*",
-		model.ShippingMethodPostalCodeRuleTableName + ".*",
-	}
-
-	priceAmount := price.Amount.InexactFloat64()
-
-	params := map[string]interface{}{
-		"ChannelID":               channelID,
-		"Currency":                price.Currency,
-		"CountryCode":             "%" + countryCode + "%",
-		"MinimumOrderPriceAmount": priceAmount,
-		"MaximumOrderPriceAmount": priceAmount,
-		"MinimumOrderWeight":      weight.Amount,
-		"MaximumOrderWeight":      weight.Amount,
-		"WeightBasedShippingType": model.WEIGHT_BASED,
-		"PriceBasedShipType":      model.PRICE_BASED,
-	}
-
-	// check if productIDs is provided:
-	var forExcludedProductQuery string
+func (ss *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
+	var forExcludedProductQuery squirrel.Sqlizer = squirrel.Expr("(1=1)")
 	if len(productIDs) > 0 {
-		forExcludedProductQuery = `AND NOT (
-			EXISTS(
-				SELECT
-					(1) AS "a"
-				FROM
-					ShippingMethodExcludedProducts
-				WHERE (
-					ShippingMethodExcludedProducts.ProductID IN @ExcludedProductIDs
-					AND ShippingMethodExcludedProducts.ShippingMethodID = ShippingMethods.Id
-				)
-				LIMIT 1
-			)
-		)`
-		// update params also
-		params["ExcludedProductIDs"] = productIDs
+		forExcludedProductQuery = ss.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			From(model.TableNames.ShippingMethodExcludedProducts).
+			Where(squirrel.Eq{
+				model.ShippingMethodExcludedProductTableColumns.ProductID:        productIDs,
+				model.ShippingMethodExcludedProductTableColumns.ShippingMethodID: model.ShippingMethodTableColumns.ID,
+			}).
+			Limit(1).
+			Prefix("NOT EXISTS (").
+			Suffix(")")
 	}
 
-	query := `SELECT ` + strings.Join(selectFields, ",") + `,
-	(
-		SELECT
-			ShippingMethodChannelListings.PriceAmount
-		FROM
-			ShippingMethodChannelListings
-		WHERE (
-			ShippingMethodChannelListings.ChannelID = @ChannelID
-			AND ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
-		)
-	) AS PriceAmount
-	FROM
-		ShippingMethods
-	INNER JOIN ShippingMethodChannelListings ON (
-		ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
-	)
-	INNER JOIN ShippingZones ON (
-		ShippingZones.Id = ShippingMethods.ShippingZoneID
-	)
-	INNER JOIN ShippingZoneChannels ON (
-		ShippingZones.Id = ShippingZoneChannels.ShippingZoneID
-	)
-	INNER JOIN ShippingMethodPostalCodeRules ON (
-		ShippingMethodPostalCodeRules.ShippingMethodID = ShippingMethods.Id
-	)
-	WHERE
-		(
-			(
-				ShippingMethodChannelListings.ChannelID = @ChannelID
-				AND ShippingMethodChannelListings.Currency = @Currency
-				AND ShippingZoneChannels.ChannelID = @ChannelID
-				AND ShippingZones.Countries::text LIKE @CountryCode ` + forExcludedProductQuery + `
-				AND ShippingMethods.Type = @PriceBasedShipType
-				AND ShippingMethods.Id IN (
-				SELECT
-					ShippingMethodID
-				FROM
-					ShippingMethodChannelListings
-				WHERE (
-					ShippingMethodChannelListings.ChannelID = @ChannelID
-					AND ShippingMethodChannelListings.ShippingMethodID IN (
-						SELECT
-							Id
-						FROM
-							ShippingMethods
-						INNER JOIN ShippingMethodChannelListings ON (
-							ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
-						)
-						INNER JOIN ShippingZones ON (
-							ShippingMethods.ShippingZoneID = ShippingZones.Id
-						)
-						INNER JOIN ShippingZoneChannels ON (
-							ShippingZoneChannels.ShippingZoneID = ShippingZones.Id
-						)
-						WHERE (
-							ShippingMethodChannelListings.ChannelID = @ChannelID
-							AND ShippingMethodChannelListings.Currency = @Currency
-							AND ShippingZoneChannels.ChannelID = @ChannelID
-							AND ShippingZones.Countries::text LIKE @CountryCode
-							AND ShippingMethods.Type = @PriceBasedShipType ` + forExcludedProductQuery + `
-						)
+	countryCodeExpr := "%" + countryCode + "%"
+
+	shippingMethodIdSelectQuery := ss.
+		GetQueryBuilder(squirrel.Question).
+		Select(model.ShippingMethodTableColumns.ID).
+		From(model.TableNames.ShippingMethods).
+		InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingMethodChannelListings, model.ShippingMethodChannelListingTableColumns.ShippingMethodID, model.ShippingMethodTableColumns.ID)).
+		InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZones, model.ShippingZoneTableColumns.ID, model.ShippingMethodTableColumns.ShippingZoneID)).
+		InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)).
+		Where(squirrel.Eq{
+			model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
+			model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+			model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
+			model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypePrice,
+		}).
+		Where(squirrel.ILike{
+			model.ShippingZoneTableColumns.Countries: countryCodeExpr,
+		}).
+		Where(forExcludedProductQuery)
+
+	shippingMethodIdSelectQuery = ss.
+		GetQueryBuilder(squirrel.Question).
+		Select(model.ShippingMethodChannelListingTableColumns.ShippingMethodID).
+		From(model.TableNames.ShippingMethodChannelListings).
+		Where(squirrel.Eq{
+			model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
+		}).
+		Where(squirrel.Expr(
+			model.ShippingMethodChannelListingTableColumns.ShippingMethodID+" IN ?",
+			shippingMethodIdSelectQuery,
+		)).
+		Where(squirrel.LtOrEq{
+			model.ShippingMethodChannelListingTableColumns.MinimumOrderPriceAmount: price.Amount,
+		}).
+		Where(squirrel.Or{
+			squirrel.Eq{
+				model.ShippingMethodChannelListingTableColumns.MaximumOrderPriceAmount: nil,
+			},
+			squirrel.GtOrEq{
+				model.ShippingMethodChannelListingTableColumns.MaximumOrderPriceAmount: price.Amount,
+			},
+		})
+
+	queryMods := []qm.QueryMod{
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingMethodChannelListings, model.ShippingMethodChannelListingTableColumns.ShippingMethodID, model.ShippingMethodTableColumns.ID)),
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZones, model.ShippingZoneTableColumns.ID, model.ShippingMethodTableColumns.ShippingZoneID)),
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)),
+		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingMethodPostalCodeRules, model.ShippingMethodPostalCodeRuleTableColumns.ShippingMethodID, model.ShippingMethodTableColumns.ID)),
+		qm.Select(model.TableNames.ShippingMethods + ".*"),
+		qm.Select(
+			fmt.Sprintf(
+				`(
+					SELECT
+						%[1]s
+					FROM
+						%[2]s
+					WHERE (
+						%[3]s = '%[4]s'
+						AND %[5]s = %[6]s
 					)
-					AND ShippingMethodChannelListings.MinimumOrderPriceAmount <= @MinimumOrderPriceAmount
-					AND (
-						ShippingMethodChannelListings.MaximumOrderPriceAmount IS NULL
-						OR ShippingMethodChannelListings.MaximumOrderPriceAmount >= @MaximumOrderPriceAmount
-					)
-				)
-			)
-			OR (
-				ShippingMethodChannelListings.ChannelID = @ChannelID
-				AND ShippingMethodChannelListings.Currency = @Currency
-				AND ShippingZoneChannels.ChannelID = @ChannelID
-				AND ShippingZones.Countries::text LIKE @CountryCode ` + forExcludedProductQuery + `
-				AND ShippingMethods.Type = @WeightBasedShippingType
-				AND (
-					ShippingMethods.MinimumOrderWeight <= @MinimumOrderWeight
-					OR ShippingMethods.MinimumOrderWeight IS NULL
-				)
-				AND (
-					ShippingMethods.MaximumOrderWeight >= @MaximumOrderWeight
-					OR ShippingMethods.MaximumOrderWeight IS NULL
-				)
-			)
-		)
-	ORDER BY PriceAmount ASC`
-
-	// use Select() here since it can inteprets map[string]interface{} value mapping
-	// Query() cannot understand.
-	rows, err := s.GetReplica().Raw(query, params).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds shipping methods for given conditions")
-	}
-	defer rows.Close()
-
-	var shippingMethodMeetMap = map[string]*model.ShippingMethod{}
-
-	for rows.Next() {
-		var (
-			shippingMethod model.ShippingMethod
-			shippingZone   model.ShippingZone
-			postalCodeRule model.ShippingMethodPostalCodeRule
-			scanFields     = s.ScanFields(&shippingMethod)
-		)
-		scanFields = append(scanFields, s.ShippingZone().ScanFields(&shippingZone)...)
-		scanFields = append(scanFields, s.ShippingMethodPostalCodeRule().ScanFields(&postalCodeRule))
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan row")
-		}
-
-		if _, exist := shippingMethodMeetMap[shippingMethod.Id]; !exist {
-			shippingMethodMeetMap[shippingMethod.Id] = &shippingMethod
-		}
-		shippingMethodMeetMap[shippingMethod.Id].AppendShippingMethodPostalCodeRule(&postalCodeRule)
-		shippingMethodMeetMap[shippingMethod.Id].SetShippingZone(&shippingZone)
+				) AS PriceAmount`,
+				model.ShippingMethodChannelListingTableColumns.PriceAmount, // 1
+				model.TableNames.ShippingMethodChannelListings,             // 2
+				model.ShippingMethodChannelListingTableColumns.ChannelID,   // 3
+				channelID, // 4
+				model.ShippingMethodChannelListingTableColumns.ShippingMethodID, // 5
+				model.ShippingMethodTableColumns.ID,                             // 6
+			),
+		),
+		qm.Load(model.ShippingMethodRels.ShippingZone),
+		qm.Load(model.ShippingMethodRels.ShippingMethodPostalCodeRules),
+		qm.OrderBy("PriceAmount ASC"),
+		model_helper.Or{
+			squirrel.And{
+				squirrel.Eq{
+					model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
+					model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+					model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
+					model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypePrice,
+				},
+				squirrel.ILike{model.ShippingZoneTableColumns.Countries: countryCodeExpr},
+				squirrel.Expr(model.ShippingMethodTableColumns.ID+" IN ?", shippingMethodIdSelectQuery),
+			},
+			//
+			squirrel.And{
+				squirrel.Eq{
+					model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
+					model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+					model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
+					model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypeWeight,
+				},
+				squirrel.ILike{
+					model.ShippingZoneTableColumns.Countries: countryCodeExpr,
+				},
+				squirrel.Or{
+					squirrel.LtOrEq{model.ShippingMethodTableColumns.MinimumOrderWeight: weight.Amount},
+					squirrel.Eq{model.ShippingMethodTableColumns.MinimumOrderWeight: nil},
+				},
+				squirrel.Or{
+					squirrel.GtOrEq{model.ShippingMethodTableColumns.MaximumOrderWeight: weight.Amount},
+					squirrel.Eq{model.ShippingMethodTableColumns.MaximumOrderWeight: nil},
+				},
+				forExcludedProductQuery,
+			},
+		},
 	}
 
-	return lo.Values(shippingMethodMeetMap), nil
+	return model.ShippingMethods(queryMods...).All(ss.GetReplica())
 }
 
 func (ss *SqlShippingMethodStore) commonQueryBuilder(options model_helper.ShippingMethodFilterOption) []qm.QueryMod {

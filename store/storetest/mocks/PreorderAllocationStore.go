@@ -18,32 +18,6 @@ type PreorderAllocationStore struct {
 	mock.Mock
 }
 
-// BulkCreate provides a mock function with given fields: tx, preorderAllocations
-func (_m *PreorderAllocationStore) BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
-	ret := _m.Called(tx, preorderAllocations)
-
-	var r0 model.PreorderAllocationSlice
-	var r1 error
-	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error)); ok {
-		return rf(tx, preorderAllocations)
-	}
-	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.PreorderAllocationSlice) model.PreorderAllocationSlice); ok {
-		r0 = rf(tx, preorderAllocations)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.PreorderAllocationSlice)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, model.PreorderAllocationSlice) error); ok {
-		r1 = rf(tx, preorderAllocations)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Delete provides a mock function with given fields: tx, ids
 func (_m *PreorderAllocationStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	ret := _m.Called(tx, ids)
@@ -77,6 +51,32 @@ func (_m *PreorderAllocationStore) FilterByOption(options model_helper.PreorderA
 
 	if rf, ok := ret.Get(1).(func(model_helper.PreorderAllocationFilterOption) error); ok {
 		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Upsert provides a mock function with given fields: tx, preorderAllocations
+func (_m *PreorderAllocationStore) Upsert(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
+	ret := _m.Called(tx, preorderAllocations)
+
+	var r0 model.PreorderAllocationSlice
+	var r1 error
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error)); ok {
+		return rf(tx, preorderAllocations)
+	}
+	if rf, ok := ret.Get(0).(func(boil.ContextTransactor, model.PreorderAllocationSlice) model.PreorderAllocationSlice); ok {
+		r0 = rf(tx, preorderAllocations)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(model.PreorderAllocationSlice)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(boil.ContextTransactor, model.PreorderAllocationSlice) error); ok {
+		r1 = rf(tx, preorderAllocations)
 	} else {
 		r1 = ret.Error(1)
 	}

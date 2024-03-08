@@ -136,32 +136,6 @@ func (_m *WarehouseStore) FilterByOprion(option model_helper.WarehouseFilterOpti
 	return r0, r1
 }
 
-// GetByOption provides a mock function with given fields: option
-func (_m *WarehouseStore) GetByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, error) {
-	ret := _m.Called(option)
-
-	var r0 *model.Warehouse
-	var r1 error
-	if rf, ok := ret.Get(0).(func(model_helper.WarehouseFilterOption) (*model.Warehouse, error)); ok {
-		return rf(option)
-	}
-	if rf, ok := ret.Get(0).(func(model_helper.WarehouseFilterOption) *model.Warehouse); ok {
-		r0 = rf(option)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Warehouse)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(model_helper.WarehouseFilterOption) error); ok {
-		r1 = rf(option)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Upsert provides a mock function with given fields: _a0
 func (_m *WarehouseStore) Upsert(_a0 model.Warehouse) (*model.Warehouse, error) {
 	ret := _m.Called(_a0)

@@ -12,7 +12,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
 )
 
 type SqlStockStore struct {
@@ -23,18 +23,40 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks model.StockSlice) (model.StockSlice, error) {
+func (ss *SqlStockStore) Upsert(transaction boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
 	if transaction == nil {
 		transaction = ss.GetMaster()
 	}
 
 	for _, stock := range stocks {
-		err := transaction.Save(stock).Error
+		if stock == nil {
+			continue
+		}
+
+		isSaving := stock.ID == ""
+		if isSaving {
+			model_helper.StockPreSave(stock)
+		}
+
+		if err := model_helper.StockIsValid(*stock); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = stock.Insert(transaction, boil.Infer())
+		} else {
+			_, err = stock.Update(transaction, boil.Blacklist(
+				model.StockColumns.CreatedAt,
+				model.StockColumns.WarehouseID,
+			))
+		}
+
 		if err != nil {
-			if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "warehouseid_productvariantid_key"}) {
-				return nil, store.NewErrInvalidInput(model.StockTableName, "WarehouseID/ProductVariantID", "duplicate")
+			if ss.IsUniqueConstraintError(err, []string{"stocks_warehouse_id_product_variant_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.Stocks, "WarehouseID/ProductVariantID", "duplicate")
 			}
-			return nil, errors.Wrapf(err, "failed to upsert a stock with id=%s", stock.Id)
+			return nil, err
 		}
 	}
 
@@ -53,7 +75,7 @@ func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	return stock, nil
 }
 
-func (ss *SqlStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
+func (ss *SqlStockStore) commonFilterForChannelQuery(options model_helper.StockFilterForChannelOption) squirrel.SelectBuilder {
 	channelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
@@ -76,7 +98,7 @@ func (ss *SqlStockStore) FilterForChannel(options model_helper.StockFilterForCha
 		Limit(1).
 		Suffix(")")
 
-	warehouseShippingZoneQuery := ss.GetQueryBuilder(squirrel.Question).
+	return ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(model.TableNames.WarehouseShippingZones).
@@ -86,68 +108,33 @@ func (ss *SqlStockStore) FilterForChannel(options model_helper.StockFilterForCha
 		}).
 		Limit(1).
 		Suffix(")")
+}
 
-	// ---
-	if options.ReturnQueryOnly {
-		return ss.GetQueryBuilder().
-			Select(model.TableNames.Stocks).
-			From(model.TableNames.Stocks).
-			Where(warehouseShippingZoneQuery).
-			Where(options.Conditions), nil, nil
-	}
+func (ss *SqlStockStore) GetFilterForChannelQuery(options model_helper.StockFilterForChannelOption) squirrel.SelectBuilder {
+	warehouseShippingZoneQuery := ss.commonFilterForChannelQuery(options)
 
-	query := ss.GetQueryBuilder().
-		Select(model.TableNames.Stocks).
+	return ss.GetQueryBuilder().
+		Select(model.TableNames.Stocks + ".*").
 		From(model.TableNames.Stocks).
 		Where(warehouseShippingZoneQuery).
 		Where(options.Conditions)
+}
 
-	// parse options
-	if options.SelectRelatedProductVariant {
-		query = query.
-			InnerJoin(fmt.Sprintf("%s ON (%s = %s)", model.TableNames.ProductVariants, model.StockTableColumns.ProductVariantID, model.ProductVariantTableColumns.ID))
-	}
-
-	if options.ReturnQueryOnly {
-		return query, nil, nil
-	}
-
-	queryString, args, err := query.ToSql()
+func (ss *SqlStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (model.StockSlice, error) {
+	query, args, err := ss.commonFilterForChannelQuery(options).ToSql()
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "FilterForChannel_ToSql")
+		return nil, errors.Wrap(err, "failed to create commonFilterForChannelQuery")
 	}
 
-	rows, err := ss.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
-	}
-	defer rows.Close()
-
-	var returningStocks model.StockSlice
-
-	for rows.Next() {
-		var (
-			stock          model.Stock
-			productVariant model.ProductVariant
-			scanFields     = ss.ScanFields(&stock)
-		)
-		if options.SelectRelatedProductVariant {
-			scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, nil, errors.Wrap(err, "failed to scan a row contains stock")
-		}
-
-		if options.SelectRelatedProductVariant {
-			stock.SetProductVariant(&productVariant)
-		}
-
-		returningStocks = append(returningStocks, &stock)
+	conds := []qm.QueryMod{
+		qm.Load(model.StockRels.ProductVariant),
+		qmhelper.WhereQueryMod{
+			Clause: query,
+			Args:   args,
+		},
 	}
 
-	return nil, returningStocks, nil
+	return model.Stocks(conds...).All(ss.GetReplica())
 }
 
 func (ss *SqlStockStore) commonQueryBuilder(options model_helper.StockFilterOption) []qm.QueryMod {
@@ -220,117 +207,26 @@ func (ss *SqlStockStore) FilterByOption(options model_helper.StockFilterOption) 
 }
 
 func (ss *SqlStockStore) FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
-	warehouseIDQuery := ss.
+	warehouseIDQuery, args, err := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
-		PlaceholderFormat(squirrel.Question)
-
-	// remember the order when scan
-
-	query := ss.GetQueryBuilder().
-		Select(model.StockTableName+".*", model.WarehouseTableName+".*", model.ProductVariantTableName+".*").
-		From(model.StockTableName).
-		InnerJoin(model.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
-		InnerJoin(model.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
-		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery))
-
-	// parse option for FilterVariantStocksForCountry
-	// parse additional options
-	if options.AnnotateAvailableQuantity {
-		query = query.
-			Column("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity").
-			LeftJoin(model.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
-	}
-
-	if options.ProductVariantID != "" {
-		query = query.Where("Stocks.ProductVariantID = ?", options.ProductVariantID)
-	}
-
-	// parse option for FilterProductStocksForCountryAndChannel
-	if options.ProductID != "" {
-		query = query.
-			InnerJoin(model.ProductTableName+" ON (roducts.Id = ProductVariants.ProductID").
-			Where("Products.Id = ?", options.ProductID)
-	}
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.WarehouseIDFilter != nil {
-		query = query.Where(options.WarehouseIDFilter)
-	}
-	if options.ProductVariantIDFilter != nil {
-		query = query.Where(options.ProductVariantIDFilter)
-	}
-	if options.LockForUpdate && options.Transaction != nil {
-		suffix := "FPR UPDATE"
-		if options.ForUpdateOf != "" {
-			suffix += " OF " + options.ForUpdateOf
-		}
-
-		query = query.Suffix(suffix)
-	}
-
-	queryString, args, err := query.ToSql()
+		PlaceholderFormat(squirrel.Question).
+		Prefix("(").
+		Suffix(")").
+		ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterForCountryAndChannel_ToSql")
+		return nil, errors.Wrap(err, "failed to create warehouseIDQuery")
 	}
 
-	var returningStocks model.Stocks
-
-	runner := ss.GetReplica()
-	if options.Transaction != nil {
-		runner = options.Transaction
+	conds := []qm.QueryMod{
+		qm.Load(model.StockRels.Warehouse),
+		qm.Load(model.StockRels.ProductVariant),
+		qmhelper.WhereQueryMod{
+			Clause: model.StockTableColumns.WarehouseID + " IN " + warehouseIDQuery,
+			Args:   args,
+		},
 	}
 
-	rows, err := runner.Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find stocks with given options")
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			stock             model.Stock
-			wareHouse         model.WareHouse
-			productVariant    model.ProductVariant
-			availableQuantity int
-			scanFields        = ss.ScanFields(&stock)
-		)
-		scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
-		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
-
-		if options.AnnotateAvailableQuantity {
-			scanFields = append(scanFields, &availableQuantity)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of stock, warehouse, product variant")
-		}
-
-		stock.SetWarehouse(&wareHouse)
-		stock.SetProductVariant(&productVariant)
-
-		returningStocks = append(returningStocks, &stock)
-
-		if options.AnnotateAvailableQuantity {
-			stock.AvailableQuantity = availableQuantity
-		}
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
-	}
-
-	return returningStocks, nil
-}
-
-func (ss *SqlStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
-	return ss.FilterForCountryAndChannel(options)
-}
-
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
-	// TODO: finish me
-	return ss.FilterForCountryAndChannel(options)
+	return model.Stocks(conds...).All(ss.GetReplica())
 }
 
 func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, channelSlug string) squirrel.SelectBuilder {
@@ -352,6 +248,44 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, c
 	}
 
 	return query
+}
+
+func (ss *SqlStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterVariantStocksForCountryFilterOptions) (model.StockSlice, error) {
+	stocks, err := ss.FilterForCountryAndChannel(options.StockFilterOptionsForCountryAndChannel)
+	if err != nil {
+		return nil, err
+	}
+
+	var stocksOfGivenVariant = make(model.StockSlice, 0, len(stocks))
+	for _, stock := range stocks {
+		if stock != nil &&
+			stock.R != nil &&
+			stock.R.ProductVariant != nil &&
+			stock.R.ProductVariant.ID == options.ProductVariantID {
+			stocksOfGivenVariant = append(stocksOfGivenVariant, stock)
+		}
+	}
+
+	return stocksOfGivenVariant, nil
+}
+
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterProductStocksForCountryAndChannelFilterOptions) (model.StockSlice, error) {
+	stocks, err := ss.FilterForCountryAndChannel(options.StockFilterOptionsForCountryAndChannel)
+	if err != nil {
+		return nil, err
+	}
+
+	var resultStocks = make(model.StockSlice, 0, len(stocks))
+	for _, stock := range stocks {
+		if stock != nil &&
+			stock.R != nil &&
+			stock.R.ProductVariant != nil &&
+			stock.R.ProductVariant.ProductID == options.ProductID {
+			resultStocks = append(resultStocks, stock)
+		}
+	}
+
+	return resultStocks, nil
 }
 
 func (ss *SqlStockStore) ChangeQuantity(stockID string, quantityDelta int) error {

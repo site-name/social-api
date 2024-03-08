@@ -463,3 +463,26 @@ var ProductVariantChannelListingAnnotationKeys = struct {
 	AvailablePreorderQuantity: "available_preorder_quantity",
 	PreorderQuantityAllocated: "preorder_quantity_allocated",
 }
+
+func PreorderAllocationPreSave(p *model.PreorderAllocation) {
+	if p.ID == "" {
+		p.ID = NewId()
+	}
+}
+
+func PreorderAllocationIsValid(p model.PreorderAllocation) *AppError {
+	if !IsValidId(p.ID) {
+		return NewAppError("PreorderAllocation.IsValid", "model.preorder_allocation.is_valid.id.app_error", nil, "please provide valid id", http.StatusBadRequest)
+	}
+	if !IsValidId(p.OrderLineID) {
+		return NewAppError("PreorderAllocation.IsValid", "model.preorder_allocation.is_valid.order_line_id.app_error", nil, "please provide valid order line id", http.StatusBadRequest)
+	}
+	if !IsValidId(p.ProductVariantChannelListingID) {
+		return NewAppError("PreorderAllocation.IsValid", "model.preorder_allocation.is_valid.product_variant_channel_listing_id.app_error", nil, "please provide valid order line id", http.StatusBadRequest)
+	}
+	if p.Quantity < 0 {
+		return NewAppError("PreorderAllocation.IsValid", "model.preorder_allocation.is_valid.quantity.app_error", nil, "please provide valid quantity", http.StatusBadRequest)
+	}
+
+	return nil
+}

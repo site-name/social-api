@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
@@ -76,21 +75,6 @@ func (cs *SqlCheckoutStore) FilterByOption(option model_helper.CheckoutFilterOpt
 
 func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout model.Checkout) (model_helper.CheckoutLineInfos, error) {
 	// please refer to file checkout_store_sql.md for details
-
-	// fetch checkout lines:
-	// var checkoutLines model.CheckoutLineSlice
-
-	// err := cs.GetReplica().Order("CreateAt ASC").Find(&checkoutLines, "CheckoutID = ?", checkout.Token).Error
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", checkout.Token)
-	// }
-	// productVariantIDs := checkoutLines.VariantIDs()
-
-	// checkoutLines, err := model.CheckoutLines(model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token)).All(cs.GetReplica())
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	checkoutLines, err := model.CheckoutLines(
 		model.CheckoutLineWhere.CheckoutID.EQ(checkout.Token),
 		qm.Load(fmt.Sprintf(
@@ -107,6 +91,9 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout m
 			model.ProductVariantChannelListingRels.Channel,
 		)),
 	).All(cs.GetReplica())
+	if err != nil {
+		return nil, err
+	}
 
 	var result model_helper.CheckoutLineInfos
 
@@ -115,36 +102,21 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout m
 			continue
 		}
 
-		// var (
-		// 	productVariant *model.ProductVariant
-		// 	product        *model.Product
-		// 	collections    model.CollectionSlice
-		// 	// productCollections model.ProductCollectionSlice
-		// )
-		// productVariant := checkoutLine.R.Variant
-		// product := productVariant.R.Product
-		// collections := product.R.ProductCollections
-		// variantChannelListing := productVariant.R.VariantProductVariantChannelListings[0].R.Channel
-
 		checkoutLineInfo := &model_helper.CheckoutLineInfo{
 			Line: *checkoutLine,
-			// Variant:        *productVariant,
-			// ChannelListing: *variantChannelListing,
-			// Product:        *product,
-			// Collections:    collections,
 		}
 
 		if checkoutLine.R != nil {
 			productVariant := checkoutLine.R.Variant
 
 			if productVariant != nil {
-				checkoutLineInfo.Variant = *productVariant
+				checkoutLineInfo.Variant = *productVariant //
 
 				if productVariant.R != nil {
 					product := productVariant.R.Product
 
 					if product != nil {
-						checkoutLineInfo.Product = *product
+						checkoutLineInfo.Product = *product //
 
 						if product.R != nil {
 							productCollections := product.R.ProductCollections
@@ -158,162 +130,31 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout m
 									}
 								}
 
-								checkoutLineInfo.Collections = collections
+								checkoutLineInfo.Collections = collections //
 							}
 						}
 					}
 
-					variantChannelListing := productVariant.R.VariantProductVariantChannelListings
-				}
-			}
-		}
+					var productVariantChannelListing *model.ProductVariantChannelListing = nil
 
-	}
+					for _, listing := range productVariant.R.VariantProductVariantChannelListings {
+						if listing != nil && listing.ChannelID == checkout.ChannelID {
+							productVariantChannelListing = listing
+						}
+					}
+					if productVariantChannelListing == nil {
+						continue
+					}
 
-	// fetch product variants
-	var (
-		productIDs        []string
-		productVariantMap = map[string]*model.ProductVariant{} // productVariantMap has keys are product variant ids
-	)
-	// check if we can proceed:
-	if len(productVariantIDs) > 0 {
-		var productVariants model.ProductVariants
-		err = cs.GetReplica().Find(&productVariants, "Id = ?", productVariantIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find product variants")
-		}
-		for _, variant := range productVariants {
-			productIDs = append(productIDs, variant.ProductID)
-			productVariantMap[variant.Id] = variant
-		}
-	}
+					checkoutLineInfo.ChannelListing = *productVariantChannelListing //
 
-	// fetch products
-	var (
-		products       model.Products
-		productTypeIDs []string
-		productMap     = map[string]*model.Product{} // productMap has keys are product ids
-	)
-	// check if we can proceed:
-	if len(productIDs) > 0 {
-		err = cs.GetReplica().Find(&products, "Id IN ?", productIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to finds products")
-		}
-		for _, product := range products {
-			productTypeIDs = append(productTypeIDs, product.ProductTypeID)
-			productMap[product.Id] = product
-		}
-	}
-
-	// fetch product collections
-	var (
-		collectionXs []*struct {
-			model.Collection
-			PrefetchRelatedValProductID string
-		}
-		collectionsByProducts = map[string]model.Collections{} // collectionsByProducts has keys are product ids
-	)
-	// check if we can proceed
-	if len(productIDs) > 0 {
-		err = cs.GetReplica().
-			Table(model.CollectionTableName).
-			Where("ProductCollections.ProductID IN ?", productIDs).
-			Select("Collections.*", "ProductCollections.ProductID AS PrefetchRelatedValProductID").
-			Joins("INNER JOIN " + model.CollectionProductRelationTableName + " ON ProductCollections.CollectionID = Collections.Id").
-			Scan(&collectionXs).Error
-
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find collections")
-		}
-		for _, collectionX := range collectionXs {
-			collectionsByProducts[collectionX.PrefetchRelatedValProductID] = append(collectionsByProducts[collectionX.PrefetchRelatedValProductID], &collectionX.Collection)
-		}
-	}
-
-	// fetch product variant channel listing
-	var (
-		productVariantChannelListings                 []*model.ProductVariantChannelListing
-		channelIDs                                    []string
-		productVariantChannelListingsByProductVariant = map[string][]*model.ProductVariantChannelListing{} // productVariantChannelListingsByProductVariant has keys are product variant ids
-	)
-	// check if we can proceed:
-	if len(productVariantIDs) > 0 {
-		err := cs.GetReplica().Find(&productVariantChannelListings, "VariantID IN ?", productVariantIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find product variant channel listing")
-		}
-		for _, listing := range productVariantChannelListings {
-			channelIDs = append(channelIDs, listing.ChannelID)
-			productVariantChannelListingsByProductVariant[listing.VariantID] = append(productVariantChannelListingsByProductVariant[listing.VariantID], listing)
-		}
-	}
-
-	// fetch channels
-	var channels []*model.Channel
-	// check if we can proceed
-	if len(channelIDs) > 0 {
-		err = cs.GetReplica().Find(&channels, "Id in ? ORDER BY Slug ASC", channelIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find channels")
-		}
-	}
-
-	// fetch product types
-	var (
-		productTypes   []*model.ProductType
-		productTypeMap = map[string]*model.ProductType{} // productTypeMap has keys are product type ids
-	)
-	// check if we can proceed
-	if len(productTypeIDs) > 0 {
-		err = cs.GetReplica().Find(&productTypes, "Id IN ?", productTypeIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to finds product types")
-		}
-		for _, productType := range productTypes {
-			productTypeMap[productType.Id] = productType
-		}
-	}
-
-	var checkoutLineInfos []*model.CheckoutLineInfo
-
-	for _, checkoutLine := range checkoutLines {
-		productVariant := productVariantMap[checkoutLine.VariantID]
-
-		if productVariant != nil {
-			var variantChannelListing *model.ProductVariantChannelListing
-			for _, listing := range productVariantChannelListingsByProductVariant[productVariant.Id] {
-				if listing.ChannelID == checkout.ChannelID {
-					variantChannelListing = listing
-				}
-			}
-
-			// FIXME: Temporary solution to pass type checks. Figure out how to handle case
-			// when variant channel listing is not defined for a checkout line.
-			if variantChannelListing == nil {
-				continue
-			}
-
-			product := productMap[productVariant.ProductID]
-			if product != nil {
-				productType := productTypeMap[product.ProductTypeID]
-				collections := collectionsByProducts[product.Id]
-
-				if productType != nil && collections != nil {
-					checkoutLineInfos = append(checkoutLineInfos, &model.CheckoutLineInfo{
-						Line:           *checkoutLine,
-						Variant:        *productVariant,
-						ChannelListing: *variantChannelListing,
-						Product:        *product,
-						ProductType:    *productType,
-						Collections:    collections,
-					})
+					result = append(result, checkoutLineInfo)
 				}
 			}
 		}
 	}
 
-	return checkoutLineInfos, nil
+	return result, nil
 }
 
 func (cs *SqlCheckoutStore) Delete(transaction boil.ContextTransactor, tokens []string) error {

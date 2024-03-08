@@ -23,15 +23,15 @@ type ShippingMethodStore struct {
 }
 
 // ApplicableShippingMethods provides a mock function with given fields: price, channelID, weight, countryCode, productIDs
-func (_m *ShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
+func (_m *ShippingMethodStore) ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
 	ret := _m.Called(price, channelID, weight, countryCode, productIDs)
 
 	var r0 model.ShippingMethodSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*goprices.Money, string, *measurement.Weight, model.CountryCode, []string) (model.ShippingMethodSlice, error)); ok {
+	if rf, ok := ret.Get(0).(func(goprices.Money, string, measurement.Weight, model.CountryCode, []string) (model.ShippingMethodSlice, error)); ok {
 		return rf(price, channelID, weight, countryCode, productIDs)
 	}
-	if rf, ok := ret.Get(0).(func(*goprices.Money, string, *measurement.Weight, model.CountryCode, []string) model.ShippingMethodSlice); ok {
+	if rf, ok := ret.Get(0).(func(goprices.Money, string, measurement.Weight, model.CountryCode, []string) model.ShippingMethodSlice); ok {
 		r0 = rf(price, channelID, weight, countryCode, productIDs)
 	} else {
 		if ret.Get(0) != nil {
@@ -39,7 +39,7 @@ func (_m *ShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*goprices.Money, string, *measurement.Weight, model.CountryCode, []string) error); ok {
+	if rf, ok := ret.Get(1).(func(goprices.Money, string, measurement.Weight, model.CountryCode, []string) error); ok {
 		r1 = rf(price, channelID, weight, countryCode, productIDs)
 	} else {
 		r1 = ret.Error(1)
@@ -107,32 +107,6 @@ func (_m *ShippingMethodStore) Get(id string) (*model.ShippingMethod, error) {
 
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetbyOption provides a mock function with given fields: options
-func (_m *ShippingMethodStore) GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
-	ret := _m.Called(options)
-
-	var r0 *model.ShippingMethod
-	var r1 error
-	if rf, ok := ret.Get(0).(func(model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error)); ok {
-		return rf(options)
-	}
-	if rf, ok := ret.Get(0).(func(model_helper.ShippingMethodFilterOption) *model.ShippingMethod); ok {
-		r0 = rf(options)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.ShippingMethod)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(model_helper.ShippingMethodFilterOption) error); ok {
-		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

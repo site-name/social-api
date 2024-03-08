@@ -94,9 +94,11 @@ func WarehouseIsValid(w model.Warehouse) *AppError {
 
 type WarehouseFilterOption struct {
 	CommonQueryOptions
-	ShippingZoneCountries qm.QueryMod
-	ShippingZoneId        qm.QueryMod
+	ShippingZoneCountries qm.QueryMod // INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
+	ShippingZoneId        qm.QueryMod // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.ShippingZoneID ...
 	Search                string
+
+	Preloads []string
 }
 
 type CustomAllocation struct {
@@ -104,18 +106,18 @@ type CustomAllocation struct {
 }
 
 type StockFilterOptionsForCountryAndChannel struct {
-	CountryCode      model.CountryCode
-	ChannelSlug      string
-	WarehouseID      string
+	CountryCode model.CountryCode
+	ChannelSlug string
+}
+
+type StockFilterVariantStocksForCountryFilterOptions struct {
+	StockFilterOptionsForCountryAndChannel
 	ProductVariantID string
-	ProductID        string
+}
 
-	// additional fields
-	Id                     qm.QueryMod
-	WarehouseIDFilter      qm.QueryMod
-	ProductVariantIDFilter qm.QueryMod
-
-	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+type StockFilterProductStocksForCountryAndChannelFilterOptions struct {
+	StockFilterOptionsForCountryAndChannel
+	ProductID string
 }
 
 type StockFilterOption struct {
@@ -141,22 +143,45 @@ type StockFilterOption struct {
 }
 
 type StockFilterForChannelOption struct {
-	Conditions                  squirrel.Sqlizer
-	ChannelID                   string
-	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
-
-	ReturnQueryOnly bool // if true, only the squirrel query will be returned, no execution will be performed
+	Conditions squirrel.Sqlizer
+	ChannelID  string
 }
 
 type PreorderAllocationFilterOption struct {
 	CommonQueryOptions
-
-	SelectRelated_OrderLine       bool // INNER JOIN OrderLines ON ...
-	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...
+	Preloads []string
 }
 
 var StockAnnotationKeys = struct {
 	AvailableQuantity string
 }{
 	AvailableQuantity: "available_quantity",
+}
+
+func StockPreSave(s *model.Stock) {
+	if s.ID == "" {
+		s.ID = NewId()
+	}
+	if s.CreatedAt == 0 {
+		s.CreatedAt = GetMillis()
+	}
+}
+
+func StockIsValid(s model.Stock) *AppError {
+	if !IsValidId(s.ID) {
+		return NewAppError("StockIsValid", "model.stock.is_valid.id.app_error", nil, "please provide valid id", http.StatusBadRequest)
+	}
+	if !IsValidId(s.ProductVariantID) {
+		return NewAppError("StockIsValid", "model.stock.is_valid.product_variant_id.app_error", nil, "please provide valid product variant id", http.StatusBadRequest)
+	}
+	if !IsValidId(s.WarehouseID) {
+		return NewAppError("StockIsValid", "model.stock.is_valid.warehouse_id.app_error", nil, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+	if s.Quantity < 0 {
+		return NewAppError("StockIsValid", "model.stock.is_valid.quantity.app_error", nil, "please provide valid quantity", http.StatusBadRequest)
+	}
+	if s.CreatedAt <= 0 {
+		return NewAppError("StockIsValid", "model.stock.is_valid.created_at.app_error", nil, "please provide valid created at", http.StatusBadRequest)
+	}
+	return nil
 }

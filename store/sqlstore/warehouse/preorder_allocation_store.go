@@ -1,10 +1,11 @@
 package warehouse
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlPreorderAllocationStore struct {
@@ -15,102 +16,57 @@ func NewSqlPreorderAllocationStore(s store.Store) store.PreorderAllocationStore 
 	return &SqlPreorderAllocationStore{s}
 }
 
-// BulkCreate bulk inserts given preorderAllocations and returns them
-func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (ws *SqlPreorderAllocationStore) Upsert(transaction boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
 	if transaction == nil {
 		transaction = ws.GetMaster()
 	}
 
 	for _, allocation := range preorderAllocations {
-		err := transaction.Save(allocation).Error
+		if allocation == nil {
+			continue
+		}
+
+		isSaving := allocation.ID == ""
+		if isSaving {
+			model_helper.PreorderAllocationPreSave(allocation)
+		}
+
+		if err := model_helper.PreorderAllocationIsValid(*allocation); err != nil {
+			return nil, err
+		}
+
+		var err error
+		if isSaving {
+			err = allocation.Insert(transaction, boil.Infer())
+		} else {
+			_, err = allocation.Update(transaction, boil.Infer())
+		}
+
 		if err != nil {
-			if ws.IsUniqueConstraintError(err, []string{"OrderLineID", "ProductVariantChannelListingID", "orderlineid_productvariantchannellistingid_key"}) {
-				return nil, store.NewErrInvalidInput(model.PreOrderAllocationTableName, "OrderLineID/ProductVariantChannelListingID", "duplicate")
+			if ws.IsUniqueConstraintError(err, []string{"preorder_allocations_order_line_id_product_variant_channel_listing_id_key"}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.PreorderAllocations, "OrderLineID/ProductVariantChannelListingID", "duplicate")
 			}
-			return nil, errors.Wrap(err, "failed to upsert preorder allocation")
+			return nil, err
 		}
 	}
 
 	return preorderAllocations, nil
 }
 
-// FilterByOption finds and returns a list of preorder allocations filtered using given options
-func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
-	selectFields := []string{model.PreOrderAllocationTableName + ".*"}
-	if options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, model.OrderLineTableName+".*")
-	}
-	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, model.OrderTableName+".*")
+func (ws *SqlPreorderAllocationStore) FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error) {
+	conds := options.Conditions
+	for _, load := range options.Preloads {
+		conds = append(conds, qm.Load(load))
 	}
 
-	query := ws.GetQueryBuilder().Select(selectFields...).From(model.PreOrderAllocationTableName).Where(options.Conditions)
-
-	if options.SelectRelated_OrderLine {
-		query = query.InnerJoin(model.OrderLineTableName + " ON PreorderAllocations.OrderLineID = Orderlines.Id")
-
-		if options.SelectRelated_OrderLine_Order {
-			query = query.InnerJoin(model.OrderTableName + " ON Orderlines.OrderID = Orders.Id")
-		}
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
-	rows, err := ws.GetReplica().Raw(queryString, args...).Rows()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
-	}
-	defer rows.Close()
-
-	var res model.PreorderAllocations
-
-	for rows.Next() {
-		var (
-			preorderAllocation model.PreorderAllocation
-			orderLine          model.OrderLine
-			orDer              model.Order
-			scanFields         = ws.ScanFields(&preorderAllocation)
-		)
-		if options.SelectRelated_OrderLine {
-			scanFields = append(scanFields, ws.OrderLine().ScanFields(&orderLine)...)
-		}
-		if options.SelectRelated_OrderLine && options.SelectRelated_OrderLine_Order {
-			scanFields = append(scanFields, ws.Order().ScanFields(&orDer)...)
-		}
-
-		err = rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of preorder allocation")
-		}
-
-		// join data.
-		if options.SelectRelated_OrderLine {
-			preorderAllocation.SetOrderLine(&orderLine)
-
-			if options.SelectRelated_OrderLine_Order {
-				orderLine.Order = &orDer
-			}
-		}
-
-		res = append(res, &preorderAllocation)
-	}
-
-	return res, nil
+	return model.PreorderAllocations(conds...).All(ws.GetReplica())
 }
 
-// Delete deletes preorder-allocations by given ids
-func (ws *SqlPreorderAllocationStore) Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error {
+func (ws *SqlPreorderAllocationStore) Delete(transaction boil.ContextTransactor, ids []string) error {
 	if transaction == nil {
 		transaction = ws.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.PreOrderAllocationTableName+" WHERE Id IN ?", preorderAllocationIDs).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete preorder-allocations with given ids")
-	}
-
-	return nil
+	_, err := model.PreorderAllocations(model.PreorderAllocationWhere.ID.IN(ids)).DeleteAll(transaction)
+	return err
 }

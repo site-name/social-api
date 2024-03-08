@@ -4111,22 +4111,6 @@ func (s *TimerLayerPreferenceStore) Save(preferences model.PreferenceSlice) erro
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.PreorderAllocationStore.BulkCreate(tx, preorderAllocations)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.BulkCreate", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerPreorderAllocationStore) Delete(tx boil.ContextTransactor, ids []string) error {
 	start := timemodule.Now()
 
@@ -4155,6 +4139,22 @@ func (s *TimerLayerPreorderAllocationStore) FilterByOption(options model_helper.
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPreorderAllocationStore) Upsert(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.PreorderAllocationStore.Upsert(tx, preorderAllocations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -4958,7 +4958,7 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
@@ -5018,22 +5018,6 @@ func (s *TimerLayerShippingMethodStore) Get(id string) (*model.ShippingMethod, e
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShippingMethodStore) GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingMethodStore.GetbyOption(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.GetbyOption", success, elapsed)
 	}
 	return result, err
 }
@@ -5470,22 +5454,6 @@ func (s *TimerLayerStatusStore) Upsert(status model.Status) (*model.Status, erro
 	return result, err
 }
 
-func (s *TimerLayerStockStore) BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
-	start := timemodule.Now()
-
-	result, err := s.StockStore.BulkUpsert(tx, stocks)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.BulkUpsert", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
 	start := timemodule.Now()
 
@@ -5534,10 +5502,10 @@ func (s *TimerLayerStockStore) FilterByOption(options model_helper.StockFilterOp
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterForChannel(options model_helper.StockFilterForChannelOption) (model.StockSlice, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.StockStore.FilterForChannel(options)
+	result, err := s.StockStore.FilterForChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5547,7 +5515,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options model_helper.StockFilter
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterForChannel", success, elapsed)
 	}
-	return result, resultVar1, err
+	return result, err
 }
 
 func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
@@ -5566,7 +5534,7 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options model_helper.S
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options model_helper.StockFilterProductStocksForCountryAndChannelFilterOptions) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
@@ -5582,7 +5550,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options m
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options model_helper.StockFilterVariantStocksForCountryFilterOptions) (model.StockSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(options)
@@ -5610,6 +5578,38 @@ func (s *TimerLayerStockStore) Get(stockID string) (*model.Stock, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStockStore) GetFilterForChannelQuery(options model_helper.StockFilterForChannelOption) squirrel.SelectBuilder {
+	start := timemodule.Now()
+
+	result := s.StockStore.GetFilterForChannelQuery(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.GetFilterForChannelQuery", success, elapsed)
+	}
+	return result
+}
+
+func (s *TimerLayerStockStore) Upsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.Upsert(tx, stocks)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -6936,22 +6936,6 @@ func (s *TimerLayerWarehouseStore) FilterByOprion(option model_helper.WarehouseF
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.FilterByOprion", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWarehouseStore) GetByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }

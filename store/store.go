@@ -317,7 +317,6 @@ type (
 		Delete(tx boil.ContextTransactor, ids []string) error
 		Upsert(model model.Warehouse) (*model.Warehouse, error)                                 // Save inserts given model into database then returns it.
 		FilterByOprion(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, error) // FilterByOprion returns a slice of warehouses with given option
-		GetByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, error)        // GetByOption finds and returns a model filtered given option
 		WarehouseByStockID(stockID string) (*model.Warehouse, error)                            // WarehouseByStockID returns 1 model by given stock id
 		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
 		ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLineSlice, country model.CountryCode) (model.WarehouseSlice, error)
@@ -325,14 +324,15 @@ type (
 	}
 	StockStore interface {
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
-		Get(stockID string) (*model.Stock, error)                                                                                      // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)              // FilterForCountryAndChannel finds and returns stocks with given options
-		FilterVariantStocksForCountry(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
-		FilterProductStocksForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
-		ChangeQuantity(stockID string, quantity int) error                                                                             // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error)                                               // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error)                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
-		FilterForChannel(options model_helper.StockFilterForChannelOption) (squirrel.Sqlizer, model.StockSlice, error)                 // FilterForChannel finds and returns stocks that satisfy given options
+		Get(stockID string) (*model.Stock, error)                                                                                                         // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(options model_helper.StockFilterOptionsForCountryAndChannel) (model.StockSlice, error)                                 // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(options model_helper.StockFilterVariantStocksForCountryFilterOptions) (model.StockSlice, error)                     // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(options model_helper.StockFilterProductStocksForCountryAndChannelFilterOptions) (model.StockSlice, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                                                                // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(options model_helper.StockFilterOption) (model.StockSlice, error)                                                                  // FilterByOption finds and returns a slice of stocks that satisfy given option
+		Upsert(tx boil.ContextTransactor, stocks model.StockSlice) (model.StockSlice, error)                                                              // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options model_helper.StockFilterForChannelOption) (model.StockSlice, error)                                                      // FilterForChannel finds and returns stocks that satisfy given options
+		GetFilterForChannelQuery(options model_helper.StockFilterForChannelOption) squirrel.SelectBuilder
 	}
 	AllocationStore interface {
 		BulkUpsert(tx boil.ContextTransactor, allocations model.AllocationSlice) (model.AllocationSlice, error) // BulkUpsert performs update, insert given allocations then returns them afterward
@@ -342,9 +342,9 @@ type (
 		CountAvailableQuantityForStock(stock model.Stock) (int, error)                                          // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	PreorderAllocationStore interface {
-		BulkCreate(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) // BulkCreate bulk inserts given preorderAllocations and returns them
-		FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                      // FilterByOption finds and returns a list of preorder allocations filtered using given options
-		Delete(tx boil.ContextTransactor, ids []string) error                                                                           // Delete deletes preorder-allocations by given ids
+		Upsert(tx boil.ContextTransactor, preorderAllocations model.PreorderAllocationSlice) (model.PreorderAllocationSlice, error) // BulkCreate bulk inserts given preorderAllocations and returns them
+		FilterByOption(options model_helper.PreorderAllocationFilterOption) (model.PreorderAllocationSlice, error)                  // FilterByOption finds and returns a list of preorder allocations filtered using given options
+		Delete(tx boil.ContextTransactor, ids []string) error                                                                       // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -355,13 +355,11 @@ type (
 		Get(id string) (*model.ShippingZone, error)                                                     // Get finds 1 model zone for given shippingZoneID
 		FilterByOption(option model_helper.ShippingZoneFilterOption) (model.ShippingZoneSlice, error)   // FilterByOption finds a list of model zones based on given option
 		CountByOptions(options model_helper.ShippingZoneFilterOption) (int64, error)
-		// ToggleRelations(tx boil.ContextTransactor, zones model.ShippingZoneSlice, warehouseIds, channelIds []string, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
 	}
 	ShippingMethodStore interface {
-		Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error)                                                                                         // Upsert bases on given method's Id to decide update or insert it
-		Get(id string) (*model.ShippingMethod, error)                                                                                                                                         // Get finds and returns a model method with given id
-		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) // ApplicableShippingMethods finds all model methods with given conditions
-		GetbyOption(options model_helper.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                           // GetbyOption finds and returns a model method that satisfy given options
+		Upsert(tx boil.ContextTransactor, method model.ShippingMethod) (*model.ShippingMethod, error)                                                                                       // Upsert bases on given method's Id to decide update or insert it
+		Get(id string) (*model.ShippingMethod, error)                                                                                                                                       // Get finds and returns a model method with given id
+		ApplicableShippingMethods(price goprices.Money, channelID string, weight measurement.Weight, countryCode model.CountryCode, productIDs []string) (model.ShippingMethodSlice, error) // ApplicableShippingMethods finds all model methods with given conditions
 		FilterByOptions(options model_helper.ShippingMethodFilterOption) (model.ShippingMethodSlice, error)
 		Delete(tx boil.ContextTransactor, ids []string) error
 	}
