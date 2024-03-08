@@ -10,6 +10,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type hooksTimerLayer struct {
@@ -85,7 +86,7 @@ func (hooks *hooksTimerLayer) FileWillBeUploaded(c *Context, info *model.FileInf
 	return _returnsA, _returnsB
 }
 
-func (hooks *hooksTimerLayer) OnPluginClusterEvent(c *Context, ev model.PluginClusterEvent) {
+func (hooks *hooksTimerLayer) OnPluginClusterEvent(c *Context, ev model_helper.PluginClusterEvent) {
 	startTime := timePkg.Now()
 	hooks.hooksImpl.OnPluginClusterEvent(c, ev)
 	hooks.recordTime(startTime, "OnPluginClusterEvent", true)

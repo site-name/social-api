@@ -54,7 +54,11 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 	}
 
 	// get user with given id
-	user, appErr := a.GetUserByOptions(model.UserWhere.ID.EQ(userID))
+	user, appErr := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.ID.EQ(userID),
+		),
+	})
 	if appErr != nil {
 		return nil, appErr
 	}

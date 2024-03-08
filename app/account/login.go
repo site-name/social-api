@@ -160,8 +160,12 @@ func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*model.User, *mode
 		if ldapUser, err := a.srv.Ldap.GetUser(loginId); err == nil {
 			if !ldapUser.AuthData.IsNil() && *ldapUser.AuthData.String != "" {
 				if user, err := a.GetUserByOptions(
-					model.UserWhere.AuthData.EQ(ldapUser.AuthData),
-					model.UserWhere.AuthService.EQ(model_helper.USER_AUTH_SERVICE_LDAP),
+					model_helper.UserFilterOptions{
+						CommonQueryOptions: model_helper.NewCommonQueryOptions(
+							model.UserWhere.AuthData.EQ(ldapUser.AuthData),
+							model.UserWhere.AuthService.EQ(model_helper.USER_AUTH_SERVICE_LDAP),
+						),
+					},
 				); err == nil {
 					return user, nil
 				}

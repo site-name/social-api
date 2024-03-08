@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -64,7 +64,7 @@ func (job *PluginHealthCheckJob) CheckPlugin(id string) {
 
 		// Reset timestamp state for this plugin
 		job.failureTimestamps.Delete(id)
-		job.env.setPluginState(id, model.PluginStateFailedToStayRunning)
+		job.env.setPluginState(id, model_helper.PluginStateFailedToStayRunning)
 	} else {
 		slog.Debug("Restarting plugin due to failed health check", slog.String("id", id))
 		if err := job.env.RestartPlugin(id); err != nil {

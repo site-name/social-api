@@ -257,7 +257,7 @@ func (api *apiTimerLayer) GetFileInfo(fileId string) (*model.FileInfo, *model_he
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError) {
+func (api *apiTimerLayer) GetFileInfos(page, perPage int, opt *model_helper.FileInfoFilterOption) ([]*model.FileInfo, *model_helper.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetFileInfos(page, perPage, opt)
 	api.recordTime(startTime, "GetFileInfos", _returnsB == nil)
@@ -348,7 +348,7 @@ func (api *apiTimerLayer) KVCompareAndDelete(key string, oldValue []byte) (bool,
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError) {
+func (api *apiTimerLayer) KVSetWithOptions(key string, value []byte, options model_helper.PluginKVSetOptions) (bool, *model_helper.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.KVSetWithOptions(key, value, options)
 	api.recordTime(startTime, "KVSetWithOptions", _returnsB == nil)
@@ -390,7 +390,7 @@ func (api *apiTimerLayer) KVList(page, perPage int) ([]string, *model_helper.App
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
+func (api *apiTimerLayer) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast) {
 	startTime := timePkg.Now()
 	api.apiImpl.PublishWebSocketEvent(event, payload, broadcast)
 	api.recordTime(startTime, "PublishWebSocketEvent", true)

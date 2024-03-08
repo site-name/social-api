@@ -455,7 +455,12 @@ func (a *ServiceAccount) EnableUserAccessToken(token *model.UserAccessToken) *mo
 func (a *ServiceAccount) GetUserAccessTokens(page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError) {
 	tokens, err := a.srv.Store.
 		UserAccessToken().
-		GetAll(qm.Limit(perPage), qm.Offset(page*perPage))
+		GetAll(model_helper.UserAccessTokenFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				qm.Limit(perPage),
+				qm.Offset(page*perPage),
+			),
+		})
 	if err != nil {
 		return nil, model_helper.NewAppError("GetUserAccessTokens", "app.user_access_token.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -470,7 +475,15 @@ func (a *ServiceAccount) GetUserAccessTokens(page, perPage int) (model.UserAcces
 func (a *ServiceAccount) GetUserAccessTokensForUser(userID string, page, perPage int) (model.UserAccessTokenSlice, *model_helper.AppError) {
 	tokens, err := a.srv.Store.
 		UserAccessToken().
-		GetAll(qm.Limit(perPage), qm.Offset(page*perPage), model.UserAccessTokenWhere.UserID.EQ(userID))
+		GetAll(
+			model_helper.UserAccessTokenFilterOptions{
+				CommonQueryOptions: model_helper.NewCommonQueryOptions(
+					qm.Limit(perPage),
+					qm.Offset(page*perPage),
+					model.UserAccessTokenWhere.UserID.EQ(userID),
+				),
+			},
+		)
 	if err != nil {
 		return nil, model_helper.NewAppError("GetUserAccessTokensForUser", "app.user_access_token.get_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

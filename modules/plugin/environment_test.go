@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,8 +22,8 @@ func TestAvaliablePlugins(t *testing.T) {
 	}
 
 	t.Run("Should be able to load available model", func(t *testing.T) {
-		bundle1 := model.BundleInfo{
-			Manifest: &model.Manifest{
+		bundle1 := model_helper.BundleInfo{
+			Manifest: &model_helper.Manifest{
 				Id:      "someid",
 				Version: "1",
 			},

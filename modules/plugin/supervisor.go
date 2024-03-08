@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -24,7 +24,7 @@ type supervisor struct {
 	hooksClient *hooksRPCClient
 }
 
-func newSupervisor(pluginInfo *model.BundleInfo, apiImpl API, driver Driver, parentLogger *slog.Logger, metrics einterfaces.MetricsInterface) (retSupervisor *supervisor, retErr error) {
+func newSupervisor(pluginInfo *model_helper.BundleInfo, apiImpl API, driver Driver, parentLogger *slog.Logger, metrics einterfaces.MetricsInterface) (retSupervisor *supervisor, retErr error) {
 	sup := supervisor{}
 	defer func() {
 		if retErr != nil {

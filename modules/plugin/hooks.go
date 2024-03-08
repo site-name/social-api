@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // These assignments are part of the wire protocol used to trigger hook events in plugins.
@@ -215,5 +216,5 @@ type Hooks interface {
 	// This hook receives events sent by a call to PublishPluginClusterEvent.
 	//
 	// Minimum server version: 5.36
-	OnPluginClusterEvent(c *Context, ev model.PluginClusterEvent)
+	OnPluginClusterEvent(c *Context, ev model_helper.PluginClusterEvent)
 }

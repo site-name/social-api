@@ -3,7 +3,6 @@ package plugin
 import (
 	"fmt"
 	"hash/fnv"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -27,7 +25,7 @@ type apiImplCreatorFunc func(*model_helper.Manifest) API
 // If an installed plugin is missing from the env.registeredPlugins map, then the
 // plugin is configured as disabled and has not been activated during this server run.
 type registeredPlugin struct {
-	BundleInfo *model.BundleInfo
+	BundleInfo *model_helper.BundleInfo
 	State      int
 	supervisor *supervisor
 }
@@ -75,17 +73,17 @@ func NewEnvironment(newAPIImpl apiImplCreatorFunc, dbDriver Driver, pluginDir st
 // parsed).
 //
 // Plugins are found non-recursively and paths beginning with a dot are always ignored.
-func scanSearchPath(path string) ([]*model.BundleInfo, error) {
-	files, err := ioutil.ReadDir(path)
+func scanSearchPath(path string) ([]*model_helper.BundleInfo, error) {
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
-	var ret []*model.BundleInfo
+	var ret []*model_helper.BundleInfo
 	for _, file := range files {
 		if !file.IsDir() || file.Name()[0] == '.' {
 			continue
 		}
-		info := model.BundleInfoForPath(filepath.Join(path, file.Name()))
+		info := model_helper.BundleInfoForPath(filepath.Join(path, file.Name()))
 		if info.Manifest != nil {
 			ret = append(ret, info)
 		}
@@ -95,7 +93,7 @@ func scanSearchPath(path string) ([]*model.BundleInfo, error) {
 }
 
 // Returns a list of all plugins within the environment.
-func (env *Environment) Available() ([]*model.BundleInfo, error) {
+func (env *Environment) Available() ([]*model_helper.BundleInfo, error) {
 	return scanSearchPath(env.pluginDir)
 }
 
@@ -110,8 +108,8 @@ func (env *Environment) PrepackagedPlugins() []*PrepackagedPlugin {
 
 // Returns a list of all currently active plugins within the environment.
 // The returned list should not be modified.
-func (env *Environment) Active() []*model.BundleInfo {
-	activePlugins := []*model.BundleInfo{}
+func (env *Environment) Active() []*model_helper.BundleInfo {
+	activePlugins := []*model_helper.BundleInfo{}
 	env.registeredPlugins.Range(func(key, value interface{}) bool {
 		plugin := value.(registeredPlugin)
 		if env.IsActive(plugin.BundleInfo.Manifest.Id) {
@@ -126,14 +124,14 @@ func (env *Environment) Active() []*model.BundleInfo {
 
 // IsActive returns true if the plugin with the given id is active.
 func (env *Environment) IsActive(id string) bool {
-	return env.GetPluginState(id) == model.PluginStateRunning
+	return env.GetPluginState(id) == model_helper.PluginStateRunning
 }
 
 // GetPluginState returns the current state of a plugin (disabled, running, or error)
 func (env *Environment) GetPluginState(id string) int {
 	rp, ok := env.registeredPlugins.Load(id)
 	if !ok {
-		return model.PluginStateNotRunning
+		return model_helper.PluginStateNotRunning
 	}
 	return rp.(registeredPlugin).State
 }
@@ -157,13 +155,13 @@ func (env *Environment) PublicFilesPath(id string) (string, error) {
 }
 
 // Statuses returns a list of plugin statuses representing the state of every plugin
-func (env *Environment) Statuses() (model.PluginStatuses, error) {
+func (env *Environment) Statuses() (model_helper.PluginStatuses, error) {
 	plgs, err := env.Available()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get plugin statuses")
 	}
 
-	pluginStatuses := make(model.PluginStatuses, 0, len(plgs))
+	pluginStatuses := make(model_helper.PluginStatuses, 0, len(plgs))
 	for _, plg := range plgs {
 		// For now we don't handle bad manifests, we should
 		if plg.Manifest == nil {
@@ -172,7 +170,7 @@ func (env *Environment) Statuses() (model.PluginStatuses, error) {
 
 		pluginState := env.GetPluginState(plg.Manifest.Id)
 
-		status := &model.PluginStatus{
+		status := &model_helper.PluginStatus{
 			PluginId:    plg.Manifest.Id,
 			PluginPath:  filepath.Dir(plg.ManifestPath),
 			State:       pluginState,
@@ -189,7 +187,7 @@ func (env *Environment) Statuses() (model.PluginStatuses, error) {
 
 // GetManifest returns a manifest for a given pluginId.
 // Returns ErrNotFound if plugin is not found.
-func (env *Environment) GetManifest(pluginId string) (*model.Manifest, error) {
+func (env *Environment) GetManifest(pluginId string) (*model_helper.Manifest, error) {
 	plgs, err := env.Available()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get plugin statuses")
@@ -204,7 +202,7 @@ func (env *Environment) GetManifest(pluginId string) (*model.Manifest, error) {
 	return nil, ErrnotFound
 }
 
-func (env *Environment) Activate(id string) (manifest *model.Manifest, activated bool, reterr error) {
+func (env *Environment) Activate(id string) (manifest *model_helper.Manifest, activated bool, reterr error) {
 	// Check if we are already active
 	if env.IsActive(id) {
 		return nil, false, nil
@@ -213,7 +211,7 @@ func (env *Environment) Activate(id string) (manifest *model.Manifest, activated
 	if err != nil {
 		return nil, false, err
 	}
-	var pluginInfo *model.BundleInfo
+	var pluginInfo *model_helper.BundleInfo
 	for _, p := range plgs {
 		if p.Manifest != nil && p.Manifest.Id == id {
 			if pluginInfo != nil {
@@ -232,14 +230,14 @@ func (env *Environment) Activate(id string) (manifest *model.Manifest, activated
 
 	defer func() {
 		if reterr == nil {
-			env.setPluginState(id, model.PluginStateRunning)
+			env.setPluginState(id, model_helper.PluginStateRunning)
 		} else {
-			env.setPluginState(id, model.PluginStateFailedToStart)
+			env.setPluginState(id, model_helper.PluginStateFailedToStart)
 		}
 	}()
 
 	if pluginInfo.Manifest.MinServerVersion != "" {
-		fulfilled, err := pluginInfo.Manifest.MeetMinServerVersion(model.CurrentVersion)
+		fulfilled, err := pluginInfo.Manifest.MeetMinServerVersion(model_helper.CurrentVersion)
 		if err != nil {
 			return nil, false, fmt.Errorf("%v: %v", err.Error(), id)
 		}
@@ -282,9 +280,9 @@ func (env *Environment) Activate(id string) (manifest *model.Manifest, activated
 	return pluginInfo.Manifest, true, nil
 }
 
-func newRegisteredPlugin(bundle *model.BundleInfo) registeredPlugin {
+func newRegisteredPlugin(bundle *model_helper.BundleInfo) registeredPlugin {
 	return registeredPlugin{
-		State:      model.PluginStateNotRunning,
+		State:      model_helper.PluginStateNotRunning,
 		BundleInfo: bundle,
 	}
 }
@@ -304,7 +302,7 @@ func (env *Environment) Deactivate(id string) bool {
 
 	isActive := env.IsActive(id)
 
-	env.setPluginState(id, model.PluginStateNotRunning)
+	env.setPluginState(id, model_helper.PluginStateNotRunning)
 
 	if !isActive {
 		return false
@@ -377,12 +375,12 @@ func (env *Environment) Shutdown() {
 }
 
 // UnpackWebappBundle unpacks webapp bundle for a given plugin id on disk.
-func (env *Environment) UnpackWebappBundle(id string) (*model.Manifest, error) {
+func (env *Environment) UnpackWebappBundle(id string) (*model_helper.Manifest, error) {
 	plgs, err := env.Available()
 	if err != nil {
 		return nil, errors.New("unable to get available plugins")
 	}
-	var manifest *model.Manifest
+	var manifest *model_helper.Manifest
 	for _, p := range plgs {
 		if p.Manifest != nil && p.Manifest.Id == id {
 			if manifest != nil {
@@ -412,7 +410,7 @@ func (env *Environment) UnpackWebappBundle(id string) (*model.Manifest, error) {
 
 	sourceBundleFilepath := filepath.Join(destinationPath, filepath.Base(bundlePath))
 
-	sourceBundleFileContents, err := ioutil.ReadFile(sourceBundleFilepath)
+	sourceBundleFileContents, err := os.ReadFile(sourceBundleFilepath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to read webapp bundle: %v", id)
 	}
