@@ -9,29 +9,24 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func (a *ServiceDiscount) UpsertSale(transaction boil.ContextTransactor, sale *model.Sale) (*model.Sale, *model_helper.AppError) {
-	sale, err := a.srv.Store.DiscountSale().Upsert(transaction, sale)
+func (a *ServiceDiscount) UpsertSale(transaction boil.ContextTransactor, sale model.Sale) (*model.Sale, *model_helper.AppError) {
+	upsertSale, err := a.srv.Store.DiscountSale().Upsert(transaction, sale)
 	if err != nil {
 		return nil, model_helper.NewAppError("UpsertSale", "app.discount.error_upsert_sale.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return sale, nil
+	return upsertSale, nil
 }
 
-func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
-	if saleChannelListing == nil {
-		return nil, model_helper.NewAppError("GetSaleDiscount", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
-	}
-
-	if sale.Type == model.DISCOUNT_VALUE_TYPE_FIXED {
+func (a *ServiceDiscount) GetSaleDiscount(sale model.Sale, saleChannelListing model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
+	if sale.Type == model.DiscountValueTypeFixed {
 		discountAmount := &goprices.Money{ // can use directly here since sale channel listings are validated before saving
 			Amount:   *saleChannelListing.DiscountValue,
-			Currency: saleChannelListing.Currency,
+			Currency: saleChannelListing.Currency.String(),
 		}
 		return a.Decorator(discountAmount), nil
 	}
@@ -40,36 +35,40 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *
 
 // FilterSalesByOption should be used to filter active or expired sales
 // refer: saleor/discount/models.SaleQueryset for details
-func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, *model_helper.AppError) {
-	totalCount, sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
+func (a *ServiceDiscount) FilterSalesByOption(option model_helper.SaleFilterOption) (model.SaleSlice, *model_helper.AppError) {
+	sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return 0, nil, model_helper.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
-	return totalCount, sales, nil
+	return sales, nil
 }
 
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 //
 //	(end_date == NULL || end_date >= date) && start_date <= date
-func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model_helper.AppError) {
+func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.SaleSlice, *model_helper.AppError) {
 	if date == nil {
-		date = util.NewTime(time.Now().UTC())
+		date = model_helper.GetPointerOfValue(time.Now().UTC())
 	}
 
-	_, activeSalesByDate, err := a.srv.Store.DiscountSale().
-		FilterSalesByOption(&model.SaleFilterOption{
-			Conditions: squirrel.And{
-				squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
-				squirrel.Or{
-					squirrel.Eq{model.SaleTableName + ".EndDate": nil},
-					squirrel.GtOrEq{model.SaleTableName + ".EndDate": *date},
-				},
-			},
+	activeSalesByDate, err := a.srv.Store.DiscountSale().
+		FilterSalesByOption(model_helper.SaleFilterOption{
+			// Conditions: squirrel.And{
+			// 	squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
+			// 	squirrel.Or{
+			// 		squirrel.Eq{model.SaleTableName + ".EndDate": nil},
+			// 		squirrel.GtOrEq{model.SaleTableName + ".EndDate": *date},
+			// 	},
+			// },
+
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.SaleWhere.StartDate.LTE(*date),
+			),
 		})
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -87,7 +86,7 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model_help
 //	end_date <= date && start_date <= date
 func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_helper.AppError) {
 	if date == nil {
-		date = util.NewTime(time.Now().UTC())
+		date = model_helper.GetPointerOfValue(time.Now().UTC())
 	}
 
 	_, expiredSalesByDate, err := a.srv.Store.DiscountSale().

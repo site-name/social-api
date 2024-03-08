@@ -49,11 +49,11 @@ type BasePluginInterface interface {
 	ExternalAuthenticationUrl(data model_types.JSONString, request *http.Request, previousValue model_types.JSONString) (model_types.JSONString, *model_helper.AppError)
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
-	ExternalObtainAccessTokens(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError)
+	ExternalObtainAccessTokens(data model_types.JSONString, request *http.Request, previousValue model_helper.ExternalAccessTokens) (*model_helper.ExternalAccessTokens, *model_helper.AppError)
 	// Handle authentication refresh request.
 	// Overwrite this method if the plugin handles authentication flow and supports
 	// refreshing the access.
-	ExternalRefresh(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError)
+	ExternalRefresh(data model_types.JSONString, request *http.Request, previousValue model_helper.ExternalAccessTokens) (*model_helper.ExternalAccessTokens, *model_helper.AppError)
 	// Handle logout request.
 	// Overwrite this method if the plugin handles logout flow.
 	ExternalLogout(data model_types.JSONString, request *http.Request, previousValue model_types.JSONString) *model_helper.AppError
@@ -74,11 +74,11 @@ type BasePluginInterface interface {
 	// Calculate the total for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout total. Return TaxedMoney.
-	CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate the shipping costs for model.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of shipping costs. Return TaxedMoney.
-	CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate the shipping costs for the order.
 	// Update shipping costs in the order in case of changes in shipping address or
 	// changes in draft order. Return TaxedMoney.
@@ -86,13 +86,13 @@ type BasePluginInterface interface {
 	// Calculate checkout line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout line total. Return TaxedMoney.
-	CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate order line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a order line total. Return TaxedMoney.
 	CalculateOrderLineTotal(orDer *model.Order, orderLine *model.OrderLine, variant model.ProductVariant, product model.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate checkout line unit price
-	CalculateCheckoutLineUnitPrice(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutLineUnitPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate order line unit price.
 	// Update order line unit price in the order in case of changes in draft order.
 	// Return TaxedMoney.
@@ -100,11 +100,11 @@ type BasePluginInterface interface {
 	// of an order line unit price.
 	CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	//
-	GetCheckoutLineTaxRate(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
+	GetCheckoutLineTaxRate(checkoutInfo *model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
 	GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
-	GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
+	GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
 	GetOrderShippingTaxRate(orDer model.Order, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	// Return list of all tax categories.
@@ -112,7 +112,7 @@ type BasePluginInterface interface {
 	// assign tax categories to a product. It can be used by tax plugins to properly
 	// calculate taxes for products.
 	// Overwrite this method in case your plugin provides a list of tax categories.
-	GetTaxRateTypeChoices(previousValue []*model.TaxType) ([]*model.TaxType, *model_helper.AppError)
+	GetTaxRateTypeChoices(previousValue []*model_helper.TaxType) ([]*model_helper.TaxType, *model_helper.AppError)
 	// Define if storefront should add info about taxes to the price.
 	// It is used only by the old storefront. The returned value determines if
 	// storefront should append info to the price about "including/excluding X% VAT"
@@ -125,7 +125,7 @@ type BasePluginInterface interface {
 	ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Trigger directly before order creation.
 	// Overwrite this method if you need to trigger specific logic before an order is created.
-	PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError)
+	PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model_helper.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError)
 	// Trigger when order is created.
 	// Overwrite this method if you need to trigger specific logic after an order is created.
 	OrderCreated(orDer model.Order, previousValue any) (any, *model_helper.AppError)
@@ -141,13 +141,13 @@ type BasePluginInterface interface {
 	OrderConfirmed(orDer model.Order, previousValue any) (any, *model_helper.AppError)
 	// Trigger when sale is created.
 	// Overwrite this method if you need to trigger specific logic after sale is created.
-	SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
+	SaleCreated(sale model.Sale, currentCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
 	// Trigger when sale is deleted.
 	// Overwrite this method if you need to trigger specific logic after sale is deleted.
-	SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
+	SaleDeleted(sale model.Sale, previousCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
 	// Trigger when sale is updated.
 	// Overwrite this method if you need to trigger specific logic after sale is updated.
-	SaleUpdated(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
+	SaleUpdated(sale model.Sale, previousCatalogue model_helper.NodeCatalogueInfo, currentCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError)
 	// Trigger when invoice creation starts.
 	// Overwrite to create invoice with proper data, call invoice.update_invoice.
 	InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string, previousValue any) (any, *model_helper.AppError)
@@ -160,11 +160,11 @@ type BasePluginInterface interface {
 	// Return tax code from object meta.
 	//
 	// NOTE: obj can be 'Product' or 'ProductType'
-	AssignTaxCodeToObjectMeta(obj any, taxCode string, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError)
+	AssignTaxCodeToObjectMeta(obj any, taxCode string, previousValue model_helper.TaxType) (*model_helper.TaxType, *model_helper.AppError)
 	// Return tax code from object meta
 	//
 	// NOTE: obj must be either Product or ProductType
-	GetTaxCodeFromObjectMeta(obj any, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError)
+	GetTaxCodeFromObjectMeta(obj any, previousValue model_helper.TaxType) (*model_helper.TaxType, *model_helper.AppError)
 	// Return tax rate percentage value for a given tax rate type in a country.
 	// It is used only by the old storefront.
 	GetTaxRatePercentageValue(obj any, country string, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
@@ -238,23 +238,23 @@ type BasePluginInterface interface {
 	// Triggered when ShopFetchTaxRates mutation is called.
 	FetchTaxesData(previousValue bool) (bool, *model_helper.AppError)
 	//
-	InitializePayment(paymentData model_types.JSONString, previousValue any) (*model.InitializedPaymentResponse, *model_helper.AppError)
+	InitializePayment(paymentData model_types.JSONString, previousValue any) (*model_helper.InitializedPaymentResponse, *model_helper.AppError)
 	//
-	AuthorizePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	AuthorizePayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	CapturePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	CapturePayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	VoidPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	VoidPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	RefundPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	RefundPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	ConfirmPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	ConfirmPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	ProcessPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError)
+	ProcessPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError)
 	//
-	ListPaymentSources(customerID string, previousValue any) ([]*model.CustomerSource, *model_helper.AppError)
+	ListPaymentSources(customerID string, previousValue any) ([]*model_helper.CustomerSource, *model_helper.AppError)
 	//
-	GetClientToken(tokenConfig model.TokenConfig, previousValue any) (string, *model_helper.AppError)
+	GetClientToken(tokenConfig model_helper.TokenConfig, previousValue any) (string, *model_helper.AppError)
 	//
 	GetPaymentConfig(previousValue any) ([]model_types.JSONString, *model_helper.AppError)
 	//
@@ -262,7 +262,7 @@ type BasePluginInterface interface {
 	//
 	TokenIsRequiredAsPaymentInput(previousValue bool) (bool, *model_helper.AppError)
 	//
-	GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue any) ([]*model.PaymentGateway, *model_helper.AppError)
+	GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue any) ([]*model_helper.PaymentGateway, *model_helper.AppError)
 	//
 	UpdateConfigItems(configurationToUpdate []model_types.JSONString, currentConfig []model_types.JSONString) ([]model_types.JSONString, *model_helper.AppError)
 	// Validate if provided configuration is correct.

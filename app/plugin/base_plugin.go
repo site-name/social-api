@@ -76,11 +76,11 @@ func (b *BasePlugin) String() string {
 	return b.Manifest.PluginName
 }
 
-func (b *BasePlugin) ExternalObtainAccessTokens(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
+func (b *BasePlugin) ExternalObtainAccessTokens(data model_types.JSONString, request *http.Request, previousValue model_helper.ExternalAccessTokens) (*model_helper.ExternalAccessTokens, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ExternalObtainAccessTokens", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ExternalRefresh(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
+func (b *BasePlugin) ExternalRefresh(data model_types.JSONString, request *http.Request, previousValue model_helper.ExternalAccessTokens) (*model_helper.ExternalAccessTokens, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ExternalRefresh", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -108,11 +108,11 @@ func (b *BasePlugin) ChangeUserAddress(address model.Address, addressType *model
 	return nil, model_helper.NewAppError("ChangeUserAddress", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (b *BasePlugin) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CalculateCheckoutTotal", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (b *BasePlugin) CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CalculateCheckoutShipping", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -120,7 +120,7 @@ func (b *BasePlugin) CalculateOrderShipping(orDer *model.Order, previousValue go
 	return nil, model_helper.NewAppError("CalculateOrderShipping", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (b *BasePlugin) CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CalculateCheckoutLineTotal", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -128,7 +128,7 @@ func (b *BasePlugin) CalculateOrderLineTotal(orDer *model.Order, orderLine *mode
 	return nil, model_helper.NewAppError("CalculateOrderLineTotal", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutLineUnitPrice(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (b *BasePlugin) CalculateCheckoutLineUnitPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CalculateCheckoutLineUnitPrice", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -136,7 +136,7 @@ func (b *BasePlugin) CalculateOrderLineUnit(orDer model.Order, orderLine model.O
 	return nil, model_helper.NewAppError("CalculateOrderLineUnit", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetCheckoutLineTaxRate(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
+func (b *BasePlugin) GetCheckoutLineTaxRate(checkoutInfo *model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetCheckoutLineTaxRate", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -144,7 +144,7 @@ func (b *BasePlugin) GetOrderLineTaxRate(orDer model.Order, product model.Produc
 	return nil, model_helper.NewAppError("GetOrderLineTaxRate", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
+func (b *BasePlugin) GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetCheckoutShippingTaxRate", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -152,7 +152,7 @@ func (b *BasePlugin) GetOrderShippingTaxRate(orDer model.Order, previousValue de
 	return nil, model_helper.NewAppError("GetOrderShippingTaxRate", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetTaxRateTypeChoices(previousValue []*model.TaxType) ([]*model.TaxType, *model_helper.AppError) {
+func (b *BasePlugin) GetTaxRateTypeChoices(previousValue []*model_helper.TaxType) ([]*model_helper.TaxType, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetTaxRateTypeChoices", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -168,7 +168,7 @@ func (b *BasePlugin) ApplyTaxesToProduct(product model.Product, price goprices.M
 	return nil, model_helper.NewAppError("ApplyTaxesToProduct", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError) {
+func (b *BasePlugin) PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model_helper.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("PreprocessOrderCreation", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -180,15 +180,15 @@ func (b *BasePlugin) OrderConfirmed(orDer model.Order, previousValue any) (any, 
 	return b.OrderCreated(orDer, previousValue)
 }
 
-func (b *BasePlugin) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
+func (b *BasePlugin) SaleCreated(sale model.Sale, currentCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
+func (b *BasePlugin) SaleDeleted(sale model.Sale, previousCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) SaleUpdated(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
+func (b *BasePlugin) SaleUpdated(sale model.Sale, previousCatalogue model_helper.NodeCatalogueInfo, currentCatalogue model_helper.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -204,7 +204,7 @@ func (b *BasePlugin) InvoiceSent(inVoice model.Invoice, email string, previousVa
 	return nil, model_helper.NewAppError("InvoiceSent", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj any, taxCode string, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
+func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj any, taxCode string, previousValue model_helper.TaxType) (*model_helper.TaxType, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("AssignTaxCodeToObjectMeta", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -312,39 +312,39 @@ func (b *BasePlugin) FetchTaxesData(previousValue bool) (bool, *model_helper.App
 	return false, model_helper.NewAppError("FetchTaxesData", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) InitializePayment(paymentData model_types.JSONString, previousValue any) (*model.InitializedPaymentResponse, *model_helper.AppError) {
+func (b *BasePlugin) InitializePayment(paymentData model_types.JSONString, previousValue any) (*model_helper.InitializedPaymentResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("InitializePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) AuthorizePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) AuthorizePayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("AuthorizePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CapturePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) CapturePayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CapturePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) VoidPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) VoidPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("VoidPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) RefundPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) RefundPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("RefundPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ConfirmPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) ConfirmPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ConfirmPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProcessPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) ProcessPayment(paymentInformation model_helper.PaymentData, previousValue any) (*model_helper.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProcessPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ListPaymentSources(customerID string, previousValue any) ([]*model.CustomerSource, *model_helper.AppError) {
+func (b *BasePlugin) ListPaymentSources(customerID string, previousValue any) ([]*model_helper.CustomerSource, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ListPaymentSources", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetClientToken(tokenConfig model.TokenConfig, previousValue any) (string, *model_helper.AppError) {
+func (b *BasePlugin) GetClientToken(tokenConfig model_helper.TokenConfig, previousValue any) (string, *model_helper.AppError) {
 	return "", model_helper.NewAppError("GetClientToken", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -356,7 +356,7 @@ func (b *BasePlugin) GetSupportedCurrencies(previousValue any) ([]string, *model
 	return nil, model_helper.NewAppError("GetSupportedCurrencies", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetTaxCodeFromObjectMeta(obj any, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
+func (b *BasePlugin) GetTaxCodeFromObjectMeta(obj any, previousValue model_helper.TaxType) (*model_helper.TaxType, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetTaxCodeFromObjectMeta", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -364,7 +364,7 @@ func (b *BasePlugin) TokenIsRequiredAsPaymentInput(previousValue bool) (bool, *m
 	return previousValue, nil
 }
 
-func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue any) ([]*model.PaymentGateway, *model_helper.AppError) {
+func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue any) ([]*model_helper.PaymentGateway, *model_helper.AppError) {
 	paymentConfig, notImplt := b.GetPaymentConfig(previousValue)
 	if notImplt != nil {
 		paymentConfig = []model_types.JSONString{}
@@ -377,10 +377,10 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkou
 	}
 
 	if currency != "" && !currencies.Contains(currency) {
-		return []*model.PaymentGateway{}, nil
+		return []*model_helper.PaymentGateway{}, nil
 	}
 
-	return []*model.PaymentGateway{
+	return []*model_helper.PaymentGateway{
 		{
 			Id:         b.Manifest.PluginID,
 			Name:       b.Manifest.PluginName,

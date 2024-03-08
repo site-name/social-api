@@ -9,6 +9,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -48,12 +49,12 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 
 		productRelationsData := productsRelationsData[pk]
 		if productRelationsData == nil {
-			productRelationsData = model.StringMap{}
+			productRelationsData = model_helper.StringMap{}
 		}
 
 		variantRelationsData := variantsRelationsData[variantPK]
 		if variantRelationsData == nil {
-			variantRelationsData = model.StringMap{}
+			variantRelationsData = model_helper.StringMap{}
 		}
 
 		if exportVariantID {
@@ -79,7 +80,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 // If any many to many fields are in export_fields or some attribute_ids exists then
 // dict with product relations fields is returned.
 // Otherwise it returns empty di`ct.
-func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model.StringMap {
+func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
 		relationFields   = exportFields.InterSection(manyToManyFields)
@@ -89,10 +90,10 @@ func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFie
 		return s.prepareProductsRelationsData(products, relationFields, attributeIDs, channelIDs)
 	}
 
-	return map[string]model.StringMap{}
+	return map[string]model_helper.StringMap{}
 }
 
-func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, channelIDs []string) map[string]model.StringMap {
+func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, channelIDs []string) map[string]model_helper.StringMap {
 	var (
 		channelFields = ProductExportFields.PRODUCT_CHANNEL_LISTING_FIELDS.DeepCopy()
 		resultData    = map[string]map[string][]any{}
@@ -136,9 +137,9 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 		resultData, data = s.handleChannelData(pk, data, channelIDs, resultData, channelPkLookup, channelSlugLookup, channelFields)
 	}
 
-	result := map[string]model.StringMap{}
+	result := map[string]model_helper.StringMap{}
 	for pk, data := range resultData {
-		result[pk] = model.StringMap{}
+		result[pk] = model_helper.StringMap{}
 
 		for header, values := range data {
 			var str string
@@ -158,7 +159,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 	return result
 }
 
-func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model.StringMap {
+func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
 	manyToManyFields := ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"].Values()
 	relationsFields := exportFields.InterSection(manyToManyFields)
 
@@ -166,10 +167,10 @@ func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFie
 		return s.prepareVariantsRelationsData(products, relationsFields, attributeIDs, warehouseIDs, channelIDs)
 	}
 
-	return map[string]model.StringMap{}
+	return map[string]model_helper.StringMap{}
 }
 
-func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model.StringMap {
+func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model_helper.StringMap {
 	var channelFields = ProductExportFields.VARIANT_CHANNEL_LISTING_FIELDS.DeepCopy()
 
 	// fields = append(fields, "variants__id")
@@ -202,9 +203,9 @@ func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, field
 		resultData, data = s.handleWarehouseData(pk, data, warehouseIDs, resultData, ProductExportFields.WAREHOUSE_FIELDS)
 	}
 
-	result := map[string]model.StringMap{}
+	result := map[string]model_helper.StringMap{}
 	for pk, data := range resultData {
-		result[pk] = model.StringMap{}
+		result[pk] = model_helper.StringMap{}
 
 		for header, values := range data {
 			var str string
@@ -224,7 +225,7 @@ func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, field
 	return result
 }
 
-func (s *ServiceCsv) handleWarehouseData(pk string, data model_types.JSONString, warehouseIDs util.AnyArray[string], resultData map[string]map[string][]any, warehouseFields model.StringMap) (map[string]map[string][]any, model_types.JSONString) {
+func (s *ServiceCsv) handleWarehouseData(pk string, data model_types.JSONString, warehouseIDs util.AnyArray[string], resultData map[string]map[string][]any, warehouseFields model_helper.StringMap) (map[string]map[string][]any, model_types.JSONString) {
 	warehousePK := data.Pop(warehouseFields["warehouse_pk"], "").(string)
 	warehouseData := model_types.JSONString{
 		"slug": data.Pop(warehouseFields["slug"], nil),
@@ -264,7 +265,7 @@ type AttributeData struct {
 	DateTime   any
 }
 
-func (s *ServiceCsv) handleAttributeData(pk string, data model_types.JSONString, attributeIDs util.AnyArray[string], resultData map[string]map[string][]any, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]any, model_types.JSONString) {
+func (s *ServiceCsv) handleAttributeData(pk string, data model_types.JSONString, attributeIDs util.AnyArray[string], resultData map[string]map[string][]any, attributeFields model_helper.StringMap, attributeOwner string) (map[string]map[string][]any, model_types.JSONString) {
 	attributePK := data.Pop(attributeFields["attribute_pk"], "").(string)
 
 	attributeData := AttributeData{
@@ -288,7 +289,7 @@ func (s *ServiceCsv) handleAttributeData(pk string, data model_types.JSONString,
 	return resultData, data
 }
 
-func (s *ServiceCsv) handleChannelData(pk string, data model_types.JSONString, channelIDs util.AnyArray[string], resultData map[string]map[string][]any, pkLookup, slugLookup string, fields model.StringMap) (map[string]map[string][]any, model_types.JSONString) {
+func (s *ServiceCsv) handleChannelData(pk string, data model_types.JSONString, channelIDs util.AnyArray[string], resultData map[string]map[string][]any, pkLookup, slugLookup string, fields model_helper.StringMap) (map[string]map[string][]any, model_types.JSONString) {
 	channelPK := data.Pop(pkLookup, "").(string)
 	channelData := model_types.JSONString{
 		"slug": data.Pop(slugLookup, nil),

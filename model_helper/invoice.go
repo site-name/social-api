@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 func InvoicePreSave(invoice *model.Invoice) {
@@ -78,4 +79,14 @@ func InvoiceEventIsValid(invoiceEvent model.InvoiceEvent) *AppError {
 
 type InvoiceFilterOption struct {
 	CommonQueryOptions
+}
+
+type InvoiceEventCreationOptions struct {
+	Type      model.InvoiceEventType
+	InvoiceID *string
+	OrderID   *string
+	UserID    *string
+	// if provided, it should contains below keys:
+	//  "number", "url", "invoice_id"
+	Parameters model_types.JSONString
 }

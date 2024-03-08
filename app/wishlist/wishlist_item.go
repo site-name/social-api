@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option

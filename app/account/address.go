@@ -55,7 +55,7 @@ func (a *ServiceAccount) AddressesByUserId(userID string) (model.AddressSlice, *
 // ChangeUserDefaultAddress set default address for given user
 func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) (*model.User, *model_helper.AppError) {
 	if manager != nil {
-		_, appErr := manager.ChangeUserAddress(address, &addressType, &user)
+		_, appErr := manager.ChangeUserAddress(address, addressType, &user)
 		if appErr != nil {
 			return nil, appErr
 		}

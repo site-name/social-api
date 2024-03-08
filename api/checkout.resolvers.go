@@ -580,7 +580,7 @@ func (r *Resolver) CheckoutRemovePromoCode(ctx context.Context, args struct {
 	if appErr != nil {
 		return nil, appErr
 	}
-	checkoutInfo, appErr := embedCtx.App.Srv().CheckoutService().FetchCheckoutInfo(checkout, model.CheckoutLineInfos{}, discountInfo, pluginMng)
+	checkoutInfo, appErr := embedCtx.App.Srv().CheckoutService().FetchCheckoutInfo(checkout, model_helper.CheckoutLineInfos{}, discountInfo, pluginMng)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -710,7 +710,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 	}
 
 	// validate metadata
-	var metaData = model.StringMap{}
+	var metaData = model_helper.StringMap{}
 	for _, meta := range args.Input.Metadata {
 		if meta != nil {
 			if strings.TrimSpace(meta.Key) == "" {
@@ -739,7 +739,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 		checkoutEmail,
 		embedCtx.AppContext.GetRequest().Header.Get(model.HeaderForwarded), // TODO: this is not real customer ip
 		inputToken,
-		model.StringMap{"customer_user_agent": embedCtx.AppContext.UserAgent()},
+		model_helper.StringMap{"customer_user_agent": embedCtx.AppContext.UserAgent()},
 		checkout,
 		nil,
 		returnUrl,
@@ -820,7 +820,7 @@ func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struc
 		if appErr != nil {
 			return nil, appErr
 		}
-		appErr = embedCtx.App.Srv().CheckoutService().CheckLinesQuantity(variants, lines.CheckoutLines().Quantities(), *args.ShippingAddress.Country, checkoutInfo.Channel.Slug, false, model.CheckoutLineInfos{}, false)
+		appErr = embedCtx.App.Srv().CheckoutService().CheckLinesQuantity(variants, lines.CheckoutLines().Quantities(), *args.ShippingAddress.Country, checkoutInfo.Channel.Slug, false, model_helper.CheckoutLineInfos{}, false)
 		if appErr != nil {
 			return nil, appErr
 		}

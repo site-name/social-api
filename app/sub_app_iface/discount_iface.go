@@ -85,7 +85,7 @@ type DiscountService interface {
 	// IsValidPromoCode checks if given code is valid giftcard code or voucher code
 	IsValidPromoCode(code string) bool
 	// OrderDiscountsByOption filters and returns order discounts with given option
-	OrderDiscountsByOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, *model_helper.AppError)
+	OrderDiscountsByOption(option *model.OrderDiscountFilterOption) (model.OrderDiscountSlice, *model_helper.AppError)
 	// PromoCodeIsVoucher checks if given code is belong to a voucher
 	PromoCodeIsVoucher(code string) (bool, *model_helper.AppError)
 	// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher

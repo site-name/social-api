@@ -121,7 +121,7 @@ var (
 	// NOTE: keys have format of SaleID__channelID
 	SaleChannelListingBySaleIdAndChanneSlugLoader = dataloader.NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity))
 	SaleChannelListingBySaleIdLoader              = dataloader.NewBatchedLoader(saleChannelListingBySaleIdLoader, dataloader.WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity))
-	OrderDiscountsByOrderIDLoader                 = dataloader.NewBatchedLoader(orderDiscountsByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity))
+	OrderDiscountsByOrderIDLoader                 = dataloader.NewBatchedLoader(orderDiscountsByOrderIDLoader, dataloader.WithBatchCapacity[string, model.OrderDiscountSlice](batchCapacity))
 	VoucherByIDLoader                             = dataloader.NewBatchedLoader(voucherByIDLoader, dataloader.WithBatchCapacity[string, *model.Voucher](batchCapacity))
 	// NOTE: keys have format of voucherID__channelID
 	VoucherChannelListingByVoucherIdAndChanneSlugLoader = dataloader.NewBatchedLoader(voucherChannelListingByVoucherIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity))
@@ -168,7 +168,7 @@ var (
 	PaymentByIdLoader             = dataloader.NewBatchedLoader(paymentByIdLoader, dataloader.WithBatchCapacity[string, *model.Payment](batchCapacity))
 
 	// invoice
-	InvoicesByOrderIDLoader = dataloader.NewBatchedLoader(invoicesByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.Invoice](batchCapacity))
+	InvoicesByOrderIDLoader = dataloader.NewBatchedLoader(invoicesByOrderIDLoader, dataloader.WithBatchCapacity[string, model.InvoiceSlice](batchCapacity))
 
 	// page
 	PageByIdLoader = dataloader.NewBatchedLoader(pageByIdLoader, dataloader.WithBatchCapacity[string, *model.Page](batchCapacity))

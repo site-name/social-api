@@ -127,6 +127,8 @@ type Store interface {
 	AttributePage() AttributePageStore                                 //
 	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
 	CustomProductAttribute() CustomProductAttributeStore               //
+	AssignedPageAttribute() AssignedPageAttributeStore                 //
+	AssignedProductAttribute() AssignedProductAttributeStore           //
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
 	Plugin() PluginStore                                               //
@@ -134,9 +136,6 @@ type Store interface {
 	ShopStaff() ShopStaffStore                                         //
 	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
-
-	AssignedPageAttribute() AssignedPageAttributeStore       //
-	AssignedProductAttribute() AssignedProductAttributeStore //
 }
 
 // shop

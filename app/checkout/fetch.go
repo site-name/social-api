@@ -44,7 +44,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod any, address *mod
 
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
-func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) (model.CheckoutLineInfos, *model_helper.AppError) {
+func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) (model_helper.CheckoutLineInfos, *model_helper.AppError) {
 	checkoutLineInfos, err := a.srv.Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(checkOut)
 	if err != nil {
 		return nil, model_helper.NewAppError("FetchCheckoutLines", "app.checkout.error_collecting_checkout_line_infos.app_error", nil, err.Error(), http.StatusInternalServerError)

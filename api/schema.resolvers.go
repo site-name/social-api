@@ -9,7 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -43,7 +43,7 @@ func (r *Resolver) TaxTypes(ctx context.Context) ([]*TaxType, error) {
 		return nil, appErr
 	}
 
-	return lo.Map(taxTypes, func(item *model.TaxType, _ int) *TaxType {
+	return lo.Map(taxTypes, func(item *model_helper.TaxType, _ int) *TaxType {
 		return &TaxType{
 			Description: &item.Descriptiton,
 			TaxCode:     &item.Code,

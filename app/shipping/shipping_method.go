@@ -10,7 +10,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments

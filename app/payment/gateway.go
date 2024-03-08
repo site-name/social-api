@@ -36,7 +36,7 @@ const (
 // 5) RefundPayment
 //
 // 6) VoidPayment
-type PaymentMethod func(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error)
+type PaymentMethod func(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error)
 
 // raisePaymentError must be called right before function returns
 func (a *ServicePayment) raisePaymentError(where string, transaction model.PaymentTransaction) *model.PaymentError {
@@ -492,7 +492,7 @@ func (a *ServicePayment) ListPaymentSources(
 	customerID string,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
-) ([]*model.CustomerSource, *model_helper.AppError) {
+) ([]*model_helper.CustomerSource, *model_helper.AppError) {
 	source, err := manager.ListPaymentSources(gateway, customerID, channelID)
 	if err != nil {
 		return nil, model_helper.NewAppError("ListPaymentSources", "app.payment.error_listing_payment_sources.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -503,12 +503,12 @@ func (a *ServicePayment) ListPaymentSources(
 func (a *ServicePayment) ListGateways(
 	manager interfaces.PluginManagerInterface,
 	channelID string,
-) []*model.PaymentGateway {
+) []*model_helper.PaymentGateway {
 
 	return manager.ListPaymentGateways("", nil, channelID, true)
 }
 
-func (a *ServicePayment) fetchGatewayResponse(paymentFunc PaymentMethod, gateway string, paymentData model.PaymentData, channelID string) (res *model.GatewayResponse, errMsg string) {
+func (a *ServicePayment) fetchGatewayResponse(paymentFunc PaymentMethod, gateway string, paymentData model_helper.PaymentData, channelID string) (res *model_helper.GatewayResponse, errMsg string) {
 	res, _ = paymentFunc(gateway, paymentData, channelID)
 	gatewayErr := a.ValidateGatewayResponse(res)
 	if gatewayErr != nil {

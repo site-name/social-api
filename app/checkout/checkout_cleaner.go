@@ -10,7 +10,7 @@ import (
 )
 
 // CleanCheckoutShipping
-func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) *model_helper.AppError {
 	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr

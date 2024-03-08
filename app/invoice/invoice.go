@@ -24,7 +24,7 @@ func init() {
 	})
 }
 
-func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model_helper.AppError) {
+func (s *ServiceInvoice) FilterInvoicesByOptions(options model_helper.InvoiceFilterOption) (model.InvoiceSlice, *model_helper.AppError) {
 	invoices, err := s.srv.Store.Invoice().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("FilterInvoicesByOptions", "app.invoice.invoices_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -33,7 +33,7 @@ func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOpt
 	return invoices, nil
 }
 
-func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model_helper.AppError) {
+func (s *ServiceInvoice) UpsertInvoice(invoice model.Invoice) (*model.Invoice, *model_helper.AppError) {
 	res, err := s.srv.Store.Invoice().Upsert(invoice)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -47,7 +47,7 @@ func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, 
 	return res, nil
 }
 
-func (s *ServiceInvoice) GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model_helper.AppError) {
+func (s *ServiceInvoice) GetInvoiceByOptions(options model_helper.InvoiceFilterOption) (*model.Invoice, *model_helper.AppError) {
 	invoice, err := s.srv.Store.Invoice().GetbyOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

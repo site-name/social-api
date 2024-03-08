@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options

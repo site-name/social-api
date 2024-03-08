@@ -6,7 +6,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // TransactionsByOption returns a list of transactions filtered based on given option

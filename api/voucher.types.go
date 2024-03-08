@@ -206,9 +206,9 @@ func (o *OrderDiscount) Reason(ctx context.Context) (*string, error) {
 	return o.reason, nil
 }
 
-func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderDiscount] {
+func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[model.OrderDiscountSlice] {
 	var (
-		res              = make([]*dataloader.Result[[]*model.OrderDiscount], len(orderIDs))
+		res              = make([]*dataloader.Result[model.OrderDiscountSlice], len(orderIDs))
 		orderDiscountMap = map[string]model.OrderDiscounts{} // keys are order ids
 	)
 
@@ -218,7 +218,7 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 	})
 	if appErr != nil {
 		for idx := range orderIDs {
-			res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: appErr}
+			res[idx] = &dataloader.Result[model.OrderDiscountSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -231,7 +231,7 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 	}
 
 	for idx, id := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Data: orderDiscountMap[id]}
+		res[idx] = &dataloader.Result[model.OrderDiscountSlice]{Data: orderDiscountMap[id]}
 	}
 	return res
 }

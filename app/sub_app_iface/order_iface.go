@@ -125,7 +125,7 @@ type OrderService interface {
 	// GetOrderCountry Return country to which order will be shipped
 	GetOrderCountry(order *model.Order) (model.CountryCode, *model_helper.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
-	GetOrderDiscounts(order *model.Order) ([]*model.OrderDiscount, *model_helper.AppError)
+	GetOrderDiscounts(order *model.Order) (model.OrderDiscountSlice, *model_helper.AppError)
 	// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
 	GetProductsVoucherDiscountForOrder(order *model.Order) (*goprices.Money, *model_helper.AppError)
 	// GetTotalOrderDiscount Return total order discount assigned to the order

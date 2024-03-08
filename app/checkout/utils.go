@@ -16,7 +16,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func (a *ServiceCheckout) CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model_helper.AppError) {
@@ -329,7 +329,7 @@ func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction boil.Conte
 }
 
 // getShippingVoucherDiscountForCheckout Calculate discount value for a voucher of shipping type
-func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model_helper.AppError) {
+func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model_helper.AppError) {
 	shippingRequired, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return nil, nil, appErr
@@ -552,7 +552,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos model_helper.Chec
 //
 // `withLock` default to false
 func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model_helper.CheckoutInfo, vouchers model.Vouchers, withLock bool) (*model.Voucher, *model_helper.AppError) {
-	now := util.NewTime(time.Now().UTC()) // NOTE: not sure to use UTC or system time
+	now := model_helper.GetPointerOfValue(time.Now().UTC()) // NOTE: not sure to use UTC or system time
 	checkout := checkoutInfo.Checkout
 
 	if checkout.VoucherCode != nil {
@@ -842,7 +842,7 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model_
 // Note that `quantity_check=False` should be used, when stocks quantity will
 // be validated in further steps (checkout completion) in order to raise
 // 'InsufficientProductStock' error instead of 'InvalidShippingError'.
-func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode model.CountryCode, quantityCheck bool) ([]*model.WareHouse, *model_helper.AppError) {
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model_helper.CheckoutLineInfos, countryCode model.CountryCode, quantityCheck bool) ([]*model.WareHouse, *model_helper.AppError) {
 	linesRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return nil, appErr
@@ -983,7 +983,7 @@ type DeliveryMethod interface {
 }
 
 // Check if current shipping method is valid
-func (s *ServiceCheckout) CleanDeliveryMethod(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model_helper.AppError) {
+func (s *ServiceCheckout) CleanDeliveryMethod(checkoutInfo *model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, method any) (bool, *model_helper.AppError) {
 	if method == nil {
 		// no shipping method was provided, it is valid
 		return true, nil
@@ -1014,7 +1014,7 @@ func (s *ServiceCheckout) CleanDeliveryMethod(checkoutInfo *model_helper.Checkou
 	}
 }
 
-func (s *ServiceCheckout) UpdateCheckoutShippingMethodIfValid(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError {
+func (s *ServiceCheckout) UpdateCheckoutShippingMethodIfValid(checkoutInfo *model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) *model_helper.AppError {
 	quantity, appErr := s.CalculateCheckoutQuantity(lines)
 	if appErr != nil {
 		return appErr

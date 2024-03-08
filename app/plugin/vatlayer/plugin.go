@@ -134,7 +134,7 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue any) bool {
 }
 
 // previousValue must be either TaxedMoneyRange or TaxedMoney
-func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if vp.skipPlugin(previousValue) {
 		return &previousValue, nil
 	}

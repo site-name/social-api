@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option

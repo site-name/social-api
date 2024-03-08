@@ -122,7 +122,7 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 
 	paymentGateWays := pluginMng.ListPaymentGateways(args.Currency, nil, args.ChannelID, true)
 
-	return lo.Map(paymentGateWays, func(gw *model.PaymentGateway, _ int) *PaymentGateway {
+	return lo.Map(paymentGateWays, func(gw *model_helper.PaymentGateway, _ int) *PaymentGateway {
 		gw.Config = lo.Filter(gw.Config, func(cf model_types.JSONString, _ int) bool { return cf != nil && len(cf) > 0 })
 
 		resConfig := lo.Map(gw.Config, func(cf model_types.JSONString, _ int) *GatewayConfigLine {

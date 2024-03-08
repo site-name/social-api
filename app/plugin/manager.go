@@ -112,7 +112,7 @@ func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *mo
 	return anAddress, nil
 }
 
-func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	subTotal, appErr := m.CalculateCheckoutSubTotal(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -150,7 +150,7 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model_helper.Checkou
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	lineTotalSum, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
 	var err error
 
@@ -170,7 +170,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model_helper.Chec
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutShippingPrice(&checkoutInfo, lines)
 	if appErr != nil {
 		return nil, appErr
@@ -198,7 +198,7 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model_helper.Chec
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutLineTotal(&checkoutLineInfo, &checkoutInfo.Channel, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -273,7 +273,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
+func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&shippingPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -347,7 +347,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
 
 	var taxedMoney *goprices.TaxedMoney
@@ -403,7 +403,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
+func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&unitPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -449,11 +449,11 @@ func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Pro
 	return model_helper.GetPointerOfValue(deci.RoundUp(4)), nil
 }
 
-func (m *PluginManager) GetTaxRateTypeChoices() ([]*model.TaxType, *model_helper.AppError) {
-	defaultValue := []*model.TaxType{}
+func (m *PluginManager) GetTaxRateTypeChoices() ([]*model_helper.TaxType, *model_helper.AppError) {
+	defaultValue := []*model_helper.TaxType{}
 
 	var (
-		taxTypes []*model.TaxType
+		taxTypes []*model_helper.TaxType
 		appErr   *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
@@ -554,7 +554,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model.CheckoutLineInfos) (any, *model_helper.AppError) {
+func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model_helper.CheckoutLineInfos) (any, *model_helper.AppError) {
 	var defaultValue any = nil
 
 	var (
@@ -898,7 +898,7 @@ func (m *PluginManager) DraftOrderUpdated(orDer model.Order) (any, *model_helper
 	return value, nil
 }
 
-func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo) (any, *model_helper.AppError) {
+func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model_helper.NodeCatalogueInfo) (any, *model_helper.AppError) {
 	var defaultValue any
 
 	var (
@@ -920,7 +920,7 @@ func (m *PluginManager) SaleCreated(sale model.Sale, currentCatalogue model.Node
 	return value, nil
 }
 
-func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo) (any, *model_helper.AppError) {
+func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model_helper.NodeCatalogueInfo) (any, *model_helper.AppError) {
 	var defaultValue any
 
 	var (
@@ -942,7 +942,7 @@ func (m *PluginManager) SaleDeleted(sale model.Sale, previousCatalogue model.Nod
 	return value, nil
 }
 
-func (m *PluginManager) SaleUpdated(sale model.Sale, previousCatalogue, currentCatalogue model.NodeCatalogueInfo) (any, *model_helper.AppError) {
+func (m *PluginManager) SaleUpdated(sale model.Sale, previousCatalogue, currentCatalogue model_helper.NodeCatalogueInfo) (any, *model_helper.AppError) {
 	var defaultValue any
 
 	var (
@@ -1306,7 +1306,7 @@ func (m *PluginManager) getPlugin(pluginID string, channelID string) interfaces.
 	return nil
 }
 
-func (m *PluginManager) InitializePayment(gateway string, paymentData model_types.JSONString, channelID string) *model.InitializedPaymentResponse {
+func (m *PluginManager) InitializePayment(gateway string, paymentData model_types.JSONString, channelID string) *model_helper.InitializedPaymentResponse {
 	plg := m.getPlugin(gateway, channelID)
 	if plg == nil {
 		return nil
@@ -1316,12 +1316,12 @@ func (m *PluginManager) InitializePayment(gateway string, paymentData model_type
 	return value
 }
 
-func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	plg := m.getPlugin(gateway, channelID)
 
 	if plg != nil {
 		var (
-			value  *model.GatewayResponse
+			value  *model_helper.GatewayResponse
 			appErr *model_helper.AppError
 		)
 
@@ -1353,27 +1353,27 @@ func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInfo
 	return nil, fmt.Errorf("payment plugin %s for %s payment method is in-accessible", gateway, methodName)
 }
 
-func (m *PluginManager) AuthorizePayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) AuthorizePayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "authorize_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) CapturePayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) CapturePayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "capture_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) RefundPayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) RefundPayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "refund_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) VoidPayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) VoidPayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "void_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) ConfirmPayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) ConfirmPayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "confirm_payment", paymentInformation, channelID)
 }
 
-func (m *PluginManager) ProcessPayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error) {
+func (m *PluginManager) ProcessPayment(gateway string, paymentInformation model_helper.PaymentData, channelID string) (*model_helper.GatewayResponse, error) {
 	return m.runPaymentMethod(gateway, "process_payment", paymentInformation, channelID)
 }
 
@@ -1392,7 +1392,7 @@ func (m *PluginManager) TokenIsRequiredAsPaymentInput(gateway, channelID string)
 	return defaultValue, nil
 }
 
-func (m *PluginManager) GetClientToken(gateway string, tokenConfig model.TokenConfig, channelID string) (string, *model_helper.AppError) {
+func (m *PluginManager) GetClientToken(gateway string, tokenConfig model_helper.TokenConfig, channelID string) (string, *model_helper.AppError) {
 	plg := m.getPlugin(gateway, channelID)
 	if plg != nil {
 		value, appErr := plg.GetClientToken(tokenConfig, nil)
@@ -1405,10 +1405,10 @@ func (m *PluginManager) GetClientToken(gateway string, tokenConfig model.TokenCo
 	return "", nil
 }
 
-func (m *PluginManager) ListPaymentSources(gateway, customerID, channelID string) ([]*model.CustomerSource, error) {
+func (m *PluginManager) ListPaymentSources(gateway, customerID, channelID string) ([]*model_helper.CustomerSource, error) {
 	plg := m.getPlugin(gateway, channelID)
 	if plg != nil {
-		defaultValue := []*model.CustomerSource{}
+		defaultValue := []*model_helper.CustomerSource{}
 		return plg.ListPaymentSources(customerID, defaultValue)
 	}
 
@@ -1423,14 +1423,14 @@ func (m *PluginManager) TranslationUpdated(translation any) {
 	panic("not implemented")
 }
 
-func (m *PluginManager) ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model.PaymentGateway {
+func (m *PluginManager) ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model_helper.PaymentGateway {
 	if checkOut != nil {
 		channelID = checkOut.ChannelID
 	}
 	plugins := m.getPlugins(channelID, activeOnly)
 
 	// if currency is given return only gateways which support given currency
-	var gateways []*model.PaymentGateway
+	var gateways []*model_helper.PaymentGateway
 
 	for _, plg := range plugins {
 		value, appErr := plg.GetPaymentGateways(currency, checkOut, nil)
@@ -1449,7 +1449,7 @@ func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model_ty
 	res := []model_types.JSONString{}
 
 	for _, plg := range filteredPlugins {
-		_, appErr := plg.ExternalObtainAccessTokens(nil, nil, model.ExternalAccessTokens{})
+		_, appErr := plg.ExternalObtainAccessTokens(nil, nil, model_helper.ExternalAccessTokens{})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotImplemented {
 				continue
@@ -1467,7 +1467,7 @@ func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model_ty
 }
 
 // AssignTaxCodeToObjectMeta requires obj must be Product or ProductType
-func (m *PluginManager) AssignTaxCodeToObjectMeta(obj any, taxCode string) (*model.TaxType, *model_helper.AppError) {
+func (m *PluginManager) AssignTaxCodeToObjectMeta(obj any, taxCode string) (*model_helper.TaxType, *model_helper.AppError) {
 	// validate obj
 	switch obj.(type) {
 	case model.Product,
@@ -1479,8 +1479,8 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj any, taxCode string) (*mod
 	}
 
 	var (
-		defaultValue = new(model.TaxType)
-		value        *model.TaxType
+		defaultValue = new(model_helper.TaxType)
+		value        *model_helper.TaxType
 		appErr       *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
@@ -1501,7 +1501,7 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj any, taxCode string) (*mod
 // GetTaxCodeFromObjectMeta
 //
 // NOTE: obj must be either Product or ProductType
-func (m *PluginManager) GetTaxCodeFromObjectMeta(obj any) (*model.TaxType, *model_helper.AppError) {
+func (m *PluginManager) GetTaxCodeFromObjectMeta(obj any) (*model_helper.TaxType, *model_helper.AppError) {
 	// validate obj
 	switch obj.(type) {
 	case model.Product,
@@ -1513,8 +1513,8 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj any) (*model.TaxType, *mode
 	}
 
 	var (
-		defaultValue = new(model.TaxType)
-		value        *model.TaxType
+		defaultValue = new(model_helper.TaxType)
+		value        *model_helper.TaxType
 		appErr       *model_helper.AppError
 	)
 	for _, plg := range m.getPlugins("", true) {
@@ -1740,8 +1740,8 @@ func (m *PluginManager) Notify(event string, payload model_types.JSONString, cha
 	return defaultValue, nil
 }
 
-func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model_types.JSONString, req *http.Request) (*model.ExternalAccessTokens, *model_helper.AppError) {
-	var defaultValue model.ExternalAccessTokens
+func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model_types.JSONString, req *http.Request) (*model_helper.ExternalAccessTokens, *model_helper.AppError) {
+	var defaultValue model_helper.ExternalAccessTokens
 	plg := m.getPlugin(pluginID, "")
 
 	if plg != nil {
@@ -1776,8 +1776,8 @@ func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model_ty
 	return defaultValue, nil
 }
 
-func (m *PluginManager) ExternalRefresh(pluginID string, data model_types.JSONString, req *http.Request) (*model.ExternalAccessTokens, *model_helper.AppError) {
-	var defaultValue model.ExternalAccessTokens
+func (m *PluginManager) ExternalRefresh(pluginID string, data model_types.JSONString, req *http.Request) (*model_helper.ExternalAccessTokens, *model_helper.AppError) {
+	var defaultValue model_helper.ExternalAccessTokens
 
 	plg := m.getPlugin(pluginID, "")
 	if plg != nil {

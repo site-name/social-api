@@ -17,10 +17,6 @@ func StopTimer(t *time.Timer) bool {
 	return stopped
 }
 
-func NewTime(t time.Time) *time.Time {
-	return &t
-}
-
 func MillisFromTime(t time.Time) int64 {
 	return t.UnixMilli()
 }

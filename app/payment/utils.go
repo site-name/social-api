@@ -14,14 +14,14 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // CreatePaymentInformation Extract order information along with payment details.
 //
 // Returns information required to process payment and additional
 // billing/shipping addresses for optional fraud-prevention mechanisms.
-func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model.PaymentData, *model_helper.AppError) {
+func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model_helper.PaymentData, *model_helper.AppError) {
 
 	var (
 		billingAddressID  string
@@ -126,7 +126,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 		additionalData = make(map[string]any)
 	}
 
-	return &model.PaymentData{
+	return &model_helper.PaymentData{
 		Gateway:            payMent.GateWay,
 		Token:              paymentToken,
 		Amount:             *amount,
@@ -143,7 +143,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 		Data:               additionalData,
 		GraphqlCustomerID:  userID,
 		StorePaymentMethod: payMent.StorePaymentMethod,
-		PaymentMetadata:    model.StringMap(payMent.Metadata),
+		PaymentMetadata:    model_helper.StringMap(payMent.Metadata),
 	}, nil
 }
 
@@ -171,7 +171,7 @@ func (a *ServicePayment) CreatePayment(
 	returnUrl string,
 	externalReference string,
 	storePaymentMethod model.StorePaymentMethod,
-	metadata model.StringMap, // can be nil
+	metadata model_helper.StringMap, // can be nil
 
 ) (*model.Payment, *model.PaymentError, *model_helper.AppError) {
 	// must at least provide either checkout or order, both is best :))
@@ -183,7 +183,7 @@ func (a *ServicePayment) CreatePayment(
 		extraData = make(map[string]string)
 	}
 	if metadata == nil {
-		metadata = make(model.StringMap)
+		metadata = make(model_helper.StringMap)
 	}
 
 	var billingAddressID string
@@ -243,7 +243,7 @@ func (a *ServicePayment) CreatePayment(
 	return payment, nil, appErr
 }
 
-func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model_helper.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError) {
 	// get all transactions that belong to given payment
 	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
@@ -272,7 +272,7 @@ func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewa
 }
 
 // CreateTransaction reate a transaction based on transaction kind and gateway response.
-func (a *ServicePayment) CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError) {
+func (a *ServicePayment) CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError) {
 	// Default values for token, amount, currency are only used in cases where
 	// response from gateway was invalid or an exception occured
 	if gatewayResponse == nil {
@@ -280,7 +280,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind model.Transact
 		if paymentInformation.Token != nil {
 			transactionId = *paymentInformation.Token
 		}
-		gatewayResponse = &model.GatewayResponse{
+		gatewayResponse = &model_helper.GatewayResponse{
 			Kind:           kind,
 			ActionRequired: false,
 			IsSucess:       isSuccess,
@@ -309,7 +309,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind model.Transact
 	return a.SaveTransaction(nil, tran)
 }
 
-func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
 		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
 		if appErr != nil {
@@ -351,7 +351,7 @@ func (a *ServicePayment) CleanAuthorize(payMent *model.Payment) *model.PaymentEr
 }
 
 // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError {
+func (a *ServicePayment) ValidateGatewayResponse(response *model_helper.GatewayResponse) *model.GatewayError {
 	if response == nil {
 		return &model.GatewayError{
 			Where:   "ValidateGatewayResponse",
@@ -526,7 +526,7 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 }
 
 // UpdatePayment
-func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model_helper.AppError {
+func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *model_helper.GatewayResponse) *model_helper.AppError {
 	var firstChange, secondChange bool
 
 	if gatewayResponse.PspReference != "" {

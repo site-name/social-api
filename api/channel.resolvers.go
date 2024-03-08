@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // NOTE: Refer to ./schemas/channel.graphqls for directive used

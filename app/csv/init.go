@@ -1,21 +1,21 @@
 package csv
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type Fields struct {
-	HEADERS_TO_FIELDS_MAPPING      map[string]model.StringMap
-	PRODUCT_ATTRIBUTE_FIELDS       model.StringMap
-	PRODUCT_CHANNEL_LISTING_FIELDS model.StringMap
-	WAREHOUSE_FIELDS               model.StringMap
-	VARIANT_ATTRIBUTE_FIELDS       model.StringMap
-	VARIANT_CHANNEL_LISTING_FIELDS model.StringMap
+	HEADERS_TO_FIELDS_MAPPING      map[string]model_helper.StringMap
+	PRODUCT_ATTRIBUTE_FIELDS       model_helper.StringMap
+	PRODUCT_CHANNEL_LISTING_FIELDS model_helper.StringMap
+	WAREHOUSE_FIELDS               model_helper.StringMap
+	VARIANT_ATTRIBUTE_FIELDS       model_helper.StringMap
+	VARIANT_CHANNEL_LISTING_FIELDS model_helper.StringMap
 }
 
 // Data structure with fields for product export
 var ProductExportFields = &Fields{
-	HEADERS_TO_FIELDS_MAPPING: map[string]model.StringMap{
+	HEADERS_TO_FIELDS_MAPPING: map[string]model_helper.StringMap{
 		"fields": {
 			"id":                                "id",
 			"name":                              "name",
@@ -39,7 +39,7 @@ var ProductExportFields = &Fields{
 			"variant_media": "variants__media__image",
 		},
 	},
-	PRODUCT_ATTRIBUTE_FIELDS: model.StringMap{
+	PRODUCT_ATTRIBUTE_FIELDS: model_helper.StringMap{
 		"value_slug":   "attributes__values__slug",
 		"value_name":   "attributes__values__name",
 		"file_url":     "attributes__values__file_url",
@@ -53,7 +53,7 @@ var ProductExportFields = &Fields{
 		"unit":         "attributes__assignment__attribute__unit",
 		"attribute_pk": "attributes__assignment__attribute__pk",
 	},
-	PRODUCT_CHANNEL_LISTING_FIELDS: model.StringMap{
+	PRODUCT_CHANNEL_LISTING_FIELDS: model_helper.StringMap{
 		"channel_pk":             "channel_listings__channel__pk",
 		"slug":                   "channel_listings__channel__slug",
 		"product_currency_code":  "channel_listings__currency",
@@ -62,12 +62,12 @@ var ProductExportFields = &Fields{
 		"searchable":             "channel_listings__visible_in_listings",
 		"available_for_purchase": "channel_listings__available_for_purchase",
 	},
-	WAREHOUSE_FIELDS: model.StringMap{
+	WAREHOUSE_FIELDS: model_helper.StringMap{
 		"slug":         "variants__stocks__warehouse__slug",
 		"quantity":     "variants__stocks__quantity",
 		"warehouse_pk": "variants__stocks__warehouse__id",
 	},
-	VARIANT_ATTRIBUTE_FIELDS: model.StringMap{
+	VARIANT_ATTRIBUTE_FIELDS: model_helper.StringMap{
 		"value_slug":   "variants__attributes__values__slug",
 		"value_name":   "variants__attributes__values__name",
 		"file_url":     "variants__attributes__values__file_url",
@@ -81,7 +81,7 @@ var ProductExportFields = &Fields{
 		"unit":         "variants__attributes__assignment__attribute__unit",
 		"attribute_pk": "variants__attributes__assignment__attribute__pk",
 	},
-	VARIANT_CHANNEL_LISTING_FIELDS: model.StringMap{
+	VARIANT_CHANNEL_LISTING_FIELDS: model_helper.StringMap{
 		"channel_pk":                          "variants__channel_listings__channel__pk",
 		"slug":                                "variants__channel_listings__channel__slug",
 		"price_amount":                        "variants__channel_listings__price_amount",

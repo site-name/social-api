@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model_helper.AppError) {

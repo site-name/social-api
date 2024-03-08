@@ -12,7 +12,7 @@ import (
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // ProductVariantById finds product variant by given id

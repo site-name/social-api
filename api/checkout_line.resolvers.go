@@ -124,11 +124,11 @@ func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, 
 		variants model.ProductVariants,
 		quantities []int,
 		checkoutInfo *model_helper.CheckoutInfo,
-		lines model.CheckoutLineInfos,
+		lines model_helper.CheckoutLineInfos,
 		manager interfaces.PluginManagerInterface,
 		discounts []*model_helper.DiscountInfo,
 		replace bool,
-	) (model.CheckoutLineInfos, *model_helper.AppError) {
+	) (model_helper.CheckoutLineInfos, *model_helper.AppError) {
 
 		{
 			// NOTE:
@@ -201,7 +201,7 @@ func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, 
 	}
 
 	// find checkout info of checkout
-	checkoutInfo, appErr := embedCtx.App.Srv().CheckoutService().FetchCheckoutInfo(checkout, model.CheckoutLineInfos{}, discounts, pluginMng)
+	checkoutInfo, appErr := embedCtx.App.Srv().CheckoutService().FetchCheckoutInfo(checkout, model_helper.CheckoutLineInfos{}, discounts, pluginMng)
 	if appErr != nil {
 		return nil, appErr
 	}

@@ -21,7 +21,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 	"github.com/uber/jaeger-client-go/utils"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 

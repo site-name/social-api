@@ -13,7 +13,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -265,7 +265,7 @@ func (s *ServiceCheckout) createLineForOrder(
 
 // createLinesForOrder Create a lines for the given order.
 // :raises InsufficientStock: when there is not enough items in stock for this variant.
-func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model_helper.AppError) {
 	var (
 		translationLanguageCode = checkoutInfo.Checkout.LanguageCode
 		countryCode             = checkoutInfo.GetCountry()
@@ -376,7 +376,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (map[string]any, *model.InsufficientStock, *model.NotApplicable, *model.TaxError, *model_helper.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (map[string]any, *model.InsufficientStock, *model.NotApplicable, *model.TaxError, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 	checkout.PopulateNonDbFields() // this call is important
 

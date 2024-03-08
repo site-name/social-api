@@ -17,7 +17,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -1456,7 +1456,7 @@ func (a *ServiceOrder) GetTotalOrderDiscount(order *model.Order) (*goprices.Mone
 }
 
 // GetOrderDiscounts Return all discounts applied to the order by staff user
-func (a *ServiceOrder) GetOrderDiscounts(order *model.Order) ([]*model.OrderDiscount, *model_helper.AppError) {
+func (a *ServiceOrder) GetOrderDiscounts(order *model.Order) (model.OrderDiscountSlice, *model_helper.AppError) {
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
 		Conditions: squirrel.Eq{
 			model.OrderDiscountTableName + ".Type":    model.MANUAL,

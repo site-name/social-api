@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // PreOrderAllocationsByOptions returns a list of preorder allocations filtered using given options

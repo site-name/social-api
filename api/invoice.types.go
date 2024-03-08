@@ -40,10 +40,10 @@ func SystemInvoiceToGraphqlInvoice(i *model.Invoice) *Invoice {
 	}
 }
 
-func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.Invoice] {
+func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[model.InvoiceSlice] {
 	var (
-		res        = make([]*dataloader.Result[[]*model.Invoice], len(orderIDs))
-		invoiceMap = map[string][]*model.Invoice{} // keys are order ids
+		res        = make([]*dataloader.Result[model.InvoiceSlice], len(orderIDs))
+		invoiceMap = map[string]model.InvoiceSlice{} // keys are order ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -54,7 +54,7 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 	})
 	if appErr != nil {
 		for idx := range orderIDs {
-			res[idx] = &dataloader.Result[[]*model.Invoice]{Error: appErr}
+			res[idx] = &dataloader.Result[model.InvoiceSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -67,7 +67,7 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 	}
 
 	for idx, id := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.Invoice]{Data: invoiceMap[id]}
+		res[idx] = &dataloader.Result[model.InvoiceSlice]{Data: invoiceMap[id]}
 	}
 	return res
 }

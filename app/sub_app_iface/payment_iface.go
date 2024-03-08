@@ -78,14 +78,14 @@ type PaymentService interface {
 	// `extraData`, `ckout`, `ord` can be nil
 	//
 	// `storePaymentMethod` default to model.StorePaymentMethod.NONE
-	CreatePayment(transaction boil.ContextTransactor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model_helper.AppError)
+	CreatePayment(transaction boil.ContextTransactor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model_helper.StringMap) (*model.Payment, *model.PaymentError, *model_helper.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
 	// billing/shipping addresses for optional fraud-prevention mechanisms.
-	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model.PaymentData, *model_helper.AppError)
+	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model_helper.PaymentData, *model_helper.AppError)
 	// CreateTransaction reate a transaction based on transaction kind and gateway response.
-	CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError)
+	CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError)
 	// FetchCustomerId Retrieve users customer_id stored for desired gateway.
 	// returning string could be "" or long string
 	FetchCustomerId(user *model.User, gateway string) (string, *model_helper.AppError)
@@ -112,21 +112,21 @@ type PaymentService interface {
 	// TransactionsByOption returns a list of transactions filtered based on given option
 	TransactionsByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model_helper.AppError)
 	// UpdatePayment
-	UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model_helper.AppError
+	UpdatePayment(payMent model.Payment, gatewayResponse *model_helper.GatewayResponse) *model_helper.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
 	UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
 	UpsertPayment(transaction boil.ContextTransactor, payMent *model.Payment) (*model.Payment, *model_helper.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
-	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError)
-	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError)
+	ValidateGatewayResponse(response *model_helper.GatewayResponse) *model.GatewayError
+	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model_helper.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError)
+	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError)
 	GetLastOrderPayment(orderID string) (*model.Payment, *model_helper.AppError)
 	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model_helper.AppError)
 	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model_helper.AppError)
 	GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model_helper.AppError)
-	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*model.PaymentGateway
-	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model.CustomerSource, *model_helper.AppError)
+	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*model_helper.PaymentGateway
+	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model_helper.CustomerSource, *model_helper.AppError)
 	PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError)
 	SaveTransaction(transaction boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
