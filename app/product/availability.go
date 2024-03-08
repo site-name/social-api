@@ -34,17 +34,17 @@ func getTotalDiscount(unDiscounted *goprices.TaxedMoney, discounted *goprices.Ta
 // getProductPriceRange
 //
 // NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange. they must be same type
-func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (priceRangeLocal any, discountLocalCurrency any, appErr *model_helper.AppError) {
+func (a *ServiceProduct) getProductPriceRange(discounted any, unDiscounted any, localCurrency string) (priceRangeLocal any, discountLocalCurrency any, appErr *model_helper.AppError) {
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("ServiceProduct.getProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	localCurrency = strings.ToUpper(localCurrency)
@@ -128,7 +128,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 					continue
 				}
 				if !strings.EqualFold(currency, listing.Currency) {
-					return nil, model_helper.NewAppError("GetProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
+					return nil, model_helper.NewAppError("GetProductPriceRange", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
 				}
 			}
 		}

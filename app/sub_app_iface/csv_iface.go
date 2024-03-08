@@ -7,7 +7,6 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/temp/model"
 )
 
 // CsvService contains methods for working with csv
@@ -65,14 +64,14 @@ type CsvService interface {
 		Fields     []string
 	}) ([]string, *model_helper.AppError)
 	// GetDefaultExportPayload returns a map for mapping
-	GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model_helper.AppError)
+	GetDefaultExportPayload(exportFile model.ExportFile) (map[string]any, *model_helper.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.
 	//
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
 	//
 	// TODO: consider improving me
-	GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model.StringInterface
+	GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model_types.JSONString
 	ExportProductsInBatches(productQuery squirrel.SelectBuilder, ExportInfo struct {
 		Attributes []string
 		Warehouses []string

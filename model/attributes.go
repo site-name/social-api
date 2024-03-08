@@ -139,14 +139,14 @@ func (w whereHelperAttributeType) GTE(x AttributeType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperAttributeType) IN(slice []AttributeType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperAttributeType) NIN(slice []AttributeType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -174,14 +174,14 @@ func (w whereHelperAttributeInputType) GTE(x AttributeInputType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperAttributeInputType) IN(slice []AttributeInputType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperAttributeInputType) NIN(slice []AttributeInputType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -209,14 +209,14 @@ func (w whereHelperNullAttributeEntityType) GTE(x NullAttributeEntityType) qm.Qu
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperNullAttributeEntityType) IN(slice []NullAttributeEntityType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperNullAttributeEntityType) NIN(slice []NullAttributeEntityType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -467,7 +467,7 @@ func (o *Attribute) CategoryAttributes(mods ...qm.QueryMod) categoryAttributeQue
 
 // LoadAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
+func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttribute any, mods queries.Applicator) error {
 	var slice []*Attribute
 	var object *Attribute
 
@@ -493,7 +493,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeR{}
@@ -512,7 +512,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -573,7 +573,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 
 // LoadCategoryAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
+func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAttribute any, mods queries.Applicator) error {
 	var slice []*Attribute
 	var object *Attribute
 
@@ -599,7 +599,7 @@ func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAt
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeR{}
@@ -618,7 +618,7 @@ func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAt
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -695,7 +695,7 @@ func (o *Attribute) AddAttributeValues(exec boil.Executor, insert bool, related 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 				strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -747,7 +747,7 @@ func (o *Attribute) AddCategoryAttributes(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 				strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -976,7 +976,7 @@ func (o AttributeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1098,7 +1098,7 @@ func (o *Attribute) Upsert(exec boil.Executor, updateOnConflict bool, conflictCo
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1182,7 +1182,7 @@ func (o AttributeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1228,7 +1228,7 @@ func (o *AttributeSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AttributeSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

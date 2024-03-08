@@ -1275,7 +1275,7 @@ func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	// only shop's members can see all
 	embedCtx.CheckAuthenticatedAndHasRoleAny("productAttributesByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	if embedCtx.Err != nil {
-		filterOptions.AttributeVisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.AttributeVisibleInStoreFront = model_helper.GetPointerOfValue(true)
 	}
 
 	attributeProducts, appErr := embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
@@ -1342,7 +1342,7 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 
 	// if current user has no manage product permission:
 	if embedCtx.Err != nil {
-		filterOptions.AttributeVisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.AttributeVisibleInStoreFront = model_helper.GetPointerOfValue(true)
 	}
 
 	attributeVariants, err := embedCtx.App.Srv().
@@ -1404,7 +1404,7 @@ func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("attributeProductsByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	if embedCtx.Err != nil {
-		filterOptions.AttributeVisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.AttributeVisibleInStoreFront = model_helper.GetPointerOfValue(true)
 	}
 
 	attributeProducts, appErr := embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
@@ -1437,7 +1437,7 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("attributeVariantsByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	if embedCtx.Err != nil {
-		filterOptions.AttributeVisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.AttributeVisibleInStoreFront = model_helper.GetPointerOfValue(true)
 	}
 
 	attributeVariants, err := embedCtx.App.Srv().Store.AttributeVariant().FilterByOptions(filterOptions)
@@ -1469,7 +1469,7 @@ func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedProductAttributesByProductIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	if embedCtx.Err != nil {
-		filterOptions.AttributeProduct_Attribute_VisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.AttributeProduct_Attribute_VisibleInStoreFront = model_helper.GetPointerOfValue(true)
 	}
 
 	assignedProductAttributes, err := embedCtx.App.Srv().Store.AssignedProductAttribute().FilterByOptions(&filterOptions)

@@ -251,7 +251,7 @@ func (o *VoucherChannelListing) Voucher(mods ...qm.QueryMod) voucherQuery {
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeVoucherChannelListing any, mods queries.Applicator) error {
 	var slice []*VoucherChannelListing
 	var object *VoucherChannelListing
 
@@ -277,7 +277,7 @@ func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeV
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherChannelListingR{}
@@ -299,7 +299,7 @@ func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeV
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -363,7 +363,7 @@ func (voucherChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeV
 
 // LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherChannelListingL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+func (voucherChannelListingL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherChannelListing any, mods queries.Applicator) error {
 	var slice []*VoucherChannelListing
 	var object *VoucherChannelListing
 
@@ -389,7 +389,7 @@ func (voucherChannelListingL) LoadVoucher(e boil.Executor, singular bool, maybeV
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherChannelListingR{}
@@ -411,7 +411,7 @@ func (voucherChannelListingL) LoadVoucher(e boil.Executor, singular bool, maybeV
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -489,7 +489,7 @@ func (o *VoucherChannelListing) SetChannel(exec boil.Executor, insert bool, rela
 		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -535,7 +535,7 @@ func (o *VoucherChannelListing) SetVoucher(exec boil.Executor, insert bool, rela
 		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -760,7 +760,7 @@ func (o VoucherChannelListingSlice) UpdateAll(exec boil.Executor, cols M) (int64
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -882,7 +882,7 @@ func (o *VoucherChannelListing) Upsert(exec boil.Executor, updateOnConflict bool
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -966,7 +966,7 @@ func (o VoucherChannelListingSlice) DeleteAll(exec boil.Executor) (int64, error)
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1012,7 +1012,7 @@ func (o *VoucherChannelListingSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := VoucherChannelListingSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

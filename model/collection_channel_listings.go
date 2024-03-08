@@ -244,7 +244,7 @@ func (o *CollectionChannelListing) Collection(mods ...qm.QueryMod) collectionQue
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeCollectionChannelListing any, mods queries.Applicator) error {
 	var slice []*CollectionChannelListing
 	var object *CollectionChannelListing
 
@@ -270,7 +270,7 @@ func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionChannelListingR{}
@@ -296,7 +296,7 @@ func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -360,7 +360,7 @@ func (collectionChannelListingL) LoadChannel(e boil.Executor, singular bool, may
 
 // LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (collectionChannelListingL) LoadCollection(e boil.Executor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+func (collectionChannelListingL) LoadCollection(e boil.Executor, singular bool, maybeCollectionChannelListing any, mods queries.Applicator) error {
 	var slice []*CollectionChannelListing
 	var object *CollectionChannelListing
 
@@ -386,7 +386,7 @@ func (collectionChannelListingL) LoadCollection(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionChannelListingR{}
@@ -408,7 +408,7 @@ func (collectionChannelListingL) LoadCollection(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -486,7 +486,7 @@ func (o *CollectionChannelListing) SetChannel(exec boil.Executor, insert bool, r
 		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -565,7 +565,7 @@ func (o *CollectionChannelListing) SetCollection(exec boil.Executor, insert bool
 		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -790,7 +790,7 @@ func (o CollectionChannelListingSlice) UpdateAll(exec boil.Executor, cols M) (in
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -912,7 +912,7 @@ func (o *CollectionChannelListing) Upsert(exec boil.Executor, updateOnConflict b
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -996,7 +996,7 @@ func (o CollectionChannelListingSlice) DeleteAll(exec boil.Executor) (int64, err
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1042,7 +1042,7 @@ func (o *CollectionChannelListingSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CollectionChannelListingSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

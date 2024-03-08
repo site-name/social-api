@@ -232,7 +232,7 @@ import (
 // 			return nil, model_helper.NewAppError(
 // 				"UploadFiles",
 // 				"api.file.upload_file.read_request.app_error",
-// 				map[string]interface{}{
+// 				map[string]any{
 // 					"Filename": fileHeader.Filename,
 // 				},
 // 				fileErr.Error(),
@@ -303,7 +303,7 @@ import (
 // func (a *ServiceFile) UploadFile(c *request.Context, data []byte, channelID string, filename string) (*file.FileInfo, *model_helper.AppError) {
 // 	_, err := a.GetChannel(channelID)
 // 	if err != nil && channelID != "" {
-// 		return nil, model_helper.NewAppError("UploadFile", "api.file.upload_file.incorrect_channelId.app_error", map[string]interface{}{"channelId": channelID}, "", http.StatusBadRequest)
+// 		return nil, model_helper.NewAppError("UploadFile", "api.file.upload_file.incorrect_channelId.app_error", map[string]any{"channelId": channelID}, "", http.StatusBadRequest)
 // 	}
 
 // 	info, _, appError := a.DoUploadFileExpectModification(c, time.Now(), "noteam", channelID, "nouser", filename, data)
@@ -671,8 +671,8 @@ func (t *UploadFileTask) pathPrefix() string {
 		"/" + t.fileinfo.ID + "/"
 }
 
-func (t *UploadFileTask) newAppError(id string, httpStatus int, extra ...interface{}) *model_helper.AppError {
-	params := map[string]interface{}{
+func (t *UploadFileTask) newAppError(id string, httpStatus int, extra ...any) *model_helper.AppError {
+	params := map[string]any{
 		"Name":          t.Name,
 		"Filename":      t.Name,
 		"UserId":        t.UserId,
@@ -721,7 +721,7 @@ func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now tim
 
 	if model_helper.FileInfoIsImage(*info) {
 		if limitErr := checkImageResolutionLimit(model_helper.GetValueOfPointerOrZero(info.Width.Int), model_helper.GetValueOfPointerOrZero(info.Height.Int), *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
-			err := model_helper.NewAppError("uploadFile", "api.file.upload_file.large_image.app_error", map[string]interface{}{"Filename": filename}, limitErr.Error(), http.StatusBadRequest)
+			err := model_helper.NewAppError("uploadFile", "api.file.upload_file.large_image.app_error", map[string]any{"Filename": filename}, limitErr.Error(), http.StatusBadRequest)
 			return nil, data, err
 		}
 

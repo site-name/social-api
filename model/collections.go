@@ -374,7 +374,7 @@ func (o *Collection) VoucherCollections(mods ...qm.QueryMod) voucherCollectionQu
 
 // LoadCollectionChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -400,7 +400,7 @@ func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool,
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -419,7 +419,7 @@ func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool,
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -480,7 +480,7 @@ func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool,
 
 // LoadCollectionTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -506,7 +506,7 @@ func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, ma
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -525,7 +525,7 @@ func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, ma
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -586,7 +586,7 @@ func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, ma
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -612,7 +612,7 @@ func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -631,7 +631,7 @@ func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -692,7 +692,7 @@ func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection
 
 // LoadProductCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -718,7 +718,7 @@ func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeC
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -737,7 +737,7 @@ func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeC
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -798,7 +798,7 @@ func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeC
 
 // LoadSaleCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -824,7 +824,7 @@ func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeColl
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -843,7 +843,7 @@ func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeColl
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -904,7 +904,7 @@ func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeColl
 
 // LoadVoucherCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadVoucherCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadVoucherCollections(e boil.Executor, singular bool, maybeCollection any, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -930,7 +930,7 @@ func (collectionL) LoadVoucherCollections(e boil.Executor, singular bool, maybeC
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &collectionR{}
@@ -949,7 +949,7 @@ func (collectionL) LoadVoucherCollections(e boil.Executor, singular bool, maybeC
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1026,7 +1026,7 @@ func (o *Collection) AddCollectionChannelListings(exec boil.Executor, insert boo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1078,7 +1078,7 @@ func (o *Collection) AddCollectionTranslations(exec boil.Executor, insert bool, 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, collectionTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1130,7 +1130,7 @@ func (o *Collection) AddMenuItems(exec boil.Executor, insert bool, related ...*M
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1172,7 +1172,7 @@ func (o *Collection) AddMenuItems(exec boil.Executor, insert bool, related ...*M
 // Sets related.R.Collection's MenuItems accordingly.
 func (o *Collection) SetMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	query := "update \"menu_items\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1255,7 +1255,7 @@ func (o *Collection) AddProductCollections(exec boil.Executor, insert bool, rela
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1307,7 +1307,7 @@ func (o *Collection) AddSaleCollections(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1359,7 +1359,7 @@ func (o *Collection) AddVoucherCollections(exec boil.Executor, insert bool, rela
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCollectionPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1588,7 +1588,7 @@ func (o CollectionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1710,7 +1710,7 @@ func (o *Collection) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1794,7 +1794,7 @@ func (o CollectionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1840,7 +1840,7 @@ func (o *CollectionSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CollectionSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

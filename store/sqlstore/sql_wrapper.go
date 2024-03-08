@@ -18,11 +18,11 @@ var _ sqlDBInterface = (*sql.DB)(nil)
 var _ sqlDBInterface = (*sql.Tx)(nil)
 
 type sqlDBInterface interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	Exec(query string, args ...any) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	Query(query string, args ...any) (*sql.Rows, error)
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 }
 
 type sqlDBWrapper struct {
@@ -70,7 +70,7 @@ func (w *sqlDBWrapper) Rollback() error {
 }
 
 // Exec implements boil.ContextExecutor.
-func (w *sqlDBWrapper) Exec(query string, args ...interface{}) (sql.Result, error) {
+func (w *sqlDBWrapper) Exec(query string, args ...any) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
 
@@ -84,7 +84,7 @@ func (w *sqlDBWrapper) Exec(query string, args ...interface{}) (sql.Result, erro
 }
 
 // ExecContext implements boil.ContextExecutor.
-func (w *sqlDBWrapper) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (w *sqlDBWrapper) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.queryTimeout)
 	defer cancel()
 
@@ -98,7 +98,7 @@ func (w *sqlDBWrapper) ExecContext(ctx context.Context, query string, args ...in
 }
 
 // Query implements boil.ContextExecutor.
-func (w *sqlDBWrapper) Query(query string, args ...interface{}) (*sql.Rows, error) {
+func (w *sqlDBWrapper) Query(query string, args ...any) (*sql.Rows, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
 
@@ -112,7 +112,7 @@ func (w *sqlDBWrapper) Query(query string, args ...interface{}) (*sql.Rows, erro
 }
 
 // QueryContext implements boil.ContextExecutor.
-func (w *sqlDBWrapper) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+func (w *sqlDBWrapper) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.queryTimeout)
 	defer cancel()
 
@@ -126,7 +126,7 @@ func (w *sqlDBWrapper) QueryContext(ctx context.Context, query string, args ...i
 }
 
 // QueryRow implements boil.ContextExecutor.
-func (w *sqlDBWrapper) QueryRow(query string, args ...interface{}) *sql.Row {
+func (w *sqlDBWrapper) QueryRow(query string, args ...any) *sql.Row {
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
 
@@ -140,7 +140,7 @@ func (w *sqlDBWrapper) QueryRow(query string, args ...interface{}) *sql.Row {
 }
 
 // QueryRowContext implements boil.ContextExecutor.
-func (w *sqlDBWrapper) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+func (w *sqlDBWrapper) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	ctx, cancel := context.WithTimeout(ctx, w.queryTimeout)
 	defer cancel()
 

@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mattermost/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// BaseCheckoutShippingPrice
-func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
-	if shippingMethodInfo, ok := deliveryMethodInfo.(*model.ShippingMethodInfo); ok {
+	if shippingMethodInfo, ok := deliveryMethodInfo.(*model_helper.ShippingMethodInfo); ok {
 		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
 	}
 
@@ -23,13 +23,7 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *model_helper.C
 	return zeroTaxed, nil
 }
 
-// CalculatePriceForShippingMethod Return checkout shipping price
-func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model_helper.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
-	// validate input arguments
-	if checkoutInfo == nil {
-		return nil, model_helper.NewAppError("CalculatePriceForShippingMethod", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutInfo"}, "", http.StatusBadRequest)
-	}
-
+func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_helper.CheckoutInfo, shippingMethodInfo *model_helper.ShippingMethodInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	var (
 		shippingMethod   = shippingMethodInfo.DeliveryMethod
 		shippingRequired bool
@@ -37,32 +31,35 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model_he
 	)
 
 	if lines != nil {
-		shippingRequired, appErr = s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+		productIDs := lo.Map(lines.Products(), func(item *model.Product, _ int) string { return item.ID })
+		shippingRequired, appErr = s.srv.Product.ProductsRequireShipping(productIDs)
 	} else {
-		shippingRequired, appErr = s.srv.CheckoutService().CheckoutShippingRequired(checkoutInfo.Checkout.Token)
+		shippingRequired, appErr = s.srv.Checkout.CheckoutShippingRequired(checkoutInfo.Checkout.Token)
 	}
-
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if !model_helper.IsValidId(shippingMethod.Id) || !shippingRequired {
-		zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
+	if !model_helper.IsValidId(shippingMethod.ID) || !shippingRequired {
+		zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency.String())
 		return zeroTaxedMoney, nil
 	}
 
-	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.ShippingService().
-		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			Conditions: squirrel.Eq{
-				model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethod.Id,
-				model.ShippingMethodChannelListingTableName + ".ChannelID":        checkoutInfo.Checkout.ChannelID,
+	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.Shipping.
+		ShippingMethodChannelListingsByOption(
+			model_helper.ShippingMethodChannelListingFilterOption{
+				CommonQueryOptions: model_helper.NewCommonQueryOptions(
+					model.ShippingMethodChannelListingWhere.ShippingMethodID.EQ(shippingMethod.ID),
+					model.ShippingMethodChannelListingWhere.ChannelID.EQ(checkoutInfo.Checkout.ChannelID),
+					qm.Limit(1),
+				),
 			},
-		})
+		)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	shippingPrice := shippingMethodChannelListingsOfShippingMethod[0].GetTotal()
+	shippingPrice := model_helper.ShippingMethodChannelListingGetTotal(shippingMethodChannelListingsOfShippingMethod[0])
 	taxedMoney, _ := goprices.NewTaxedMoney(shippingPrice, shippingPrice)
 
 	quantizedPrice, _ := taxedMoney.Quantize(goprices.Up, -1)
@@ -72,12 +69,12 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model_he
 // BaseCheckoutTotal returns the total cost of the checkout
 //
 // NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency string) (*goprices.TaxedMoney, *model_helper.AppError) {
 	// valudate input
 	switch discount.(type) {
 	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
 	default:
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
 	}
 
 	// this method reqires all values's currencies are uppoer-cased and supported by system
@@ -89,14 +86,14 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shipp
 	currencyMap[currency] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
 	}
 
 	total, _ := subTotal.Add(shippingPrice)
 	total, _ = total.Sub(discount)
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency)
-	if zeroTaxedMoney.LessThanOrEqual(total) {
+	if zeroTaxedMoney.LessThanOrEqual(*total) {
 		return total, nil
 	}
 
@@ -106,16 +103,12 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shipp
 // BaseCheckoutLineTotal Return the total price of this line
 //
 // `discounts` can be nil
-func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *model.CheckoutLineInfo, channel *model.Channel, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
-	if discounts == nil {
-		discounts = []*model.DiscountInfo{}
-	}
-
-	variantPrice, appErr := a.srv.ProductService().ProductVariantGetPrice(
+func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo model_helper.CheckoutLineInfo, channel model.Channel, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+	variantPrice, appErr := a.srv.Product.ProductVariantGetPrice(
 		&checkoutLineInfo.Variant,
 		checkoutLineInfo.Product,
 		checkoutLineInfo.Collections,
-		*channel,
+		channel,
 		&checkoutLineInfo.ChannelListing,
 		discounts,
 	)
@@ -124,17 +117,15 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *model.Checkout
 	}
 
 	amount := variantPrice.Mul(float64(checkoutLineInfo.Line.Quantity))
-	amount, _ = amount.Quantize(goprices.Up, -1)
+	quantizedAmount, _ := amount.Quantize(goprices.Up, -1)
 
 	return &goprices.TaxedMoney{
-		Net:      amount,
-		Gross:    amount,
-		Currency: amount.Currency,
+		Net:   *quantizedAmount,
+		Gross: *quantizedAmount,
 	}, nil
 }
 
-func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model_helper.AppError) {
-	orderLine.PopulateNonDbFields()
+func (a *ServiceCheckout) BaseOrderLineTotal(orderLine model.OrderLine) (*goprices.TaxedMoney, *model_helper.AppError) {
 	if orderLine.UnitPrice != nil {
 		unitPrice := orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
 		unitPrice, _ = unitPrice.Quantize(goprices.Up, -1)
@@ -142,7 +133,7 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *model.OrderLine) (*gopri
 		return unitPrice, nil
 	}
 
-	return nil, model_helper.NewAppError("BaseOrderLineTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "", http.StatusBadRequest)
+	return nil, model_helper.NewAppError("BaseOrderLineTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "orderLine"}, "", http.StatusBadRequest)
 }
 
 func (a *ServiceCheckout) BaseTaxRate(price goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {

@@ -134,7 +134,7 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model_helper
 		if nErr == nil {
 			if session != nil {
 				if session.Token != token {
-					return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "session token is different from the one in DB", http.StatusUnauthorized)
+					return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "session token is different from the one in DB", http.StatusUnauthorized)
 				}
 
 				if !model_helper.SessionIsExpired(*session) {
@@ -160,12 +160,12 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model_helper
 			} else {
 				slog.Warn("Error while creating session for user access token", slog.Err(err))
 			}
-			return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": detailedError}, "", statusCode)
+			return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": detailedError}, "", statusCode)
 		}
 	}
 
 	if session.ID == "" || model_helper.SessionIsExpired(*session) {
-		return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "session is either nil or expired", http.StatusUnauthorized)
+		return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "session is either nil or expired", http.StatusUnauthorized)
 	}
 
 	if *a.srv.Config().ServiceSettings.SessionIdleTimeoutInMinutes > 0 &&
@@ -189,7 +189,7 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model_helper
 					slog.Warn("Error while revoking session", slog.Err(err))
 				}
 			})
-			return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "idle timeout", http.StatusUnauthorized)
+			return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "idle timeout", http.StatusUnauthorized)
 		}
 	}
 
@@ -595,5 +595,5 @@ func (a *ServiceAccount) GetCloudSession(token string) (*model.Session, *model_h
 		return session, nil
 	}
 
-	return nil, model_helper.NewAppError("GetCloudSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
+	return nil, model_helper.NewAppError("GetCloudSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
 }

@@ -196,7 +196,7 @@ func (ds *DatabaseStore) persist(cfg *model_helper.Config) error {
 		}
 	}()
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"id":        id,
 		"value":     value,
 		"create_at": createAt,
@@ -250,7 +250,7 @@ func (ds *DatabaseStore) Load() ([]byte, error) {
 
 // GetFile fetches the contents of a previously persisted configuration file.
 func (ds *DatabaseStore) GetFile(name string) ([]byte, error) {
-	query, args, err := sqlx.Named("SELECT Data FROM ConfigurationFiles WHERE Name = :name", map[string]interface{}{
+	query, args, err := sqlx.Named("SELECT Data FROM ConfigurationFiles WHERE Name = :name", map[string]any{
 		"name": name,
 	})
 	if err != nil {
@@ -272,7 +272,7 @@ func (ds *DatabaseStore) SetFile(name string, data []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "file data failed length check")
 	}
-	params := map[string]interface{}{
+	params := map[string]any{
 		"name":      name,
 		"data":      data,
 		"create_at": model_helper.GetMillis(),
@@ -301,7 +301,7 @@ func (ds *DatabaseStore) SetFile(name string, data []byte) error {
 
 // HasFile returns true if the given file was previously persisted.
 func (ds *DatabaseStore) HasFile(name string) (bool, error) {
-	query, args, err := sqlx.Named("SELECT COUNT(*) FROM ConfigurationFiles WHERE Name = :name", map[string]interface{}{
+	query, args, err := sqlx.Named("SELECT COUNT(*) FROM ConfigurationFiles WHERE Name = :name", map[string]any{
 		"name": name,
 	})
 	if err != nil {
@@ -319,7 +319,7 @@ func (ds *DatabaseStore) HasFile(name string) (bool, error) {
 
 // RemoveFile remoevs a previously persisted configuration file.
 func (ds *DatabaseStore) RemoveFile(name string) error {
-	_, err := ds.db.NamedExec("DELETE FROM ConfigurationFiles WHERE Name = :name", map[string]interface{}{
+	_, err := ds.db.NamedExec("DELETE FROM ConfigurationFiles WHERE Name = :name", map[string]any{
 		"name": name,
 	})
 	if err != nil {

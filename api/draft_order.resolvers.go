@@ -9,6 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -16,7 +17,7 @@ import (
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id string }) (*DraftOrderComplete, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderComplete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid order id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DraftOrderComplete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, args.Id+" is not a valid order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -106,7 +107,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 				channelSlug = channel.Slug
 			}
 
-			inSufStockErr, appErr := embedCtx.App.Srv().WarehouseService().AllocateStocks(model.OrderLineDatas{lineData}, country, channelSlug, pluginMng, model.StringInterface{})
+			inSufStockErr, appErr := embedCtx.App.Srv().WarehouseService().AllocateStocks(model.OrderLineDatas{lineData}, country, channelSlug, pluginMng, model_types.JSONString{})
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -147,7 +148,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string }) (*DraftOrderDelete, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DraftOrderDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
 	}
 
 	// find order:
@@ -164,7 +165,7 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 	// begin transaction
 	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tran.Error != nil {
-		return nil, model_helper.NewAppError("DraftOrderDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderDelete", model_helper.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
@@ -175,7 +176,7 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 
 	// commit
 	if err := tran.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("DraftOrderDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderDelete", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
@@ -193,7 +194,7 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []string }) (*DraftOrderBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Ids"}, "please provide valid draft order ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Ids"}, "please provide valid draft order ids", http.StatusBadRequest)
 	}
 
 	// validate all orders are draft
@@ -214,7 +215,7 @@ func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []
 	// begin transaction
 	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tran.Error != nil {
-		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model_helper.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
@@ -225,7 +226,7 @@ func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []
 
 	// commit
 	if err := tran.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderBulkDelete", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &DraftOrderBulkDelete{
@@ -247,7 +248,7 @@ func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
 
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("DraftOrderCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderCreate", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -257,7 +258,7 @@ func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, &order, model.StringInterface{})
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, &order, model_types.JSONString{})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -265,7 +266,7 @@ func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
 	// commit
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("DraftOrderCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	_, appErr = pluginMng.DraftOrderCreated(order)
@@ -285,7 +286,7 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 }) (*DraftOrderUpdate, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("DraftOrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("DraftOrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -303,7 +304,7 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 	// create transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("DraftOrderUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -312,7 +313,7 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, order, model.StringInterface{})
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, order, model_types.JSONString{})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -320,7 +321,7 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 	// commit
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("DraftOrderCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("DraftOrderCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	_, appErr = pluginMng.DraftOrderUpdated(*order)

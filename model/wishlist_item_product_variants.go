@@ -222,7 +222,7 @@ func (o *WishlistItemProductVariant) WishlistItem(mods ...qm.QueryMod) wishlistI
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular bool, maybeWishlistItemProductVariant any, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -248,7 +248,7 @@ func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &wishlistItemProductVariantR{}
@@ -270,7 +270,7 @@ func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular 
 
 // LoadWishlistItem allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadWishlistItem(e boil.Executor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadWishlistItem(e boil.Executor, singular bool, maybeWishlistItemProductVariant any, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -360,7 +360,7 @@ func (wishlistItemProductVariantL) LoadWishlistItem(e boil.Executor, singular bo
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &wishlistItemProductVariantR{}
@@ -382,7 +382,7 @@ func (wishlistItemProductVariantL) LoadWishlistItem(e boil.Executor, singular bo
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *WishlistItemProductVariant) SetProductVariant(exec boil.Executor, inser
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *WishlistItemProductVariant) SetWishlistItem(exec boil.Executor, insert 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"wishlist_item_id"}),
 		strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o WishlistItemProductVariantSlice) UpdateAll(exec boil.Executor, cols M) (
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *WishlistItemProductVariant) Upsert(exec boil.Executor, updateOnConflict
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o WishlistItemProductVariantSlice) DeleteAll(exec boil.Executor) (int64, e
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistItemProductVariantPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *WishlistItemProductVariantSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := WishlistItemProductVariantSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistItemProductVariantPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

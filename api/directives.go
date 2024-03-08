@@ -30,7 +30,7 @@ func (h *HasRolesDirective) ImplementsDirective() string {
 	return "hasRoles"
 }
 
-func (h *HasRolesDirective) Validate(ctx context.Context, _ interface{}) error {
+func (h *HasRolesDirective) Validate(ctx context.Context, _ any) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	strRoles := lo.Map(h.Roles, func(r Role, _ int) string { return string(r) })
 	embedCtx.CheckAuthenticatedAndHasRoles("HasRolesDirective.Validate", strRoles...)
@@ -45,7 +45,7 @@ func (h *HasRoleAnyDirective) ImplementsDirective() string {
 	return "hasRoleAny"
 }
 
-func (h *HasRoleAnyDirective) Validate(ctx context.Context, _ interface{}) error {
+func (h *HasRoleAnyDirective) Validate(ctx context.Context, _ any) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	strRoles := lo.Map(h.Roles, func(r Role, _ int) string { return string(r) })
 	embedCtx.CheckAuthenticatedAndHasRoleAny("HasRoleAnyDirective.Validate", strRoles...)
@@ -59,7 +59,7 @@ func (h *AuthenticatedDirective) ImplementsDirective() string {
 	return "authenticated"
 }
 
-func (h *AuthenticatedDirective) Validate(ctx context.Context, _ interface{}) error {
+func (h *AuthenticatedDirective) Validate(ctx context.Context, _ any) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	return embedCtx.Err
@@ -74,7 +74,7 @@ func (h *HasPermissionsDirective) ImplementsDirective() string {
 	return "hasPermissions"
 }
 
-func (h *HasPermissionsDirective) Validate(ctx context.Context, _ interface{}) error {
+func (h *HasPermissionsDirective) Validate(ctx context.Context, _ any) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	permissions := lo.Map(h.Permissions, func(p PermissionEnum, _ int) *model.Permission { return &model.Permission{Id: string(p)} })
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(permissions...)
@@ -90,7 +90,7 @@ func (h *HasPermissionAnyDirective) ImplementsDirective() string {
 	return "hasPermissionAny"
 }
 
-func (h *HasPermissionAnyDirective) Validate(ctx context.Context, _ interface{}) error {
+func (h *HasPermissionAnyDirective) Validate(ctx context.Context, _ any) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	permissions := lo.Map(h.Permissions, func(p PermissionEnum, _ int) *model.Permission { return &model.Permission{Id: string(p)} })
 	embedCtx.CheckAuthenticatedAndHasPermissionToAny(permissions...)

@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
@@ -163,7 +164,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *mo
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model_helper.AppError {
+func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 	appErr := a.RecalculateOrderPrices(transaction, order, kwargs)
 	if appErr != nil {
 		return appErr
@@ -344,7 +345,7 @@ func (a *ServiceOrder) UpdateOrderPrices(tx *gorm.DB, order model.Order, manager
 		}
 	}
 
-	return a.RecalculateOrder(tx, &order, map[string]interface{}{})
+	return a.RecalculateOrder(tx, &order, map[string]any{})
 }
 
 func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError) {
@@ -514,7 +515,7 @@ func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*model.
 // Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
+func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result any, notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
 
 	order.PopulateNonDbFields() // NOTE: must call this method before performing money, weight calculations
 
@@ -674,10 +675,10 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, order model.Order
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError) {
 	transaction := s.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
@@ -868,14 +869,14 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orderLine, nil, nil
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model_helper.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ any) *model_helper.AppError {
 	var (
 		balanceData       = model.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -908,7 +909,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 				giftCard.UsedByEmail = &usedByEmail
 			}
 
-			giftCard.LastUsedOn = model.GetPointerOfValue(model.GetMillis())
+			giftCard.LastUsedOn = model_helper.GetPointerOfValue(model.GetMillis())
 			giftcardsToUpdate = append(giftcardsToUpdate, giftCard)
 		}
 	}
@@ -969,7 +970,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ interface{}, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -991,13 +992,13 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID stri
 
 		totalPriceNetAmount := orderLine.UnitPriceNetAmount.Mul(decimal.NewFromInt(int64(orderLine.Quantity)))
 		totalPriceGrossAmount := orderLine.UnitPriceGrossAmount.Mul(decimal.NewFromInt(int64(orderLine.Quantity)))
-		orderLine.TotalPriceNetAmount = model.GetPointerOfValue(totalPriceNetAmount.Round(3))
-		orderLine.TotalPriceGrossAmount = model.GetPointerOfValue(totalPriceGrossAmount.Round(3))
+		orderLine.TotalPriceNetAmount = model_helper.GetPointerOfValue(totalPriceNetAmount.Round(3))
+		orderLine.TotalPriceGrossAmount = model_helper.GetPointerOfValue(totalPriceGrossAmount.Round(3))
 
 		unDiscountedTotalPriceNetAmount := orderLine.UnDiscountedUnitPriceNetAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
 		unDiscountedTotalpriceGrossAmount := orderLine.UnDiscountedUnitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
-		orderLine.UnDiscountedTotalPriceNetAmount = model.GetPointerOfValue(unDiscountedTotalPriceNetAmount.Round(3))
-		orderLine.UnDiscountedTotalPriceGrossAmount = model.GetPointerOfValue(unDiscountedTotalpriceGrossAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceNetAmount = model_helper.GetPointerOfValue(unDiscountedTotalPriceNetAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceGrossAmount = model_helper.GetPointerOfValue(unDiscountedTotalpriceGrossAmount.Round(3))
 
 		_, appErr = a.UpsertOrderLine(transaction, &orderLine)
 		if appErr != nil {
@@ -1035,7 +1036,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.O
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
 			Type:    model.ORDER_EVENT_TYPE_REMOVED_PRODUCTS,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"lines": a.LinesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff,
@@ -1049,7 +1050,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.O
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
 			Type:    model.ORDER_EVENT_TYPE_ADDED_PRODUCTS,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"lines": a.LinesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff * -1,
@@ -1260,7 +1261,7 @@ func (a *ServiceOrder) SumOrderTotals(orders []*model.Order, currencyCode string
 	// validate given `currencyCode` is valid
 	currencyCode = strings.ToUpper(currencyCode)
 	if _, err := goprices.GetCurrencyPrecision(currencyCode); err != nil || currencyCode != orders[0].Currency {
-		return nil, model_helper.NewAppError("SumOrderTotals", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SumOrderTotals", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, order := range orders {
@@ -1349,7 +1350,7 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, order *
 }
 
 // ApplyDiscountToValue Calculate the price based on the provided values
-func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountValueType, currency string, priceToDiscount interface{}) (interface{}, error) {
+func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountValueType, currency string, priceToDiscount any) (any, error) {
 	// validate currency
 	money := &goprices.Money{
 		Amount:   *value,
@@ -1589,9 +1590,9 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(transaction *gorm.DB, orderLi
 	orderLine.PopulateNonDbFields()
 
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice
-	orderLine.UnitDiscountAmount = model.GetPointerOfValue(decimal.Zero)
-	orderLine.UnitDiscountValue = model.GetPointerOfValue(decimal.Zero)
-	orderLine.UnitDiscountReason = model.GetPointerOfValue("")
+	orderLine.UnitDiscountAmount = model_helper.GetPointerOfValue(decimal.Zero)
+	orderLine.UnitDiscountValue = model_helper.GetPointerOfValue(decimal.Zero)
+	orderLine.UnitDiscountReason = model_helper.GetPointerOfValue("")
 	orderLine.TotalPrice = orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
 
 	_, appErr := a.UpsertOrderLine(transaction, &orderLine)
@@ -1770,7 +1771,7 @@ func (s *ServiceOrder) ValidateProductIsPublishedInChannel(variants model.Produc
 	}
 
 	if len(unpublishedVariantIds) > 0 {
-		return model_helper.NewAppError("ValidateProductIsPublishedInChannel", "app.order.add_unpublished_variants_to_order.app_error", map[string]interface{}{"Variants": strings.Join(unpublishedVariantIds, ", ")}, "cannot add unpublished variants to order", http.StatusNotAcceptable)
+		return model_helper.NewAppError("ValidateProductIsPublishedInChannel", "app.order.add_unpublished_variants_to_order.app_error", map[string]any{"Variants": strings.Join(unpublishedVariantIds, ", ")}, "cannot add unpublished variants to order", http.StatusNotAcceptable)
 	}
 
 	return nil

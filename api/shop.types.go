@@ -11,6 +11,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/web"
 )
 
@@ -113,7 +114,7 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 }) ([]*PaymentGateway, error) {
 	// validate params
 	if !model_helper.IsValidId(args.ChannelID) {
-		return nil, model_helper.NewAppError("Shop.AvailablePaymentGateways", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Shop.AvailablePaymentGateways", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -122,9 +123,9 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 	paymentGateWays := pluginMng.ListPaymentGateways(args.Currency, nil, args.ChannelID, true)
 
 	return lo.Map(paymentGateWays, func(gw *model.PaymentGateway, _ int) *PaymentGateway {
-		gw.Config = lo.Filter(gw.Config, func(cf model.StringInterface, _ int) bool { return cf != nil && len(cf) > 0 })
+		gw.Config = lo.Filter(gw.Config, func(cf model_types.JSONString, _ int) bool { return cf != nil && len(cf) > 0 })
 
-		resConfig := lo.Map(gw.Config, func(cf model.StringInterface, _ int) *GatewayConfigLine {
+		resConfig := lo.Map(gw.Config, func(cf model_types.JSONString, _ int) *GatewayConfigLine {
 			var res GatewayConfigLine
 			for k, v := range cf {
 				vStr := fmt.Sprintf("%v", v)
@@ -152,9 +153,9 @@ func (s *Shop) AvailableExternalAuthentications(ctx context.Context) ([]External
 	if appErr != nil {
 		return nil, appErr
 	}
-	auths = lo.Filter(auths, func(auth model.StringInterface, _ int) bool { return auth != nil && len(auth) > 0 })
+	auths = lo.Filter(auths, func(auth model_types.JSONString, _ int) bool { return auth != nil && len(auth) > 0 })
 
-	return lo.Map(auths, func(auth model.StringInterface, _ int) ExternalAuthentication {
+	return lo.Map(auths, func(auth model_types.JSONString, _ int) ExternalAuthentication {
 		var res ExternalAuthentication
 		for k, v := range auth {
 			vStr := fmt.Sprintf("%v", v)
@@ -172,7 +173,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 }) ([]*ShippingMethod, error) {
 	// validate argument(s)
 	if !slug.IsSlug(args.Channel) {
-		return nil, model_helper.NewAppError("Shop.AvailableShippingMethods", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Shop.AvailableShippingMethods", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 	if args.Address != nil {
 		err := args.Address.validate("AvailableShippingMethods")

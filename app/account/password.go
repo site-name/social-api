@@ -33,7 +33,7 @@ func (a *ServiceAccount) isPasswordValid(password string) *model_helper.AppError
 	}
 
 	if err := IsPasswordValidWithSettings(password, &a.srv.Config().PasswordSettings); err != nil {
-		return model_helper.NewAppError("User.IsValid", err.Id(), map[string]interface{}{"Min": *a.srv.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
+		return model_helper.NewAppError("User.IsValid", err.Id(), map[string]any{"Min": *a.srv.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
 	}
 
 	return nil

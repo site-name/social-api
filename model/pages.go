@@ -337,7 +337,7 @@ func (o *Page) PageTranslations(mods ...qm.QueryMod) pageTranslationQuery {
 
 // LoadPageType allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (pageL) LoadPageType(e boil.Executor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadPageType(e boil.Executor, singular bool, maybePage any, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -363,7 +363,7 @@ func (pageL) LoadPageType(e boil.Executor, singular bool, maybePage interface{},
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageR{}
@@ -385,7 +385,7 @@ func (pageL) LoadPageType(e boil.Executor, singular bool, maybePage interface{},
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -449,7 +449,7 @@ func (pageL) LoadPageType(e boil.Executor, singular bool, maybePage interface{},
 
 // LoadAssignedPageAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadAssignedPageAttributes(e boil.Executor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadAssignedPageAttributes(e boil.Executor, singular bool, maybePage any, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -475,7 +475,7 @@ func (pageL) LoadAssignedPageAttributes(e boil.Executor, singular bool, maybePag
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageR{}
@@ -494,7 +494,7 @@ func (pageL) LoadAssignedPageAttributes(e boil.Executor, singular bool, maybePag
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -555,7 +555,7 @@ func (pageL) LoadAssignedPageAttributes(e boil.Executor, singular bool, maybePag
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadMenuItems(e boil.Executor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadMenuItems(e boil.Executor, singular bool, maybePage any, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -581,7 +581,7 @@ func (pageL) LoadMenuItems(e boil.Executor, singular bool, maybePage interface{}
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageR{}
@@ -600,7 +600,7 @@ func (pageL) LoadMenuItems(e boil.Executor, singular bool, maybePage interface{}
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -661,7 +661,7 @@ func (pageL) LoadMenuItems(e boil.Executor, singular bool, maybePage interface{}
 
 // LoadPageTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadPageTranslations(e boil.Executor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadPageTranslations(e boil.Executor, singular bool, maybePage any, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -687,7 +687,7 @@ func (pageL) LoadPageTranslations(e boil.Executor, singular bool, maybePage inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageR{}
@@ -706,7 +706,7 @@ func (pageL) LoadPageTranslations(e boil.Executor, singular bool, maybePage inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -781,7 +781,7 @@ func (o *Page) SetPageType(exec boil.Executor, insert bool, related *PageType) e
 		strmangle.SetParamNames("\"", "\"", 1, []string{"page_type_id"}),
 		strmangle.WhereClause("\"", "\"", 2, pagePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -829,7 +829,7 @@ func (o *Page) AddAssignedPageAttributes(exec boil.Executor, insert bool, relate
 				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedPageAttributePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -881,7 +881,7 @@ func (o *Page) AddMenuItems(exec boil.Executor, insert bool, related ...*MenuIte
 				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -923,7 +923,7 @@ func (o *Page) AddMenuItems(exec boil.Executor, insert bool, related ...*MenuIte
 // Sets related.R.Page's MenuItems accordingly.
 func (o *Page) SetMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	query := "update \"menu_items\" set \"page_id\" = null where \"page_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1006,7 +1006,7 @@ func (o *Page) AddPageTranslations(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, pageTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1235,7 +1235,7 @@ func (o PageSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1357,7 +1357,7 @@ func (o *Page) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1441,7 +1441,7 @@ func (o PageSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pagePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1487,7 +1487,7 @@ func (o *PageSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := PageSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pagePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -82,11 +82,11 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *
 // 		channel, err := a.GetChannel(us.ChannelId)
 // 		if err != nil {
 // 			return nil, model_helper.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
-// 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
+// 				map[string]any{"channelId": us.ChannelId}, "", http.StatusBadRequest)
 // 		}
 // 		if channel.DeleteAt != 0 {
 // 			return nil, model_helper.NewAppError("CreateUploadSession", "app.upload.create.cannot_upload_to_deleted_channel.app_error",
-// 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
+// 				map[string]any{"channelId": us.ChannelId}, "", http.StatusBadRequest)
 // 		}
 // 	}
 
@@ -150,7 +150,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 			if err != nil {
 				errStr = err.Error()
 			}
-			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error", map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error", map[string]any{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
 		}
 	} else if us.FileOffset < us.FileSize {
 		// resume upload
@@ -188,7 +188,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	info.CreatorID = us.UserID
 	info.Path = us.Path
 
-	// info.RemoteId = model.GetPointerOfValue(us.RemoteId)
+	// info.RemoteId = model_helper.GetPointerOfValue(us.RemoteId)
 	// if us.ReqFileId != "" {
 	// 	info.Id = us.ReqFileId
 	// }
@@ -205,7 +205,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 			return nil, model_helper.NewAppError(
 				"uploadData",
 				"app.upload.upload_data.large_image.app_error",
-				map[string]interface{}{
+				map[string]any{
 					"Filename": us.FileName,
 					"Width":    width,
 					"Height":   height,

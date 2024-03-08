@@ -280,7 +280,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		ApplyOncePerOrder:        v.ApplyOncePerOrder,
 		ApplyOncePerCustomer:     v.ApplyOncePerCustomer,
 		DiscountValueType:        DiscountValueTypeEnum(v.DiscountValueType),
-		MinCheckoutItemsQuantity: model.GetPointerOfValue(int32(v.MinCheckoutItemsQuantity)),
+		MinCheckoutItemsQuantity: model_helper.GetPointerOfValue(int32(v.MinCheckoutItemsQuantity)),
 		Metadata:                 MetadataToSlice(v.Metadata),
 		PrivateMetadata:          MetadataToSlice(v.PrivateMetadata),
 	}
@@ -299,7 +299,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		res.EndDate = &DateTime{*v.EndDate}
 	}
 	if v.UsageLimit != nil {
-		res.UsageLimit = model.GetPointerOfValue(int32(*v.UsageLimit))
+		res.UsageLimit = model_helper.GetPointerOfValue(int32(*v.UsageLimit))
 	}
 
 	return res

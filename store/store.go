@@ -124,10 +124,8 @@ type Store interface {
 	AttributeValue() AttributeValueStore                               //
 	AttributeValueTranslation() AttributeValueTranslationStore         //
 	AssignedPageAttributeValue() AssignedPageAttributeValueStore       //
-	AssignedPageAttribute() AssignedPageAttributeStore                 //
 	AttributePage() AttributePageStore                                 //
 	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
-	AssignedProductAttribute() AssignedProductAttributeStore           //
 	CustomProductAttribute() CustomProductAttributeStore               //
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
@@ -136,6 +134,9 @@ type Store interface {
 	ShopStaff() ShopStaffStore                                         //
 	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
+
+	AssignedPageAttribute() AssignedPageAttributeStore       //
+	AssignedProductAttribute() AssignedProductAttributeStore //
 }
 
 // shop
@@ -220,23 +221,24 @@ type (
 		Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error)                                                                // Get try finding an value with given id then returns it with an error
 		SelectForSort(assignmentID string) (model.AssignedPageAttributeValueSlice, model.AttributeValueSlice, error)                                  // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
 	}
-	AssignedPageAttributeStore interface {
-		Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error)                        // Save inserts given assigned page model into database and returns it with an error
-		Get(id string) (*model.AssignedPageAttribute, error)                                                              // Get returns an assigned page model with an error
-		FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) // GetByOption try to find an assigned page model with given option. If nothing found, creats new instance with that option and returns such value with an error
-	}
 	AttributePageStore interface {
 		Save(page model.AttributePage) (*model.AttributePage, error)
 		Get(pageID string) (*model.AttributePage, error)
 		GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error)
 	}
 	AssignedProductAttributeValueStore interface {
-		Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
-		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                             // Get try finding an instance with given id then returns the value with an error
-		SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error)  // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
+		Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) // Save inserts given instance into database then returns it with an error
+		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                                       // Get try finding an instance with given id then returns the value with an error
+		SelectForSort(assignmentID string) (model.AssignedProductAttributeValueSlice, model.AttributeValueSlice, error)            // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
 		FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error)
 	}
+	AssignedPageAttributeStore interface {
+		Upsert(assignedPageAttr model.AssignedPageAttribute) (*model.AssignedPageAttribute, error)                        // Save inserts given assigned page model into database and returns it with an error
+		Get(id string) (*model.AssignedPageAttribute, error)                                                              // Get returns an assigned page model with an error
+		FilterByOptions(options model_helper.AssignedPageAttributeFilterOption) (model.AssignedPageAttributeSlice, error) // GetByOption try to find an assigned page model with given option. If nothing found, creats new instance with that option and returns such value with an error
+	}
 	AssignedProductAttributeStore interface {
+		Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)
 		GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
 		FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error)
 	}
@@ -422,7 +424,7 @@ type (
 		// GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)             // GetByOption finds and returns a product type with given options
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
-	CategoryTranslationStore interface{}
+	CategoryTranslationStore any
 	CategoryStore            interface {
 		Upsert(category model.Category) (*model.Category, error)                                  // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
@@ -748,7 +750,7 @@ type (
 		Count(options model_helper.UserCountOptions) (int64, error)
 		AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error)
 		GetAllProfiles(options model_helper.UserGetOptions) (model.UserSlice, error)
-		Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error)
+		Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error)
 		AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error)
 		GetProfileByIds(ctx context.Context, userIds []string, options UserGetByIdsOpts, allowFromCache bool) (model.UserSlice, error)
 		IsEmpty() (bool, error)

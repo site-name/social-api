@@ -332,10 +332,10 @@ type Z_GetPluginConfigArgs struct {
 }
 
 type Z_GetPluginConfigReturns struct {
-	A map[string]interface{}
+	A map[string]any
 }
 
-func (g *apiRPCClient) GetPluginConfig() map[string]interface{} {
+func (g *apiRPCClient) GetPluginConfig() map[string]any {
 	_args := &Z_GetPluginConfigArgs{}
 	_returns := &Z_GetPluginConfigReturns{}
 	if err := g.client.Call("Plugin.GetPluginConfig", _args, _returns); err != nil {
@@ -346,7 +346,7 @@ func (g *apiRPCClient) GetPluginConfig() map[string]interface{} {
 
 func (s *apiRPCServer) GetPluginConfig(args *Z_GetPluginConfigArgs, returns *Z_GetPluginConfigReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetPluginConfig() map[string]interface{}
+		GetPluginConfig() map[string]any
 	}); ok {
 		returns.A = hook.GetPluginConfig()
 	} else {
@@ -356,14 +356,14 @@ func (s *apiRPCServer) GetPluginConfig(args *Z_GetPluginConfigArgs, returns *Z_G
 }
 
 type Z_SavePluginConfigArgs struct {
-	A map[string]interface{}
+	A map[string]any
 }
 
 type Z_SavePluginConfigReturns struct {
 	A *model_helper.AppError
 }
 
-func (g *apiRPCClient) SavePluginConfig(config map[string]interface{}) *model_helper.AppError {
+func (g *apiRPCClient) SavePluginConfig(config map[string]any) *model_helper.AppError {
 	_args := &Z_SavePluginConfigArgs{config}
 	_returns := &Z_SavePluginConfigReturns{}
 	if err := g.client.Call("Plugin.SavePluginConfig", _args, _returns); err != nil {
@@ -374,7 +374,7 @@ func (g *apiRPCClient) SavePluginConfig(config map[string]interface{}) *model_he
 
 func (s *apiRPCServer) SavePluginConfig(args *Z_SavePluginConfigArgs, returns *Z_SavePluginConfigReturns) error {
 	if hook, ok := s.impl.(interface {
-		SavePluginConfig(config map[string]interface{}) *model_helper.AppError
+		SavePluginConfig(config map[string]any) *model_helper.AppError
 	}); ok {
 		returns.A = hook.SavePluginConfig(args.A)
 	} else {
@@ -1661,14 +1661,14 @@ func (s *apiRPCServer) KVList(args *Z_KVListArgs, returns *Z_KVListReturns) erro
 
 type Z_PublishWebSocketEventArgs struct {
 	A string
-	B map[string]interface{}
+	B map[string]any
 	C *model_helper.WebsocketBroadcast
 }
 
 type Z_PublishWebSocketEventReturns struct {
 }
 
-func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast) {
+func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]any, broadcast *model_helper.WebsocketBroadcast) {
 	_args := &Z_PublishWebSocketEventArgs{event, payload, broadcast}
 	_returns := &Z_PublishWebSocketEventReturns{}
 	if err := g.client.Call("Plugin.PublishWebSocketEvent", _args, _returns); err != nil {
@@ -1679,7 +1679,7 @@ func (g *apiRPCClient) PublishWebSocketEvent(event string, payload map[string]in
 
 func (s *apiRPCServer) PublishWebSocketEvent(args *Z_PublishWebSocketEventArgs, returns *Z_PublishWebSocketEventReturns) error {
 	if hook, ok := s.impl.(interface {
-		PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast)
+		PublishWebSocketEvent(event string, payload map[string]any, broadcast *model_helper.WebsocketBroadcast)
 	}); ok {
 		hook.PublishWebSocketEvent(args.A, args.B, args.C)
 	} else {

@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -125,7 +124,7 @@ type ProductService interface {
 	// UpdateProductsDiscountedPricesOfDiscount
 	//
 	// NOTE: discount must be either *Sale or *Voucher
-	UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount interface{}) *model_helper.AppError
+	UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount any) *model_helper.AppError
 	// UpsertCategory first checks if given category need a Level number.
 	// Performs upsert given category into database.
 	// asynchronously does category anayltic to update category cache.

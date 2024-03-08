@@ -202,7 +202,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
 	if !model_helper.IsValidId(args.ChannelID) {
-		return nil, model_helper.NewAppError("User.StoredPaymentSources", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("User.StoredPaymentSources", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -276,7 +276,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
 			if !model_helper.IsValidId(*args.ChannelID) {
-				return nil, model_helper.NewAppError("User.CheckoutTokens", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("User.CheckoutTokens", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 			}
 			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.ChannelID)()
 		}
@@ -470,12 +470,12 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 
 	msg, ok := event.Parameters["message"]
 	if ok && msg != nil {
-		res.Message = model.GetPointerOfValue(msg.(string))
+		res.Message = model_helper.GetPointerOfValue(msg.(string))
 	}
 
 	count, ok := event.Parameters["count"]
 	if ok && count != nil {
-		res.Count = model.GetPointerOfValue(int32(count.(int)))
+		res.Count = model_helper.GetPointerOfValue(int32(count.(int)))
 	}
 
 	res.event = event
@@ -601,14 +601,14 @@ func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error)
 func (a *AddressInput) validate(where string) *model_helper.AppError {
 	// validate input country
 	if country := a.Country; country == nil || country.IsValid() != nil {
-		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
 
 	// validate input phone
 	if phone := a.Phone; phone != nil {
 		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
 		if !ok {
-			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
 	}
 

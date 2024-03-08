@@ -52,10 +52,10 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 		Name:            variant.Name,
 		Sku:             &variant.Sku,
 		TrackInventory:  *variant.TrackInventory,
-		Channel:         model.GetPointerOfValue("unknown"), // ??
+		Channel:         model_helper.GetPointerOfValue("unknown"), // ??
 		Metadata:        MetadataToSlice(variant.Metadata),
 		PrivateMetadata: MetadataToSlice(variant.PrivateMetadata),
-		Margin:          model.GetPointerOfValue[int32](0), // ??
+		Margin:          model_helper.GetPointerOfValue[int32](0), // ??
 		p:               variant,
 	}
 	if variant.Weight != nil {
@@ -95,7 +95,7 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	}
 
 	if args.CountryCode == nil || !args.CountryCode.IsValid() {
-		return nil, model_helper.NewAppError("ProductVariant.Stocks", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariant.Stocks", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "countryCode"}, "", http.StatusBadRequest)
 	}
 
 	if embedCtx.CurrentChannelID == "" {
@@ -181,7 +181,7 @@ func (p *ProductVariant) Preorder(ctx context.Context) (*PreorderData, error) {
 		}
 
 		if t := p.p.PreOrderGlobalThreshold; t != nil {
-			res.globalThreshold = model.GetPointerOfValue(int32(*t))
+			res.globalThreshold = model_helper.GetPointerOfValue(int32(*t))
 		}
 		if ed := p.p.PreorderEndDate; ed != nil {
 			res.EndDate = &DateTime{*ed}
@@ -400,7 +400,7 @@ func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *we
 	for _, item := range p.Input {
 		existed := channelIDsMeetMap[item.ChannelID]
 		if existed {
-			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
+			return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
 		}
 		channelIDsMeetMap[item.ChannelID] = true
 	}
@@ -414,7 +414,7 @@ func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *we
 	}
 
 	if len(channelIDsMeetMap) != len(productChannelListings) {
-		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
+		return model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
 	}
 
 	// clean prices

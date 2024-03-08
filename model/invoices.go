@@ -282,7 +282,7 @@ func (o *Invoice) InvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceL) LoadOrder(e boil.Executor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
+func (invoiceL) LoadOrder(e boil.Executor, singular bool, maybeInvoice any, mods queries.Applicator) error {
 	var slice []*Invoice
 	var object *Invoice
 
@@ -308,7 +308,7 @@ func (invoiceL) LoadOrder(e boil.Executor, singular bool, maybeInvoice interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &invoiceR{}
@@ -334,7 +334,7 @@ func (invoiceL) LoadOrder(e boil.Executor, singular bool, maybeInvoice interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -398,7 +398,7 @@ func (invoiceL) LoadOrder(e boil.Executor, singular bool, maybeInvoice interface
 
 // LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (invoiceL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
+func (invoiceL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeInvoice any, mods queries.Applicator) error {
 	var slice []*Invoice
 	var object *Invoice
 
@@ -424,7 +424,7 @@ func (invoiceL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeInvoice i
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &invoiceR{}
@@ -443,7 +443,7 @@ func (invoiceL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeInvoice i
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -518,7 +518,7 @@ func (o *Invoice) SetOrder(exec boil.Executor, insert bool, related *Order) erro
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, invoicePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -599,7 +599,7 @@ func (o *Invoice) AddInvoiceEvents(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"invoice_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -641,7 +641,7 @@ func (o *Invoice) AddInvoiceEvents(exec boil.Executor, insert bool, related ...*
 // Sets related.R.Invoice's InvoiceEvents accordingly.
 func (o *Invoice) SetInvoiceEvents(exec boil.Executor, insert bool, related ...*InvoiceEvent) error {
 	query := "update \"invoice_events\" set \"invoice_id\" = null where \"invoice_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -901,7 +901,7 @@ func (o InvoiceSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1023,7 +1023,7 @@ func (o *Invoice) Upsert(exec boil.Executor, updateOnConflict bool, conflictColu
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1107,7 +1107,7 @@ func (o InvoiceSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), invoicePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1153,7 +1153,7 @@ func (o *InvoiceSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := InvoiceSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), invoicePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

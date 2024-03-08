@@ -11,7 +11,7 @@ import (
 )
 
 // SaveToken makes new Token and inserts it into database
-func (s *Server) SaveToken(tokenType model_helper.TokenType, extraData interface{}) (*model.Token, *model_helper.AppError) {
+func (s *Server) SaveToken(tokenType model_helper.TokenType, extraData any) (*model.Token, *model_helper.AppError) {
 	data, err := json.Marshal(extraData)
 	if err != nil {
 		return nil, model_helper.NewAppError("SaveToken", model_helper.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)

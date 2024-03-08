@@ -162,13 +162,13 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 	}
 
 	if variant.ProductID != productID {
-		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
 	}
 
 	// begin tx
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	product, appErr := s.UpsertProduct(tx, &model.Product{
@@ -181,7 +181,7 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SetDefaultProductVariantForProduct", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	s.srv.Store.FinalizeTransaction(tx)
 

@@ -162,7 +162,7 @@ func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
 	VariantID UUID
 }) (*ProductVariantStocksCreate, error) {
 	if len(args.Stocks) == 0 {
-		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide stock information to create", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Stocks"}, "please provide stock information to create", http.StatusBadRequest)
 	}
 
 	// validate duplication:
@@ -173,7 +173,7 @@ func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
 	for idx, stockInput := range args.Stocks {
 		strWarehouseID := stockInput.Warehouse.String()
 		if warehouseIdsForStocksMap[strWarehouseID] {
-			return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique warehouse ids", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Stocks"}, "please provide unique warehouse ids", http.StatusBadRequest)
 		}
 
 		warehouseIdsForStocksMap[strWarehouseID] = true
@@ -198,13 +198,13 @@ func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
 
 	existedStock, found := lo.Find(stocks, func(item *model.Stock) bool { return item != nil && warehouseIdsForStocksMap[item.WarehouseID] })
 	if found {
-		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "stocks"}, fmt.Sprintf("there is already a stock in warehouse with id=%s existed for given variant", existedStock.WarehouseID), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "stocks"}, fmt.Sprintf("there is already a stock in warehouse with id=%s existed for given variant", existedStock.WarehouseID), http.StatusBadRequest)
 	}
 
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -215,7 +215,7 @@ func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ProductVariantStocksCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
@@ -308,7 +308,7 @@ func (r *Resolver) ProductVariant(ctx context.Context, args struct {
 	// validate atleast id or sku is provided
 	if (args.Id == nil && args.Sku == nil) ||
 		(args.Id != nil && args.Sku != nil) {
-		return nil, model_helper.NewAppError("ProductVariant", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/sku"}, "please provide id or sku", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductVariant", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id/sku"}, "please provide id or sku", http.StatusBadRequest)
 	}
 
 	var channelSlug string

@@ -3,10 +3,7 @@
 
 package sub_app_iface
 
-import (
-	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
-)
+import "github.com/sitename/sitename/model_helper"
 
 // PageService contains methods for working with pages
 type PageService interface {

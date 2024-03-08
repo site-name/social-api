@@ -32,13 +32,13 @@ type ServiceOrder struct {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
-	return func(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model_helper.AppError {
+	return func(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 		if kwargs == nil {
-			kwargs = make(map[string]interface{})
+			kwargs = make(map[string]any)
 		}
 
 		var (
-			discount          interface{}
+			discount          any
 			notApplicableErr  *model.NotApplicable
 			appErr            *model_helper.AppError
 			calculateDiscount bool
@@ -69,7 +69,7 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 	}
 }
 
-func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model_helper.AppError {
+func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 	order.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines

@@ -63,7 +63,7 @@ func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *
 
 	priceAmount, _ := price.Amount.Float64()
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"ChannelID":               channelID,
 		"Currency":                price.Currency,
 		"CountryCode":             "%" + countryCode + "%",

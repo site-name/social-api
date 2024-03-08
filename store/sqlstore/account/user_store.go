@@ -488,7 +488,7 @@ func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) s
 func generateSearchQuery(query squirrel.SelectBuilder, terms []string, fields []string) squirrel.SelectBuilder {
 	for _, term := range terms {
 		searchFields := []string{}
-		termArgs := []interface{}{}
+		termArgs := []any{}
 		for _, field := range fields {
 			searchFields = append(searchFields, fmt.Sprintf("lower(%s) LIKE lower(?) escape '*' ", field))
 			termArgs = append(termArgs, fmt.Sprintf("%s%%", strings.TrimLeft(term, "@")))
@@ -508,7 +508,7 @@ func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectB
 	return query.Where("u.Roles LIKE LOWER(?)", roleParam)
 }
 
-func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (us *SqlUserStore) Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 	query := us.GetQueryBuilder().
 		Select("*").
 		From(model.TableNames.Users).
@@ -517,7 +517,7 @@ func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOpti
 	return us.performSearch(query, term, options)
 }
 
-func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 	term = store.SanitizeSearchTerm(term, "*")
 
 	var searchType []string
@@ -866,7 +866,7 @@ func (s *SqlUserStore) IsEmpty() (bool, error) {
 
 // 	err := transaction.Model(&model.User{Id: userID}).Association(association).Append(relations)
 // 	if err != nil {
-// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]any{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
 // 	}
 
 // 	return nil
@@ -895,7 +895,7 @@ func (s *SqlUserStore) IsEmpty() (bool, error) {
 
 // 	err := transaction.Model(&model.User{Id: userID}).Association(association).Delete(relations)
 // 	if err != nil {
-// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+// 		return model_helper.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]any{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
 // 	}
 
 // 	return nil

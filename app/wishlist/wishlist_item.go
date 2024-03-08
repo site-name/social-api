@@ -99,7 +99,7 @@ func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorm.DB, opti
 func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model_helper.AppError {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return model_helper.NewAppError("MoveItemsBetweenWishlists", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("MoveItemsBetweenWishlists", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
@@ -143,7 +143,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 	}
 
 	if err := transaction.Commit().Error; err != nil {
-		return model_helper.NewAppError("MoveItemsBetweenWishlists", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("MoveItemsBetweenWishlists", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

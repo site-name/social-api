@@ -19,21 +19,21 @@ func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAtt
 	return &SqlAssignedProductAttributeStore{s}
 }
 
-// func (as *SqlAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-// 	panic("unimplemented")
-// }
+func (as *SqlAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+	panic("unimplemented")
+}
 
-// func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
-// 	record, err := model.FindAssignedProductAttribute(as.GetReplica(), id)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return nil, store.NewErrNotFound(model.TableNames.AssignedProductAttributes, id)
-// 		}
-// 		return nil, err
-// 	}
+func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
+	record, err := model.FindAssignedProductAttribute(as.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.AssignedProductAttributes, id)
+		}
+		return nil, err
+	}
 
-// 	return record, nil
-// }
+	return record, nil
+}
 
 func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options model_helper.AssignedProductAttributeFilterOption) []qm.QueryMod {
 	conds := options.Conditions

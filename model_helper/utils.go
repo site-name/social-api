@@ -62,7 +62,7 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 //
 // E.g:
 //
-//	2 => &2 // ^.^
+//	GetPointerOfValue(2) => &2
 func GetPointerOfValue[T any](value T) *T {
 	return &value
 }
@@ -141,7 +141,7 @@ func (er *AppError) Wrap(err error) *AppError {
 }
 
 // NewAppError returns new app error with given parameters
-func NewAppError(where, id string, params map[string]interface{}, details string, status int) *AppError {
+func NewAppError(where, id string, params map[string]any, details string, status int) *AppError {
 	appErr := new(AppError)
 	appErr.Id = id
 	appErr.params = params
@@ -183,7 +183,7 @@ func CreateAppErrorForModel(format, detailKey, where string) func(fieldName stri
 }
 
 // Encodes database models to json string format
-func ModelToJson(model interface{}) string {
+func ModelToJson(model any) string {
 	bytes, err := json.Marshal(&model)
 	if err != nil {
 		return ""
@@ -194,7 +194,7 @@ func ModelToJson(model interface{}) string {
 // Decodes json string into model.
 //
 // If decoding process encounter error, model will be nil
-func ModelFromJson(model interface{}, data io.Reader) error {
+func ModelFromJson(model any, data io.Reader) error {
 	return json.NewDecoder(data).Decode(&model)
 }
 
@@ -441,11 +441,11 @@ func ArrayFromJson(data io.Reader) []string {
 	return objmap
 }
 
-func StringInterfaceToJson(objmap map[string]interface{}) string {
+func StringInterfaceToJson(objmap map[string]any) string {
 	return ModelToJson(objmap)
 }
 
-func Etag(parts ...interface{}) string {
+func Etag(parts ...any) string {
 	etag := CurrentVersion
 
 	for _, part := range parts {
@@ -611,7 +611,7 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 	// try check if provided redirect url is valid
 	parsedRedirectUrl, err := url.Parse(urlValue)
 	if err != nil {
-		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
+		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]any{"Value": urlValue}, "", http.StatusBadRequest)
 	}
 
 	allowedClients := strings.Fields(*config.ServiceSettings.AllowCorsFrom)
@@ -620,7 +620,7 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 			return nil
 		}
 	}
-	return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
+	return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]any{"Value": urlValue}, "", http.StatusBadRequest)
 }
 
 //	{

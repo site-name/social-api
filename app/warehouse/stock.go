@@ -125,7 +125,7 @@ func (s *ServiceWarehouse) DeleteStocks(options *model.StockFilterOption) (int64
 	// begin
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return 0, model_helper.NewAppError("DeleteStocks", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteStocks", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(tx)
 
@@ -148,7 +148,7 @@ func (s *ServiceWarehouse) DeleteStocks(options *model.StockFilterOption) (int64
 	// commit
 	err = tx.Commit().Error
 	if err != nil {
-		return 0, model_helper.NewAppError("DeleteStocks", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteStocks", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// perform plugin callbacks

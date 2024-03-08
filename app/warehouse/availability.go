@@ -6,6 +6,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
@@ -104,7 +105,7 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, cou
 // or there is not enough available preorder items for a variant.
 //
 // `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError) {
 	stockVariants, stockQuantities, preorderVariants, preorderQuantities := s.splitLinesForTrackableAndPreorder(variants, quantities)
 
 	if len(stockVariants) > 0 {
@@ -157,7 +158,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	countryCode model.CountryCode,
 	quantities []int,
 	channelSlug string,
-	additionalFilterLookup model.StringInterface, // can be nil, if non-nil then it must be map[string]interface{}{"warehouse_id": <an UUID string>}
+	additionalFilterLookup model_types.JSONString, // can be nil, if non-nil then it must be map[string]any{"warehouse_id": <an UUID string>}
 	existingLines []*model.CheckoutLineInfo, // can be nil
 	replace bool, // default false
 ) (*model.InsufficientStock, *model_helper.AppError) {

@@ -29,7 +29,7 @@ func (e *emitter) RemoveListener(id string) {
 
 // invokeConfigListeners synchronously notifies all listeners about the configuration change.
 func (e *emitter) invokeConfigListeners(oldCfg, newCfg *model_helper.Config) {
-	e.listeners.Range(func(key, value interface{}) bool {
+	e.listeners.Range(func(key, value any) bool {
 		listener := value.(Listener)
 		listener(oldCfg, newCfg)
 		return true
@@ -55,7 +55,7 @@ func (e *logSrcEmitter) RemoveListener(id string) {
 
 // invokeConfigListeners synchronously notifies all listeners about the configuration change.
 func (e *logSrcEmitter) invokeConfigListeners(oldCfg, newCfg slog.LoggerConfiguration) {
-	e.listeners.Range(func(key, value interface{}) bool {
+	e.listeners.Range(func(key, value any) bool {
 		listener := value.(LogSrcListener)
 		listener(oldCfg, newCfg)
 		return true

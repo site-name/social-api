@@ -37,7 +37,7 @@ type AppIface interface {
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
-	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
+	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]any
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model_helper.Config
 	// GetSiteURL returns service's siteurl configuration.
@@ -80,7 +80,7 @@ type AppIface interface {
 	DataRetention() einterfaces.DataRetentionInterface
 	DiscountService() sub_app_iface.DiscountService
 	DoSystemConsoleRolesCreationMigration()
-	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
+	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]any
 	ExportPermissions(w io.Writer) error
 	FileService() sub_app_iface.FileService
 	GetAudits(userID string, limit int) (model.AuditSlice, *model_helper.AppError)

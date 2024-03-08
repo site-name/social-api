@@ -540,7 +540,7 @@ func (o *ProductVariant) ProductWishlistItems(mods ...qm.QueryMod) wishlistItemQ
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -566,7 +566,7 @@ func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductV
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -588,7 +588,7 @@ func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductV
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -652,7 +652,7 @@ func (productVariantL) LoadProduct(e boil.Executor, singular bool, maybeProductV
 
 // LoadVariantAssignedProductVariantAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -678,7 +678,7 @@ func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.E
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -697,7 +697,7 @@ func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.E
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -758,7 +758,7 @@ func (productVariantL) LoadVariantAssignedProductVariantAttributeValues(e boil.E
 
 // LoadVariantCheckoutLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -784,7 +784,7 @@ func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -803,7 +803,7 @@ func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -864,7 +864,7 @@ func (productVariantL) LoadVariantCheckoutLines(e boil.Executor, singular bool, 
 
 // LoadDigitalContents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -890,7 +890,7 @@ func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybe
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -909,7 +909,7 @@ func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybe
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -970,7 +970,7 @@ func (productVariantL) LoadDigitalContents(e boil.Executor, singular bool, maybe
 
 // LoadVariantOrderLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -996,7 +996,7 @@ func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1015,7 +1015,7 @@ func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1076,7 +1076,7 @@ func (productVariantL) LoadVariantOrderLines(e boil.Executor, singular bool, may
 
 // LoadVariantProductVariantChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1102,7 +1102,7 @@ func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor,
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1121,7 +1121,7 @@ func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor,
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1182,7 +1182,7 @@ func (productVariantL) LoadVariantProductVariantChannelListings(e boil.Executor,
 
 // LoadProductVariantTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1208,7 +1208,7 @@ func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1227,7 +1227,7 @@ func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1288,7 +1288,7 @@ func (productVariantL) LoadProductVariantTranslations(e boil.Executor, singular 
 
 // LoadStocks allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1314,7 +1314,7 @@ func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVa
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1333,7 +1333,7 @@ func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVa
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1394,7 +1394,7 @@ func (productVariantL) LoadStocks(e boil.Executor, singular bool, maybeProductVa
 
 // LoadVariantVariantMedia allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1420,7 +1420,7 @@ func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, m
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1439,7 +1439,7 @@ func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, m
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1500,7 +1500,7 @@ func (productVariantL) LoadVariantVariantMedia(e boil.Executor, singular bool, m
 
 // LoadWishlistItemProductVariants allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1526,7 +1526,7 @@ func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1545,7 +1545,7 @@ func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1606,7 +1606,7 @@ func (productVariantL) LoadWishlistItemProductVariants(e boil.Executor, singular
 
 // LoadProductWishlistItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productVariantL) LoadProductWishlistItems(e boil.Executor, singular bool, maybeProductVariant interface{}, mods queries.Applicator) error {
+func (productVariantL) LoadProductWishlistItems(e boil.Executor, singular bool, maybeProductVariant any, mods queries.Applicator) error {
 	var slice []*ProductVariant
 	var object *ProductVariant
 
@@ -1632,7 +1632,7 @@ func (productVariantL) LoadProductWishlistItems(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantR{}
@@ -1651,7 +1651,7 @@ func (productVariantL) LoadProductWishlistItems(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1726,7 +1726,7 @@ func (o *ProductVariant) SetProduct(exec boil.Executor, insert bool, related *Pr
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1774,7 +1774,7 @@ func (o *ProductVariant) AddVariantAssignedProductVariantAttributeValues(exec bo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductVariantAttributeValuePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1826,7 +1826,7 @@ func (o *ProductVariant) AddVariantCheckoutLines(exec boil.Executor, insert bool
 				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1878,7 +1878,7 @@ func (o *ProductVariant) AddDigitalContents(exec boil.Executor, insert bool, rel
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, digitalContentPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1930,7 +1930,7 @@ func (o *ProductVariant) AddVariantOrderLines(exec boil.Executor, insert bool, r
 				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1972,7 +1972,7 @@ func (o *ProductVariant) AddVariantOrderLines(exec boil.Executor, insert bool, r
 // Sets related.R.Variant's VariantOrderLines accordingly.
 func (o *ProductVariant) SetVariantOrderLines(exec boil.Executor, insert bool, related ...*OrderLine) error {
 	query := "update \"order_lines\" set \"variant_id\" = null where \"variant_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -2055,7 +2055,7 @@ func (o *ProductVariant) AddVariantProductVariantChannelListings(exec boil.Execu
 				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2107,7 +2107,7 @@ func (o *ProductVariant) AddProductVariantTranslations(exec boil.Executor, inser
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productVariantTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2159,7 +2159,7 @@ func (o *ProductVariant) AddStocks(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2211,7 +2211,7 @@ func (o *ProductVariant) AddVariantVariantMedia(exec boil.Executor, insert bool,
 				strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2263,7 +2263,7 @@ func (o *ProductVariant) AddWishlistItemProductVariants(exec boil.Executor, inse
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 				strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2315,7 +2315,7 @@ func (o *ProductVariant) AddProductWishlistItems(exec boil.Executor, insert bool
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, wishlistItemPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2544,7 +2544,7 @@ func (o ProductVariantSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2666,7 +2666,7 @@ func (o *ProductVariant) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2750,7 +2750,7 @@ func (o ProductVariantSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2796,7 +2796,7 @@ func (o *ProductVariantSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ProductVariantSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

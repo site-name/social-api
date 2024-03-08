@@ -5,7 +5,6 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 

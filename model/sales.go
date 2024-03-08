@@ -343,7 +343,7 @@ func (o *Sale) SaleTranslations(mods ...qm.QueryMod) saleTranslationQuery {
 
 // LoadSaleCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleCategories(e boil.Executor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleCategories(e boil.Executor, singular bool, maybeSale any, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -369,7 +369,7 @@ func (saleL) LoadSaleCategories(e boil.Executor, singular bool, maybeSale interf
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleR{}
@@ -388,7 +388,7 @@ func (saleL) LoadSaleCategories(e boil.Executor, singular bool, maybeSale interf
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -449,7 +449,7 @@ func (saleL) LoadSaleCategories(e boil.Executor, singular bool, maybeSale interf
 
 // LoadSaleChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeSale any, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -475,7 +475,7 @@ func (saleL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeSale i
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleR{}
@@ -494,7 +494,7 @@ func (saleL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeSale i
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -555,7 +555,7 @@ func (saleL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeSale i
 
 // LoadSaleCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleCollections(e boil.Executor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleCollections(e boil.Executor, singular bool, maybeSale any, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -581,7 +581,7 @@ func (saleL) LoadSaleCollections(e boil.Executor, singular bool, maybeSale inter
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleR{}
@@ -600,7 +600,7 @@ func (saleL) LoadSaleCollections(e boil.Executor, singular bool, maybeSale inter
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -661,7 +661,7 @@ func (saleL) LoadSaleCollections(e boil.Executor, singular bool, maybeSale inter
 
 // LoadSaleProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleProducts(e boil.Executor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleProducts(e boil.Executor, singular bool, maybeSale any, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -687,7 +687,7 @@ func (saleL) LoadSaleProducts(e boil.Executor, singular bool, maybeSale interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleR{}
@@ -706,7 +706,7 @@ func (saleL) LoadSaleProducts(e boil.Executor, singular bool, maybeSale interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -767,7 +767,7 @@ func (saleL) LoadSaleProducts(e boil.Executor, singular bool, maybeSale interfac
 
 // LoadSaleTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleTranslations(e boil.Executor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleTranslations(e boil.Executor, singular bool, maybeSale any, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -793,7 +793,7 @@ func (saleL) LoadSaleTranslations(e boil.Executor, singular bool, maybeSale inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleR{}
@@ -812,7 +812,7 @@ func (saleL) LoadSaleTranslations(e boil.Executor, singular bool, maybeSale inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -889,7 +889,7 @@ func (o *Sale) AddSaleCategories(exec boil.Executor, insert bool, related ...*Sa
 				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -941,7 +941,7 @@ func (o *Sale) AddSaleChannelListings(exec boil.Executor, insert bool, related .
 				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -993,7 +993,7 @@ func (o *Sale) AddSaleCollections(exec boil.Executor, insert bool, related ...*S
 				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1045,7 +1045,7 @@ func (o *Sale) AddSaleProducts(exec boil.Executor, insert bool, related ...*Sale
 				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1097,7 +1097,7 @@ func (o *Sale) AddSaleTranslations(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1326,7 +1326,7 @@ func (o SaleSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1448,7 +1448,7 @@ func (o *Sale) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1532,7 +1532,7 @@ func (o SaleSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), salePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1578,7 +1578,7 @@ func (o *SaleSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := SaleSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), salePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

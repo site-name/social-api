@@ -80,7 +80,7 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID s
 //	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 //
 // NOTE: the returning interface's type should be identical to given price's type
-func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price interface{}, channelID string) (interface{}, *model_helper.AppError) {
+func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price any, channelID string) (any, *model_helper.AppError) {
 	// validate given price has valid type
 	switch priceType := price.(type) {
 	case *goprices.Money,
@@ -89,7 +89,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 		*goprices.TaxedMoneyRange:
 
 	default:
-		return nil, model_helper.NewAppError("GetDiscountAmountFor", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetDiscountAmountFor", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
 	}
 
 	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)

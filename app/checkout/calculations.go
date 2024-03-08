@@ -10,13 +10,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-// CheckoutShippingPrice Return checkout shipping price.
-//
-// It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
-	if discounts == nil {
-		discounts = []*model.DiscountInfo{}
-	}
+func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	calculatedCheckoutShipping, appErr := manager.CalculateCheckoutShipping(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -24,7 +18,7 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 
 	calculatedCheckoutShipping, err := calculatedCheckoutShipping.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CheckoutShippingPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CheckoutShippingPrice", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutShipping, nil

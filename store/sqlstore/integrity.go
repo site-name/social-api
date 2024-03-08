@@ -14,7 +14,7 @@ type relationalCheckConfig struct {
 	childIdAttr        string
 	canParentIdBeEmpty bool
 	sortRecords        bool
-	filter             interface{}
+	filter             any
 }
 
 func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model_helper.OrphanedRecord, error) {

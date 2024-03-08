@@ -19,12 +19,12 @@ const (
 )
 
 // prettyPrintStruct will return a prettyPrint version of a given struct
-func prettyPrintStruct(t interface{}) string {
+func prettyPrintStruct(t any) string {
 	return prettyPrintMap(structToMap(t))
 }
 
 // structToMap converts a struct into a map
-func structToMap(t interface{}) map[string]interface{} {
+func structToMap(t any) map[string]any {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Warn("Panicked in structToMap. This should never happen.", slog.Any("recover", r))
@@ -37,12 +37,12 @@ func structToMap(t interface{}) map[string]interface{} {
 		return nil
 	}
 
-	out := map[string]interface{}{}
+	out := map[string]any{}
 
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
 
-		var value interface{}
+		var value any
 
 		switch field.Kind() {
 		case reflect.Struct:
@@ -66,7 +66,7 @@ func structToMap(t interface{}) map[string]interface{} {
 }
 
 // prettyPrintMap will return a prettyPrint version of a given map
-func prettyPrintMap(configMap map[string]interface{}) string {
+func prettyPrintMap(configMap map[string]any) string {
 	value := reflect.ValueOf(configMap)
 	return printStringMap(value, 0)
 }
@@ -88,7 +88,7 @@ func printStringMap(value reflect.Value, tabVal int) string {
 	for _, keyString := range sortedKeys {
 		key := stringToKeyMap[keyString]
 		val := value.MapIndex(key)
-		if newVal, ok := val.Interface().(map[string]interface{}); !ok {
+		if newVal, ok := val.Interface().(map[string]any); !ok {
 			fmt.Fprintf(out, "%s", strings.Repeat("\t", tabVal))
 			fmt.Fprintf(out, "%v: \"%v\"\n", key.Interface(), val.Interface())
 		} else {

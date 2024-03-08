@@ -76,7 +76,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 	// validate given address id
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AccountAddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AccountAddressUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
 	}
 
 	appErr := args.Input.validate("AccountAddressUpdate")
@@ -125,7 +125,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	currentSession := embedContext.AppContext.Session()
 
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("AccountAddressDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AccountAddressDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
 
 	// check if current user has this address
@@ -171,7 +171,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 
 	// validate arguments
 	if !args.Type.IsValid() {
-		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("api.AccountSetDefaultAddress", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
 	// check if current user own this address

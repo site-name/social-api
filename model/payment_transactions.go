@@ -130,14 +130,14 @@ func (w whereHelperTransactionKind) GTE(x TransactionKind) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperTransactionKind) IN(slice []TransactionKind) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperTransactionKind) NIN(slice []TransactionKind) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -315,7 +315,7 @@ func (o *PaymentTransaction) Payment(mods ...qm.QueryMod) paymentQuery {
 
 // LoadPayment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (paymentTransactionL) LoadPayment(e boil.Executor, singular bool, maybePaymentTransaction interface{}, mods queries.Applicator) error {
+func (paymentTransactionL) LoadPayment(e boil.Executor, singular bool, maybePaymentTransaction any, mods queries.Applicator) error {
 	var slice []*PaymentTransaction
 	var object *PaymentTransaction
 
@@ -341,7 +341,7 @@ func (paymentTransactionL) LoadPayment(e boil.Executor, singular bool, maybePaym
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &paymentTransactionR{}
@@ -363,7 +363,7 @@ func (paymentTransactionL) LoadPayment(e boil.Executor, singular bool, maybePaym
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -441,7 +441,7 @@ func (o *PaymentTransaction) SetPayment(exec boil.Executor, insert bool, related
 		strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, paymentTransactionPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -666,7 +666,7 @@ func (o PaymentTransactionSlice) UpdateAll(exec boil.Executor, cols M) (int64, e
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -788,7 +788,7 @@ func (o *PaymentTransaction) Upsert(exec boil.Executor, updateOnConflict bool, c
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -872,7 +872,7 @@ func (o PaymentTransactionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentTransactionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -918,7 +918,7 @@ func (o *PaymentTransactionSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := PaymentTransactionSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentTransactionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

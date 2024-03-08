@@ -62,7 +62,7 @@ func (r *Resolver) MenuCreate(ctx context.Context, args struct{ Input MenuCreate
 // NOTE: please refer to ./schemas/menu.graphqls for details on directives used.
 func (r *Resolver) MenuDelete(ctx context.Context, args struct{ Id string }) (*MenuDelete, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("MenuDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -79,7 +79,7 @@ func (r *Resolver) MenuDelete(ctx context.Context, args struct{ Id string }) (*M
 // NOTE: please refer to ./schemas/menu.graphqls for details on directives used.
 func (r *Resolver) MenuBulkDelete(ctx context.Context, args struct{ Ids []string }) (*MenuBulkDelete, error) {
 	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("MenuBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Ids"}, "please provide valid menu ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Ids"}, "please provide valid menu ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -99,7 +99,7 @@ func (r *Resolver) MenuUpdate(ctx context.Context, args struct {
 	Input MenuInput
 }) (*MenuUpdate, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("MenuUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
 	}
 	appErr := args.Input.validate("MenuUpdate")
 	if appErr != nil {
@@ -163,7 +163,7 @@ func (r *Resolver) MenuItemCreate(ctx context.Context, args struct{ Input MenuIt
 // NOTE: please refer to ./schemas/menu.graphqls for details on directives used.
 func (r *Resolver) MenuItemDelete(ctx context.Context, args struct{ Id string }) (*MenuItemDelete, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("MenuItemDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuItemDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -180,7 +180,7 @@ func (r *Resolver) MenuItemDelete(ctx context.Context, args struct{ Id string })
 // NOTE: please refer to ./schemas/menu.graphqls for details on directives used.
 func (r *Resolver) MenuItemBulkDelete(ctx context.Context, args struct{ Ids []string }) (*MenuItemBulkDelete, error) {
 	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("MenuItemBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Ids"}, "please provide valid menu item ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuItemBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Ids"}, "please provide valid menu item ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -200,7 +200,7 @@ func (r *Resolver) MenuItemUpdate(ctx context.Context, args struct {
 	Input MenuItemInput
 }) (*MenuItemUpdate, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("MenuItemUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuItemUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
 	}
 	appErr := args.Input.validate("MenuItemUpdate")
 	if appErr != nil {
@@ -245,7 +245,7 @@ func (r *Resolver) MenuItemMove(ctx context.Context, args struct {
 	Moves []*MenuItemMoveInput
 }) (*MenuItemMove, error) {
 	if !model_helper.IsValidId(args.Menu) {
-		return nil, model_helper.NewAppError("MenuItemMove", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Menu"}, "please provide valid menu id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuItemMove", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Menu"}, "please provide valid menu id", http.StatusBadRequest)
 	}
 	for _, move := range args.Moves {
 		appErr := move.validate("MenuItemMove.Moves.validate")
@@ -270,26 +270,26 @@ func (r *Resolver) Menu(ctx context.Context, args struct {
 	switch {
 	case args.Id != nil:
 		if !model_helper.IsValidId(*args.Id) {
-			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu id", http.StatusBadRequest)
 		}
 		menuFiterCond = squirrel.Expr(model.MenuTableName+".Id = ?", *args.Id)
 
 	case args.Name != nil:
 		name := strings.TrimSpace(*args.Name)
 		if name == "" {
-			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu name", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Name"}, "please provide valid menu name", http.StatusBadRequest)
 		}
 		menuFiterCond = squirrel.Expr(model.MenuTableName+".Name = ?", name)
 
 	case args.Slug != nil:
 		trimSlug := strings.TrimSpace(*args.Slug)
 		if !slug.IsSlug(trimSlug) {
-			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid menu slug", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Slug"}, "please provide valid menu slug", http.StatusBadRequest)
 		}
 		menuFiterCond = squirrel.Expr(model.MenuTableName+".Slug = ?", trimSlug)
 
 	default:
-		return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, "please provide condition to find menu", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Menu", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "args"}, "please provide condition to find menu", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -317,7 +317,7 @@ func (r *Resolver) MenuItem(ctx context.Context, args struct {
 	Channel *string // not used
 }) (*MenuItem, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("MenuItem", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("MenuItem", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid menu item id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

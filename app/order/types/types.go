@@ -7,4 +7,4 @@ import (
 )
 
 // RecalculateOrderPricesFunc
-type RecalculateOrderPricesFunc func(tx *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model_helper.AppError
+type RecalculateOrderPricesFunc func(tx *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError

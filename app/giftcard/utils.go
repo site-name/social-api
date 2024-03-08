@@ -65,9 +65,9 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkou
 // ToggleGiftcardStatus set status of given giftcard to inactive/active
 func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_helper.AppError {
 	if *giftCard.IsActive {
-		giftCard.IsActive = model.GetPointerOfValue(false)
+		giftCard.IsActive = model_helper.GetPointerOfValue(false)
 	} else {
-		giftCard.IsActive = model.GetPointerOfValue(true)
+		giftCard.IsActive = model_helper.GetPointerOfValue(true)
 	}
 
 	_, appErr := a.UpsertGiftcards(nil, giftCard)
@@ -79,7 +79,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
 	if user != nil && !model_helper.IsValidId(user.Id) {
 		user = nil
 	}
@@ -127,7 +127,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLineSlic
 }
 
 // GiftcardsCreate creates purchased gift cards
-func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLineSlice, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLineSlice, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError) {
 	var (
 		customerUser          *model.User = nil
 		customerUserID        *string
@@ -222,9 +222,9 @@ func GetGiftcardLines(lines model.OrderLineSlice) model.OrderLineSlice {
 	return res
 }
 
-func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ any, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
 	if len(giftcardLines) == 0 {
-		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
 	}
 
 	// check if we need to prefetch related values for given order lines:
@@ -322,7 +322,7 @@ func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings model.ShopSettings) *
 	return expiryDate
 }
 
-func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ interface{}, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model_helper.AppError {
+func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ any, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model_helper.AppError {
 	for _, gc := range giftcards {
 		appErr := s.SendGiftcardNotification(requestorUser, nil, customerUser, userEmail, *gc, manager, channelSlug, false)
 		if appErr != nil {
@@ -333,7 +333,7 @@ func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*model.GiftCard, u
 	return nil
 }
 
-func (s *ServiceGiftcard) DeactivateOrderGiftcards(tx *gorm.DB, orderID string, user *model.User, _ interface{}) *model_helper.AppError {
+func (s *ServiceGiftcard) DeactivateOrderGiftcards(tx *gorm.DB, orderID string, user *model.User, _ any) *model_helper.AppError {
 	giftcardIDs, err := s.srv.Store.GiftCard().DeactivateOrderGiftcards(tx, orderID)
 	if err != nil {
 		return model_helper.NewAppError("DeactivateOrderGiftcards", "app.giftcard.error_updating_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)

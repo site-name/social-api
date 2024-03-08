@@ -9,17 +9,18 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
 
-func (s *ServiceOrder) getDefaultImagesPayload(images model.ProductMedias) model.StringInterface {
+func (s *ServiceOrder) getDefaultImagesPayload(images model.ProductMedias) model_types.JSONString {
 	// NOTE:
 	// TODO: implement me
 	return nil
 }
 
-func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model_types.JSONString, *model_helper.AppError) {
 	assignedPrdAttributes, appErr := s.srv.AttributeService().AssignedProductAttributesByOption(&model.AssignedProductAttributeFilterOption{
 		Conditions: squirrel.Expr(model.AssignedProductAttributeTableName+".ProductID = ?", product.Id),
 		Preloads: []string{
@@ -31,21 +32,21 @@ func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.Str
 		return nil, appErr
 	}
 
-	res := []model.StringInterface{}
+	res := []model_types.JSONString{}
 	for _, attr := range assignedPrdAttributes {
-		data := model.StringInterface{}
+		data := model_types.JSONString{}
 
 		if attr.AttributeProduct != nil && attr.AttributeProduct.Attribute != nil {
-			data["assignment"] = model.StringInterface{
-				"attribute": model.StringInterface{
+			data["assignment"] = model_types.JSONString{
+				"attribute": model_types.JSONString{
 					"slug": attr.AttributeProduct.Attribute.Slug,
 					"name": attr.AttributeProduct.Attribute.Name,
 				},
 			}
 		}
 		if len(attr.Values) > 0 {
-			data["values"] = lo.Map(attr.Values, func(value *model.AttributeValue, _ int) model.StringInterface {
-				return model.StringInterface{
+			data["values"] = lo.Map(attr.Values, func(value *model.AttributeValue, _ int) model_types.JSONString {
+				return model_types.JSONString{
 					"name":     value.Name,
 					"value":    value.Value,
 					"slug":     value.Slug,
@@ -58,7 +59,7 @@ func (s *ServiceOrder) getProductAttributes(product *model.Product) ([]model.Str
 	return res, nil
 }
 
-func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getProductPayload(product *model.Product) (model_types.JSONString, *model_helper.AppError) {
 	productMedias, appErr := s.srv.ProductService().ProductMediasByOption(&model.ProductMediaFilterOption{
 		Conditions: squirrel.Expr(model.ProductMediaTableName+".ProductID = ?", product.Id),
 	})
@@ -76,7 +77,7 @@ func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringIn
 	// NOTE:
 	// TODO: add image field to result below
 
-	res := model.StringInterface{
+	res := model_types.JSONString{
 		"id":         product.Id,
 		"attributes": attributes,
 		"weight":     product.WeightString(),
@@ -86,7 +87,7 @@ func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringIn
 	return res, nil
 }
 
-func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (model_types.JSONString, *model_helper.AppError) {
 	productMedias := variant.ProductMedias
 
 	if len(productMedias) == 0 {
@@ -101,7 +102,7 @@ func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (
 
 	imageMedias := lo.Filter(productMedias, func(item *model.ProductMedia, index int) bool { return item != nil && item.Type == model.IMAGE })
 
-	res := model.StringInterface{
+	res := model_types.JSONString{
 		"id":                        variant.Id,
 		"weight":                    variant.WeightString(),
 		"is_preorder":               variant.IsPreorderActive(),
@@ -114,7 +115,7 @@ func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (
 }
 
 // NOTE: given order line should have `ProductVariant` field preloaded by caller(s)
-func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model_types.JSONString, *model_helper.AppError) {
 	orderLineIsDigital, appErr := s.OrderLineIsDigital(line)
 	if appErr != nil {
 		return nil, appErr
@@ -170,7 +171,7 @@ func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringI
 		totalTaxAmount = &line.TotalPrice.Tax().Amount
 	}
 
-	return model.StringInterface{
+	return model_types.JSONString{
 		"id":                      line.Id,
 		"product":                 productId, // type: ignore
 		"product_name":            line.ProductName,
@@ -200,7 +201,7 @@ func (s *ServiceOrder) getOrderLinePayload(line *model.OrderLine) (model.StringI
 	}, nil
 }
 
-func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLineSlice) ([]model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLineSlice) ([]model_types.JSONString, *model_helper.AppError) {
 	// if some order line(s) don't have ProductVariant field populated, then populate them
 	if lo.SomeBy(orderLines, func(item *model.OrderLine) bool { return item != nil && item.ProductVariant == nil }) {
 		var appErr *model_helper.AppError
@@ -213,7 +214,7 @@ func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLineSlice) ([]model
 		}
 	}
 
-	var res = make([]model.StringInterface, 0, len(orderLines))
+	var res = make([]model_types.JSONString, 0, len(orderLines))
 	for _, line := range orderLines {
 		value, appErr := s.getOrderLinePayload(line)
 		if appErr != nil {
@@ -226,12 +227,12 @@ func (s *ServiceOrder) getLinesPayload(orderLines model.OrderLineSlice) ([]model
 	return res, nil
 }
 
-func getAddressPayload(address *model.Address) model.StringInterface {
+func getAddressPayload(address *model.Address) model_types.JSONString {
 	if address == nil {
 		return nil
 	}
 
-	return model.StringInterface{
+	return model_types.JSONString{
 		"first_name":       address.FirstName,
 		"last_name":        address.LastName,
 		"company_name":     address.CompanyName,
@@ -246,7 +247,7 @@ func getAddressPayload(address *model.Address) model.StringInterface {
 	}
 }
 
-func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model_types.JSONString, *model_helper.AppError) {
 	orderDiscounts, appErr := s.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
 		Conditions: squirrel.Expr(model.OrderDiscountTableName+".OrderID = ?", order.Id),
 	})
@@ -255,13 +256,13 @@ func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInte
 	}
 
 	var (
-		allDiscounts                          = make([]model.StringInterface, len(orderDiscounts))
-		voucherDiscount model.StringInterface = nil
-		discountAmount                        = decimal.NewFromInt(0)
+		allDiscounts                           = make([]model_types.JSONString, len(orderDiscounts))
+		voucherDiscount model_types.JSONString = nil
+		discountAmount                         = decimal.NewFromInt(0)
 	)
 
 	for idx, orderDiscount := range orderDiscounts {
-		discountObj := model.StringInterface{
+		discountObj := model_types.JSONString{
 			"type":            orderDiscount.Type,
 			"value_type":      orderDiscount.ValueType,
 			"value":           model.GetValueOfpointerOrNil(orderDiscount.Value),
@@ -281,14 +282,14 @@ func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model.StringInte
 		}
 	}
 
-	return model.StringInterface{
+	return model_types.JSONString{
 		"voucher_discount": voucherDiscount,
 		"discounts":        allDiscounts,
 		"discount_amount":  discountAmount,
 	}, nil
 }
 
-func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *string) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *string) (model_types.JSONString, *model_helper.AppError) {
 	var orderDetailsUrl string
 
 	if redirectUrl != nil {
@@ -355,7 +356,7 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 		return nil, appErr
 	}
 
-	orderPayload := model.StringInterface{
+	orderPayload := model_types.JSONString{
 		// "discount_amount": order.Discount, // TODO: check this
 		"id":                              order.Id,
 		"token":                           order.Token,
@@ -391,7 +392,7 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 	return orderPayload, nil
 }
 
-func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentLine) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentLine) (model_types.JSONString, *model_helper.AppError) {
 	orderLine := line.OrderLine
 
 	if orderLine == nil {
@@ -407,14 +408,14 @@ func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentL
 		return nil, appErr
 	}
 
-	return model.StringInterface{
+	return model_types.JSONString{
 		"id":         line.Id,
 		"order_line": orderLinePayload,
 		"quantity":   line.Quantity,
 	}, nil
 }
 
-func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillment *model.Fulfillment) (model.StringInterface, *model_helper.AppError) {
+func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillment *model.Fulfillment) (model_types.JSONString, *model_helper.AppError) {
 	fulfillmentLines, appErr := s.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Conditions: squirrel.Expr(model.FulfillmentLineTableName+".FulfillmentID = ?", fulfillment.Id),
 		Preloads:   []string{"OrderLine"},
@@ -424,7 +425,7 @@ func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillm
 	}
 
 	// TODO: check performance this loop
-	var digitalLinesPayloads, physicalLinesPayloads []model.StringInterface
+	var digitalLinesPayloads, physicalLinesPayloads []model_types.JSONString
 	for _, line := range fulfillmentLines {
 		orderLineIsDigital, appErr := s.OrderLineIsDigital(line.OrderLine)
 		if appErr != nil {
@@ -453,9 +454,9 @@ func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillm
 		return nil, appErr
 	}
 
-	res := model.StringInterface{
+	res := model_types.JSONString{
 		"order": orderPayload,
-		"fulfillment": model.StringInterface{
+		"fulfillment": model_types.JSONString{
 			"tracking_number":        fulfillment.TrackingNumber,
 			"is_tracking_number_url": fulfillment.IsTrackingNumberURL(),
 		},
@@ -490,11 +491,11 @@ func (s *ServiceOrder) SendFulfillmentConfirmationToCustomer(order *model.Order,
 }
 
 // SendOrderConfirmed Send email which tells customer that order has been confirmed
-func (s *ServiceOrder) SendOrderConfirmed(order model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) {
+func (s *ServiceOrder) SendOrderConfirmed(order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) {
 
 }
 
-func (s *ServiceOrder) SendOrderRefundedConfirmation(order model.Order, user *model.User, _ interface{}, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model_helper.AppError {
+func (s *ServiceOrder) SendOrderRefundedConfirmation(order model.Order, user *model.User, _ any, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	panic("not implemented")
 }
 

@@ -549,15 +549,15 @@ func (_m *UserStore) Save(user model.User) (*model.User, error) {
 }
 
 // Search provides a mock function with given fields: term, options
-func (_m *UserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (_m *UserStore) Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 	ret := _m.Called(term, options)
 
 	var r0 model.UserSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, *model_helper.UserSearchOptions) (model.UserSlice, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, model_helper.UserSearchOptions) (model.UserSlice, error)); ok {
 		return rf(term, options)
 	}
-	if rf, ok := ret.Get(0).(func(string, *model_helper.UserSearchOptions) model.UserSlice); ok {
+	if rf, ok := ret.Get(0).(func(string, model_helper.UserSearchOptions) model.UserSlice); ok {
 		r0 = rf(term, options)
 	} else {
 		if ret.Get(0) != nil {
@@ -565,7 +565,7 @@ func (_m *UserStore) Search(term string, options *model_helper.UserSearchOptions
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, *model_helper.UserSearchOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(string, model_helper.UserSearchOptions) error); ok {
 		r1 = rf(term, options)
 	} else {
 		r1 = ret.Error(1)

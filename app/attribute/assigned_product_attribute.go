@@ -3,14 +3,12 @@ package attribute
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
-// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-func (a *ServiceAttribute) AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError) {
+func (a *ServiceAttribute) AssignedProductAttributeByOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError) {
 	assignedProductAttr, err := a.srv.Store.AssignedProductAttribute().GetWithOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -23,18 +21,12 @@ func (a *ServiceAttribute) AssignedProductAttributeByOption(option *model.Assign
 	return assignedProductAttr, nil
 }
 
-// GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model_helper.AppError) {
-	eqConds := squirrel.Eq{}
-	if assignedProductAttribute.ProductID != "" {
-		eqConds[model.AssignedProductAttributeTableName+".ProductID"] = assignedProductAttribute.ProductID
-	}
-	if assignedProductAttribute.AssignmentID != "" {
-		eqConds[model.AssignedProductAttributeTableName+".AssignmentID"] = assignedProductAttribute.AssignmentID
-	}
-
-	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(&model.AssignedProductAttributeFilterOption{
-		Conditions: eqConds,
+func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model_helper.AppError) {
+	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(model_helper.AssignedProductAttributeFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.AssignedProductAttributeWhere.ProductID.EQ(assignedProductAttribute.ProductID),
+			model.AssignedProductAttributeWhere.AssignmentID.EQ(assignedProductAttribute.AssignmentID),
+		),
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // return immediately if error was caused by system

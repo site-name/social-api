@@ -4,10 +4,11 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
-func GetInvoicePayload(inVoice model.Invoice) model.StringInterface {
-	return model.StringInterface{
+func GetInvoicePayload(inVoice model.Invoice) model_types.JSONString {
+	return model_types.JSONString{
 		"id":           inVoice.Id,
 		"number":       inVoice.Number,
 		"download_url": inVoice.ExternalUrl,
@@ -16,7 +17,7 @@ func GetInvoicePayload(inVoice model.Invoice) model.StringInterface {
 }
 
 // SendInvoice Send an invoice to user of related order with URL to download it
-func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model_helper.AppError {
+func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	var (
 		orDer  *model.Order
 		appErr *model_helper.AppError
@@ -34,7 +35,7 @@ func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.Use
 		return appErr
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"invoice":           GetInvoicePayload(inVoice),
 		"recipient_email":   recipientEmail,
 		"requester_app_id":  nil,

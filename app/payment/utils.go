@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
@@ -20,7 +21,7 @@ import (
 //
 // Returns information required to process payment and additional
 // billing/shipping addresses for optional fraud-prevention mechanisms.
-func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model_helper.AppError) {
+func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model.PaymentData, *model_helper.AppError) {
 
 	var (
 		billingAddressID  string
@@ -122,7 +123,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 		amount = payMent.Total
 	}
 	if additionalData == nil {
-		additionalData = make(map[string]interface{})
+		additionalData = make(map[string]any)
 	}
 
 	return &model.PaymentData{
@@ -175,7 +176,7 @@ func (a *ServicePayment) CreatePayment(
 ) (*model.Payment, *model.PaymentError, *model_helper.AppError) {
 	// must at least provide either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
-		return nil, nil, model_helper.NewAppError("CreatePayment", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
+		return nil, nil, model_helper.NewAppError("CreatePayment", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
 	}
 
 	if extraData == nil {
@@ -222,7 +223,7 @@ func (a *ServicePayment) CreatePayment(
 		Total:              total,
 		ReturnUrl:          &returnUrl,
 		PspReference:       &externalReference,
-		IsActive:           model.GetPointerOfValue(true),
+		IsActive:           model_helper.GetPointerOfValue(true),
 		CustomerIpAddress:  &customerIpAddress,
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
@@ -287,7 +288,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind model.Transact
 			Amount:         paymentInformation.Amount,
 			Currency:       paymentInformation.Currency,
 			Error:          errorMsg,
-			RawResponse:    make(model.StringInterface),
+			RawResponse:    make(model_types.JSONString),
 		}
 	}
 
@@ -388,7 +389,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	// create transaction
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return model_helper.NewAppError("GatewayPostProcess", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("GatewayPostProcess", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
@@ -425,8 +426,8 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	switch paymentTransaction.Kind {
 	case model.TRANSACTION_KIND_CAPTURE, model.TRANSACTION_KIND_REFUND_REVERSED:
-		payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
-		payMent.IsActive = model.GetPointerOfValue(true)
+		payMent.CapturedAmount = model_helper.GetPointerOfValue(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
+		payMent.IsActive = model_helper.GetPointerOfValue(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
 		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED
@@ -436,17 +437,17 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 
 	case model.TRANSACTION_KIND_VOID:
-		payMent.IsActive = model.GetPointerOfValue(false)
+		payMent.IsActive = model_helper.GetPointerOfValue(false)
 		changedFields = append(changedFields, "is_active", "update_at")
 
 	case model.TRANSACTION_KIND_REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
-		payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+		payMent.CapturedAmount = model_helper.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_REFUNDED
 		if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-			payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
+			payMent.CapturedAmount = model_helper.GetPointerOfValue(decimal.Zero)
 			payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_FULLY_REFUNDED
-			payMent.IsActive = model.GetPointerOfValue(false)
+			payMent.IsActive = model_helper.GetPointerOfValue(false)
 		}
 
 	case model.TRANSACTION_KIND_PENDING:
@@ -455,15 +456,15 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	case model.TRANSACTION_KIND_CANCEL:
 		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_CANCELLED
-		payMent.IsActive = model.GetPointerOfValue(false)
+		payMent.IsActive = model_helper.GetPointerOfValue(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 
 	case model.TRANSACTION_KIND_CAPTURE_FAILED:
 		if payMent.ChargeStatus == model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED || payMent.ChargeStatus == model.PAYMENT_CHARGE_STATUS_FULLY_CHARGED {
-			payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+			payMent.CapturedAmount = model_helper.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 			payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED
 			if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-				payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
+				payMent.CapturedAmount = model_helper.GetPointerOfValue(decimal.Zero)
 			}
 			changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 		}
@@ -492,7 +493,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return model_helper.NewAppError("GatewayPostProcess", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("GatewayPostProcess", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

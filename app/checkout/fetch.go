@@ -11,7 +11,7 @@ import (
 )
 
 // GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
-func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model_helper.AppError) {
+func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod any, address *model.Address) (model.DeliveryMethodBaseInterface, *model_helper.AppError) {
 	if deliveryMethod == nil {
 		return &model.DeliveryMethodBase{}, nil
 	}
@@ -38,7 +38,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	default:
-		return nil, model_helper.NewAppError("GetDeliveryMethodInfo", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetDeliveryMethodInfo", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 	}
 }
 
@@ -57,7 +57,7 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) (model.Ch
 func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model_helper.AppError) {
 	// validate arguments:
 	if checkOut == nil {
-		return nil, model_helper.NewAppError("FetchCheckoutInfo", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("FetchCheckoutInfo", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "checkOut"}, "", http.StatusBadRequest)
 	}
 
 	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -256,13 +256,13 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddres
 // UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
 // deliveryMethod must be either *ShippingMethod or *Warehouse or nil
-func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod interface{}) *model_helper.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod any) *model_helper.AppError {
 	// validate `deliveryMethod` is valid:
 	if deliveryMethod != nil {
 		switch deliveryMethod.(type) {
 		case *model.WareHouse, *model.ShippingMethod:
 		default:
-			return model_helper.NewAppError("UpdateCheckoutInfoDeliveryMethod", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+			return model_helper.NewAppError("UpdateCheckoutInfoDeliveryMethod", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 		}
 	}
 

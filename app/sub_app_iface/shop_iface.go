@@ -4,13 +4,13 @@
 package sub_app_iface
 
 import (
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 )
 
 // ShopService contains methods for working with shops
 type ShopService interface {
-	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError)
-	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError)
+	ShopStaffByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError)
+	StaffsByOptions(options model_helper.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError)
 	UserIsStaffOfShop(userID string) bool
 }

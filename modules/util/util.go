@@ -197,7 +197,7 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 //	func hello() {}
 //	name := GetFunctionName(hello)
 //	fmt.Println(name) == "hello"
-func GetFunctionName(i interface{}) string {
+func GetFunctionName(i any) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 

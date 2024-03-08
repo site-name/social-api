@@ -208,7 +208,7 @@ func (o *ProductVariantTranslation) ProductVariant(mods ...qm.QueryMod) productV
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantTranslationL) LoadProductVariant(e boil.Executor, singular bool, maybeProductVariantTranslation interface{}, mods queries.Applicator) error {
+func (productVariantTranslationL) LoadProductVariant(e boil.Executor, singular bool, maybeProductVariantTranslation any, mods queries.Applicator) error {
 	var slice []*ProductVariantTranslation
 	var object *ProductVariantTranslation
 
@@ -234,7 +234,7 @@ func (productVariantTranslationL) LoadProductVariant(e boil.Executor, singular b
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantTranslationR{}
@@ -256,7 +256,7 @@ func (productVariantTranslationL) LoadProductVariant(e boil.Executor, singular b
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (o *ProductVariantTranslation) SetProductVariant(exec boil.Executor, insert
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantTranslationPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -559,7 +559,7 @@ func (o ProductVariantTranslationSlice) UpdateAll(exec boil.Executor, cols M) (i
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -681,7 +681,7 @@ func (o *ProductVariantTranslation) Upsert(exec boil.Executor, updateOnConflict 
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -765,7 +765,7 @@ func (o ProductVariantTranslationSlice) DeleteAll(exec boil.Executor) (int64, er
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -811,7 +811,7 @@ func (o *ProductVariantTranslationSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ProductVariantTranslationSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -16,23 +16,23 @@ type JobStore struct {
 	mock.Mock
 }
 
-// Count provides a mock function with given fields: mods
-func (_m *JobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
-	ret := _m.Called(mods)
+// Count provides a mock function with given fields: options
+func (_m *JobStore) Count(options model_helper.JobFilterOptions) (int64, error) {
+	ret := _m.Called(options)
 
 	var r0 int64
 	var r1 error
 	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) (int64, error)); ok {
-		return rf(mods)
+		return rf(options)
 	}
 	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) int64); ok {
-		r0 = rf(mods)
+		r0 = rf(options)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	if rf, ok := ret.Get(1).(func(model_helper.JobFilterOptions) error); ok {
-		r1 = rf(mods)
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -64,17 +64,17 @@ func (_m *JobStore) Delete(id string) (string, error) {
 	return r0, r1
 }
 
-// FindAll provides a mock function with given fields: mods
-func (_m *JobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
-	ret := _m.Called(mods)
+// FindAll provides a mock function with given fields: options
+func (_m *JobStore) FindAll(options model_helper.JobFilterOptions) (model.JobSlice, error) {
+	ret := _m.Called(options)
 
 	var r0 model.JobSlice
 	var r1 error
 	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) (model.JobSlice, error)); ok {
-		return rf(mods)
+		return rf(options)
 	}
 	if rf, ok := ret.Get(0).(func(model_helper.JobFilterOptions) model.JobSlice); ok {
-		r0 = rf(mods)
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(model.JobSlice)
@@ -82,7 +82,7 @@ func (_m *JobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice,
 	}
 
 	if rf, ok := ret.Get(1).(func(model_helper.JobFilterOptions) error); ok {
-		r1 = rf(mods)
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

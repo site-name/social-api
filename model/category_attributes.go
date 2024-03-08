@@ -254,7 +254,7 @@ func (o *CategoryAttribute) AssignmentAssignedProductAttributes(mods ...qm.Query
 
 // LoadAttribute allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (categoryAttributeL) LoadAttribute(e boil.Executor, singular bool, maybeCategoryAttribute interface{}, mods queries.Applicator) error {
+func (categoryAttributeL) LoadAttribute(e boil.Executor, singular bool, maybeCategoryAttribute any, mods queries.Applicator) error {
 	var slice []*CategoryAttribute
 	var object *CategoryAttribute
 
@@ -280,7 +280,7 @@ func (categoryAttributeL) LoadAttribute(e boil.Executor, singular bool, maybeCat
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryAttributeR{}
@@ -302,7 +302,7 @@ func (categoryAttributeL) LoadAttribute(e boil.Executor, singular bool, maybeCat
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -366,7 +366,7 @@ func (categoryAttributeL) LoadAttribute(e boil.Executor, singular bool, maybeCat
 
 // LoadCategory allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (categoryAttributeL) LoadCategory(e boil.Executor, singular bool, maybeCategoryAttribute interface{}, mods queries.Applicator) error {
+func (categoryAttributeL) LoadCategory(e boil.Executor, singular bool, maybeCategoryAttribute any, mods queries.Applicator) error {
 	var slice []*CategoryAttribute
 	var object *CategoryAttribute
 
@@ -392,7 +392,7 @@ func (categoryAttributeL) LoadCategory(e boil.Executor, singular bool, maybeCate
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryAttributeR{}
@@ -414,7 +414,7 @@ func (categoryAttributeL) LoadCategory(e boil.Executor, singular bool, maybeCate
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -478,7 +478,7 @@ func (categoryAttributeL) LoadCategory(e boil.Executor, singular bool, maybeCate
 
 // LoadAssignmentAssignedProductAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryAttributeL) LoadAssignmentAssignedProductAttributes(e boil.Executor, singular bool, maybeCategoryAttribute interface{}, mods queries.Applicator) error {
+func (categoryAttributeL) LoadAssignmentAssignedProductAttributes(e boil.Executor, singular bool, maybeCategoryAttribute any, mods queries.Applicator) error {
 	var slice []*CategoryAttribute
 	var object *CategoryAttribute
 
@@ -504,7 +504,7 @@ func (categoryAttributeL) LoadAssignmentAssignedProductAttributes(e boil.Executo
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryAttributeR{}
@@ -523,7 +523,7 @@ func (categoryAttributeL) LoadAssignmentAssignedProductAttributes(e boil.Executo
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -598,7 +598,7 @@ func (o *CategoryAttribute) SetAttribute(exec boil.Executor, insert bool, relate
 		strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 		strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -644,7 +644,7 @@ func (o *CategoryAttribute) SetCategory(exec boil.Executor, insert bool, related
 		strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 		strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -692,7 +692,7 @@ func (o *CategoryAttribute) AddAssignmentAssignedProductAttributes(exec boil.Exe
 				strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductAttributePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -921,7 +921,7 @@ func (o CategoryAttributeSlice) UpdateAll(exec boil.Executor, cols M) (int64, er
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1043,7 +1043,7 @@ func (o *CategoryAttribute) Upsert(exec boil.Executor, updateOnConflict bool, co
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1127,7 +1127,7 @@ func (o CategoryAttributeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryAttributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1173,7 +1173,7 @@ func (o *CategoryAttributeSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CategoryAttributeSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryAttributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

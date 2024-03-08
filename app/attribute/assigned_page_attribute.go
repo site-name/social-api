@@ -3,15 +3,13 @@ package attribute
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
-// AssignedPageAttributeByOption returns 1 assigned page attribute
 func (a *ServiceAttribute) AssignedPageAttributeByOption(option model_helper.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError) {
-	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().FilterByOptions(option)
+	assignedPageAttrs, err := a.srv.Store.AssignedPageAttribute().FilterByOptions(option)
 
 	var statusCode int
 	var errMsg string
@@ -19,33 +17,29 @@ func (a *ServiceAttribute) AssignedPageAttributeByOption(option model_helper.Ass
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		errMsg = err.Error()
-	} else if len(assignedPageAttr) == 0 {
+	} else if len(assignedPageAttrs) == 0 {
 		statusCode = http.StatusNotFound
 	}
 	if statusCode > 0 {
 		return nil, model_helper.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, errMsg, statusCode)
 	}
 
-	return assignedPageAttr[0], nil
+	return assignedPageAttrs[0], nil
 }
 
-// GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError) {
-	eqConds := squirrel.Eq{}
-	if assignedPageAttribute.PageID != "" {
-		eqConds[model.AssignedPageAttributeTableName+".PageID"] = assignedPageAttribute.PageID
-	}
-	if assignedPageAttribute.AssignmentID != "" {
-		eqConds[model.AssignedPageAttributeTableName+".AssignmentID"] = assignedPageAttribute.AssignmentID
-	}
-
-	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(&model.AssignedPageAttributeFilterOption{Conditions: eqConds})
+func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError) {
+	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(model_helper.AssignedPageAttributeFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.AssignedPageAttributeWhere.PageID.EQ(assignedPageAttribute.PageID),
+			model.AssignedPageAttributeWhere.AssignmentID.EQ(assignedPageAttribute.AssignmentID),
+		),
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
 		// create new
-		assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().Save(assignedPageAttribute)
+		assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().Upsert(assignedPageAttribute)
 		if err != nil {
 			if appErr, ok := err.(*model_helper.AppError); ok {
 				return nil, appErr

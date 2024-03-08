@@ -288,7 +288,7 @@ func (o *ShippingZone) WarehouseShippingZones(mods ...qm.QueryMod) warehouseShip
 
 // LoadShippingMethods allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingZoneL) LoadShippingMethods(e boil.Executor, singular bool, maybeShippingZone interface{}, mods queries.Applicator) error {
+func (shippingZoneL) LoadShippingMethods(e boil.Executor, singular bool, maybeShippingZone any, mods queries.Applicator) error {
 	var slice []*ShippingZone
 	var object *ShippingZone
 
@@ -314,7 +314,7 @@ func (shippingZoneL) LoadShippingMethods(e boil.Executor, singular bool, maybeSh
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingZoneR{}
@@ -333,7 +333,7 @@ func (shippingZoneL) LoadShippingMethods(e boil.Executor, singular bool, maybeSh
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -394,7 +394,7 @@ func (shippingZoneL) LoadShippingMethods(e boil.Executor, singular bool, maybeSh
 
 // LoadShippingZoneChannels allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingZoneL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeShippingZone interface{}, mods queries.Applicator) error {
+func (shippingZoneL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeShippingZone any, mods queries.Applicator) error {
 	var slice []*ShippingZone
 	var object *ShippingZone
 
@@ -420,7 +420,7 @@ func (shippingZoneL) LoadShippingZoneChannels(e boil.Executor, singular bool, ma
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingZoneR{}
@@ -439,7 +439,7 @@ func (shippingZoneL) LoadShippingZoneChannels(e boil.Executor, singular bool, ma
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -500,7 +500,7 @@ func (shippingZoneL) LoadShippingZoneChannels(e boil.Executor, singular bool, ma
 
 // LoadWarehouseShippingZones allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingZoneL) LoadWarehouseShippingZones(e boil.Executor, singular bool, maybeShippingZone interface{}, mods queries.Applicator) error {
+func (shippingZoneL) LoadWarehouseShippingZones(e boil.Executor, singular bool, maybeShippingZone any, mods queries.Applicator) error {
 	var slice []*ShippingZone
 	var object *ShippingZone
 
@@ -526,7 +526,7 @@ func (shippingZoneL) LoadWarehouseShippingZones(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingZoneR{}
@@ -545,7 +545,7 @@ func (shippingZoneL) LoadWarehouseShippingZones(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -622,7 +622,7 @@ func (o *ShippingZone) AddShippingMethods(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -674,7 +674,7 @@ func (o *ShippingZone) AddShippingZoneChannels(exec boil.Executor, insert bool, 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingZoneChannelPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -726,7 +726,7 @@ func (o *ShippingZone) AddWarehouseShippingZones(exec boil.Executor, insert bool
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
 				strmangle.WhereClause("\"", "\"", 2, warehouseShippingZonePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -955,7 +955,7 @@ func (o ShippingZoneSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) 
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1077,7 +1077,7 @@ func (o *ShippingZone) Upsert(exec boil.Executor, updateOnConflict bool, conflic
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1161,7 +1161,7 @@ func (o ShippingZoneSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingZonePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1207,7 +1207,7 @@ func (o *ShippingZoneSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ShippingZoneSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingZonePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

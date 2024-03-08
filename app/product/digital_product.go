@@ -6,6 +6,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -84,7 +85,7 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL model.DigitalContentU
 			orderLine.Order.UserID,
 			&orderLine.OrderID,
 			model.CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
-			model.StringInterface{"order_line_pk": orderLine.Id},
+			model_types.JSONString{"order_line_pk": orderLine.Id},
 		)
 		if appErr != nil {
 			return nil, appErr

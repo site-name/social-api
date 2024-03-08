@@ -107,12 +107,12 @@ type DeliveryMethodBaseInterface interface {
 	IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool
 	UpdateChannelListings(checkoutInfo *CheckoutInfo) error
 
-	GetDeliveryMethod() interface{} // GetDeliveryMethod returns an interface{}, can be either *ShippingMethod or *Warehouse.
+	GetDeliveryMethod() any // GetDeliveryMethod returns an any, can be either *ShippingMethod or *Warehouse.
 	GetShippingAddress() *model.Address
 	GetOrderKey() string
 
 	String() string
-	Self() interface{} // Self returns the current object which implements DeliveryMethodBaseInterface
+	Self() any // Self returns the current object which implements DeliveryMethodBaseInterface
 }
 
 // check if some struct types satisfy DeliveryMethodBaseInterface
@@ -124,11 +124,11 @@ var (
 
 // DeliveryMethodBase should not be modified after initialized
 type DeliveryMethodBase struct {
-	DeliveryMethod  interface{}    // either *ShippingMethodData or *Warehouse. Can be nil
+	DeliveryMethod  any            // either *ShippingMethodData or *Warehouse. Can be nil
 	ShippingAddress *model.Address // can be nil
 }
 
-func (d *DeliveryMethodBase) Self() interface{} {
+func (d *DeliveryMethodBase) Self() any {
 	return d
 }
 
@@ -171,7 +171,7 @@ func (d *DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) e
 	return nil
 }
 
-func (d *DeliveryMethodBase) GetDeliveryMethod() interface{} {
+func (d *DeliveryMethodBase) GetDeliveryMethod() any {
 	return d.DeliveryMethod
 }
 
@@ -190,7 +190,7 @@ type ShippingMethodInfo struct {
 	ShippingAddress *model.Address // can be nil
 }
 
-func (d *ShippingMethodInfo) Self() interface{} {
+func (d *ShippingMethodInfo) Self() any {
 	return d
 }
 
@@ -245,7 +245,7 @@ type CollectionPointInfo struct {
 	ShippingAddress *model.Address
 }
 
-func (d *CollectionPointInfo) Self() interface{} {
+func (d *CollectionPointInfo) Self() any {
 	return d
 }
 

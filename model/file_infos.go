@@ -536,7 +536,7 @@ func (o FileInfoSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -658,7 +658,7 @@ func (o *FileInfo) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -742,7 +742,7 @@ func (o FileInfoSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fileInfoPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -788,7 +788,7 @@ func (o *FileInfoSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := FileInfoSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fileInfoPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

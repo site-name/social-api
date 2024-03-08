@@ -64,7 +64,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 }
 
 func (a *ServiceChannel) ChannelsByOption(option model_helper.ChannelFilterOptions) (model.ChannelSlice, *model_helper.AppError) {
-	channels, err := a.srv.Store.Channel().Find(option)
+	channels, err := a.srv.Store.Channel().FilterByOptions(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("ChannelsByOptions", "app.channel.error_finding_channels_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

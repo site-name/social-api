@@ -20,7 +20,7 @@ func (es *Service) SendChangeUsernameEmail(newUsername, email, locale, siteURL s
 
 	subject := T(
 		"api.templates.username_change_subject",
-		map[string]interface{}{
+		map[string]any{
 			"Sitename": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -30,7 +30,7 @@ func (es *Service) SendChangeUsernameEmail(newUsername, email, locale, siteURL s
 	data.Props["Title"] = T("api.templates.username_change_body.title")
 	data.Props["Info"] = T(
 		"api.templates.username_change_body.info",
-		map[string]interface{}{
+		map[string]any{
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 			"NewUsername":     newUsername,
 		},
@@ -56,7 +56,7 @@ func (es *Service) SendEmailChangeVerifyEmail(newUserEmail, locale, siteURL, tok
 
 	subject := T(
 		"api.templates.email_change_verify_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName":        es.config().ServiceSettings.SiteURL,
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 		},
@@ -67,7 +67,7 @@ func (es *Service) SendEmailChangeVerifyEmail(newUserEmail, locale, siteURL, tok
 	data.Props["Title"] = T("api.templates.email_change_verify_body.title")
 	data.Props["Info"] = T(
 		"api.templates.email_change_verify_body.info",
-		map[string]interface{}{
+		map[string]any{
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -91,7 +91,7 @@ func (es *Service) SendEmailChangeEmail(oldEmail, newEmail, locale, siteURL stri
 
 	subject := T(
 		"api.templates.email_change_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName":        es.config().ServiceSettings.SiteURL,
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 		},
@@ -102,7 +102,7 @@ func (es *Service) SendEmailChangeEmail(oldEmail, newEmail, locale, siteURL stri
 	data.Props["Title"] = T("api.templates.email_change_body.title")
 	data.Props["Info"] = T(
 		"api.templates.email_change_body.info",
-		map[string]interface{}{
+		map[string]any{
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 			"NewEmail":        newEmail,
 		},
@@ -132,7 +132,7 @@ func (es *Service) SendVerifyEmail(userEmail, locale, siteURL, token, redirect s
 	serverURL := condenseSiteURL(siteURL)
 
 	subject := T("api.templates.verify_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -141,7 +141,7 @@ func (es *Service) SendVerifyEmail(userEmail, locale, siteURL, token, redirect s
 	data.Props["SiteURL"] = siteURL
 	data.Props["Title"] = T("api.templates.verify_body.title")
 	data.Props["SubTitle1"] = T("api.templates.verify_body.subTitle1")
-	data.Props["ServerURL"] = T("api.templates.verify_body.serverURL", map[string]interface{}{"ServerURL": serverURL})
+	data.Props["ServerURL"] = T("api.templates.verify_body.serverURL", map[string]any{"ServerURL": serverURL})
 	data.Props["SubTitle2"] = T("api.templates.verify_body.subTitle2")
 	data.Props["ButtonURL"] = link
 	data.Props["Button"] = T("api.templates.verify_body.button")
@@ -167,7 +167,7 @@ func (es *Service) SendSignInChangeEmail(email, method, locale, siteURL string) 
 
 	subject := T(
 		"api.templates.signin_change_email.subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -177,7 +177,7 @@ func (es *Service) SendSignInChangeEmail(email, method, locale, siteURL string) 
 	data.Props["Title"] = T("api.templates.signin_change_email.body.title")
 	data.Props["Info"] = T(
 		"api.templates.signin_change_email.body.info",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 			"Method":   method,
 		},
@@ -210,7 +210,7 @@ func (es *Service) SendWelcomeEmail(userID string, email string, verified bool, 
 
 	subject := T(
 		"api.templates.welcome_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName":  es.config().ServiceSettings.SiteURL,
 			"ServerURL": serverURL,
 		},
@@ -220,7 +220,7 @@ func (es *Service) SendWelcomeEmail(userID string, email string, verified bool, 
 	data.Props["SiteURL"] = siteURL
 	data.Props["Title"] = T("api.templates.welcome_body.title")
 	data.Props["SubTitle1"] = T("api.templates.welcome_body.subTitle1")
-	data.Props["ServerURL"] = T("api.templates.welcome_body.serverURL", map[string]interface{}{"ServerURL": serverURL})
+	data.Props["ServerURL"] = T("api.templates.welcome_body.serverURL", map[string]any{"ServerURL": serverURL})
 	data.Props["SubTitle2"] = T("api.templates.welcome_body.subTitle2")
 	data.Props["Button"] = T("api.templates.welcome_body.button")
 	data.Props["Info"] = T("api.templates.welcome_body.info")
@@ -263,7 +263,7 @@ func (es *Service) SendUserAccessTokenAddedEmail(email, locale, siteURL string) 
 
 	subject := T(
 		"api.templates.user_access_token_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -273,7 +273,7 @@ func (es *Service) SendUserAccessTokenAddedEmail(email, locale, siteURL string) 
 	data.Props["Title"] = T("api.templates.user_access_token_body.title")
 	data.Props["Info"] = T(
 		"api.templates.user_access_token_body.info",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 			"SiteURL":  siteURL,
 		},
@@ -297,7 +297,7 @@ func (es *Service) SendPasswordChangeEmail(email, method, locale, siteURL string
 
 	subject := T(
 		"api.templates.password_change_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName":        es.config().ServiceSettings.SiteURL,
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 		},
@@ -308,7 +308,7 @@ func (es *Service) SendPasswordChangeEmail(email, method, locale, siteURL string
 	data.Props["Title"] = T("api.templates.password_change_body.title")
 	data.Props["Info"] = T(
 		"api.templates.password_change_body.info",
-		map[string]interface{}{
+		map[string]any{
 			"TeamDisplayName": es.config().ServiceSettings.SiteURL,
 			"TeamURL":         siteURL,
 			"Method":          method,
@@ -335,7 +335,7 @@ func (es *Service) SendPasswordResetEmail(email string, token *model.Token, loca
 
 	subject := T(
 		"api.templates.reset_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -367,7 +367,7 @@ func (es *Service) SendMfaChangeEmail(email string, activated bool, locale, site
 
 	subject := T(
 		"api.templates.mfa_change_subject",
-		map[string]interface{}{
+		map[string]any{
 			"SiteName": es.config().ServiceSettings.SiteURL,
 		},
 	)
@@ -376,10 +376,10 @@ func (es *Service) SendMfaChangeEmail(email string, activated bool, locale, site
 	data.Props["SiteURL"] = siteURL
 
 	if activated {
-		data.Props["Info"] = T("api.templates.mfa_activated_body.info", map[string]interface{}{"SiteURL": siteURL})
+		data.Props["Info"] = T("api.templates.mfa_activated_body.info", map[string]any{"SiteURL": siteURL})
 		data.Props["Title"] = T("api.templates.mfa_activated_body.title")
 	} else {
-		data.Props["Info"] = T("api.templates.mfa_deactivated_body.info", map[string]interface{}{"SiteURL": siteURL})
+		data.Props["Info"] = T("api.templates.mfa_deactivated_body.info", map[string]any{"SiteURL": siteURL})
 		data.Props["Title"] = T("api.templates.mfa_deactivated_body.title")
 	}
 	data.Props["Warning"] = T("api.templates.email_warning")
@@ -468,12 +468,12 @@ func (es *Service) NewEmailTemplateData(locale string) templates.Data {
 	}
 
 	return templates.Data{
-		Props: map[string]interface{}{
+		Props: map[string]any{
 			"EmailInfo1": localT("api.templates.email_info1"),
 			"EmailInfo2": localT("api.templates.email_info2"),
 			"EmailInfo3": localT(
 				"api.templates.email_info3",
-				map[string]interface{}{
+				map[string]any{
 					"SiteName": es.config().ServiceSettings.SiteURL,
 				},
 			),

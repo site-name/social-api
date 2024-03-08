@@ -21,10 +21,10 @@ import (
 func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input ChannelCreateInput }) (*ChannelCreate, error) {
 	// validate input
 	if !lo.EveryBy(args.Input.AddShippingZones, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("ChannelCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addShippingZones"}, "please provide valid addShippingZones", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "addShippingZones"}, "please provide valid addShippingZones", http.StatusBadRequest)
 	}
 	if !args.Input.DefaultCountry.IsValid() {
-		return nil, model_helper.NewAppError("ChannelCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "defaultCountry"}, fmt.Sprintf("%s is not valid country code", args.Input.DefaultCountry), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "defaultCountry"}, fmt.Sprintf("%s is not valid country code", args.Input.DefaultCountry), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -50,7 +50,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("ChannelCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ChannelCreate", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -64,7 +64,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("ChannelCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ChannelCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ChannelCreate{
@@ -79,17 +79,17 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 }) (*ChannelUpdate, error) {
 	// validate inputs
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid id", http.StatusBadRequest)
 	}
 	if !lo.EveryBy(args.Input.AddShippingZones, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddShippingZones"}, "please provide valid ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "AddShippingZones"}, "please provide valid ids", http.StatusBadRequest)
 	}
 	if !lo.EveryBy(args.Input.RemoveShippingZones, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveShippingZones"}, "please provide valid ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "RemoveShippingZones"}, "please provide valid ids", http.StatusBadRequest)
 	}
 	intersectIds := lo.Intersect(args.Input.RemoveShippingZones, args.Input.AddShippingZones)
 	if len(intersectIds) > 0 {
-		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveShippingZones/AddShippingZones"}, "remove shipping zone ids and add shipping zone ids can not have same ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "RemoveShippingZones/AddShippingZones"}, "remove shipping zone ids and add shipping zone ids can not have same ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -125,7 +125,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("ChannelUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -173,7 +173,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("ChannelUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ChannelUpdate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ChannelUpdate{
@@ -190,13 +190,13 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 
 	// validate input
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide a valid channel id", http.StatusBadRequest)
 	}
 	if args.Input != nil && !model_helper.IsValidId(args.Input.ChannelID) {
-		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide a valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channelID"}, "please provide a valid channel id", http.StatusBadRequest)
 	}
 	if args.Input != nil && args.Input.ChannelID == args.Id {
-		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
 	}
 
 	deleteCheckoutsByChannelID := func(channelID string, transaction *gorm.DB) *model_helper.AppError {
@@ -221,7 +221,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 	if args.Input != nil && model_helper.IsValidId(args.Input.ChannelID) {
 		transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 		if transaction.Error != nil {
-			return nil, model_helper.NewAppError("ChannelDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ChannelDelete", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 		}
 		defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -243,7 +243,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 
 		err := transaction.Commit().Error
 		if err != nil {
-			return nil, model_helper.NewAppError("ChannelDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("ChannelDelete", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	} else {
 		if len(orders) > 0 {
@@ -273,7 +273,7 @@ func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }
 
 	// validate channel
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("ChannelActivate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelActivate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -302,7 +302,7 @@ func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string
 
 	// validate channel
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("ChannelActivate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ChannelActivate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -327,7 +327,7 @@ func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string
 
 func (r *Resolver) Channel(ctx context.Context, args struct{ Id string }) (*Channel, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Channel", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is not a valid channel id", args.Id), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Channel", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, fmt.Sprintf("%s is not a valid channel id", args.Id), http.StatusBadRequest)
 	}
 
 	channel, err := ChannelByIdLoader.Load(ctx, args.Id)()

@@ -1269,6 +1269,24 @@ func (s *OpenTracingLayerAssignedProductAttributeStore) GetWithOption(option mod
 	return result, err
 }
 
+func (s *OpenTracingLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.FilterByOptions")
@@ -1305,7 +1323,7 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) Get(assignedProduct
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
+func (s *OpenTracingLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -1314,7 +1332,7 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) Save(assignedProduc
 	}()
 
 	defer span.Finish()
-	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
+	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValues)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3437,7 +3455,7 @@ func (s *OpenTracingLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEve
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
+func (s *OpenTracingLayerJobStore) Count(options model_helper.JobFilterOptions) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.Count")
 	s.Root.Store.SetContext(newCtx)
@@ -3446,7 +3464,7 @@ func (s *OpenTracingLayerJobStore) Count(mods model_helper.JobFilterOptions) (in
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.Count(mods)
+	result, err := s.JobStore.Count(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3473,7 +3491,7 @@ func (s *OpenTracingLayerJobStore) Delete(id string) (string, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
+func (s *OpenTracingLayerJobStore) FindAll(options model_helper.JobFilterOptions) (model.JobSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.FindAll")
 	s.Root.Store.SetContext(newCtx)
@@ -3482,7 +3500,7 @@ func (s *OpenTracingLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (
 	}()
 
 	defer span.Finish()
-	result, err := s.JobStore.FindAll(mods)
+	result, err := s.JobStore.FindAll(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6951,7 +6969,7 @@ func (s *OpenTracingLayerUserStore) Save(user model.User) (*model.User, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (s *OpenTracingLayerUserStore) Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.Search")
 	s.Root.Store.SetContext(newCtx)

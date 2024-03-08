@@ -17,21 +17,27 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 	return &SqlAssignedProductAttributeValueStore{s}
 }
 
-func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
-	model_helper.AssignedProductAttributeValuePreSave(&assignedProductAttrValue)
-	if err := model_helper.AssignedProductAttributeValueIsValid(assignedProductAttrValue); err != nil {
-		return nil, err
-	}
-
-	err := assignedProductAttrValue.Insert(as.GetMaster(), boil.Infer())
-	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"assigned_product_attribute_values_value_id_assignment_id_key", model.AssignedProductAttributeValueColumns.ValueID, model.AssignedProductAttributeValueColumns.AssignmentID}) {
-			return nil, store.NewErrInvalidInput(model.TableNames.AssignedProductAttributeValues, "ValueID/AssignmentID", "unique")
+func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) {
+	for _, relation := range assignedProductAttrValues {
+		if relation == nil {
+			continue
 		}
-		return nil, err
+
+		model_helper.AssignedProductAttributeValuePreSave(relation)
+		if err := model_helper.AssignedProductAttributeValueIsValid(*relation); err != nil {
+			return nil, err
+		}
+
+		err := relation.Insert(as.GetMaster(), boil.Infer())
+		if err != nil {
+			if as.IsUniqueConstraintError(err, []string{"assigned_product_attribute_values_value_id_assignment_id_key", model.AssignedProductAttributeValueColumns.ValueID, model.AssignedProductAttributeValueColumns.AssignmentID}) {
+				return nil, store.NewErrInvalidInput(model.TableNames.AssignedProductAttributeValues, "ValueID/AssignmentID", "unique")
+			}
+			return nil, err
+		}
 	}
 
-	return &assignedProductAttrValue, nil
+	return assignedProductAttrValues, nil
 }
 
 func (as *SqlAssignedProductAttributeValueStore) Get(id string) (*model.AssignedProductAttributeValue, error) {

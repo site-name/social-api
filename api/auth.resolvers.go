@@ -11,6 +11,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/web"
 )
 
@@ -34,35 +35,35 @@ func (r *Resolver) TokensDeactivateAll(ctx context.Context) (*DeactivateAllUserT
 }
 
 func (r *Resolver) ExternalAuthenticationURL(ctx context.Context, args struct {
-	Input    model.StringInterface
+	Input    model_types.JSONString
 	PluginID string
 }) (*ExternalAuthenticationURL, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalObtainAccessTokens(ctx context.Context, args struct {
-	Input    model.StringInterface
+	Input    model_types.JSONString
 	PluginID string
 }) (*ExternalObtainAccessTokens, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalRefresh(ctx context.Context, args struct {
-	Input    model.StringInterface
+	Input    model_types.JSONString
 	PluginID string
 }) (*ExternalRefresh, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalLogout(ctx context.Context, args struct {
-	Input    model.StringInterface
+	Input    model_types.JSONString
 	PluginID string
 }) (*ExternalLogout, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalVerify(ctx context.Context, args struct {
-	Input    model.StringInterface
+	Input    model_types.JSONString
 	PluginID string
 }) (*ExternalVerify, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -140,7 +141,7 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userWithEmail != nil {
-		return nil, model_helper.NewAppError("RequestEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("RequestEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
 	}
 
 	// validate url
@@ -193,7 +194,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if userByEmail != nil {
-		return nil, model_helper.NewAppError("ConfirmEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ConfirmEmailChange", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
 	}
 
 	currentUser, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)

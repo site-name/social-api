@@ -842,7 +842,7 @@ func (o *User) UserAccessTokens(mods ...qm.QueryMod) userAccessTokenQuery {
 
 // LoadDefaultBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -868,7 +868,7 @@ func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -894,7 +894,7 @@ func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -958,7 +958,7 @@ func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser
 
 // LoadDefaultShippingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -984,7 +984,7 @@ func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUse
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1010,7 +1010,7 @@ func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUse
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1074,7 +1074,7 @@ func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUse
 
 // LoadStaffShopStaff allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (userL) LoadStaffShopStaff(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffShopStaff(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1100,7 +1100,7 @@ func (userL) LoadStaffShopStaff(e boil.Executor, singular bool, maybeUser interf
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1120,7 +1120,7 @@ func (userL) LoadStaffShopStaff(e boil.Executor, singular bool, maybeUser interf
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1183,7 +1183,7 @@ func (userL) LoadStaffShopStaff(e boil.Executor, singular bool, maybeUser interf
 
 // LoadWishlist allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1209,7 +1209,7 @@ func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{},
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1229,7 +1229,7 @@ func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{},
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1292,7 +1292,7 @@ func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{},
 
 // LoadAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1318,7 +1318,7 @@ func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser interface{}
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1337,7 +1337,7 @@ func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser interface{}
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1398,7 +1398,7 @@ func (userL) LoadAddresses(e boil.Executor, singular bool, maybeUser interface{}
 
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1424,7 +1424,7 @@ func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser interface{}
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1443,7 +1443,7 @@ func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser interface{}
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1504,7 +1504,7 @@ func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser interface{}
 
 // LoadCompliances allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1530,7 +1530,7 @@ func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1549,7 +1549,7 @@ func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1610,7 +1610,7 @@ func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser interface
 
 // LoadCustomerEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1636,7 +1636,7 @@ func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser interf
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1655,7 +1655,7 @@ func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser interf
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1716,7 +1716,7 @@ func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser interf
 
 // LoadCustomerCustomerNotes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1742,7 +1742,7 @@ func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1761,7 +1761,7 @@ func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1822,7 +1822,7 @@ func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser
 
 // LoadCustomerNotes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1848,7 +1848,7 @@ func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser interfa
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1867,7 +1867,7 @@ func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser interfa
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1928,7 +1928,7 @@ func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser interfa
 
 // LoadExportEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1954,7 +1954,7 @@ func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -1973,7 +1973,7 @@ func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2034,7 +2034,7 @@ func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser interfac
 
 // LoadExportFiles allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2060,7 +2060,7 @@ func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2079,7 +2079,7 @@ func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2140,7 +2140,7 @@ func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser interface
 
 // LoadUsedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2166,7 +2166,7 @@ func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser inter
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2185,7 +2185,7 @@ func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser inter
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2246,7 +2246,7 @@ func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser inter
 
 // LoadCreatedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2272,7 +2272,7 @@ func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser in
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2291,7 +2291,7 @@ func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser in
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2352,7 +2352,7 @@ func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser in
 
 // LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2378,7 +2378,7 @@ func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser interfa
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2397,7 +2397,7 @@ func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser interfa
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2458,7 +2458,7 @@ func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser interfa
 
 // LoadOrderEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2484,7 +2484,7 @@ func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2503,7 +2503,7 @@ func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2564,7 +2564,7 @@ func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser interface
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2590,7 +2590,7 @@ func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser interface{}, m
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2609,7 +2609,7 @@ func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser interface{}, m
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2670,7 +2670,7 @@ func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser interface{}, m
 
 // LoadStaffNotificationRecipients allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2696,7 +2696,7 @@ func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2715,7 +2715,7 @@ func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2776,7 +2776,7 @@ func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, may
 
 // LoadUserAccessTokens allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUserAccessTokens(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUserAccessTokens(e boil.Executor, singular bool, maybeUser any, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2802,7 +2802,7 @@ func (userL) LoadUserAccessTokens(e boil.Executor, singular bool, maybeUser inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userR{}
@@ -2821,7 +2821,7 @@ func (userL) LoadUserAccessTokens(e boil.Executor, singular bool, maybeUser inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -2896,7 +2896,7 @@ func (o *User) SetDefaultBillingAddress(exec boil.Executor, insert bool, related
 		strmangle.SetParamNames("\"", "\"", 1, []string{"default_billing_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2975,7 +2975,7 @@ func (o *User) SetDefaultShippingAddress(exec boil.Executor, insert bool, relate
 		strmangle.SetParamNames("\"", "\"", 1, []string{"default_shipping_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3056,7 +3056,7 @@ func (o *User) SetStaffShopStaff(exec boil.Executor, insert bool, related *ShopS
 			strmangle.SetParamNames("\"", "\"", 1, []string{"staff_id"}),
 			strmangle.WhereClause("\"", "\"", 2, shopStaffPrimaryKeyColumns),
 		)
-		values := []interface{}{o.ID, related.ID}
+		values := []any{o.ID, related.ID}
 
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3105,7 +3105,7 @@ func (o *User) SetWishlist(exec boil.Executor, insert bool, related *Wishlist) e
 			strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 			strmangle.WhereClause("\"", "\"", 2, wishlistPrimaryKeyColumns),
 		)
-		values := []interface{}{o.ID, related.ID}
+		values := []any{o.ID, related.ID}
 
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3154,7 +3154,7 @@ func (o *User) AddAddresses(exec boil.Executor, insert bool, related ...*Address
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, addressPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3206,7 +3206,7 @@ func (o *User) AddCheckouts(exec boil.Executor, insert bool, related ...*Checkou
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.Token}
+			values := []any{o.ID, rel.Token}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3248,7 +3248,7 @@ func (o *User) AddCheckouts(exec boil.Executor, insert bool, related ...*Checkou
 // Sets related.R.User's Checkouts accordingly.
 func (o *User) SetCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -3331,7 +3331,7 @@ func (o *User) AddCompliances(exec boil.Executor, insert bool, related ...*Compl
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, compliancePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3383,7 +3383,7 @@ func (o *User) AddCustomerEvents(exec boil.Executor, insert bool, related ...*Cu
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3425,7 +3425,7 @@ func (o *User) AddCustomerEvents(exec boil.Executor, insert bool, related ...*Cu
 // Sets related.R.User's CustomerEvents accordingly.
 func (o *User) SetCustomerEvents(exec boil.Executor, insert bool, related ...*CustomerEvent) error {
 	query := "update \"customer_events\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -3508,7 +3508,7 @@ func (o *User) AddCustomerCustomerNotes(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"customer_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3560,7 +3560,7 @@ func (o *User) AddCustomerNotes(exec boil.Executor, insert bool, related ...*Cus
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3602,7 +3602,7 @@ func (o *User) AddCustomerNotes(exec boil.Executor, insert bool, related ...*Cus
 // Sets related.R.User's CustomerNotes accordingly.
 func (o *User) SetCustomerNotes(exec boil.Executor, insert bool, related ...*CustomerNote) error {
 	query := "update \"customer_notes\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -3685,7 +3685,7 @@ func (o *User) AddExportEvents(exec boil.Executor, insert bool, related ...*Expo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, exportEventPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3727,7 +3727,7 @@ func (o *User) AddExportEvents(exec boil.Executor, insert bool, related ...*Expo
 // Sets related.R.User's ExportEvents accordingly.
 func (o *User) SetExportEvents(exec boil.Executor, insert bool, related ...*ExportEvent) error {
 	query := "update \"export_events\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -3810,7 +3810,7 @@ func (o *User) AddExportFiles(exec boil.Executor, insert bool, related ...*Expor
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, exportFilePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3852,7 +3852,7 @@ func (o *User) AddExportFiles(exec boil.Executor, insert bool, related ...*Expor
 // Sets related.R.User's ExportFiles accordingly.
 func (o *User) SetExportFiles(exec boil.Executor, insert bool, related ...*ExportFile) error {
 	query := "update \"export_files\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -3935,7 +3935,7 @@ func (o *User) AddUsedByGiftcards(exec boil.Executor, insert bool, related ...*G
 				strmangle.SetParamNames("\"", "\"", 1, []string{"used_by_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -3977,7 +3977,7 @@ func (o *User) AddUsedByGiftcards(exec boil.Executor, insert bool, related ...*G
 // Sets related.R.UsedBy's UsedByGiftcards accordingly.
 func (o *User) SetUsedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	query := "update \"giftcards\" set \"used_by_id\" = null where \"used_by_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4060,7 +4060,7 @@ func (o *User) AddCreatedByGiftcards(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"created_by_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4102,7 +4102,7 @@ func (o *User) AddCreatedByGiftcards(exec boil.Executor, insert bool, related ..
 // Sets related.R.CreatedBy's CreatedByGiftcards accordingly.
 func (o *User) SetCreatedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	query := "update \"giftcards\" set \"created_by_id\" = null where \"created_by_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4185,7 +4185,7 @@ func (o *User) AddInvoiceEvents(exec boil.Executor, insert bool, related ...*Inv
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4227,7 +4227,7 @@ func (o *User) AddInvoiceEvents(exec boil.Executor, insert bool, related ...*Inv
 // Sets related.R.User's InvoiceEvents accordingly.
 func (o *User) SetInvoiceEvents(exec boil.Executor, insert bool, related ...*InvoiceEvent) error {
 	query := "update \"invoice_events\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4310,7 +4310,7 @@ func (o *User) AddOrderEvents(exec boil.Executor, insert bool, related ...*Order
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderEventPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4352,7 +4352,7 @@ func (o *User) AddOrderEvents(exec boil.Executor, insert bool, related ...*Order
 // Sets related.R.User's OrderEvents accordingly.
 func (o *User) SetOrderEvents(exec boil.Executor, insert bool, related ...*OrderEvent) error {
 	query := "update \"order_events\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4435,7 +4435,7 @@ func (o *User) AddOrders(exec boil.Executor, insert bool, related ...*Order) err
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4477,7 +4477,7 @@ func (o *User) AddOrders(exec boil.Executor, insert bool, related ...*Order) err
 // Sets related.R.User's Orders accordingly.
 func (o *User) SetOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4560,7 +4560,7 @@ func (o *User) AddStaffNotificationRecipients(exec boil.Executor, insert bool, r
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, staffNotificationRecipientPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4602,7 +4602,7 @@ func (o *User) AddStaffNotificationRecipients(exec boil.Executor, insert bool, r
 // Sets related.R.User's StaffNotificationRecipients accordingly.
 func (o *User) SetStaffNotificationRecipients(exec boil.Executor, insert bool, related ...*StaffNotificationRecipient) error {
 	query := "update \"staff_notification_recipients\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -4685,7 +4685,7 @@ func (o *User) AddUserAccessTokens(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userAccessTokenPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -4914,7 +4914,7 @@ func (o UserSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -5036,7 +5036,7 @@ func (o *User) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -5120,7 +5120,7 @@ func (o UserSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -5166,7 +5166,7 @@ func (o *UserSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := UserSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

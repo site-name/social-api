@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -147,7 +148,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	// begin tx
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return 0, model_helper.NewAppError("DeleteProductVariants", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return 0, model_helper.NewAppError("DeleteProductVariants", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	// create order events on order lines
@@ -170,7 +171,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 			OrderID: orderID,
 			UserID:  &requesterID,
 			Type:    model.ORDER_EVENT_TYPE_ORDER_LINE_VARIANT_DELETED,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"lines": s.srv.OrderService().LinesPerQuantityToLineObjectList(quantityOrderLines),
 			},
 		})
@@ -190,7 +191,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 		defer s.srv.Store.FinalizeTransaction(tx)
 		err = tx.Commit().Error
 		if err != nil {
-			return model_helper.NewAppError("DeleteProductVariants", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("DeleteProductVariants", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		return nil
 	}
@@ -199,7 +200,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	if len(orders) > 0 {
 		s.srv.Go(func() {
 			for _, order := range orders {
-				appErr := s.srv.OrderService().RecalculateOrder(tx, order, model.StringInterface{})
+				appErr := s.srv.OrderService().RecalculateOrder(tx, order, model_types.JSONString{})
 				if appErr != nil {
 					slog.Error("failed to recalculate order after deleting product variants", slog.String("orderID", order.Id), slog.Err(appErr))
 				}
@@ -232,7 +233,7 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	// create tx:
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return model_helper.NewAppError("ToggleVariantRelations", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVariantRelations", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(tx)
 
@@ -254,7 +255,7 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	// commit tx
 	err = tx.Commit().Error
 	if err != nil {
-		return model_helper.NewAppError("ToggleVariantRelations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("ToggleVariantRelations", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	pluginMng := s.srv.PluginService().GetPluginManager()

@@ -92,7 +92,7 @@ func (worker *Worker) DoJob(job model.Job) {
 	}
 
 	cancelCtx, cancelCancelWatcher := context.WithCancel(context.Background())
-	cancelWatcherChan := make(chan interface{}, 1)
+	cancelWatcherChan := make(chan any, 1)
 
 	go worker.jobServer.CancellationWatcher(cancelCtx, job.ID, cancelWatcherChan)
 
@@ -164,7 +164,7 @@ func (worker *Worker) runMigration(key string, lastDone string) (bool, string, *
 	case model_helper.MigrationKeyAdvancedPermissionsPhase2:
 		done, progress, err = worker.runAdvancedPermissionsPhase2Migration(lastDone)
 	default:
-		return false, "", model_helper.NewAppError("MigrationsWorker.runMigration", "migrations.worker.run_migration.unknown_key", map[string]interface{}{"key": key}, "", http.StatusInternalServerError)
+		return false, "", model_helper.NewAppError("MigrationsWorker.runMigration", "migrations.worker.run_migration.unknown_key", map[string]any{"key": key}, "", http.StatusInternalServerError)
 	}
 
 	if done {

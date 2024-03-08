@@ -244,7 +244,7 @@ func (o *CustomerNote) User(mods ...qm.QueryMod) userQuery {
 
 // LoadCustomer allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerNote any, mods queries.Applicator) error {
 	var slice []*CustomerNote
 	var object *CustomerNote
 
@@ -270,7 +270,7 @@ func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerN
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customerNoteR{}
@@ -292,7 +292,7 @@ func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerN
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -356,7 +356,7 @@ func (customerNoteL) LoadCustomer(e boil.Executor, singular bool, maybeCustomerN
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customerNoteL) LoadUser(e boil.Executor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+func (customerNoteL) LoadUser(e boil.Executor, singular bool, maybeCustomerNote any, mods queries.Applicator) error {
 	var slice []*CustomerNote
 	var object *CustomerNote
 
@@ -382,7 +382,7 @@ func (customerNoteL) LoadUser(e boil.Executor, singular bool, maybeCustomerNote 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customerNoteR{}
@@ -408,7 +408,7 @@ func (customerNoteL) LoadUser(e boil.Executor, singular bool, maybeCustomerNote 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -486,7 +486,7 @@ func (o *CustomerNote) SetCustomer(exec boil.Executor, insert bool, related *Use
 		strmangle.SetParamNames("\"", "\"", 1, []string{"customer_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -532,7 +532,7 @@ func (o *CustomerNote) SetUser(exec boil.Executor, insert bool, related *User) e
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -790,7 +790,7 @@ func (o CustomerNoteSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) 
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -912,7 +912,7 @@ func (o *CustomerNote) Upsert(exec boil.Executor, updateOnConflict bool, conflic
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -996,7 +996,7 @@ func (o CustomerNoteSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerNotePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1042,7 +1042,7 @@ func (o *CustomerNoteSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CustomerNoteSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerNotePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -89,14 +89,14 @@ func (w whereHelperCustomerEventType) GTE(x CustomerEventType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperCustomerEventType) IN(slice []CustomerEventType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperCustomerEventType) NIN(slice []CustomerEventType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -279,7 +279,7 @@ func (o *CustomerEvent) User(mods ...qm.QueryMod) userQuery {
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEvent interface{}, mods queries.Applicator) error {
+func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEvent any, mods queries.Applicator) error {
 	var slice []*CustomerEvent
 	var object *CustomerEvent
 
@@ -305,7 +305,7 @@ func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEve
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customerEventR{}
@@ -331,7 +331,7 @@ func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEve
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -395,7 +395,7 @@ func (customerEventL) LoadOrder(e boil.Executor, singular bool, maybeCustomerEve
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customerEventL) LoadUser(e boil.Executor, singular bool, maybeCustomerEvent interface{}, mods queries.Applicator) error {
+func (customerEventL) LoadUser(e boil.Executor, singular bool, maybeCustomerEvent any, mods queries.Applicator) error {
 	var slice []*CustomerEvent
 	var object *CustomerEvent
 
@@ -421,7 +421,7 @@ func (customerEventL) LoadUser(e boil.Executor, singular bool, maybeCustomerEven
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customerEventR{}
@@ -447,7 +447,7 @@ func (customerEventL) LoadUser(e boil.Executor, singular bool, maybeCustomerEven
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -525,7 +525,7 @@ func (o *CustomerEvent) SetOrder(exec boil.Executor, insert bool, related *Order
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -604,7 +604,7 @@ func (o *CustomerEvent) SetUser(exec boil.Executor, insert bool, related *User) 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -862,7 +862,7 @@ func (o CustomerEventSlice) UpdateAll(exec boil.Executor, cols M) (int64, error)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -984,7 +984,7 @@ func (o *CustomerEvent) Upsert(exec boil.Executor, updateOnConflict bool, confli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1068,7 +1068,7 @@ func (o CustomerEventSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerEventPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1114,7 +1114,7 @@ func (o *CustomerEventSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CustomerEventSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerEventPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

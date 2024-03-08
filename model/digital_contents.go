@@ -109,14 +109,14 @@ func (w whereHelperContentType) GTE(x ContentType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperContentType) IN(slice []ContentType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperContentType) NIN(slice []ContentType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -310,7 +310,7 @@ func (o *DigitalContent) ContentDigitalContentUrls(mods ...qm.QueryMod) digitalC
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentL) LoadProductVariant(e boil.Executor, singular bool, maybeDigitalContent interface{}, mods queries.Applicator) error {
+func (digitalContentL) LoadProductVariant(e boil.Executor, singular bool, maybeDigitalContent any, mods queries.Applicator) error {
 	var slice []*DigitalContent
 	var object *DigitalContent
 
@@ -336,7 +336,7 @@ func (digitalContentL) LoadProductVariant(e boil.Executor, singular bool, maybeD
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &digitalContentR{}
@@ -358,7 +358,7 @@ func (digitalContentL) LoadProductVariant(e boil.Executor, singular bool, maybeD
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -422,7 +422,7 @@ func (digitalContentL) LoadProductVariant(e boil.Executor, singular bool, maybeD
 
 // LoadContentDigitalContentUrls allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (digitalContentL) LoadContentDigitalContentUrls(e boil.Executor, singular bool, maybeDigitalContent interface{}, mods queries.Applicator) error {
+func (digitalContentL) LoadContentDigitalContentUrls(e boil.Executor, singular bool, maybeDigitalContent any, mods queries.Applicator) error {
 	var slice []*DigitalContent
 	var object *DigitalContent
 
@@ -448,7 +448,7 @@ func (digitalContentL) LoadContentDigitalContentUrls(e boil.Executor, singular b
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &digitalContentR{}
@@ -467,7 +467,7 @@ func (digitalContentL) LoadContentDigitalContentUrls(e boil.Executor, singular b
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -542,7 +542,7 @@ func (o *DigitalContent) SetProductVariant(exec boil.Executor, insert bool, rela
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, digitalContentPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -590,7 +590,7 @@ func (o *DigitalContent) AddContentDigitalContentUrls(exec boil.Executor, insert
 				strmangle.SetParamNames("\"", "\"", 1, []string{"content_id"}),
 				strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -819,7 +819,7 @@ func (o DigitalContentSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -941,7 +941,7 @@ func (o *DigitalContent) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1025,7 +1025,7 @@ func (o DigitalContentSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), digitalContentPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1071,7 +1071,7 @@ func (o *DigitalContentSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := DigitalContentSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), digitalContentPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

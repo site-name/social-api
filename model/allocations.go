@@ -71,14 +71,14 @@ func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, 
 func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -259,7 +259,7 @@ func (o *Allocation) Stock(mods ...qm.QueryMod) stockQuery {
 
 // LoadOrderLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
+func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation any, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -285,7 +285,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &allocationR{}
@@ -307,7 +307,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -371,7 +371,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 
 // LoadStock allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
+func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation any, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -397,7 +397,7 @@ func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation int
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &allocationR{}
@@ -419,7 +419,7 @@ func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation int
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -497,7 +497,7 @@ func (o *Allocation) SetOrderLine(exec boil.Executor, insert bool, related *Orde
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -543,7 +543,7 @@ func (o *Allocation) SetStock(exec boil.Executor, insert bool, related *Stock) e
 		strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -768,7 +768,7 @@ func (o AllocationSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -890,7 +890,7 @@ func (o *Allocation) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -974,7 +974,7 @@ func (o AllocationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), allocationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1020,7 +1020,7 @@ func (o *AllocationSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AllocationSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), allocationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

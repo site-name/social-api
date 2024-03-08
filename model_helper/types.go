@@ -1,6 +1,7 @@
 package model_helper
 
 import (
+	"github.com/sitename/sitename/model"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -17,4 +18,11 @@ type ChannelFilterOptions struct {
 
 type VatFilterOptions struct {
 	CommonQueryOptions
+}
+
+type ExternalAccessTokens struct {
+	Token        *string
+	RefreshToken *string
+	CsrfToken    *string
+	User         *model.User
 }

@@ -9,7 +9,7 @@ const (
 )
 
 // Call this when your plugin is ready to start.
-func ClientMain(pluginImplementation interface{}) {
+func ClientMain(pluginImplementation any) {
 	if impl, ok := pluginImplementation.(PluginIface); !ok {
 		panic("Plugin implementation given must embed plugin.SitenamePlugin")
 	} else {

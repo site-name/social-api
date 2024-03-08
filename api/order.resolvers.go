@@ -14,6 +14,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -25,7 +26,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 }) (*OrderAddNote, error) {
 	args.Input.Message = strings.TrimSpace(args.Input.Message)
 	if args.Input.Message == "" {
-		return nil, model_helper.NewAppError("OrderAddNote", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderAddNote", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -33,7 +34,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 	// begin transaction
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderAddNote", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderAddNote", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -54,7 +55,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderAddNote", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderAddNote", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderAddNote{
@@ -70,7 +71,7 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id UUID }) (*Or
 	// begin transaction
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderCancel", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderCancel", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -97,7 +98,7 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id UUID }) (*Or
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderCancel", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderCancel", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderCancel{
@@ -111,7 +112,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	Id     UUID
 }) (*OrderCapture, error) {
 	if args.Amount.ToDecimal().LessThanOrEqual(decimal.Zero) {
-		return nil, model_helper.NewAppError("OrderCapture", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderCapture", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
 	}
 	decimalAmount := args.Amount.ToDecimal()
 
@@ -135,7 +136,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	// begin
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderCapture", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -168,7 +169,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderCapture", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderCapture", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderCapture{
@@ -201,7 +202,7 @@ func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id UUID }) (*O
 	// begin transaction
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderConfirm", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderConfirm", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -255,7 +256,7 @@ func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id UUID }) (*O
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderConfirm", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderConfirm", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderConfirm{
@@ -501,7 +502,7 @@ func (r *Resolver) OrderFulfillmentRefundProducts(ctx context.Context, args stru
 		return nil, appErr
 	}
 	if paymentErr != nil {
-		return nil, model_helper.NewAppError("OrderFulfillmentRefundProducts", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderFulfillmentRefundProducts", model.ErrPayment, map[string]any{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	return &FulfillmentRefundProducts{
@@ -590,7 +591,7 @@ func (r *Resolver) OrderFulfillmentReturnProducts(ctx context.Context, args stru
 		return nil, appErr
 	}
 	if paymentErr != nil {
-		return nil, model_helper.NewAppError("OrderFulfillmentReturnProducts", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderFulfillmentReturnProducts", model.ErrPayment, map[string]any{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	return &FulfillmentReturnProducts{
@@ -640,7 +641,7 @@ func (r *Resolver) OrderMarkAsPaid(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if paymentErr != nil {
-		return nil, model_helper.NewAppError("OrderMarkAsPaid", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderMarkAsPaid", model.ErrPayment, map[string]any{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderMarkAsPaid{
@@ -662,7 +663,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 
 	amount := args.Amount.ToDecimal()
 	if amount.LessThanOrEqual(decimal.Zero) {
-		return nil, model_helper.NewAppError("OrderRefund", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderRefund", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
 	}
 
 	appErr = cleanOrderRefund("OrderRefund", embedCtx.App, order)
@@ -683,7 +684,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderRefund", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -722,7 +723,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderRefund", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderRefund", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderRefund{
@@ -739,7 +740,7 @@ func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
 }) (*OrderUpdate, error) {
 	// validate params
 	if args.Input.UserEmail != nil && !model.IsValidEmail(*args.Input.UserEmail) {
-		return nil, model_helper.NewAppError("OrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please proide valid user email", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "UserEmail"}, "please proide valid user email", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -756,7 +757,7 @@ func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -817,7 +818,7 @@ func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
 
 	// commit
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderUpdate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	_, appErr = pluginMng.OrderUpdated(*updatedOrder)
@@ -849,7 +850,7 @@ func (r *Resolver) OrderUpdateShipping(ctx context.Context, args struct {
 		}
 
 		if !order.IsDraft() && orderRequiresShipping {
-			return nil, model_helper.NewAppError("OrderUpdateShipping", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ShippingMethod"}, "shipping method is required for this order", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("OrderUpdateShipping", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ShippingMethod"}, "shipping method is required for this order", http.StatusBadRequest)
 		}
 
 		order.ShippingMethodID = nil
@@ -860,7 +861,7 @@ func (r *Resolver) OrderUpdateShipping(ctx context.Context, args struct {
 			return nil, appErr
 		}
 
-		appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(nil, updatedOrder, map[string]interface{}{})
+		appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(nil, updatedOrder, map[string]any{})
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -1078,7 +1079,7 @@ func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderDiscountAdd", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountAdd", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -1097,7 +1098,7 @@ func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
 		OrderID: order.Id,
 		UserID:  &embedCtx.AppContext.Session().UserId,
 		Type:    model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_ADDED,
-		Parameters: model.StringInterface{
+		Parameters: model_types.JSONString{
 			"discount": embedCtx.App.Srv().OrderService().PrepareDiscountObject(orderDiscount, nil),
 		},
 	})
@@ -1107,7 +1108,7 @@ func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderDiscountAdd", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountAdd", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderDiscountAdd{
@@ -1130,7 +1131,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(orderDiscouts) == 0 {
-		return nil, model_helper.NewAppError("OrderDiscountUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid order discount id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderDiscountUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "DiscountID"}, "please provide valid order discount id", http.StatusBadRequest)
 	}
 
 	// validate order
@@ -1160,13 +1161,13 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 	orderDiscountBeforeUpdate := orderDiscount.DeepCopy()
 
 	orderDiscount.Reason = args.Input.Reason
-	orderDiscount.Value = model.GetPointerOfValue(args.Input.Value.ToDecimal())
+	orderDiscount.Value = model_helper.GetPointerOfValue(args.Input.Value.ToDecimal())
 	orderDiscount.ValueType = args.Input.ValueType
 
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderDiscountUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -1175,7 +1176,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(tx, order, map[string]interface{}{})
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(tx, order, map[string]any{})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1188,7 +1189,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 			OrderID: order.Id,
 			UserID:  &embedCtx.AppContext.Session().UserId,
 			Type:    model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_UPDATED,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"discount": embedCtx.App.Srv().OrderService().PrepareDiscountObject(orderDiscount, orderDiscountBeforeUpdate),
 			},
 		})
@@ -1199,7 +1200,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderDiscountUpdate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderDiscountUpdate{
@@ -1226,14 +1227,14 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	for _, lineInput := range args.Input.Lines {
 		if lineIdsMeetMap[lineInput.OrderLineID] {
-			return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate order line ids detected", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Input"}, "duplicate order line ids detected", http.StatusBadRequest)
 		}
 		lineIdsMeetMap[lineInput.OrderLineID] = true
 
 		warehouseIdsOfLineMeetMap := map[UUID]bool{} // keys are warehouse ids
 		for _, stockInput := range lineInput.Stocks {
 			if warehouseIdsOfLineMeetMap[stockInput.Warehouse] {
-				return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate warehouse ids detected", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Input"}, "duplicate warehouse ids detected", http.StatusBadRequest)
 			}
 			warehouseIdsOfLineMeetMap[stockInput.Warehouse] = true
 
@@ -1255,7 +1256,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	for _, orderLine := range orderLines {
 		if totalQuantityForLineMap[orderLine.Id] > orderLine.QuantityUnFulfilled() {
-			return nil, model_helper.NewAppError("OrderFulfill", "app.order.quantity_to_fulfill_greater_than_quantity_unfulfilled.app_error", map[string]interface{}{"OrderLine": orderLine.Id, "RemainToFulfill": orderLine.QuantityUnFulfilled()}, "required quantity to fulfill greater than remaining quantity to fulfill", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("OrderFulfill", "app.order.quantity_to_fulfill_greater_than_quantity_unfulfilled.app_error", map[string]any{"OrderLine": orderLine.Id, "RemainToFulfill": orderLine.QuantityUnFulfilled()}, "required quantity to fulfill greater than remaining quantity to fulfill", http.StatusBadRequest)
 		}
 	}
 
@@ -1281,7 +1282,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	// check total quantity of item
 	if lo.Sum(lo.Values(totalQuantityForLineMap)) <= 0 {
-		return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "total fulfill quantity must be positive", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("OrderFulfill", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Input"}, "total fulfill quantity must be positive", http.StatusBadRequest)
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
@@ -1293,7 +1294,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model_helper.NewAppError("OrderFulfill", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderFulfill", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
@@ -1351,7 +1352,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 	// commit tx
 	if err := tx.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("OrderFulfill", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("OrderFulfill", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &OrderFulfill{

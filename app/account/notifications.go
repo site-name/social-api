@@ -34,7 +34,7 @@ func (s *ServiceAccount) SendPasswordResetNotification(redirectURL string, user 
 		resetURL, err = util.PrepareUrl(params, redirectURL)
 	)
 	if err != nil {
-		return model_helper.NewAppError("SendPasswordResetNotification", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectURL"}, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("SendPasswordResetNotification", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "redirectURL"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := map[string]any{
@@ -59,7 +59,7 @@ func (s *ServiceAccount) SendAccountConfirmation(redirectUrl string, user model.
 		confirmUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model_helper.NewAppError("SendAccountConfirmation", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("SendAccountConfirmation", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := map[string]any{
@@ -83,7 +83,7 @@ func (s *ServiceAccount) SendRequestUserChangeEmailNotification(redirectUrl stri
 		parsedRedirectUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model_helper.NewAppError("SendRequestUserChangeEmailNotification", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("SendRequestUserChangeEmailNotification", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := map[string]any{
@@ -123,7 +123,7 @@ func (s *ServiceAccount) SendAccountDeleteConfirmationNotification(redirectUrl s
 		deleteUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model_helper.NewAppError("SendAccountDeleteConfirmationNotification", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("SendAccountDeleteConfirmationNotification", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := map[string]any{
@@ -148,7 +148,7 @@ func (s *ServiceAccount) SendSetPasswordNotification(redirectUrl string, user mo
 		passwordSetURL, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model_helper.NewAppError("SendSetPasswordNotification", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model_helper.NewAppError("SendSetPasswordNotification", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := map[string]any{

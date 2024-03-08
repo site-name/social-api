@@ -28,7 +28,7 @@ func (a *ServiceOrder) UpsertOrder(transaction *gorm.DB, order *model.Order) (*m
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return nil, model_helper.NewAppError("UpsertOrder", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpsertOrder", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "order"}, err.Error(), http.StatusBadRequest)
 		}
 
 		return nil, model_helper.NewAppError("UpsertOrder", "app.order.error_upserting_order.app_error", nil, err.Error(), http.StatusInternalServerError)

@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -75,23 +76,23 @@ func (b *BasePlugin) String() string {
 	return b.Manifest.PluginName
 }
 
-func (b *BasePlugin) ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
+func (b *BasePlugin) ExternalObtainAccessTokens(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ExternalObtainAccessTokens", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ExternalRefresh(data model.StringInterface, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
+func (b *BasePlugin) ExternalRefresh(data model_types.JSONString, request *http.Request, previousValue model.ExternalAccessTokens) (*model.ExternalAccessTokens, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ExternalRefresh", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ExternalLogout(data model.StringInterface, request *http.Request, previousValue model.StringInterface) *model_helper.AppError {
+func (b *BasePlugin) ExternalLogout(data model_types.JSONString, request *http.Request, previousValue model_types.JSONString) *model_helper.AppError {
 	return model_helper.NewAppError("ExternalLogout", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ExternalVerify(data model.StringInterface, request *http.Request, previousValue interfaces.AType) (*model.User, model.StringInterface, *model_helper.AppError) {
+func (b *BasePlugin) ExternalVerify(data model_types.JSONString, request *http.Request, previousValue interfaces.AType) (*model.User, model_types.JSONString, *model_helper.AppError) {
 	return nil, nil, model_helper.NewAppError("ExternalVerify", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) AuthenticateUser(request *http.Request, previousValue interface{}) (*model.User, *model_helper.AppError) {
+func (b *BasePlugin) AuthenticateUser(request *http.Request, previousValue any) (*model.User, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("AuthenticateUser", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -99,7 +100,7 @@ func (b *BasePlugin) Webhook(request *http.Request, path string, previousValue h
 	return nil, model_helper.NewAppError("Webhook", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) Notify(event string, payload model.StringInterface, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) Notify(event string, payload model_types.JSONString, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("Notify", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -167,143 +168,143 @@ func (b *BasePlugin) ApplyTaxesToProduct(product model.Product, price goprices.M
 	return nil, model_helper.NewAppError("ApplyTaxesToProduct", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("PreprocessOrderCreation", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderCreated(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderCreated(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("OrderCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderConfirmed(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderConfirmed(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return b.OrderCreated(orDer, previousValue)
 }
 
-func (b *BasePlugin) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) SaleCreated(sale model.Sale, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) SaleDeleted(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) SaleUpdated(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, currentCatalogue model.NodeCatalogueInfo, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) SaleUpdated(sale model.Sale, previousCatalogue model.NodeCatalogueInfo, currentCatalogue model.NodeCatalogueInfo, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("SaleUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("InvoiceRequest", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceDelete(inVoice model.Invoice, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) InvoiceDelete(inVoice model.Invoice, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("InvoiceDelete", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceSent(inVoice model.Invoice, email string, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) InvoiceSent(inVoice model.Invoice, email string, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("InvoiceSent", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, taxCode string, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
+func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj any, taxCode string, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("AssignTaxCodeToObjectMeta", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetTaxRatePercentageValue(obj interface{}, country string, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
+func (b *BasePlugin) GetTaxRatePercentageValue(obj any, country string, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetTaxRatePercentageValue", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CustomerCreated(customer model.User, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) CustomerCreated(customer model.User, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CustomerCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CustomerUpdated(customer model.User, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) CustomerUpdated(customer model.User, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CustomerUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductCreated(product model.Product, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductCreated(product model.Product, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductUpdated(product model.Product, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductUpdated(product model.Product, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductDeleted(product model.Product, variants []int, previousVale interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductDeleted(product model.Product, variants []int, previousVale any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductVariantCreated(productVariant model.ProductVariant, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductVariantCreated(productVariant model.ProductVariant, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductVariantCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductVariantUpdated(variant model.ProductVariant, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductVariantUpdated(variant model.ProductVariant, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductVariantUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductVariantOutOfStock(stock model.Stock, defaultValue interface{}) *model_helper.AppError {
+func (b *BasePlugin) ProductVariantOutOfStock(stock model.Stock, defaultValue any) *model_helper.AppError {
 	return model_helper.NewAppError("ProductVariantOutOfStock", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductVariantBackInStock(stock model.Stock, defaultValue interface{}) *model_helper.AppError {
+func (b *BasePlugin) ProductVariantBackInStock(stock model.Stock, defaultValue any) *model_helper.AppError {
 	return model_helper.NewAppError("ProductVariantBackInStock", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProductVariantDeleted(productVariant model.ProductVariant, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) ProductVariantDeleted(productVariant model.ProductVariant, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProductVariantDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderFullyPaid(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderFullyPaid(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("OrderFullyPaid", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderUpdated(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderUpdated(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("OrderUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderCancelled(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderCancelled(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("OrderCancelled", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) OrderFulfilled(orDer model.Order, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) OrderFulfilled(orDer model.Order, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("OrderFulfilled", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) DraftOrderCreated(orDer model.Order, defaultValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) DraftOrderCreated(orDer model.Order, defaultValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("DraftOrderCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) DraftOrderUpdated(orDer model.Order, defaultValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) DraftOrderUpdated(orDer model.Order, defaultValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("DraftOrderUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) DraftOrderDeleted(orDer model.Order, defaultValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) DraftOrderDeleted(orDer model.Order, defaultValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("DraftOrderDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) FulfillmentCreated(fulfillment model.Fulfillment, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) FulfillmentCreated(fulfillment model.Fulfillment, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("FulfillmentCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) FulfillmentCanceled(fulfillment model.Fulfillment, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) FulfillmentCanceled(fulfillment model.Fulfillment, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("FulfillmentCanceled", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CheckoutCreated(checkOut model.Checkout, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) CheckoutCreated(checkOut model.Checkout, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CheckoutCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CheckoutUpdated(checkOut model.Checkout, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) CheckoutUpdated(checkOut model.Checkout, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CheckoutUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) PageUpdated(page_ model.Page, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) PageUpdated(page_ model.Page, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("PageUpdated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) PageCreated(page_ model.Page, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) PageCreated(page_ model.Page, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("PageCreated", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) PageDeleted(page_ model.Page, previousValue interface{}) (interface{}, *model_helper.AppError) {
+func (b *BasePlugin) PageDeleted(page_ model.Page, previousValue any) (any, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("PageDeleted", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -311,51 +312,51 @@ func (b *BasePlugin) FetchTaxesData(previousValue bool) (bool, *model_helper.App
 	return false, model_helper.NewAppError("FetchTaxesData", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) InitializePayment(paymentData model.StringInterface, previousValue interface{}) (*model.InitializedPaymentResponse, *model_helper.AppError) {
+func (b *BasePlugin) InitializePayment(paymentData model_types.JSONString, previousValue any) (*model.InitializedPaymentResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("InitializePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) AuthorizePayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) AuthorizePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("AuthorizePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) CapturePayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) CapturePayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("CapturePayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) VoidPayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) VoidPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("VoidPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) RefundPayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) RefundPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("RefundPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ConfirmPayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) ConfirmPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ConfirmPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ProcessPayment(paymentInformation model.PaymentData, previousValue interface{}) (*model.GatewayResponse, *model_helper.AppError) {
+func (b *BasePlugin) ProcessPayment(paymentInformation model.PaymentData, previousValue any) (*model.GatewayResponse, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ProcessPayment", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ListPaymentSources(customerID string, previousValue interface{}) ([]*model.CustomerSource, *model_helper.AppError) {
+func (b *BasePlugin) ListPaymentSources(customerID string, previousValue any) ([]*model.CustomerSource, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ListPaymentSources", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetClientToken(tokenConfig model.TokenConfig, previousValue interface{}) (string, *model_helper.AppError) {
+func (b *BasePlugin) GetClientToken(tokenConfig model.TokenConfig, previousValue any) (string, *model_helper.AppError) {
 	return "", model_helper.NewAppError("GetClientToken", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetPaymentConfig(previousValue interface{}) ([]model.StringInterface, *model_helper.AppError) {
+func (b *BasePlugin) GetPaymentConfig(previousValue any) ([]model_types.JSONString, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetPaymentConfig", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetSupportedCurrencies(previousValue interface{}) ([]string, *model_helper.AppError) {
+func (b *BasePlugin) GetSupportedCurrencies(previousValue any) ([]string, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetSupportedCurrencies", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) GetTaxCodeFromObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
+func (b *BasePlugin) GetTaxCodeFromObjectMeta(obj any, previousValue model.TaxType) (*model.TaxType, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("GetTaxCodeFromObjectMeta", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -363,10 +364,10 @@ func (b *BasePlugin) TokenIsRequiredAsPaymentInput(previousValue bool) (bool, *m
 	return previousValue, nil
 }
 
-func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue interface{}) ([]*model.PaymentGateway, *model_helper.AppError) {
+func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkout, previousValue any) ([]*model.PaymentGateway, *model_helper.AppError) {
 	paymentConfig, notImplt := b.GetPaymentConfig(previousValue)
 	if notImplt != nil {
-		paymentConfig = []model.StringInterface{}
+		paymentConfig = []model_types.JSONString{}
 	}
 
 	var currencies util.AnyArray[string]
@@ -389,7 +390,7 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkou
 	}, nil
 }
 
-func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue model.StringInterface) (model.StringInterface, *model_helper.AppError) {
+func (b *BasePlugin) ExternalAuthenticationUrl(data model_types.JSONString, request *http.Request, previousValue model_types.JSONString) (model_types.JSONString, *model_helper.AppError) {
 	return nil, model_helper.NewAppError("ExternalAuthenticationUrl", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
@@ -401,12 +402,12 @@ func (b *BasePlugin) GetDefaultActive() (bool, *model_helper.AppError) {
 	return b.Manifest.DefaultActive, nil
 }
 
-func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface) (model.StringInterfaces, *model_helper.AppError) {
-	var updatedConfiguration []model.StringInterface
+func (b *BasePlugin) UpdateConfigurationStructure(config []model_types.JSONString) (model.StringInterfaces, *model_helper.AppError) {
+	var updatedConfiguration []model_types.JSONString
 
 	configStructure := b.Manifest.ConfigStructure
 	if configStructure == nil {
-		configStructure = make(map[string]model.StringInterface)
+		configStructure = make(map[string]model_types.JSONString)
 	}
 
 	desiredConfigKeysMap := map[string]struct{}{}
@@ -485,10 +486,10 @@ func (b *BasePlugin) GetPluginConfiguration(config model.StringInterfaces) (mode
 func (b *BasePlugin) AppendConfigStructure(config model.StringInterfaces) (model.StringInterfaces, *model_helper.AppError) {
 	configStructure := b.Manifest.ConfigStructure
 	if configStructure == nil {
-		configStructure = make(map[string]model.StringInterface)
+		configStructure = make(map[string]model_types.JSONString)
 	}
 
-	fieldsWithoutStructure := []model.StringInterface{}
+	fieldsWithoutStructure := []model_types.JSONString{}
 
 	for _, configurationField := range config {
 		structureToAdd, ok := configStructure[configurationField.Get("name", "").(string)]
@@ -515,10 +516,10 @@ func (b *BasePlugin) AppendConfigStructure(config model.StringInterfaces) (model
 	return config, nil
 }
 
-func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInterface, currentConfig []model.StringInterface) ([]model.StringInterface, *model_helper.AppError) {
+func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model_types.JSONString, currentConfig []model_types.JSONString) ([]model_types.JSONString, *model_helper.AppError) {
 	configStructure := b.Manifest.ConfigStructure
 	if configStructure == nil {
-		configStructure = make(map[string]model.StringInterface)
+		configStructure = make(map[string]model_types.JSONString)
 	}
 
 	for _, configItem := range currentConfig {
@@ -530,7 +531,7 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 				configStructureValue, ok4 := configStructure[configItemName.(string)]
 
 				if !ok4 || configStructureValue == nil {
-					configStructureValue = make(model.StringInterface)
+					configStructureValue = make(model_types.JSONString)
 				}
 				itemType, ok5 := configStructureValue["type"]
 
@@ -563,7 +564,7 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 		currentConfigKeys = append(currentConfigKeys, cField["name"].(string))
 	}
 
-	configurationToUpdateDict := make(model.StringInterface)
+	configurationToUpdateDict := make(model_types.JSONString)
 	for _, item := range configurationToUpdate {
 		configurationToUpdateDict[item["name"].(string)] = item["value"]
 	}
@@ -575,7 +576,7 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 				continue
 			}
 
-			currentConfig = append(currentConfig, model.StringInterface{
+			currentConfig = append(currentConfig, model_types.JSONString{
 				"name":  item,
 				"value": configurationToUpdateDict[item],
 			})
@@ -585,12 +586,12 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 	return currentConfig, nil
 }
 
-func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *model.PluginConfiguration, cleanedData model.StringInterface) (*model.PluginConfiguration, *model_helper.AppError) {
+func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *model.PluginConfiguration, cleanedData model_types.JSONString) (*model.PluginConfiguration, *model_helper.AppError) {
 	currentConfig := pluginConfiguration.Configuration
 	configurationToUpdate, ok := cleanedData["configuration"]
 
 	if ok && configurationToUpdate != nil {
-		pluginConfiguration.Configuration, _ = b.UpdateConfigItems(configurationToUpdate.([]model.StringInterface), currentConfig)
+		pluginConfiguration.Configuration, _ = b.UpdateConfigItems(configurationToUpdate.([]model_types.JSONString), currentConfig)
 	}
 
 	if active, ok := cleanedData["active"]; ok && active != nil {

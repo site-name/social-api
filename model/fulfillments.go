@@ -109,14 +109,14 @@ func (w whereHelperFulfillmentStatus) GTE(x FulfillmentStatus) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperFulfillmentStatus) IN(slice []FulfillmentStatus) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperFulfillmentStatus) NIN(slice []FulfillmentStatus) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -314,7 +314,7 @@ func (o *Fulfillment) Order(mods ...qm.QueryMod) orderQuery {
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (fulfillmentL) LoadOrder(e boil.Executor, singular bool, maybeFulfillment interface{}, mods queries.Applicator) error {
+func (fulfillmentL) LoadOrder(e boil.Executor, singular bool, maybeFulfillment any, mods queries.Applicator) error {
 	var slice []*Fulfillment
 	var object *Fulfillment
 
@@ -340,7 +340,7 @@ func (fulfillmentL) LoadOrder(e boil.Executor, singular bool, maybeFulfillment i
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &fulfillmentR{}
@@ -362,7 +362,7 @@ func (fulfillmentL) LoadOrder(e boil.Executor, singular bool, maybeFulfillment i
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -440,7 +440,7 @@ func (o *Fulfillment) SetOrder(exec boil.Executor, insert bool, related *Order) 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, fulfillmentPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -665,7 +665,7 @@ func (o FulfillmentSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -787,7 +787,7 @@ func (o *Fulfillment) Upsert(exec boil.Executor, updateOnConflict bool, conflict
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -871,7 +871,7 @@ func (o FulfillmentSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fulfillmentPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -917,7 +917,7 @@ func (o *FulfillmentSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := FulfillmentSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fulfillmentPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

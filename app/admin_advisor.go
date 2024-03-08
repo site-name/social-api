@@ -237,7 +237,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 // 					},
 // 				},
 // 				Integration: &model.PostActionIntegration{
-// 					Context: model.StringInterface{
+// 					Context: model_types.JSONString{
 // 						"bot_user_id": warnMetricsBot.UserId,
 // 						"force_ack":   false,
 // 					},
@@ -277,7 +277,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, 
 
 		if !forceAck {
 			if *a.Config().EmailSettings.SMTPServer == "" {
-				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.missing_server.app_error", nil, i18n.T("api.context.invalid_param.app_error", map[string]interface{}{"Name": "SMTPServer"}), http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.missing_server.app_error", nil, i18n.T("api.context.invalid_param.app_error", map[string]any{"Name": "SMTPServer"}), http.StatusInternalServerError)
 			}
 			T := i18n.GetUserTranslations(sender.Locale.String())
 			data := a.Srv().EmailService.NewEmailTemplateData(sender.Locale.String())
@@ -312,11 +312,11 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender model.User, 
 
 			body, err := a.Srv().TemplatesContainer().RenderToString("warn_metric_ack", data)
 			if err != nil {
-				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]any{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 
 			if err := mail.SendMailUsingConfig(model_helper.MM_SUPPORT_ADVISOR_ADDRESS, subject, body, mailConfig, false, sender.Email); err != nil {
-				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]interface{}{"Error": err.Error()}, "", http.StatusInternalServerError)
+				return model_helper.NewAppError("NotifyAndSetWarnMetricAck", "api.email.send_warn_metric_ack.failure.app_error", map[string]any{"Error": err.Error()}, "", http.StatusInternalServerError)
 			}
 		}
 
@@ -357,7 +357,7 @@ func (a *App) setWarnMetricsStatusForId(warnMetricId string, status string) *mod
 		Name:  warnMetricId,
 		Value: status,
 	}); err != nil {
-		return model_helper.NewAppError("setWarnMetricsStatusForId", "app.system.warn_metric.store.app_error", map[string]interface{}{"WarnMetricName": warnMetricId}, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("setWarnMetricsStatusForId", "app.system.warn_metric.store.app_error", map[string]any{"WarnMetricName": warnMetricId}, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

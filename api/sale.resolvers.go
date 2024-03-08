@@ -36,7 +36,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("Resolver.SaleCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("Resolver.SaleCreate", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -60,7 +60,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	// commit transaction
 	err = transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	catalogInfo, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
@@ -82,7 +82,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 // NOTE: Refer to ./schemas/sale.graphqls for details on directives used.
 func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*SaleDelete, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -90,7 +90,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("Resolver.SaleDelete", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -111,7 +111,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	// commit transaction
 	err = transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	catalogInfo, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
@@ -134,7 +134,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []string }) (*SaleBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("SaleBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -176,7 +176,7 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("Resolver.SaleDelete", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -193,7 +193,7 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCreate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// fetch catalogue after updating sale
@@ -219,7 +219,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	Input CatalogueInput
 }) (*SaleAddCatalogues, error) {
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleCataloguesAdd", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCataloguesAdd", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("SaleCataloguesAdd")
 	if appErr != nil {
@@ -254,7 +254,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("Resolver.SaleCataloguesAdd", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("Resolver.SaleCataloguesAdd", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -272,7 +272,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCataloguesAdd", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCataloguesAdd", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// fetch catalogue after updating sale
@@ -299,7 +299,7 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 }) (*SaleRemoveCatalogues, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleCataloguesRemove", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleCataloguesRemove", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("SaleCataloguesRemove")
 	if appErr != nil {
@@ -319,7 +319,7 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	// create transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model_helper.NewAppError("SaleCataloguesRemove", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCataloguesRemove", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
@@ -337,7 +337,7 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleCataloguesRemove", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleCataloguesRemove", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// fetch catalogue after updating sale
@@ -372,7 +372,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 }) (*SaleChannelListingUpdate, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate()
 	if appErr != nil {
@@ -412,7 +412,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
 			if decimal.Decimal(addChannelObj.DiscountValue).GreaterThan(decimal.NewFromInt(100)) {
 				// discount can't > 100%
-				return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
 			}
 		}
 	}
@@ -420,7 +420,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	// begin transaction
 	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tran.Error != nil {
-		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
@@ -461,7 +461,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	// commit transaction:
 	err = tran.Commit().Error
 	if err != nil {
-		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("SaleChannelListingUpdate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &SaleChannelListingUpdate{
@@ -476,7 +476,7 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 }) (*Sale, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Resolve.Sale", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Resolve.Sale", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -508,10 +508,10 @@ func (a *SalesArgs) parse() (*model.SaleFilterOption, *model_helper.AppError) {
 		}
 	}
 	if a.SortBy != nil && !a.SortBy.Field.IsValid() {
-		return nil, model_helper.NewAppError("SalesArgs.SortBy", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Field"}, "please provide valid field to sort", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SalesArgs.SortBy", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Field"}, "please provide valid field to sort", http.StatusBadRequest)
 	}
 	if a.Channel != nil && !slug.IsSlug(*a.Channel) {
-		return nil, model_helper.NewAppError("SalesArgs.Channel", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, *a.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("SalesArgs.Channel", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channel"}, *a.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 
 	paginationValues, appErr := a.GraphqlParams.Parse("SalesArgs")

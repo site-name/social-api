@@ -3,14 +3,13 @@ package shop
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceShop) StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError) {
+func (a *ServiceShop) StaffsByOptions(options model_helper.ShopStaffFilterOptions) ([]*model.ShopStaff, *model_helper.AppError) {
 	staffs, err := a.srv.Store.ShopStaff().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("StaffsByOptions", "app.shop.staffs_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -18,7 +17,7 @@ func (a *ServiceShop) StaffsByOptions(options *model.ShopStaffFilterOptions) ([]
 	return staffs, nil
 }
 
-func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError) {
+func (a *ServiceShop) ShopStaffByOptions(options model_helper.ShopStaffFilterOptions) (*model.ShopStaff, *model_helper.AppError) {
 	relation, err := a.srv.Store.ShopStaff().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -32,8 +31,10 @@ func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) 
 }
 
 func (s *ServiceShop) UserIsStaffOfShop(userID string) bool {
-	relation, appErr := s.ShopStaffByOptions(&model.ShopStaffFilterOptions{
-		Conditions: squirrel.Eq{model.ShopStaffTableName + ".StaffID": userID},
+	relation, appErr := s.ShopStaffByOptions(model_helper.ShopStaffFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.ShopStaffWhere.StaffID.EQ(userID),
+		),
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
@@ -43,5 +44,5 @@ func (s *ServiceShop) UserIsStaffOfShop(userID string) bool {
 		return false
 	}
 
-	return relation != nil && relation.EndAt == nil
+	return relation != nil && relation.EndAt.IsNil()
 }

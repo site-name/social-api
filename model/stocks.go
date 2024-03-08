@@ -284,7 +284,7 @@ func (o *Stock) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -310,7 +310,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -332,7 +332,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -396,7 +396,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock inte
 
 // LoadWarehouse allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -422,7 +422,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -444,7 +444,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -508,7 +508,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface
 
 // LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -534,7 +534,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interfa
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -553,7 +553,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interfa
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -614,7 +614,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interfa
 
 // LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -640,7 +640,7 @@ func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock in
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -659,7 +659,7 @@ func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock in
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -734,7 +734,7 @@ func (o *Stock) SetProductVariant(exec boil.Executor, insert bool, related *Prod
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -780,7 +780,7 @@ func (o *Stock) SetWarehouse(exec boil.Executor, insert bool, related *Warehouse
 		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -828,7 +828,7 @@ func (o *Stock) AddAllocations(exec boil.Executor, insert bool, related ...*Allo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -880,7 +880,7 @@ func (o *Stock) AddFulfillmentLines(exec boil.Executor, insert bool, related ...
 				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -922,7 +922,7 @@ func (o *Stock) AddFulfillmentLines(exec boil.Executor, insert bool, related ...
 // Sets related.R.Stock's FulfillmentLines accordingly.
 func (o *Stock) SetFulfillmentLines(exec boil.Executor, insert bool, related ...*FulfillmentLine) error {
 	query := "update \"fulfillment_lines\" set \"stock_id\" = null where \"stock_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1182,7 +1182,7 @@ func (o StockSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1304,7 +1304,7 @@ func (o *Stock) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumn
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1388,7 +1388,7 @@ func (o StockSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), stockPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1434,7 +1434,7 @@ func (o *StockSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := StockSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), stockPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

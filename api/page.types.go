@@ -40,7 +40,7 @@ func systemPageToGraphqlPage(p *model.Page) *Page {
 		SeoDescription:  &p.SeoDescription,
 		Title:           p.Title,
 		Slug:            p.Slug,
-		Content:         make(map[string]interface{}),
+		Content:         make(map[string]any),
 		IsPublished:     p.IsPublished,
 		Metadata:        MetadataToSlice(p.Metadata),
 		PrivateMetadata: MetadataToSlice(p.PrivateMetadata),

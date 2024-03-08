@@ -228,11 +228,11 @@ func (c *Context) IsSystemAdmin() bool {
 }
 
 //	func NewInvalidParamError(parameter string) *model_helper.AppError {
-//		err := model_helper.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
+//		err := model_helper.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]any{"Name": parameter}, "", http.StatusBadRequest)
 //		return err
 //	}
 func NewInvalidUrlParamError(parameter string) *model_helper.AppError {
-	err := model_helper.NewAppError("Context", "api.context.invalid_url_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
+	err := model_helper.NewAppError("Context", "api.context.invalid_url_param.app_error", map[string]any{"Name": parameter}, "", http.StatusBadRequest)
 	return err
 }
 func NewServerBusyError() *model_helper.AppError {
@@ -241,7 +241,7 @@ func NewServerBusyError() *model_helper.AppError {
 }
 
 // func NewInvalidRemoteIdError(parameter string) *model_helper.AppError {
-// 	err := model_helper.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]interface{}{"RemoteId": parameter}, "", http.StatusBadRequest)
+// 	err := model_helper.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]any{"RemoteId": parameter}, "", http.StatusBadRequest)
 // 	return err
 // }
 

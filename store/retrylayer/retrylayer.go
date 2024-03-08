@@ -1313,6 +1313,26 @@ func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option model_hel
 
 }
 
+func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 
 	tries := 0
@@ -1353,11 +1373,11 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
+		result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValues)
 		if err == nil {
 			return result, nil
 		}
@@ -3705,11 +3725,11 @@ func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*
 
 }
 
-func (s *RetryLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
+func (s *RetryLayerJobStore) Count(options model_helper.JobFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.Count(mods)
+		result, err := s.JobStore.Count(options)
 		if err == nil {
 			return result, nil
 		}
@@ -3745,11 +3765,11 @@ func (s *RetryLayerJobStore) Delete(id string) (string, error) {
 
 }
 
-func (s *RetryLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
+func (s *RetryLayerJobStore) FindAll(options model_helper.JobFilterOptions) (model.JobSlice, error) {
 
 	tries := 0
 	for {
-		result, err := s.JobStore.FindAll(mods)
+		result, err := s.JobStore.FindAll(options)
 		if err == nil {
 			return result, nil
 		}
@@ -7525,7 +7545,7 @@ func (s *RetryLayerUserStore) Save(user model.User) (*model.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (s *RetryLayerUserStore) Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 
 	tries := 0
 	for {

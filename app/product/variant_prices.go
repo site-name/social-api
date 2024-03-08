@@ -51,7 +51,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 		if i == 0 {
 			standardCurrency = item.Currency
 		} else if !strings.EqualFold(standardCurrency, item.Currency) {
-			return nil, model_helper.NewAppError("getProductDiscountedPrice", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantPrices"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("getProductDiscountedPrice", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "variantPrices"}, "", http.StatusBadRequest)
 		}
 
 		discoutnedvariantPrice, appErr := a.srv.DiscountService().CalculateDiscountedPrice(
@@ -238,7 +238,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction 
 // UpdateProductsDiscountedPricesOfDiscount
 //
 // NOTE: discount must be either *Sale or *Voucher
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount interface{}) *model_helper.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount any) *model_helper.AppError {
 	var (
 		productFilterOption    model.ProductFilterOption
 		categoryFilterOption   model.CategoryFilterOption
@@ -258,7 +258,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 		variantFilterOptions.VoucherID = squirrel.Eq{model.VoucherProductVariantTableName + ".voucher_id": t.Id}
 
 	default:
-		return model_helper.NewAppError("UpdateProductsDiscountedPricesOfDiscount", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
+		return model_helper.NewAppError("UpdateProductsDiscountedPricesOfDiscount", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discount"}, "", http.StatusBadRequest)
 	}
 
 	var (

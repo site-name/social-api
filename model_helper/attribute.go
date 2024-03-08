@@ -261,3 +261,27 @@ type AssignedProductAttributeFilterOption struct {
 type AssignedPageAttributeFilterOption struct {
 	CommonQueryOptions
 }
+
+func DeepCopyAttributeValue(av *model.AttributeValue) *model.AttributeValue {
+	if av == nil {
+		return nil
+	}
+
+	res := *av
+	res.FileURL.String = CopyPointer(av.FileURL.String)
+	res.ContentType.String = CopyPointer(av.ContentType.String)
+	res.RichText.String = CopyPointer(av.RichText.String)
+	res.Boolean.Bool = CopyPointer(av.Boolean.Bool)
+	res.Datetime.Time = CopyPointer(av.Datetime.Time)
+	res.SortOrder.Int = CopyPointer(av.SortOrder.Int)
+
+	return &res
+}
+
+func DeepCopyAttributeValueSlice(av model.AttributeValueSlice) model.AttributeValueSlice {
+	res := make(model.AttributeValueSlice, len(av))
+	for i, v := range av {
+		res[i] = DeepCopyAttributeValue(v)
+	}
+	return res
+}

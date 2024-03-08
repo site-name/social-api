@@ -154,8 +154,8 @@ func (s *Server) InvalidateAllCaches() *model_helper.AppError {
 
 func (s *Server) InvalidateAllCachesSkipSend() {
 	slog.Info("Purging all caches")
-	s.AccountService().ClearAllUsersSessionCacheLocal()
-	s.AccountService().ClearStatusCache()
+	s.Account.ClearAllUsersSessionCacheLocal()
+	s.Account.ClearStatusCache()
 	s.Store.User().ClearCaches()
 
 	s.Store.FileInfo().ClearCaches()

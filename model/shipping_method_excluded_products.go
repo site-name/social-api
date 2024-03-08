@@ -222,7 +222,7 @@ func (o *ShippingMethodExcludedProduct) ShippingMethod(mods ...qm.QueryMod) ship
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct any, mods queries.Applicator) error {
 	var slice []*ShippingMethodExcludedProduct
 	var object *ShippingMethodExcludedProduct
 
@@ -248,7 +248,7 @@ func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
@@ -270,7 +270,7 @@ func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (shippingMethodExcludedProductL) LoadProduct(e boil.Executor, singular bool
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodExcludedProductL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+func (shippingMethodExcludedProductL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodExcludedProduct any, mods queries.Applicator) error {
 	var slice []*ShippingMethodExcludedProduct
 	var object *ShippingMethodExcludedProduct
 
@@ -360,7 +360,7 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(e boil.Executor, singul
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
@@ -382,7 +382,7 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(e boil.Executor, singul
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *ShippingMethodExcludedProduct) SetProduct(exec boil.Executor, insert bo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *ShippingMethodExcludedProduct) SetShippingMethod(exec boil.Executor, in
 		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o ShippingMethodExcludedProductSlice) UpdateAll(exec boil.Executor, cols M
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *ShippingMethodExcludedProduct) Upsert(exec boil.Executor, updateOnConfl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o ShippingMethodExcludedProductSlice) DeleteAll(exec boil.Executor) (int64
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodExcludedProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *ShippingMethodExcludedProductSlice) ReloadAll(exec boil.Executor) error
 	}
 
 	slice := ShippingMethodExcludedProductSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodExcludedProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

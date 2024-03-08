@@ -40,8 +40,8 @@ func TestGetContextValue(t *testing.T) {
 // 	p := graphqlPaginator[person, string]{
 // 		data:    persons,
 // 		keyFunc: func(p person) string { return p.name },
-// 		last:    model.GetPointerOfValue[int32](1),
-// 		before:  model.GetPointerOfValue("cvfdgtg"),
+// 		last:    model_helper.GetPointerOfValue[int32](1),
+// 		before:  model_helper.GetPointerOfValue("cvfdgtg"),
 // 	}
 
 // 	data, hasPreviousPage, hasNextPage, err := p.parse("Something")

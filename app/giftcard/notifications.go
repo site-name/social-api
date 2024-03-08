@@ -4,12 +4,13 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 // SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ interface{}, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model_helper.AppError {
+func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ any, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model_helper.AppError {
 	var (
-		userPayload interface{}
+		userPayload any
 		userID      *string
 	)
 	if requesterUser != nil {
@@ -32,8 +33,8 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 	return appErr
 }
 
-func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface {
-	return model.StringInterface{
+func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard model.GiftCard) model_types.JSONString {
+	return model_types.JSONString{
 		"id":       giftCard.Id,
 		"code":     giftCard.Code,
 		"balance":  giftCard.CurrentBalanceAmount,

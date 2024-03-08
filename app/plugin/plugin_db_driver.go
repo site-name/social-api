@@ -73,7 +73,7 @@ func (d *DriverImpl) ConnPing(connID string) error {
 		return driver.ErrBadConn
 	}
 
-	return conn.Raw(func(innerConn interface{}) error {
+	return conn.Raw(func(innerConn any) error {
 		return innerConn.(driver.Pinger).Ping(context.Background())
 	})
 }
@@ -87,7 +87,7 @@ func (d *DriverImpl) ConnQuery(connID, q string, args []driver.NamedValue) (_ st
 		return "", driver.ErrBadConn
 	}
 
-	err = conn.Raw(func(innerConn interface{}) error {
+	err = conn.Raw(func(innerConn any) error {
 		rows, err = innerConn.(driver.QueryerContext).QueryContext(context.Background(), q, args)
 		return err
 	})
@@ -113,7 +113,7 @@ func (d *DriverImpl) ConnExec(connID, q string, args []driver.NamedValue) (_ plu
 		return ret, driver.ErrBadConn
 	}
 
-	err = conn.Raw(func(innerConn interface{}) error {
+	err = conn.Raw(func(innerConn any) error {
 		res, err = innerConn.(driver.ExecerContext).ExecContext(context.Background(), q, args)
 		return err
 	})
@@ -149,7 +149,7 @@ func (d *DriverImpl) Tx(connID string, opts driver.TxOptions) (_ string, err err
 		return "", driver.ErrBadConn
 	}
 
-	err = conn.Raw(func(innerConn interface{}) error {
+	err = conn.Raw(func(innerConn any) error {
 		tx, err = innerConn.(driver.ConnBeginTx).BeginTx(context.Background(), opts)
 		return err
 	})
@@ -191,7 +191,7 @@ func (d *DriverImpl) Stmt(connID, q string) (_ string, err error) {
 		return "", driver.ErrBadConn
 	}
 
-	err = conn.Raw(func(innerConn interface{}) error {
+	err = conn.Raw(func(innerConn any) error {
 		stmt, err = innerConn.(driver.Conn).Prepare(q)
 		return err
 	})

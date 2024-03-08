@@ -188,7 +188,7 @@ func (srv *JobServer) RequestCancellation(jobId string) *model_helper.AppError {
 	return model_helper.NewAppError("RequestCancellation", "jobs.request_cancellation.status.error", nil, "id="+jobId, http.StatusInternalServerError)
 }
 
-func (srv *JobServer) CancellationWatcher(ctx context.Context, jobId string, cancelChan chan interface{}) {
+func (srv *JobServer) CancellationWatcher(ctx context.Context, jobId string, cancelChan chan any) {
 	for {
 		select {
 		case <-ctx.Done():

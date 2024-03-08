@@ -243,7 +243,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 
 	type prompt struct {
 		name  string
-		iface interface{}
+		iface any
 	}
 
 	var (

@@ -34,7 +34,7 @@ func (r *Resolver) ProductMediaDelete(ctx context.Context, args struct{ Id UUID 
 		return nil, appErr
 	}
 	if len(productMedias) == 0 {
-		return nil, model_helper.NewAppError("ProductMediaDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid product media id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductMediaDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid product media id", http.StatusBadRequest)
 	}
 
 	_, appErr = embedCtx.App.Srv().ProductService().DeleteProductMedias(nil, []string{args.Id.String()})
@@ -88,7 +88,7 @@ func (r *Resolver) ProductMediaReorder(ctx context.Context, args struct {
 	}
 
 	if len(medias) == 0 {
-		return nil, model_helper.NewAppError("ProductMediaReorder", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ProductID"}, "given product has no related product medias", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductMediaReorder", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ProductID"}, "given product has no related product medias", http.StatusBadRequest)
 	}
 
 	for idx, media := range medias {
@@ -132,7 +132,7 @@ func (r *Resolver) ProductMediaUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(productMedias) == 0 {
-		return nil, model_helper.NewAppError("ProductMediaUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid product media id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("ProductMediaUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid product media id", http.StatusBadRequest)
 	}
 
 	media := productMedias[0]

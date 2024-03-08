@@ -229,7 +229,7 @@ func (o *ProductCollection) Product(mods ...qm.QueryMod) productQuery {
 
 // LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybeProductCollection interface{}, mods queries.Applicator) error {
+func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybeProductCollection any, mods queries.Applicator) error {
 	var slice []*ProductCollection
 	var object *ProductCollection
 
@@ -255,7 +255,7 @@ func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybePr
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productCollectionR{}
@@ -277,7 +277,7 @@ func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybePr
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -341,7 +341,7 @@ func (productCollectionL) LoadCollection(e boil.Executor, singular bool, maybePr
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productCollectionL) LoadProduct(e boil.Executor, singular bool, maybeProductCollection interface{}, mods queries.Applicator) error {
+func (productCollectionL) LoadProduct(e boil.Executor, singular bool, maybeProductCollection any, mods queries.Applicator) error {
 	var slice []*ProductCollection
 	var object *ProductCollection
 
@@ -367,7 +367,7 @@ func (productCollectionL) LoadProduct(e boil.Executor, singular bool, maybeProdu
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productCollectionR{}
@@ -389,7 +389,7 @@ func (productCollectionL) LoadProduct(e boil.Executor, singular bool, maybeProdu
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -467,7 +467,7 @@ func (o *ProductCollection) SetCollection(exec boil.Executor, insert bool, relat
 		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -513,7 +513,7 @@ func (o *ProductCollection) SetProduct(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -738,7 +738,7 @@ func (o ProductCollectionSlice) UpdateAll(exec boil.Executor, cols M) (int64, er
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -860,7 +860,7 @@ func (o *ProductCollection) Upsert(exec boil.Executor, updateOnConflict bool, co
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -944,7 +944,7 @@ func (o ProductCollectionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productCollectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -990,7 +990,7 @@ func (o *ProductCollectionSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ProductCollectionSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productCollectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -33,7 +33,7 @@ func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 }) (*UserBulkSetActive, error) {
 	// validate given ids are valid uuids
 	// if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-	// 	return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
+	// 	return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	// }
 
 	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -52,10 +52,10 @@ func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 	// // 2) system user manager can update every users EXCEPT system admin, himself
 	// for userId, user := range usersToUpdateMap {
 	// 	if currentSession.UserId == userId {
-	// 		return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "you can not update yourself", http.StatusForbidden)
+	// 		return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ids"}, "you can not update yourself", http.StatusForbidden)
 	// 	}
 	// 	if requesterIsSystemUserManager && user.GetRoles().Contains(model.SystemAdminRoleId) {
-	// 		return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "you can not update system admin", http.StatusForbidden)
+	// 		return nil, model_helper.NewAppError("UserBulkSetActive", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ids"}, "you can not update system admin", http.StatusForbidden)
 	// 	}
 
 	// 	// update user
@@ -86,13 +86,13 @@ func (r *Resolver) User(ctx context.Context, args struct {
 }) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if (args.Id == nil && args.Email == nil) || (args.Id != nil && args.Email != nil) {
-		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, email"}, "please provide either email or id, not both", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id, email"}, "please provide either email or id, not both", http.StatusBadRequest)
 	}
 	if args.Id != nil && !model_helper.IsValidId(*args.Id) {
-		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
 	}
 	if args.Email != nil && !model_helper.IsValidEmail(*args.Email) {
-		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide a valid email", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("User", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "email"}, "please provide a valid email", http.StatusBadRequest)
 	}
 
 	var user *model.User

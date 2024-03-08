@@ -8,7 +8,7 @@ import (
 )
 
 // GetDefaultExportPayload returns a map for mapping
-func (a *ServiceCsv) GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model_helper.AppError) {
+func (a *ServiceCsv) GetDefaultExportPayload(exportFile model.ExportFile) (map[string]any, *model_helper.AppError) {
 	var (
 		user   *model.User
 		appErr *model_helper.AppError
@@ -21,7 +21,7 @@ func (a *ServiceCsv) GetDefaultExportPayload(exportFile model.ExportFile) (map[s
 		return nil, appErr
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"user_id":    user.Id,
 		"user_email": user.Email,
 		"id":         exportFile.Id,

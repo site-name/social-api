@@ -229,7 +229,7 @@ func (o *SaleProduct) Sale(mods ...qm.QueryMod) saleQuery {
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleProductL) LoadProduct(e boil.Executor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
+func (saleProductL) LoadProduct(e boil.Executor, singular bool, maybeSaleProduct any, mods queries.Applicator) error {
 	var slice []*SaleProduct
 	var object *SaleProduct
 
@@ -255,7 +255,7 @@ func (saleProductL) LoadProduct(e boil.Executor, singular bool, maybeSaleProduct
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleProductR{}
@@ -277,7 +277,7 @@ func (saleProductL) LoadProduct(e boil.Executor, singular bool, maybeSaleProduct
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -341,7 +341,7 @@ func (saleProductL) LoadProduct(e boil.Executor, singular bool, maybeSaleProduct
 
 // LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleProductL) LoadSale(e boil.Executor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
+func (saleProductL) LoadSale(e boil.Executor, singular bool, maybeSaleProduct any, mods queries.Applicator) error {
 	var slice []*SaleProduct
 	var object *SaleProduct
 
@@ -367,7 +367,7 @@ func (saleProductL) LoadSale(e boil.Executor, singular bool, maybeSaleProduct in
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleProductR{}
@@ -389,7 +389,7 @@ func (saleProductL) LoadSale(e boil.Executor, singular bool, maybeSaleProduct in
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -467,7 +467,7 @@ func (o *SaleProduct) SetProduct(exec boil.Executor, insert bool, related *Produ
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -513,7 +513,7 @@ func (o *SaleProduct) SetSale(exec boil.Executor, insert bool, related *Sale) er
 		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -738,7 +738,7 @@ func (o SaleProductSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -860,7 +860,7 @@ func (o *SaleProduct) Upsert(exec boil.Executor, updateOnConflict bool, conflict
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -944,7 +944,7 @@ func (o SaleProductSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -990,7 +990,7 @@ func (o *SaleProductSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := SaleProductSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

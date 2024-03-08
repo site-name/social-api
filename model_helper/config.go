@@ -2648,21 +2648,21 @@ type PluginState struct {
 }
 
 type PluginSettings struct {
-	Enable                      *bool                             `access:"plugins,write_restrictable"`
-	EnableUploads               *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	AllowInsecureDownloadURL    *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	EnableHealthCheck           *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	Directory                   *string                           `access:"plugins,write_restrictable,cloud_restrictable"` // telemetry: none
-	ClientDirectory             *string                           `access:"plugins,write_restrictable,cloud_restrictable"` // telemetry: none
-	Plugins                     map[string]map[string]interface{} `access:"plugins"`                                       // telemetry: none
-	PluginStates                map[string]*PluginState           `access:"plugins"`                                       // telemetry: none
-	EnableMarketplace           *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	EnableRemoteMarketplace     *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	AutomaticPrepackagedPlugins *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	RequirePluginSignature      *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
-	MarketplaceUrl              *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
-	SignaturePublicKeyFiles     util.AnyArray[string]             `access:"plugins,write_restrictable,cloud_restrictable"`
-	ChimeraOAuthProxyUrl        *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
+	Enable                      *bool                     `access:"plugins,write_restrictable"`
+	EnableUploads               *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	AllowInsecureDownloadURL    *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	EnableHealthCheck           *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	Directory                   *string                   `access:"plugins,write_restrictable,cloud_restrictable"` // telemetry: none
+	ClientDirectory             *string                   `access:"plugins,write_restrictable,cloud_restrictable"` // telemetry: none
+	Plugins                     map[string]map[string]any `access:"plugins"`                                       // telemetry: none
+	PluginStates                map[string]*PluginState   `access:"plugins"`                                       // telemetry: none
+	EnableMarketplace           *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	EnableRemoteMarketplace     *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	AutomaticPrepackagedPlugins *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	RequirePluginSignature      *bool                     `access:"plugins,write_restrictable,cloud_restrictable"`
+	MarketplaceUrl              *string                   `access:"plugins,write_restrictable,cloud_restrictable"`
+	SignaturePublicKeyFiles     util.AnyArray[string]     `access:"plugins,write_restrictable,cloud_restrictable"`
+	ChimeraOAuthProxyUrl        *string                   `access:"plugins,write_restrictable,cloud_restrictable"`
 }
 
 func (s *PluginSettings) SetDefaults(ls LogSettings) {
@@ -2691,7 +2691,7 @@ func (s *PluginSettings) SetDefaults(ls LogSettings) {
 	}
 
 	if s.Plugins == nil {
-		s.Plugins = make(map[string]map[string]interface{})
+		s.Plugins = make(map[string]map[string]any)
 	}
 
 	if s.PluginStates == nil {
@@ -3058,7 +3058,7 @@ func (o *Config) ToJSON() string {
 func (o *Config) ToJsonFiltered(tagType, tagValue string) string {
 	filteredConfigMap := structToMapFilteredByTag(*o, tagType, tagValue)
 	for key, value := range filteredConfigMap {
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(map[string]any)
 		if ok && len(v) == 0 {
 			delete(filteredConfigMap, key)
 		}
@@ -3166,7 +3166,7 @@ func (o *Config) IsValid() *AppError {
 		return err
 	}
 	if *o.PasswordSettings.MinimumLength < PASSWORD_MINIMUM_LENGTH || *o.PasswordSettings.MinimumLength > PASSWORD_MAXIMUM_LENGTH {
-		return NewAppError("Config.IsValid", "model.config.is_valid.password_length.app_error", map[string]interface{}{"MinLength": PASSWORD_MINIMUM_LENGTH, "MaxLength": PASSWORD_MAXIMUM_LENGTH}, "", http.StatusBadRequest)
+		return NewAppError("Config.IsValid", "model.config.is_valid.password_length.app_error", map[string]any{"MinLength": PASSWORD_MINIMUM_LENGTH, "MaxLength": PASSWORD_MAXIMUM_LENGTH}, "", http.StatusBadRequest)
 	}
 	if err := o.RateLimitSettings.isValid(); err != nil {
 		return err
@@ -3455,7 +3455,7 @@ func (s *ServiceSettings) isValid() *AppError {
 	if len(s.TLSOverwriteCiphers) > 0 {
 		for _, cipher := range s.TLSOverwriteCiphers {
 			if _, ok := ServerTLSSupportedCiphers[cipher]; !ok {
-				return NewAppError("Config.IsValid", "model.config.is_valid.tls_overwrite_cipher.app_error", map[string]interface{}{"name": cipher}, "", http.StatusBadRequest)
+				return NewAppError("Config.IsValid", "model.config.is_valid.tls_overwrite_cipher.app_error", map[string]any{"name": cipher}, "", http.StatusBadRequest)
 			}
 		}
 	}
@@ -3644,7 +3644,7 @@ func (s *DisplaySettings) isValid() *AppError {
 				return NewAppError(
 					"Config.IsValid",
 					"model.config.is_valid.display.custom_url_schemes.app_error",
-					map[string]interface{}{"Scheme": scheme},
+					map[string]any{"Scheme": scheme},
 					"",
 					http.StatusBadRequest,
 				)
@@ -3738,7 +3738,7 @@ func (o *Config) Sanitize() {
 
 // structToMapFilteredByTag converts a struct into a map removing those fields that has the tag passed
 // as argument
-func structToMapFilteredByTag(t interface{}, typeOfTag, filterTag string) map[string]interface{} {
+func structToMapFilteredByTag(t any, typeOfTag, filterTag string) map[string]any {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Warn("Panicked in structToMapFilteredByTag. This should never happen.", slog.Any("recover", r))
@@ -3752,7 +3752,7 @@ func structToMapFilteredByTag(t interface{}, typeOfTag, filterTag string) map[st
 		return nil
 	}
 
-	out := map[string]interface{}{}
+	out := map[string]any{}
 
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
@@ -3763,7 +3763,7 @@ func structToMapFilteredByTag(t interface{}, typeOfTag, filterTag string) map[st
 			continue
 		}
 
-		var value interface{}
+		var value any
 
 		switch field.Kind() {
 		case reflect.Struct:

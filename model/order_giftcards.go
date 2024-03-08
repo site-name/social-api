@@ -222,7 +222,7 @@ func (o *OrderGiftcard) Order(mods ...qm.QueryMod) orderQuery {
 
 // LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderGiftcardL) LoadGiftcard(e boil.Executor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
+func (orderGiftcardL) LoadGiftcard(e boil.Executor, singular bool, maybeOrderGiftcard any, mods queries.Applicator) error {
 	var slice []*OrderGiftcard
 	var object *OrderGiftcard
 
@@ -248,7 +248,7 @@ func (orderGiftcardL) LoadGiftcard(e boil.Executor, singular bool, maybeOrderGif
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderGiftcardR{}
@@ -270,7 +270,7 @@ func (orderGiftcardL) LoadGiftcard(e boil.Executor, singular bool, maybeOrderGif
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (orderGiftcardL) LoadGiftcard(e boil.Executor, singular bool, maybeOrderGif
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderGiftcardL) LoadOrder(e boil.Executor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
+func (orderGiftcardL) LoadOrder(e boil.Executor, singular bool, maybeOrderGiftcard any, mods queries.Applicator) error {
 	var slice []*OrderGiftcard
 	var object *OrderGiftcard
 
@@ -360,7 +360,7 @@ func (orderGiftcardL) LoadOrder(e boil.Executor, singular bool, maybeOrderGiftca
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderGiftcardR{}
@@ -382,7 +382,7 @@ func (orderGiftcardL) LoadOrder(e boil.Executor, singular bool, maybeOrderGiftca
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *OrderGiftcard) SetGiftcard(exec boil.Executor, insert bool, related *Gi
 		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *OrderGiftcard) SetOrder(exec boil.Executor, insert bool, related *Order
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o OrderGiftcardSlice) UpdateAll(exec boil.Executor, cols M) (int64, error)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *OrderGiftcard) Upsert(exec boil.Executor, updateOnConflict bool, confli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o OrderGiftcardSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderGiftcardPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *OrderGiftcardSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := OrderGiftcardSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderGiftcardPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

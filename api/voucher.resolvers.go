@@ -67,7 +67,7 @@ func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) 
 func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []string }) (*VoucherBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("VoucherBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide vald voucher ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherBulkDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "ids"}, "please provide vald voucher ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -92,7 +92,7 @@ func (r *Resolver) VoucherUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("VoucherUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid voucher id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id"}, "please provide valid voucher id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -127,7 +127,7 @@ func (r *Resolver) VoucherCataloguesAdd(ctx context.Context, args struct {
 }) (*VoucherAddCatalogues, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("VoucherCataloguesAdd", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherCataloguesAdd", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("VoucherCataloguesAdd")
 	if appErr != nil {
@@ -176,7 +176,7 @@ func (r *Resolver) VoucherCataloguesRemove(ctx context.Context, args struct {
 }) (*VoucherRemoveCatalogues, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("VoucherCataloguesRemove", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherCataloguesRemove", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("VoucherCataloguesRemove")
 	if appErr != nil {
@@ -219,7 +219,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 }) (*VoucherChannelListingUpdate, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate()
 	if appErr != nil {
@@ -249,7 +249,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 		channelToAdd := channelsAssignedToVoucherMap[addChannelObj.ChannelID]
 		channelIsNOTAssignedToVoucher := channelToAdd == nil
 		if channelIsNOTAssignedToVoucher && addChannelObj.DiscountValue == nil {
-			return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValue"}, "please provide discount value to assign channel to voucher", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discountValue"}, "please provide discount value to assign channel to voucher", http.StatusBadRequest)
 		}
 
 		switch voucher.DiscountValueType {
@@ -257,7 +257,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 			// check if discount value is provided and has valid precision.
 			// If not valid, correct it, not raise error
 			if addChannelObj.DiscountValue == nil {
-				return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValue"}, "please provide discount value to assign channel to voucher", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discountValue"}, "please provide discount value to assign channel to voucher", http.StatusBadRequest)
 			}
 			precision, _ := goprices.GetCurrencyPrecision(channelToAdd.Currency)
 			roundedValue := addChannelObj.DiscountValue.ToDecimal().RoundUp(int32(precision))
@@ -266,7 +266,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
 			// discount percentage can't > 100
 			if decimal.Decimal(*addChannelObj.DiscountValue).GreaterThan(decimal.NewFromInt(100)) {
-				return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValue"}, "discount value can greater than 100", http.StatusBadRequest)
+				return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discountValue"}, "discount value can greater than 100", http.StatusBadRequest)
 			}
 		}
 
@@ -281,7 +281,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 	// init transaction
 	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tran.Error != nil {
-		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
@@ -315,7 +315,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 
 	// commit transaction
 	if err := tran.Commit().Error; err != nil {
-		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("VoucherChannelListingUpdate", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &VoucherChannelListingUpdate{
@@ -329,10 +329,10 @@ func (r *Resolver) Voucher(ctx context.Context, args struct {
 }) (*Voucher, error) {
 	// validate params
 	if !model_helper.IsValidId(args.Id) {
-		return nil, model_helper.NewAppError("Voucher", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Voucher", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
 	}
 	if args.Channel != nil && !slug.IsSlug(*args.Channel) {
-		return nil, model_helper.NewAppError("Voucher", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Voucher", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Slug"}, "please provide valid channel slug", http.StatusBadRequest)
 	}
 
 	voucher, err := VoucherByIDLoader.Load(ctx, args.Id)()
@@ -353,10 +353,10 @@ type VoucherFilterArgs struct {
 func (v *VoucherFilterArgs) parse() (*model.VoucherFilterOption, *model_helper.AppError) {
 	// validate params
 	if v.Channel != nil && !slug.IsSlug(*v.Channel) {
-		return nil, model_helper.NewAppError("VoucherFilterArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, "please provide valid channel slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherFilterArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channel"}, "please provide valid channel slug", http.StatusBadRequest)
 	}
 	if v.SortBy != nil && !v.SortBy.Field.IsValid() {
-		return nil, model_helper.NewAppError("VoucherFilterArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "please provide valid field for sorting", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("VoucherFilterArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "SortBy.Field"}, "please provide valid field for sorting", http.StatusBadRequest)
 	}
 
 	var conditions squirrel.Sqlizer = nil

@@ -583,15 +583,15 @@ func (g *GraphqlParams) validate(where string) *model_helper.AppError {
 
 	switch {
 	case (g.First != nil && *g.First < 0) || (g.Last != nil && *g.Last < 0):
-		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last cannot be negative", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "First / Last"}, "First and Last cannot be negative", http.StatusBadRequest)
 	case (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil):
-		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
 	case g.First != nil && g.Before != nil:
-		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "First / Before"}, "First and Before can not go together", http.StatusBadRequest)
 	case g.Last != nil && g.After != nil:
-		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "Last / After"}, "Last and After can not go together", http.StatusBadRequest)
 	case g.Before != nil && g.After != nil:
-		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can not go together", http.StatusBadRequest)
+		g.memoizedErr = model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "Before / After"}, "Before and After can not go together", http.StatusBadRequest)
 	default:
 		g.memoizedErr = nil
 	}
@@ -705,7 +705,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	operand, err := parseGraphqlCursor(&g.GraphqlParams)
 	if err != nil {
-		return nil, model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (
@@ -746,7 +746,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	// if not found, sort.Search returns exactly first int argument passed. We need to check it here
 	if index >= totalCount {
-		return nil, model_helper.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
+		return nil, model_helper.NewAppError(where, PaginationError, map[string]any{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 	}
 
 	// hasPreviousPage = true
@@ -807,7 +807,7 @@ func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *mo
 
 	operand, err := parseGraphqlCursor(g)
 	if err != nil {
-		return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "GraphqlParams"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "GraphqlParams"}, err.Error(), http.StatusBadRequest)
 	}
 
 	var (

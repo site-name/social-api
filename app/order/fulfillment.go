@@ -51,7 +51,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *mode
 			return nil, appErr
 		}
 		if errNotFound, ok := err.(*store.ErrNotFound); ok { // this happens when update an unexisted instance
-			return nil, model_helper.NewAppError("UpsertFulfillment", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, errNotFound.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpsertFulfillment", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, errNotFound.Error(), http.StatusBadRequest)
 		}
 		return nil, model_helper.NewAppError("UpsertFulfillment", "app.order.error_saving_fulfillment.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

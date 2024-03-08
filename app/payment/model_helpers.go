@@ -32,7 +32,7 @@ func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Paymen
 func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model_helper.AppError) {
 	zeroMoney, err := util.ZeroMoney(fallbackCurrency)
 	if err != nil {
-		return nil, model_helper.NewAppError("GetTotalAuthorized", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetTotalAuthorized", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 	}
 
 	lastPayment := a.GetLastpayment(payments)
@@ -52,7 +52,7 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackC
 func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model_helper.AppError) {
 	total, err := util.ZeroTaxedMoney(fallbackCurrency)
 	if err != nil {
-		return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, line := range orderLines {
@@ -60,7 +60,7 @@ func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurr
 
 		total, err = total.Add(line.TotalPrice)
 		if err != nil {
-			return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 		}
 	}
 

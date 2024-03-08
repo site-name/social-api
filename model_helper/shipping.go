@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -179,4 +180,11 @@ func ShippingMethodPostalCodeRuleIsValid(rule model.ShippingMethodPostalCodeRule
 	}
 
 	return nil
+}
+
+func ShippingMethodChannelListingGetTotal(listing *model.ShippingMethodChannelListing) goprices.Money {
+	return goprices.Money{
+		Amount:   listing.PriceAmount,
+		Currency: listing.Currency.String(),
+	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 )
 
 var manifest = &interfaces.PluginManifest{
@@ -16,13 +17,13 @@ var manifest = &interfaces.PluginManifest{
 	PluginName:         "Vatlayer",
 	MetaCodeKey:        "vatlayer.code",
 	MetaDescriptionKey: "vatlayer.description",
-	DefaultConfiguration: []model.StringInterface{
+	DefaultConfiguration: []model_types.JSONString{
 		{"name": "Access key", "value": nil},
 		{"name": "origin_country", "value": nil},
 		{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
 		{"name": "excluded_countries", "value": nil},
 	},
-	ConfigStructure: map[string]model.StringInterface{
+	ConfigStructure: map[string]model_types.JSONString{
 		"origin_country": {
 			"type":      interfaces.STRING,
 			"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
@@ -53,7 +54,7 @@ type VatlayerPlugin struct {
 	plugin.BasePlugin
 
 	config      VatlayerConfiguration
-	cachedTaxes model.StringInterface
+	cachedTaxes model_types.JSONString
 }
 
 func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
@@ -61,7 +62,7 @@ func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 		BasePlugin: *plugin.NewBasePlugin(cfg),
 	}
 
-	var configuration = model.StringInterface{}
+	var configuration = model_types.JSONString{}
 	for _, item := range vatPlugin.Configuration {
 		configuration[item.Get("name", "").(string)] = item["value"]
 	}
@@ -97,7 +98,7 @@ func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 		CountriesFromOrigin: splitCountriesFromOrigin,
 	}
 
-	vatPlugin.cachedTaxes = make(model.StringInterface)
+	vatPlugin.cachedTaxes = make(model_types.JSONString)
 	return vatPlugin
 
 }
@@ -110,7 +111,7 @@ func init() {
 }
 
 // previousValue must be either *TaxedMoney or *TaxedMoneyRange
-func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
+func (vp *VatlayerPlugin) skipPlugin(previousValue any) bool {
 	if !vp.Active || vp.config.AccessKey == "" {
 		return true
 	}

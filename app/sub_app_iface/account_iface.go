@@ -16,7 +16,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // AccountService contains methods for working with accounts
@@ -119,9 +118,9 @@ type AccountService interface {
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
-	SessionHasPermissionToAll(session model.Session, permissions []*model_helper.Permission) bool
+	SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session model.Session, permissions []*model_helper.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
@@ -159,14 +158,14 @@ type AccountService interface {
 	CreateUserAsAdmin(c request.Context, user model.User, redirect string) (*model.User, *model_helper.AppError)
 	CreateUserFromSignup(c request.Context, user model.User, redirect string) (*model.User, *model_helper.AppError)
 	CreateUserWithToken(c request.Context, user model.User, token model.Token) (*model.User, *model_helper.AppError)
-	CustomerEventsByOptions(conds ...qm.QueryMod) (model.CustomerEventSlice, *model_helper.AppError)
+	CustomerEventsByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, *model_helper.AppError)
 	DeactivateMfa(userID string) *model_helper.AppError
 	DeletePreferences(userID string, preferences model.PreferenceSlice) *model_helper.AppError
 	DeleteToken(token model.Token) *model_helper.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model_helper.AppError
 	EnableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
-	FidUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError)
+	FindUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError)
 	GenerateMfaSecret(userID string) (*model_helper.MfaSecret, *model_helper.AppError)
 	GetCloudSession(token string) (*model.Session, *model_helper.AppError)
 	GetDefaultProfileImage(user *model.User) ([]byte, *model_helper.AppError)

@@ -8,7 +8,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +21,7 @@ type PaymentService interface {
 	//
 	// @paymentPostProcess
 	// Confirm confirms payment
-	Confirm(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Confirm(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]any) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -46,7 +45,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	ProcessPayment(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	ProcessPayment(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]any) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -82,7 +81,7 @@ type PaymentService interface {
 	//
 	// Returns information required to process payment and additional
 	// billing/shipping addresses for optional fraud-prevention mechanisms.
-	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model_helper.AppError)
+	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model.PaymentData, *model_helper.AppError)
 	// CreateTransaction reate a transaction based on transaction kind and gateway response.
 	CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError)
 	// FetchCustomerId Retrieve users customer_id stored for desired gateway.

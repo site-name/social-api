@@ -67,7 +67,7 @@ func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
 
 func (s *SqlComplianceStore) ComplianceExport(job model.Compliance, cursor model_helper.ComplianceExportCursor, limit int) ([]*model_helper.CompliancePost, model_helper.ComplianceExportCursor, error) {
 	// 	keywordQuery := ""
-	// 	var argsKeywords []interface{}
+	// 	var argsKeywords []any
 	// 	keywords := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(job.Keywords, ",", " ", -1))))
 	// 	if len(keywords) > 0 {
 	// 		clauses := make([]string, len(keywords))
@@ -82,7 +82,7 @@ func (s *SqlComplianceStore) ComplianceExport(job model.Compliance, cursor model
 	// 	}
 
 	// 	emailQuery := ""
-	// 	var argsEmails []interface{}
+	// 	var argsEmails []any
 	// 	emails := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(job.Emails, ",", " ", -1))))
 	// 	if len(emails) > 0 {
 	// 		clauses := make([]string, len(emails))
@@ -100,7 +100,7 @@ func (s *SqlComplianceStore) ComplianceExport(job model.Compliance, cursor model
 
 	// 	channelPosts := []*model.CompliancePost{}
 	// 	channelsQuery := ""
-	// 	var argsChannelsQuery []interface{}
+	// 	var argsChannelsQuery []any
 	// 	if !cursor.ChannelsQueryCompleted {
 	// 		if cursor.LastChannelsQueryPostCreateAt == 0 {
 	// 			cursor.LastChannelsQueryPostCreateAt = job.StartAt
@@ -165,7 +165,7 @@ func (s *SqlComplianceStore) ComplianceExport(job model.Compliance, cursor model
 
 	// 	directMessagePosts := []*model.CompliancePost{}
 	// 	directMessagesQuery := ""
-	// 	var argsDirectMessagesQuery []interface{}
+	// 	var argsDirectMessagesQuery []any
 	// 	if !cursor.DirectMessagesQueryCompleted && len(channelPosts) < limit {
 	// 		if cursor.LastDirectMessagesQueryPostCreateAt == 0 {
 	// 			cursor.LastDirectMessagesQueryPostCreateAt = job.StartAt

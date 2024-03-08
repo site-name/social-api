@@ -9,6 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/product"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -319,8 +320,8 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 
 	return &Margin{
 		// TODO: Check if we need precision here
-		Start: model.GetPointerOfValue(int32(margin[0])),
-		Stop:  model.GetPointerOfValue(int32(margin[1])),
+		Start: model_helper.GetPointerOfValue(int32(margin[0])),
+		Stop:  model_helper.GetPointerOfValue(int32(margin[1])),
 	}, nil
 }
 
@@ -415,7 +416,7 @@ func systemProductVariantChannelListingToGraphqlProductVariantChannelListing(p *
 		SoldUnits: int32(p.Get_preorderQuantityAllocated()),
 	}
 	if qt := p.PreorderQuantityThreshold; qt != nil {
-		thresHold.Quantity = model.GetPointerOfValue(int32(*qt))
+		thresHold.Quantity = model_helper.GetPointerOfValue(int32(*qt))
 	}
 
 	res := &ProductVariantChannelListing{
@@ -448,7 +449,7 @@ func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, erro
 	if margin == nil {
 		return nil, nil
 	}
-	return model.GetPointerOfValue(int32(*margin)), nil
+	return model_helper.GetPointerOfValue(int32(*margin)), nil
 }
 
 type CollectionChannelListing struct {

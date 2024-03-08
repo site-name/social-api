@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func stringify(objects []interface{}) []string {
+func stringify(objects []any) []string {
 	stringified := make([]string, len(objects))
 	for i, object := range objects {
 		stringified[i] = fmt.Sprintf("%+v", object)
@@ -12,17 +12,17 @@ func stringify(objects []interface{}) []string {
 	return stringified
 }
 
-func toObjects(strings []string) []interface{} {
+func toObjects(strings []string) []any {
 	if strings == nil {
 		return nil
 	}
-	objects := make([]interface{}, len(strings))
+	objects := make([]any, len(strings))
 	for i, str := range strings {
 		objects[i] = str
 	}
 	return objects
 }
 
-func stringifyToObjects(objects []interface{}) []interface{} {
+func stringifyToObjects(objects []any) []any {
 	return toObjects(stringify(objects))
 }

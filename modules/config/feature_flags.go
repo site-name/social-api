@@ -19,7 +19,7 @@ type FeatureFlagSyncParams struct {
 	SplitKey            string
 	SyncIntervalSeconds int
 	Log                 *slog.Logger
-	Attributes          map[string]interface{}
+	Attributes          map[string]any
 }
 
 type FeatureFlagSynchronizer struct {
@@ -120,7 +120,7 @@ func featureFlagsToMap(featureFlags *model_helper.FeatureFlags) map[string]strin
 	return ret
 }
 
-func getStructFields(s interface{}) []string {
+func getStructFields(s any) []string {
 	structType := reflect.TypeOf(s)
 	fieldNames := make([]string, 0, structType.NumField())
 	for i := 0; i < structType.NumField(); i++ {

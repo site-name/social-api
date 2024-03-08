@@ -33,11 +33,11 @@ func (a *App) Config() *model_helper.Config {
 	return a.Srv().Config()
 }
 
-func (s *Server) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
+func (s *Server) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]any {
 	return s.ConfigStore.GetEnvironmentOverridesWithFilter(filter)
 }
 
-func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
+func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]any {
 	return a.Srv().EnvironmentConfig(filter)
 }
 
@@ -393,7 +393,7 @@ func (a *App) GetSanitizedConfig() *model_helper.Config {
 
 // GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 // If filter is not nil and returns false for a struct field, that field will be omitted.
-func (a *App) GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
+func (a *App) GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]any {
 	return a.EnvironmentConfig(filter)
 }
 

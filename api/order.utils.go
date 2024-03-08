@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/web"
 	"gorm.io/gorm"
 )
@@ -108,7 +109,7 @@ func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model
 		}
 
 		if !orderCanCancel {
-			return model_helper.NewAppError(where, "app.order.order_cannot_cancel.app_error", map[string]interface{}{"OrderID": order.Id}, fmt.Sprintf("order with id=%s cannot be canceled", order.Id), http.StatusNotAcceptable)
+			return model_helper.NewAppError(where, "app.order.order_cannot_cancel.app_error", map[string]any{"OrderID": order.Id}, fmt.Sprintf("order with id=%s cannot be canceled", order.Id), http.StatusNotAcceptable)
 		}
 	}
 
@@ -179,7 +180,7 @@ func cleanOrderRefund(where string, app app.AppIface, order *model.Order) *model
 
 func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.DB, paymentErr *model.PaymentError, order *model.Order, payment *model.Payment) *model_helper.AppError {
 	// create payment failed event
-	params := model.StringInterface{
+	params := model_types.JSONString{
 		"message": paymentErr.Error(),
 	}
 	if payment != nil {
@@ -198,7 +199,7 @@ func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.
 	}
 
 	// raise payment failed error
-	return model_helper.NewAppError(where, model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	return model_helper.NewAppError(where, model.ErrPayment, map[string]any{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 }
 
 func cleanOrderPayment(where string, payment *model.Payment) *model_helper.AppError {
@@ -255,11 +256,11 @@ func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturn
 		}
 
 		if orderLine.Quantity < quantity {
-			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
 		}
 
 		if unfulfilledQuantity := orderLine.QuantityUnFulfilled(); unfulfilledQuantity < quantity {
-			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
 		}
 
 		if lineData.getReplace() && orderLine.VariantID == nil {
@@ -308,7 +309,7 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 		}
 
 		if fulfillmentLine.Quantity < quantity {
-			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
+			return nil, model_helper.NewAppError(where, model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Quantity"}, fmt.Sprintf("provided quantity: %d greater than quantity from fulfillment line: %d", quantity, fulfillmentLine.Quantity), http.StatusNotAcceptable)
 		}
 
 		if !lo.Contains(whitelistedStatuses, fulfillmentLine.Fulfillment.Status) {

@@ -51,7 +51,7 @@ func (a *ServiceCheckout) CheckVariantInStock(checkout *model.Checkout, variant 
 		return 0, nil, nil, model_helper.NewAppError(
 			"CheckVariantInStock",
 			"app.checkout.quantity_invalid.app_error",
-			map[string]interface{}{
+			map[string]any{
 				"Quantity":    quantity,
 				"NewQuantity": newQuantity,
 			},
@@ -442,7 +442,7 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 	}
 
 	s.srv.Log.Warn("Unknown discount type", slog.String("discount_type", string(voucher.Type)))
-	return nil, nil, model_helper.NewAppError("GetVoucherDiscountForCheckout", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
+	return nil, nil, model_helper.NewAppError("GetVoucherDiscountForCheckout", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
 }
 
 func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model_helper.AppError) {
@@ -659,7 +659,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 				if voucherTranslation.Name != *voucher.Name {
 					checkout.TranslatedDiscountName = &voucherTranslation.Name
 				} else {
-					checkout.TranslatedDiscountName = model.GetPointerOfValue("")
+					checkout.TranslatedDiscountName = model_helper.GetPointerOfValue("")
 				}
 			}
 		}
@@ -716,7 +716,7 @@ func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interfaces.PluginMana
 				return nil, appErr
 			}
 			if notAplicable != nil {
-				return nil, model_helper.NewAppError("AddVoucherCodeToCheckout", "app.model.voucher_not_applicabale_to_checkout.app_error", map[string]interface{}{"code": model.VOUCHER_NOT_APPLICABLE}, "", http.StatusNotAcceptable)
+				return nil, model_helper.NewAppError("AddVoucherCodeToCheckout", "app.model.voucher_not_applicabale_to_checkout.app_error", map[string]any{"code": model.VOUCHER_NOT_APPLICABLE}, "", http.StatusNotAcceptable)
 			}
 		}
 	}
@@ -750,7 +750,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 		if voucherTranslation.Name != *voucher.Name {
 			checkout.TranslatedDiscountName = &voucherTranslation.Name
 		} else {
-			checkout.TranslatedDiscountName = model.GetPointerOfValue("")
+			checkout.TranslatedDiscountName = model_helper.GetPointerOfValue("")
 		}
 	}
 	checkout.Discount = discountMoney
@@ -804,7 +804,7 @@ func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkout *model.Checkout) *m
 	checkout.VoucherCode = nil
 	checkout.DiscountName = nil
 	checkout.TranslatedDiscountName = nil
-	checkout.DiscountAmount = model.GetPointerOfValue(decimal.Zero)
+	checkout.DiscountAmount = model_helper.GetPointerOfValue(decimal.Zero)
 
 	_, appErr := a.UpsertCheckouts(nil, []*model.Checkout{checkout})
 
@@ -967,7 +967,7 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.Checkou
 	if len(notAvailableVariantIDs) > 0 {
 		notAvailableVariantIDs = notAvailableVariantIDs.Dedup()
 		// return error indicate there are some product variants that have no channel listing or channel listing price is null
-		return model_helper.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variants": strings.Join(notAvailableVariantIDs, ", ")}, "", http.StatusNotAcceptable)
+		return model_helper.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]any{"variants": strings.Join(notAvailableVariantIDs, ", ")}, "", http.StatusNotAcceptable)
 	}
 
 	return nil
@@ -975,7 +975,7 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.Checkou
 
 // PrepareInsufficientStockCheckoutValidationAppError
 func (s *ServiceCheckout) PrepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model_helper.AppError {
-	return model_helper.NewAppError(where, "app.checkout.insufficient_stock.app_error", map[string]interface{}{"variants": err.VariantIDs()}, "", http.StatusNotAcceptable)
+	return model_helper.NewAppError(where, "app.checkout.insufficient_stock.app_error", map[string]any{"variants": err.VariantIDs()}, "", http.StatusNotAcceptable)
 }
 
 type DeliveryMethod interface {
@@ -1075,7 +1075,7 @@ func (s *ServiceCheckout) CheckLinesQuantity(variants model.ProductVariantSlice,
 		for idx, item := range insufficientStockErr.Items {
 			errors[idx] = fmt.Sprintf("could not add items %s. Only %d remainning in stock.", item.Variant.String(), max(*item.AvailableQuantity, 0))
 		}
-		return model_helper.NewAppError("CheckLinesQuantity", "app.checkout.insufficient_stock.app_error", map[string]interface{}{"Quantity": errors}, insufficientStockErr.Error(), http.StatusNotAcceptable)
+		return model_helper.NewAppError("CheckLinesQuantity", "app.checkout.insufficient_stock.app_error", map[string]any{"Quantity": errors}, insufficientStockErr.Error(), http.StatusNotAcceptable)
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package attribute
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sort"
@@ -12,7 +13,6 @@ import (
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValueSlice, *model_helper.AppError) {
@@ -80,7 +80,7 @@ func (s *ServiceAttribute) newReordering(values model.AttributeValueSlice, opera
 	}
 }
 
-func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *model_helper.AppError) {
+func (r *Reordering) orderedNodeMap(transaction boil.ContextTransactor) (map[string]*int, *model_helper.AppError) {
 	if !r.runned { // check if runned or not
 		// indicate runned
 		r.runned = true
@@ -112,7 +112,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 			r.OldSortMap[key] = value
 		}
 
-		r.OrderedPKs = attributeValues.IDs()
+		r.OrderedPKs = lo.Map(attributeValues, func(a *model.AttributeValue, _ int) string { return a.ID })
 
 		previousSortOrder := 0
 
@@ -173,7 +173,7 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 		return
 	}
 	if move == nil {
-		move = model.GetPointerOfValue(1)
+		move = model_helper.GetPointerOfValue(1)
 	}
 
 	_, targetPos, newSortOrder := s.calculateNewSortOrder(pk, *move) // move is non-nil now
@@ -215,18 +215,18 @@ func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int)
 			continue
 		}
 
-		r.cachedOrderedNodeMap[pk] = model.GetPointerOfValue(valueToAdd + *sortOrder)
+		r.cachedOrderedNodeMap[pk] = model_helper.GetPointerOfValue(valueToAdd + *sortOrder)
 	}
 }
 
-func (r *Reordering) commit(transaction *gorm.DB) *model_helper.AppError {
+func (r *Reordering) commit(transaction boil.ContextTransactor) *model_helper.AppError {
 	// Do nothing if nothing was done
 	if len(r.OldSortMap) == 0 {
 		return nil
 	}
 
-	copiedAttributeValues := r.cachedAttributeValues.DeepCopy()
-	var attributeValuesMap = lo.SliceToMap(copiedAttributeValues, func(a *model.AttributeValue) (string, *model.AttributeValue) { return a.Id, a })
+	copiedAttributeValues := model_helper.DeepCopyAttributeValueSlice(r.cachedAttributeValues)
+	var attributeValuesMap = lo.SliceToMap(copiedAttributeValues, func(a *model.AttributeValue) (string, *model.AttributeValue) { return a.ID, a })
 
 	changed := false
 
@@ -234,7 +234,7 @@ func (r *Reordering) commit(transaction *gorm.DB) *model_helper.AppError {
 	for pk, sortOrder := range orderedNodeMap {
 		oldSortOrder, exist := r.OldSortMap[pk]
 		if exist && oldSortOrder != nil && sortOrder != nil && *oldSortOrder != *sortOrder {
-			attributeValuesMap[pk].SortOrder = sortOrder
+			attributeValuesMap[pk].SortOrder.Int = sortOrder
 			changed = true
 		}
 	}
@@ -247,7 +247,7 @@ func (r *Reordering) commit(transaction *gorm.DB) *model_helper.AppError {
 	return appErr
 }
 
-func (r *Reordering) Run(transaction *gorm.DB) *model_helper.AppError {
+func (r *Reordering) Run(transaction boil.ContextTransactor) *model_helper.AppError {
 	for key, move := range r.Operations {
 		// skip operation if it was deleted in concurrence
 		orderedNodeMap, appErr := r.orderedNodeMap(transaction)
@@ -266,9 +266,9 @@ func (r *Reordering) Run(transaction *gorm.DB) *model_helper.AppError {
 }
 
 func (s *ServiceAttribute) PerformReordering(values model.AttributeValueSlice, operations map[string]*int) *model_helper.AppError {
-	transaction := s.srv.Store.GetMaster().BeginTx()
-	if transaction.Error != nil {
-		return model_helper.NewAppError("PerformOrdering", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	transaction, err := s.srv.Store.GetMaster().BeginTx(context.Background(), nil)
+	if err != nil {
+		return model_helper.NewAppError("PerformOrdering", model_helper.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
@@ -277,16 +277,16 @@ func (s *ServiceAttribute) PerformReordering(values model.AttributeValueSlice, o
 		return appErr
 	}
 
-	err := transaction.Commit().Error
+	err = transaction.Commit()
 	if err != nil {
-		return model_helper.NewAppError("PerformReordering", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("PerformReordering", model_helper.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
 }
 
-func (s *ServiceAttribute) DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model_helper.AppError) {
-	numDeleted, err := s.srv.Store.AttributeValue().Delete(tx, ids...)
+func (s *ServiceAttribute) DeleteAttributeValues(tx boil.ContextTransactor, ids []string) (int64, *model_helper.AppError) {
+	numDeleted, err := s.srv.Store.AttributeValue().Delete(tx, ids)
 	if err != nil {
 		return 0, model_helper.NewAppError("DeleteAttributeValues", "app.attribute.error_delete_attribute_values_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

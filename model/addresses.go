@@ -125,14 +125,14 @@ func (w whereHelperstring) NLIKE(x string) qm.QueryMod  { return qm.Where(w.fiel
 func (w whereHelperstring) ILIKE(x string) qm.QueryMod  { return qm.Where(w.field+" ILIKE ?", x) }
 func (w whereHelperstring) NILIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT ILIKE ?", x) }
 func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -160,14 +160,14 @@ func (w whereHelperCountryCode) GTE(x CountryCode) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperCountryCode) IN(slice []CountryCode) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperCountryCode) NIN(slice []CountryCode) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -183,14 +183,14 @@ func (w whereHelperint64) LTE(x int64) qm.QueryMod { return qmhelper.Where(w.fie
 func (w whereHelperint64) GT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperint64) GTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 func (w whereHelperint64) IN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -514,7 +514,7 @@ func (o *Address) Warehouses(mods ...qm.QueryMod) warehouseQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -540,7 +540,7 @@ func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress interface{
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -562,7 +562,7 @@ func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress interface{
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -626,7 +626,7 @@ func (addressL) LoadUser(e boil.Executor, singular bool, maybeAddress interface{
 
 // LoadBillingAddressCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -652,7 +652,7 @@ func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, mayb
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -671,7 +671,7 @@ func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, mayb
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -732,7 +732,7 @@ func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, mayb
 
 // LoadBillingAddressOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -758,7 +758,7 @@ func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAd
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -777,7 +777,7 @@ func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAd
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -838,7 +838,7 @@ func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAd
 
 // LoadShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -864,7 +864,7 @@ func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress interface
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -883,7 +883,7 @@ func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress interface
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -944,7 +944,7 @@ func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress interface
 
 // LoadDefaultBillingAddressUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -970,7 +970,7 @@ func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, m
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -989,7 +989,7 @@ func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, m
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1050,7 +1050,7 @@ func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, m
 
 // LoadDefaultShippingAddressUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1076,7 +1076,7 @@ func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -1095,7 +1095,7 @@ func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1156,7 +1156,7 @@ func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, 
 
 // LoadWarehouses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress any, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1182,7 +1182,7 @@ func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &addressR{}
@@ -1201,7 +1201,7 @@ func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1276,7 +1276,7 @@ func (o *Address) SetUser(exec boil.Executor, insert bool, related *User) error 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, addressPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1324,7 +1324,7 @@ func (o *Address) AddBillingAddressCheckouts(exec boil.Executor, insert bool, re
 				strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.Token}
+			values := []any{o.ID, rel.Token}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1366,7 +1366,7 @@ func (o *Address) AddBillingAddressCheckouts(exec boil.Executor, insert bool, re
 // Sets related.R.BillingAddress's BillingAddressCheckouts accordingly.
 func (o *Address) SetBillingAddressCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1449,7 +1449,7 @@ func (o *Address) AddBillingAddressOrders(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1491,7 +1491,7 @@ func (o *Address) AddBillingAddressOrders(exec boil.Executor, insert bool, relat
 // Sets related.R.BillingAddress's BillingAddressOrders accordingly.
 func (o *Address) SetBillingAddressOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1574,7 +1574,7 @@ func (o *Address) AddShops(exec boil.Executor, insert bool, related ...*Shop) er
 				strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1616,7 +1616,7 @@ func (o *Address) AddShops(exec boil.Executor, insert bool, related ...*Shop) er
 // Sets related.R.Address's Shops accordingly.
 func (o *Address) SetShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	query := "update \"shops\" set \"address_id\" = null where \"address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1699,7 +1699,7 @@ func (o *Address) AddDefaultBillingAddressUsers(exec boil.Executor, insert bool,
 				strmangle.SetParamNames("\"", "\"", 1, []string{"default_billing_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1741,7 +1741,7 @@ func (o *Address) AddDefaultBillingAddressUsers(exec boil.Executor, insert bool,
 // Sets related.R.DefaultBillingAddress's DefaultBillingAddressUsers accordingly.
 func (o *Address) SetDefaultBillingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	query := "update \"users\" set \"default_billing_address_id\" = null where \"default_billing_address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1824,7 +1824,7 @@ func (o *Address) AddDefaultShippingAddressUsers(exec boil.Executor, insert bool
 				strmangle.SetParamNames("\"", "\"", 1, []string{"default_shipping_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1866,7 +1866,7 @@ func (o *Address) AddDefaultShippingAddressUsers(exec boil.Executor, insert bool
 // Sets related.R.DefaultShippingAddress's DefaultShippingAddressUsers accordingly.
 func (o *Address) SetDefaultShippingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	query := "update \"users\" set \"default_shipping_address_id\" = null where \"default_shipping_address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1949,7 +1949,7 @@ func (o *Address) AddWarehouses(exec boil.Executor, insert bool, related ...*War
 				strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, warehousePrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1991,7 +1991,7 @@ func (o *Address) AddWarehouses(exec boil.Executor, insert bool, related ...*War
 // Sets related.R.Address's Warehouses accordingly.
 func (o *Address) SetWarehouses(exec boil.Executor, insert bool, related ...*Warehouse) error {
 	query := "update \"warehouses\" set \"address_id\" = null where \"address_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -2251,7 +2251,7 @@ func (o AddressSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2373,7 +2373,7 @@ func (o *Address) Upsert(exec boil.Executor, updateOnConflict bool, conflictColu
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2457,7 +2457,7 @@ func (o AddressSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), addressPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2503,7 +2503,7 @@ func (o *AddressSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AddressSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), addressPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

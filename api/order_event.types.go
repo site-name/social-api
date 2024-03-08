@@ -11,11 +11,13 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
-func getOrderDiscountEvent(discountObj model.StringInterface) *OrderEventDiscountObject {
+func getOrderDiscountEvent(discountObj model_types.JSONString) *OrderEventDiscountObject {
 	currency := discountObj.Get("currency", "").(string)
 	var amount, oldAmount *goprices.Money
 
@@ -114,7 +116,7 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var email *string
 	if em, ok := o.Parameters["email"]; ok && em != nil {
-		email = model.GetPointerOfValue(em.(string))
+		email = model_helper.GetPointerOfValue(em.(string))
 	}
 
 	var emailType *OrderEventsEmailsEnum
@@ -127,32 +129,32 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var amount *float64
 	if am, ok := o.Parameters["amount"]; ok && am != nil {
-		amount = model.GetPointerOfValue(am.(float64))
+		amount = model_helper.GetPointerOfValue(am.(float64))
 	}
 
 	var paymentID *string
 	if pi, ok := o.Parameters["payment_id"]; ok && pi != nil {
-		paymentID = model.GetPointerOfValue(pi.(string))
+		paymentID = model_helper.GetPointerOfValue(pi.(string))
 	}
 
 	var paymentGateway *string
 	if pg, ok := o.Parameters["payment_gateway"]; ok && pg != nil {
-		paymentGateway = model.GetPointerOfValue(pg.(string))
+		paymentGateway = model_helper.GetPointerOfValue(pg.(string))
 	}
 
 	var quantity *int32
 	if qt, ok := o.Parameters["quantity"]; ok && qt != nil {
-		quantity = model.GetPointerOfValue(int32(qt.(int)))
+		quantity = model_helper.GetPointerOfValue(int32(qt.(int)))
 	}
 
 	var message *string
 	if msg, ok := o.Parameters["message"]; ok && msg != nil {
-		message = model.GetPointerOfValue(msg.(string))
+		message = model_helper.GetPointerOfValue(msg.(string))
 	}
 
 	var composedID *string
 	if cpID, ok := o.Parameters["composed_id"]; ok && cpID != nil {
-		composedID = model.GetPointerOfValue(cpID.(string))
+		composedID = model_helper.GetPointerOfValue(cpID.(string))
 	}
 
 	var overSoldItems []string
@@ -163,17 +165,17 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var invoiceNumber *string
 	if in, ok := o.Parameters["invoice_number"]; ok && in != nil {
-		invoiceNumber = model.GetPointerOfValue(in.(string))
+		invoiceNumber = model_helper.GetPointerOfValue(in.(string))
 	}
 
 	var transactionReference *string
 	if tr, ok := o.Parameters["transaction_reference"]; ok && tr != nil {
-		transactionReference = model.GetPointerOfValue(tr.(string))
+		transactionReference = model_helper.GetPointerOfValue(tr.(string))
 	}
 
 	var shippingCostsIncluded *bool
 	if si, ok := o.Parameters["shipping_costs_included"]; ok && si != nil {
-		shippingCostsIncluded = model.GetPointerOfValue(si.(bool))
+		shippingCostsIncluded = model_helper.GetPointerOfValue(si.(bool))
 	}
 
 	res := &OrderEvent{
@@ -206,7 +208,7 @@ func (o *OrderEvent) Discount(ctx context.Context) (*OrderEventDiscountObject, e
 		return nil, nil
 	}
 
-	realDiscountObj, ok := discountObj.(model.StringInterface)
+	realDiscountObj, ok := discountObj.(model_types.JSONString)
 	if !ok {
 		return nil, nil
 	}
@@ -277,7 +279,7 @@ func (o *OrderEvent) Lines(ctx context.Context) ([]*OrderEventOrderLineObject, e
 	if rawLines == nil {
 		return nil, nil
 	}
-	lines, ok := rawLines.([]model.StringInterface)
+	lines, ok := rawLines.([]model_types.JSONString)
 	if !ok || len(lines) == 0 {
 		return nil, nil
 	}
@@ -301,7 +303,7 @@ func (o *OrderEvent) Lines(ctx context.Context) ([]*OrderEventOrderLineObject, e
 
 	for _, line := range lines {
 		linePk := line.Get("line_pk", "").(string)
-		discount, ok := line.Get("discount", model.StringInterface{}).(model.StringInterface)
+		discount, ok := line.Get("discount", model_types.JSONString{}).(model_types.JSONString)
 		lineObject := orderLinesMap[linePk]
 
 		if ok && discount != nil && len(discount) > 0 {

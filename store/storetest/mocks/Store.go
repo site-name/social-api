@@ -752,11 +752,11 @@ func (_m *Store) GetMaster() store.ContextRunner {
 
 // GetQueryBuilder provides a mock function with given fields: placeholderFormats
 func (_m *Store) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) squirrel.StatementBuilderType {
-	_va := make([]interface{}, len(placeholderFormats))
+	_va := make([]any, len(placeholderFormats))
 	for _i := range placeholderFormats {
 		_va[_i] = placeholderFormats[_i]
 	}
-	var _ca []interface{}
+	var _ca []any
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 

@@ -6,13 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -26,11 +24,11 @@ type PluginAPI struct {
 	app      app.AppIface
 	ctx      *request.Context
 	logger   slog.Sugar
-	manifest *model.Manifest
+	manifest *model_helper.Manifest
 }
 
 // NewPluginAPI creates and returns a new PlginAPI
-func NewPluginAPI(a app.AppIface, c *request.Context, manifest *model.Manifest) *PluginAPI {
+func NewPluginAPI(a app.AppIface, c *request.Context, manifest *model_helper.Manifest) *PluginAPI {
 	return &PluginAPI{
 		id:       manifest.Id,
 		manifest: manifest,
@@ -40,8 +38,8 @@ func NewPluginAPI(a app.AppIface, c *request.Context, manifest *model.Manifest) 
 	}
 }
 
-func (api *PluginAPI) LoadPluginConfiguration(dest interface{}) error {
-	finalConfig := make(map[string]interface{})
+func (api *PluginAPI) LoadPluginConfiguration(dest any) error {
+	finalConfig := make(map[string]any)
 
 	// First set final config to defaults
 	if api.manifest.SettingsSchema != nil {
@@ -68,7 +66,7 @@ func (api *PluginAPI) LoadPluginConfiguration(dest interface{}) error {
 }
 
 func (api *PluginAPI) GetSession(sessionID string) (*model.Session, *model_helper.AppError) {
-	session, err := api.app.Srv().AccountService().GetSessionById(sessionID)
+	session, err := api.app.AccountService().GetSessionById(sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,29 +74,29 @@ func (api *PluginAPI) GetSession(sessionID string) (*model.Session, *model_helpe
 	return session, nil
 }
 
-func (api *PluginAPI) GetConfig() *model.Config {
+func (api *PluginAPI) GetConfig() *model_helper.Config {
 	return api.app.GetSanitizedConfig()
 }
 
 // GetUnsanitizedConfig gets the configuration for a system admin without removing secrets.
-func (api *PluginAPI) GetUnsanitizedConfig() *model.Config {
+func (api *PluginAPI) GetUnsanitizedConfig() *model_helper.Config {
 	return api.app.Config().Clone()
 }
 
-func (api *PluginAPI) SaveConfig(config *model.Config) *model_helper.AppError {
+func (api *PluginAPI) SaveConfig(config *model_helper.Config) *model_helper.AppError {
 	_, _, err := api.app.SaveConfig(config, true)
 	return err
 }
 
-func (api *PluginAPI) GetPluginConfig() map[string]interface{} {
+func (api *PluginAPI) GetPluginConfig() map[string]any {
 	cfg := api.app.GetSanitizedConfig()
 	if pluginConfig, isOk := cfg.PluginSettings.Plugins[api.manifest.Id]; isOk {
 		return pluginConfig
 	}
-	return map[string]interface{}{}
+	return map[string]any{}
 }
 
-func (api *PluginAPI) SavePluginConfig(pluginConfig map[string]interface{}) *model_helper.AppError {
+func (api *PluginAPI) SavePluginConfig(pluginConfig map[string]any) *model_helper.AppError {
 	cfg := api.app.GetSanitizedConfig()
 	cfg.PluginSettings.Plugins[api.manifest.Id] = pluginConfig
 	_, _, err := api.app.SaveConfig(cfg, true)
@@ -115,89 +113,93 @@ func (api *PluginAPI) GetBundlePath() (string, error) {
 }
 
 func (api *PluginAPI) GetServerVersion() string {
-	return model.CurrentVersion
+	return model_helper.CurrentVersion
 }
 
 func (api *PluginAPI) GetSystemInstallDate() (int64, *model_helper.AppError) {
 	return api.app.GetSystemInstallDate()
 }
 
-func (api *PluginAPI) CreateUser(user *model.User) (*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().CreateUser(api.ctx, user)
+func (api *PluginAPI) CreateUser(user model.User) (*model.User, *model_helper.AppError) {
+	return api.app.AccountService().CreateUser(*api.ctx, user)
 }
 
 func (api *PluginAPI) DeleteUser(userID string) *model_helper.AppError {
-	user, err := api.app.Srv().AccountService().UserById(context.Background(), userID)
+	user, err := api.app.AccountService().UserById(context.Background(), userID)
 	if err != nil {
 		return err
 	}
-	_, err = api.app.Srv().AccountService().UpdateActive(api.ctx, user, false)
+	_, err = api.app.AccountService().UpdateActive(api.ctx, *user, false)
 	return err
 }
 
-func (api *PluginAPI) GetUsers(options *model.UserGetOptions) ([]*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetUsers(options)
+func (api *PluginAPI) GetUsers(options model_helper.UserGetOptions) (model.UserSlice, *model_helper.AppError) {
+	return api.app.AccountService().GetUsers(options)
 }
 
 func (api *PluginAPI) GetUser(userID string) (*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().UserById(context.Background(), userID)
+	return api.app.AccountService().UserById(context.Background(), userID)
 }
 
 func (api *PluginAPI) GetUserByEmail(email string) (*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Conditions: squirrel.Expr("Users.Email = lower(?)", email),
+	return api.app.AccountService().GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.Email.EQ(strings.ToLower(email)),
+		),
 	})
 }
 
 func (api *PluginAPI) GetUserByUsername(name string) (*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Conditions: squirrel.Expr("Users.Username = ?", name),
+	return api.app.AccountService().GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.Username.EQ(name),
+		),
 	})
 }
 
-func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetUsersByUsernames(usernames, true)
+func (api *PluginAPI) GetUsersByUsernames(usernames []string) (model.UserSlice, *model_helper.AppError) {
+	return api.app.AccountService().GetUsersByUsernames(usernames, true)
 }
 
-func (api *PluginAPI) GetPreferencesForUser(userID string) ([]model.Preference, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetPreferencesForUser(userID)
+func (api *PluginAPI) GetPreferencesForUser(userID string) (model.PreferenceSlice, *model_helper.AppError) {
+	return api.app.AccountService().GetPreferencesForUser(userID)
 }
 
-func (api *PluginAPI) UpdatePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError {
-	return api.app.Srv().AccountService().UpdatePreferences(userID, preferences)
+func (api *PluginAPI) UpdatePreferencesForUser(userID string, preferences model.PreferenceSlice) *model_helper.AppError {
+	return api.app.AccountService().UpdatePreferences(userID, preferences)
 }
 
-func (api *PluginAPI) DeletePreferencesForUser(userID string, preferences []model.Preference) *model_helper.AppError {
-	return api.app.Srv().AccountService().DeletePreferences(userID, preferences)
+func (api *PluginAPI) DeletePreferencesForUser(userID string, preferences model.PreferenceSlice) *model_helper.AppError {
+	return api.app.AccountService().DeletePreferences(userID, preferences)
 }
 
-func (api *PluginAPI) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError) {
-	return api.app.Srv().AccountService().CreateUserAccessToken(token)
+func (api *PluginAPI) CreateUserAccessToken(token model.UserAccessToken) (*model.UserAccessToken, *model_helper.AppError) {
+	return api.app.AccountService().CreateUserAccessToken(token)
 }
 
 func (api *PluginAPI) RevokeUserAccessToken(tokenID string) *model_helper.AppError {
-	accessToken, err := api.app.Srv().AccountService().GetUserAccessToken(tokenID, false)
+	accessToken, err := api.app.AccountService().GetUserAccessToken(tokenID, false)
 	if err != nil {
 		return err
 	}
 
-	return api.app.Srv().AccountService().RevokeUserAccessToken(accessToken)
+	return api.app.AccountService().RevokeUserAccessToken(accessToken)
 }
 
-func (api *PluginAPI) UpdateUser(user *model.User) (*model.User, *model_helper.AppError) {
-	return api.app.Srv().AccountService().UpdateUser(user, true)
+func (api *PluginAPI) UpdateUser(user model.User) (*model.User, *model_helper.AppError) {
+	return api.app.AccountService().UpdateUser(user, true)
 }
 
 func (api *PluginAPI) UpdateUserActive(userID string, active bool) *model_helper.AppError {
-	return api.app.Srv().AccountService().UpdateUserActive(api.ctx, userID, active)
+	return api.app.AccountService().UpdateUserActive(api.ctx, userID, active)
 }
 
 func (api *PluginAPI) GetUserStatus(userID string) (*model.Status, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetStatus(userID)
+	return api.app.AccountService().GetStatus(userID)
 }
 
 func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model_helper.AppError) {
-	return api.app.Srv().AccountService().GetUserStatusesByIds(userIDs)
+	return api.app.AccountService().GetUserStatusesByIds(userIDs)
 }
 
 func (api *PluginAPI) GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model_helper.AppError) {
@@ -205,69 +207,69 @@ func (api *PluginAPI) GetLDAPUserAttributes(userID string, attributes []string) 
 		return nil, model_helper.NewAppError("GetLdapUserAttributes", "ent.ldap.disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	user, err := api.app.Srv().AccountService().UserById(context.Background(), userID)
+	user, err := api.app.AccountService().UserById(context.Background(), userID)
 	if err != nil {
 		return nil, err
 	}
 
-	if user.AuthData == nil {
+	if user.AuthData.IsNil() {
 		return map[string]string{}, nil
 	}
 
 	// Only bother running the query if the user's auth service is LDAP or it's SAML and sync is enabled.
-	if user.IsLDAPUser() || (user.IsSAMLUser() && *api.app.Srv().Config().SamlSettings.EnableSyncWithLdap) {
-		return api.app.Ldap().GetUserAttributes(*user.AuthData, attributes)
+	if model_helper.UserIsLDAP(*user) || (model_helper.UserIsSAML(*user) && *api.app.Config().SamlSettings.EnableSyncWithLdap) {
+		return api.app.Ldap().GetUserAttributes(*user.AuthData.String, attributes)
 	}
 
 	return map[string]string{}, nil
 }
 
-func (api *PluginAPI) SearchUsers(search *model.UserSearch) ([]*model.User, *model_helper.AppError) {
-	pluginSearchUsersOptions := &model.UserSearchOptions{
+func (api *PluginAPI) SearchUsers(search model_helper.UserSearch) (model.UserSlice, *model_helper.AppError) {
+	pluginSearchUsersOptions := &model_helper.UserSearchOptions{
 		IsAdmin:       true,
 		AllowInactive: search.AllowInactive,
 		Limit:         search.Limit,
 	}
-	return api.app.Srv().AccountService().SearchUsers(search, pluginSearchUsersOptions)
+	return api.app.AccountService().SearchUsers(&search, pluginSearchUsersOptions)
 }
 
 func (api *PluginAPI) GetProfileImage(userID string) ([]byte, *model_helper.AppError) {
-	user, err := api.app.Srv().AccountService().UserById(context.Background(), userID)
+	user, err := api.app.AccountService().UserById(context.Background(), userID)
 	if err != nil {
 		return nil, err
 	}
 
-	data, _, err := api.app.Srv().AccountService().GetProfileImage(user)
+	data, _, err := api.app.AccountService().GetProfileImage(user)
 	return data, err
 }
 
 func (api *PluginAPI) SetProfileImage(userID string, data []byte) *model_helper.AppError {
-	_, err := api.app.Srv().AccountService().UserById(context.Background(), userID)
+	_, err := api.app.AccountService().UserById(context.Background(), userID)
 	if err != nil {
 		return err
 	}
 
-	return api.app.Srv().AccountService().SetProfileImageFromFile(userID, bytes.NewReader(data))
+	return api.app.AccountService().SetProfileImageFromFile(userID, bytes.NewReader(data))
 }
 
 func (api *PluginAPI) CopyFileInfos(userID string, fileIDs []string) ([]string, *model_helper.AppError) {
-	return api.app.Srv().FileService().CopyFileInfos(userID, fileIDs)
+	return api.app.FileService().CopyFileInfos(userID, fileIDs)
 }
 
 func (api *PluginAPI) GetFileInfo(fileID string) (*model.FileInfo, *model_helper.AppError) {
-	return api.app.Srv().FileService().GetFileInfo(fileID)
+	return api.app.FileService().GetFileInfo(fileID)
 }
 
-func (api *PluginAPI) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model_helper.AppError) {
-	return api.app.Srv().FileService().GetFileInfos(page, perPage, opt)
+func (api *PluginAPI) GetFileInfos(page, perPage int, opt model_helper.FileInfoFilterOption) (model.FileInfoSlice, *model_helper.AppError) {
+	return api.app.FileService().GetFileInfos(page, perPage, opt)
 }
 
 func (api *PluginAPI) GetFileLink(fileID string) (string, *model_helper.AppError) {
-	if !*api.app.Srv().Config().FileSettings.EnablePublicLink {
+	if !*api.app.Config().FileSettings.EnablePublicLink {
 		return "", model_helper.NewAppError("GetFileLink", "plugin_api.get_file_link.disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	info, err := api.app.Srv().FileService().GetFileInfo(fileID)
+	info, err := api.app.FileService().GetFileInfo(fileID)
 	if err != nil {
 		return "", err
 	}
@@ -276,27 +278,27 @@ func (api *PluginAPI) GetFileLink(fileID string) (string, *model_helper.AppError
 	// 	return "", model_helper.NewAppError("GetFileLink", "plugin_api.get_file_link.no_post.app_error", nil, "file_id="+info.Id, http.StatusBadRequest)
 	// }
 
-	return api.app.Srv().FileService().GeneratePublicLink(api.app.Srv().GetSiteURL(), info), nil
+	return api.app.FileService().GeneratePublicLink(api.app.Srv().GetSiteURL(), info), nil
 }
 
 func (api *PluginAPI) ReadFile(path string) ([]byte, *model_helper.AppError) {
-	return api.app.Srv().FileService().ReadFile(path)
+	return api.app.FileService().ReadFile(path)
 }
 
 func (api *PluginAPI) GetFile(fileID string) ([]byte, *model_helper.AppError) {
-	return api.app.Srv().FileService().GetFile(fileID)
+	return api.app.FileService().GetFile(fileID)
 }
 
 // func (api *PluginAPI) UploadFile(data []byte, channelID string, filename string) (*model.FileInfo, *model_helper.AppError) {
-// 	return api.app.Srv().FileService().UploadFile(api.ctx, data, channelID, filename)
+// 	return api.app.FileService().UploadFile(api.ctx, data, channelID, filename)
 // }
 
-func (api *PluginAPI) GetPlugins() ([]*model.Manifest, *model_helper.AppError) {
-	plgs, err := api.app.Srv().PluginService().GetPlugins()
+func (api *PluginAPI) GetPlugins() ([]*model_helper.Manifest, *model_helper.AppError) {
+	plgs, err := api.app.PluginService().GetPlugins()
 	if err != nil {
 		return nil, err
 	}
-	var manifests []*model.Manifest
+	var manifests []*model_helper.Manifest
 	for _, manifest := range plgs.Active {
 		manifests = append(manifests, &manifest.Manifest)
 	}
@@ -307,91 +309,91 @@ func (api *PluginAPI) GetPlugins() ([]*model.Manifest, *model_helper.AppError) {
 }
 
 func (api *PluginAPI) EnablePlugin(id string) *model_helper.AppError {
-	return api.app.Srv().PluginService().EnablePlugin(id)
+	return api.app.PluginService().EnablePlugin(id)
 }
 
 func (api *PluginAPI) DisablePlugin(id string) *model_helper.AppError {
-	return api.app.Srv().PluginService().DisablePlugin(id)
+	return api.app.PluginService().DisablePlugin(id)
 }
 
 func (api *PluginAPI) RemovePlugin(id string) *model_helper.AppError {
-	return api.app.Srv().PluginService().RemovePlugin(id)
+	return api.app.PluginService().RemovePlugin(id)
 }
 
-func (api *PluginAPI) GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError) {
-	return api.app.Srv().PluginService().GetPluginStatus(id)
+func (api *PluginAPI) GetPluginStatus(id string) (*model_helper.PluginStatus, *model_helper.AppError) {
+	return api.app.PluginService().GetPluginStatus(id)
 }
 
-func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model_helper.AppError) {
+func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model_helper.Manifest, *model_helper.AppError) {
 	if !*api.app.Srv().Config().PluginSettings.Enable || !*api.app.Srv().Config().PluginSettings.EnableUploads {
 		return nil, model_helper.NewAppError("installPlugin", "app.plugin.upload_disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	fileBuffer, err := ioutil.ReadAll(file)
+	fileBuffer, err := io.ReadAll(file)
 	if err != nil {
 		return nil, model_helper.NewAppError("InstallPlugin", "api.plugin.upload.file.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	return api.app.Srv().PluginService().InstallPlugin(bytes.NewReader(fileBuffer), replace)
+	return api.app.PluginService().InstallPlugin(bytes.NewReader(fileBuffer), replace)
 }
 
 // KV Store Section
-func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError) {
-	return api.app.Srv().PluginService().SetPluginKeyWithOptions(api.id, key, value, options)
+func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options model_helper.PluginKVSetOptions) (bool, *model_helper.AppError) {
+	return api.app.PluginService().SetPluginKeyWithOptions(api.id, key, value, options)
 }
 
 func (api *PluginAPI) KVSet(key string, value []byte) *model_helper.AppError {
-	return api.app.Srv().PluginService().SetPluginKey(api.id, key, value)
+	return api.app.PluginService().SetPluginKey(api.id, key, value)
 }
 
 func (api *PluginAPI) KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model_helper.AppError) {
-	return api.app.Srv().PluginService().CompareAndSetPluginKey(api.id, key, oldValue, newValue)
+	return api.app.PluginService().CompareAndSetPluginKey(api.id, key, oldValue, newValue)
 }
 
 func (api *PluginAPI) KVCompareAndDelete(key string, oldValue []byte) (bool, *model_helper.AppError) {
-	return api.app.Srv().PluginService().CompareAndDeletePluginKey(api.id, key, oldValue)
+	return api.app.PluginService().CompareAndDeletePluginKey(api.id, key, oldValue)
 }
 
 func (api *PluginAPI) KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model_helper.AppError {
-	return api.app.Srv().PluginService().SetPluginKeyWithExpiry(api.id, key, value, expireInSeconds)
+	return api.app.PluginService().SetPluginKeyWithExpiry(api.id, key, value, expireInSeconds)
 }
 
 func (api *PluginAPI) KVGet(key string) ([]byte, *model_helper.AppError) {
-	return api.app.Srv().PluginService().GetPluginKey(api.id, key)
+	return api.app.PluginService().GetPluginKey(api.id, key)
 }
 
 func (api *PluginAPI) KVDelete(key string) *model_helper.AppError {
-	return api.app.Srv().PluginService().DeletePluginKey(api.id, key)
+	return api.app.PluginService().DeletePluginKey(api.id, key)
 }
 
 func (api *PluginAPI) KVDeleteAll() *model_helper.AppError {
-	return api.app.Srv().PluginService().DeleteAllKeysForPlugin(api.id)
+	return api.app.PluginService().DeleteAllKeysForPlugin(api.id)
 }
 
 func (api *PluginAPI) KVList(page, perPage int) ([]string, *model_helper.AppError) {
-	return api.app.Srv().PluginService().ListPluginKeys(api.id, page, perPage)
+	return api.app.PluginService().ListPluginKeys(api.id, page, perPage)
 }
 
-func (api *PluginAPI) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
-	ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
+func (api *PluginAPI) PublishWebSocketEvent(event string, payload map[string]any, broadcast *model_helper.WebsocketBroadcast) {
+	ev := model_helper.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
 	ev = ev.SetBroadcast(broadcast).SetData(payload)
-	api.app.Srv().Publish(ev)
+	api.app.Publish(ev)
 }
 
-func (api *PluginAPI) HasPermissionTo(userID string, permission *model.Permission) bool {
-	return api.app.Srv().AccountService().HasPermissionTo(userID, permission)
+func (api *PluginAPI) HasPermissionTo(userID string, permission model_helper.Permission) bool {
+	return api.app.AccountService().HasPermissionTo(userID, permission)
 }
 
-func (api *PluginAPI) LogDebug(msg string, keyValuePairs ...interface{}) {
+func (api *PluginAPI) LogDebug(msg string, keyValuePairs ...any) {
 	api.logger.Debug(msg, keyValuePairs...)
 }
-func (api *PluginAPI) LogInfo(msg string, keyValuePairs ...interface{}) {
+func (api *PluginAPI) LogInfo(msg string, keyValuePairs ...any) {
 	api.logger.Info(msg, keyValuePairs...)
 }
-func (api *PluginAPI) LogError(msg string, keyValuePairs ...interface{}) {
+func (api *PluginAPI) LogError(msg string, keyValuePairs ...any) {
 	api.logger.Error(msg, keyValuePairs...)
 }
-func (api *PluginAPI) LogWarn(msg string, keyValuePairs ...interface{}) {
+func (api *PluginAPI) LogWarn(msg string, keyValuePairs ...any) {
 	api.logger.Warn(msg, keyValuePairs...)
 }
 
@@ -414,11 +416,11 @@ func (api *PluginAPI) PluginHTTP(request *http.Request) *http.Response {
 		}
 		return &http.Response{
 			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(message)),
+			Body:       io.NopCloser(bytes.NewBufferString(message)),
 		}
 	}
 	responseTransfer := &PluginResponseWriter{}
-	api.app.Srv().PluginService().ServeInterPluginRequest(responseTransfer, request, api.id, destinationPluginId)
+	api.app.PluginService().ServeInterPluginRequest(responseTransfer, request, api.id, destinationPluginId)
 	return responseTransfer.GenerateResponse()
 }
 
@@ -446,17 +448,17 @@ func (api *PluginAPI) SendMail(to, subject, htmlBody string) *model_helper.AppEr
 
 func (api *PluginAPI) UpdateUserStatus(userID, status string) (*model.Status, *model_helper.AppError) {
 	switch status {
-	case model.STATUS_ONLINE:
-		api.app.Srv().AccountService().SetStatusOnline(userID, true)
-	case model.STATUS_OFFLINE:
-		api.app.Srv().AccountService().SetStatusOffline(userID, true)
-	// case account.STATUS_AWAY:
-	// 	api.app.Srv().AccountService().SetStatusAwayIfNeeded(userID, true)
-	// case account.STATUS_DND:
-	// 	api.app.Srv().AccountService().SetStatusDoNotDisturb(userID)
+	case model_helper.STATUS_ONLINE:
+		api.app.AccountService().SetStatusOnline(userID, true)
+	case model_helper.STATUS_OFFLINE:
+		api.app.AccountService().SetStatusOffline(userID, true)
+	// case model_helper.STATUS_AWAY:
+	// 	api.app.AccountService().SetStatusAwayIfNeeded(userID, true)
+	// case model_helper.STATUS_DND:
+	// 	api.app.AccountService().SetStatusDoNotDisturb(userID)
 	default:
 		return nil, model_helper.NewAppError("UpdateUserStatus", "plugin.api.update_user_status.bad_status", nil, "unrecognized status", http.StatusBadRequest)
 	}
 
-	return api.app.Srv().AccountService().GetStatus(userID)
+	return api.app.AccountService().GetStatus(userID)
 }

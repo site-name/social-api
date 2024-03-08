@@ -23,10 +23,10 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 }) (*CheckoutLineDelete, error) {
 	// validate arguments
 	if !model_helper.IsValidId(args.Token) {
-		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if !model_helper.IsValidId(args.LineID) {
-		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineId"}, "please provide valid checkout line id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "lineId"}, "please provide valid checkout line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -39,7 +39,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	}
 
 	if !lo.SomeBy(checkoutLinesOfGivenCheckout, func(l *model.CheckoutLine) bool { return l != nil && l.Id == args.LineID }) {
-		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineID"}, "provided checkout line does not belong to provided checkout", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLineDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "lineID"}, "provided checkout line does not belong to provided checkout", http.StatusBadRequest)
 	}
 
 	// delete checkout line
@@ -94,7 +94,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, linesInput []*CheckoutLineInput) (*R, *model_helper.AppError) {
 	// validate params
 	if !model_helper.IsValidId(token) {
-		return nil, model_helper.NewAppError("CheckoutLinesAdd", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLinesAdd", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	var (
 		productVariantIds = make([]string, 0, len(linesInput))
@@ -107,7 +107,7 @@ func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, 
 		}
 	}
 	if !lo.EveryBy(productVariantIds, model_helper.IsValidId) {
-		return nil, model_helper.NewAppError("CheckoutLinesAdd", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Lines"}, "please provide valid product variant ids", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("CheckoutLinesAdd", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Lines"}, "please provide valid product variant ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

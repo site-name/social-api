@@ -93,7 +93,7 @@ func (a *ServicePayment) ProcessPayment(
 	channelID string, // originally is channelSlug in saleor
 	customerID *string,
 	storeSource bool,
-	additionalData map[string]interface{},
+	additionalData map[string]any,
 ) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("ProcessPayment", payMent)
@@ -422,7 +422,7 @@ func (a *ServicePayment) Confirm(
 	payMent model.Payment,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
-	additionalData map[string]interface{}, // can be none
+	additionalData map[string]any, // can be none
 
 ) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 
@@ -543,7 +543,7 @@ func (a *ServicePayment) validateRefundAmount(payMent *model.Payment, amount *de
 		return model.NewPaymentError("validateRefundAmount", "Amount should be positive number", model.INVALID)
 	}
 	if payMent.CapturedAmount == nil {
-		payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
+		payMent.CapturedAmount = model_helper.GetPointerOfValue(decimal.Zero)
 	}
 	if amount.GreaterThan(*payMent.CapturedAmount) {
 		return model.NewPaymentError("validateRefundAmount", "Cannot refund more than captures.", model.INVALID)

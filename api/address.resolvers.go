@@ -157,10 +157,10 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 }) (*AddressSetDefault, error) {
 	// validate params
 	if !model_helper.IsValidId(args.AddressID) {
-		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
-		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AddressSetDefault", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -212,7 +212,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 	}
 	validationRules, err := i18naddress.GetValidationRules(addressParam)
 	if err != nil {
-		return nil, model_helper.NewAppError("AddressValidationRules", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AddressValidationRules", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "args"}, err.Error(), http.StatusBadRequest)
 	}
 
 	return &AddressValidationData{

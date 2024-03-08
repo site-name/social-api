@@ -151,7 +151,7 @@ func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*model.Manifest
 	}
 
 	if !model.IsValidPluginId(manifest.Id) {
-		return nil, "", model_helper.NewAppError("installPluginLocally", "app.plugin.invalid_id.app_error", map[string]interface{}{"Min": model.MinIdLength, "Max": model.MaxIdLength, "Regex": model.ValidIdRegex}, "", http.StatusBadRequest)
+		return nil, "", model_helper.NewAppError("installPluginLocally", "app.plugin.invalid_id.app_error", map[string]any{"Min": model.MinIdLength, "Max": model.MaxIdLength, "Regex": model.ValidIdRegex}, "", http.StatusBadRequest)
 	}
 
 	return manifest, extractDir, nil

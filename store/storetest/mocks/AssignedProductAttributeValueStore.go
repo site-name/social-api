@@ -68,25 +68,25 @@ func (_m *AssignedProductAttributeValueStore) Get(assignedProductAttrValueID str
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: assignedProductAttrValue
-func (_m *AssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
-	ret := _m.Called(assignedProductAttrValue)
+// Save provides a mock function with given fields: assignedProductAttrValues
+func (_m *AssignedProductAttributeValueStore) Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) {
+	ret := _m.Called(assignedProductAttrValues)
 
-	var r0 *model.AssignedProductAttributeValue
+	var r0 model.AssignedProductAttributeValueSlice
 	var r1 error
-	if rf, ok := ret.Get(0).(func(model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error)); ok {
-		return rf(assignedProductAttrValue)
+	if rf, ok := ret.Get(0).(func(model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error)); ok {
+		return rf(assignedProductAttrValues)
 	}
-	if rf, ok := ret.Get(0).(func(model.AssignedProductAttributeValue) *model.AssignedProductAttributeValue); ok {
-		r0 = rf(assignedProductAttrValue)
+	if rf, ok := ret.Get(0).(func(model.AssignedProductAttributeValueSlice) model.AssignedProductAttributeValueSlice); ok {
+		r0 = rf(assignedProductAttrValues)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.AssignedProductAttributeValue)
+			r0 = ret.Get(0).(model.AssignedProductAttributeValueSlice)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(model.AssignedProductAttributeValue) error); ok {
-		r1 = rf(assignedProductAttrValue)
+	if rf, ok := ret.Get(1).(func(model.AssignedProductAttributeValueSlice) error); ok {
+		r1 = rf(assignedProductAttrValues)
 	} else {
 		r1 = ret.Error(1)
 	}

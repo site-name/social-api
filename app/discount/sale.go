@@ -25,7 +25,7 @@ func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*m
 
 func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
 	if saleChannelListing == nil {
-		return nil, model_helper.NewAppError("GetSaleDiscount", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetSaleDiscount", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == model.DISCOUNT_VALUE_TYPE_FIXED {

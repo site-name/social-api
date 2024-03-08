@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -69,7 +68,7 @@ type DiscountService interface {
 	//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 	//
 	// NOTE: the returning interface's type should be identical to given price's type
-	GetDiscountAmountFor(voucher *model.Voucher, price interface{}, channelID string) (interface{}, *model_helper.AppError)
+	GetDiscountAmountFor(voucher *model.Voucher, price any, channelID string) (any, *model_helper.AppError)
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
 	GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model_helper.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.

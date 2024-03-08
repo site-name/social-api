@@ -108,7 +108,7 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 			statusCode = http.StatusBadRequest
 		}
 
-		return nil, model_helper.NewAppError("UpsertWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "slug"}, err.Error(), statusCode)
 	}
 
 	return warehouse, nil

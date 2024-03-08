@@ -447,7 +447,7 @@ type HooksTemplateParams struct {
 }
 
 func generateHooksGlue(info *PluginInterfaceInfo) {
-	templateFunctions := map[string]interface{}{
+	templateFunctions := map[string]any{
 		"funcStyle":   func(fields *ast.FieldList) string { return FieldListToFuncList(fields, info.FileSet) },
 		"structStyle": func(fields *ast.FieldList) string { return FieldListToStructList(fields, info.FileSet) },
 		"valuesOnly":  func(fields *ast.FieldList) string { return FieldListToNames(fields, false) },
@@ -499,7 +499,7 @@ func generateHooksGlue(info *PluginInterfaceInfo) {
 }
 
 func generatePluginTimerLayer(info *PluginInterfaceInfo) {
-	templateFunctions := map[string]interface{}{
+	templateFunctions := map[string]any{
 		"funcStyle":   func(fields *ast.FieldList) string { return FieldListToFuncList(fields, info.FileSet) },
 		"structStyle": func(fields *ast.FieldList) string { return FieldListToStructList(fields, info.FileSet) },
 		"valuesOnly":  func(fields *ast.FieldList) string { return FieldListToNames(fields, true) },

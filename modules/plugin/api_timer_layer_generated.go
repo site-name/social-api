@@ -26,7 +26,7 @@ func (api *apiTimerLayer) recordTime(startTime timePkg.Time, name string, succes
 	}
 }
 
-func (api *apiTimerLayer) LoadPluginConfiguration(dest interface{}) error {
+func (api *apiTimerLayer) LoadPluginConfiguration(dest any) error {
 	startTime := timePkg.Now()
 	_returnsA := api.apiImpl.LoadPluginConfiguration(dest)
 	api.recordTime(startTime, "LoadPluginConfiguration", _returnsA == nil)
@@ -61,14 +61,14 @@ func (api *apiTimerLayer) SaveConfig(config *model_helper.Config) *model_helper.
 	return _returnsA
 }
 
-func (api *apiTimerLayer) GetPluginConfig() map[string]interface{} {
+func (api *apiTimerLayer) GetPluginConfig() map[string]any {
 	startTime := timePkg.Now()
 	_returnsA := api.apiImpl.GetPluginConfig()
 	api.recordTime(startTime, "GetPluginConfig", true)
 	return _returnsA
 }
 
-func (api *apiTimerLayer) SavePluginConfig(config map[string]interface{}) *model_helper.AppError {
+func (api *apiTimerLayer) SavePluginConfig(config map[string]any) *model_helper.AppError {
 	startTime := timePkg.Now()
 	_returnsA := api.apiImpl.SavePluginConfig(config)
 	api.recordTime(startTime, "SavePluginConfig", _returnsA == nil)
@@ -390,7 +390,7 @@ func (api *apiTimerLayer) KVList(page, perPage int) ([]string, *model_helper.App
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model_helper.WebsocketBroadcast) {
+func (api *apiTimerLayer) PublishWebSocketEvent(event string, payload map[string]any, broadcast *model_helper.WebsocketBroadcast) {
 	startTime := timePkg.Now()
 	api.apiImpl.PublishWebSocketEvent(event, payload, broadcast)
 	api.recordTime(startTime, "PublishWebSocketEvent", true)
@@ -403,25 +403,25 @@ func (api *apiTimerLayer) HasPermissionTo(userID string, permission *model_helpe
 	return _returnsA
 }
 
-func (api *apiTimerLayer) LogDebug(msg string, keyValuePairs ...interface{}) {
+func (api *apiTimerLayer) LogDebug(msg string, keyValuePairs ...any) {
 	startTime := timePkg.Now()
 	api.apiImpl.LogDebug(msg, keyValuePairs...)
 	api.recordTime(startTime, "LogDebug", true)
 }
 
-func (api *apiTimerLayer) LogInfo(msg string, keyValuePairs ...interface{}) {
+func (api *apiTimerLayer) LogInfo(msg string, keyValuePairs ...any) {
 	startTime := timePkg.Now()
 	api.apiImpl.LogInfo(msg, keyValuePairs...)
 	api.recordTime(startTime, "LogInfo", true)
 }
 
-func (api *apiTimerLayer) LogError(msg string, keyValuePairs ...interface{}) {
+func (api *apiTimerLayer) LogError(msg string, keyValuePairs ...any) {
 	startTime := timePkg.Now()
 	api.apiImpl.LogError(msg, keyValuePairs...)
 	api.recordTime(startTime, "LogError", true)
 }
 
-func (api *apiTimerLayer) LogWarn(msg string, keyValuePairs ...interface{}) {
+func (api *apiTimerLayer) LogWarn(msg string, keyValuePairs ...any) {
 	startTime := timePkg.Now()
 	api.apiImpl.LogWarn(msg, keyValuePairs...)
 	api.recordTime(startTime, "LogWarn", true)

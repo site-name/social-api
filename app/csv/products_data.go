@@ -9,6 +9,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -19,7 +20,7 @@ import (
 // csv writer and list of attribute and warehouse headers.
 //
 // TODO: consider improving me
-func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model.StringInterface {
+func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model_types.JSONString {
 	var (
 		exportVariantID     = exportFields.Contains("variants__id")
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
@@ -33,7 +34,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 	productsRelationsData := a.getProductsRelationsData(products, exportFields, attributeIDs, channelIDs)
 	variantsRelationsData := a.getVariantsRelationsData(products, exportFields, attributeIDs, warehouseIDs, channelIDs)
 
-	res := []model.StringInterface{}
+	res := []model_types.JSONString{}
 
 	for _, productData := range products.Flat() {
 		var pk = productData["id"].(string)
@@ -59,7 +60,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 			productData["variants__id"] = variantPK
 		}
 
-		data := model.StringInterface{}
+		data := model_types.JSONString{}
 		data.Merge(productData)
 		for k, v := range productRelationsData {
 			data[k] = v
@@ -223,9 +224,9 @@ func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, field
 	return result
 }
 
-func (s *ServiceCsv) handleWarehouseData(pk string, data model.StringInterface, warehouseIDs util.AnyArray[string], resultData map[string]map[string][]any, warehouseFields model.StringMap) (map[string]map[string][]any, model.StringInterface) {
+func (s *ServiceCsv) handleWarehouseData(pk string, data model_types.JSONString, warehouseIDs util.AnyArray[string], resultData map[string]map[string][]any, warehouseFields model.StringMap) (map[string]map[string][]any, model_types.JSONString) {
 	warehousePK := data.Pop(warehouseFields["warehouse_pk"], "").(string)
-	warehouseData := model.StringInterface{
+	warehouseData := model_types.JSONString{
 		"slug": data.Pop(warehouseFields["slug"], nil),
 		"qty":  data.Pop(warehouseFields["quantity"], nil),
 	}
@@ -237,7 +238,7 @@ func (s *ServiceCsv) handleWarehouseData(pk string, data model.StringInterface, 
 	return resultData, data
 }
 
-func (s *ServiceCsv) addWarehouseInfoToData(pk string, warehouseData model.StringInterface, resultData map[string]map[string][]any) map[string]map[string][]any {
+func (s *ServiceCsv) addWarehouseInfoToData(pk string, warehouseData model_types.JSONString, resultData map[string]map[string][]any) map[string]map[string][]any {
 	slug, ok := warehouseData["slug"]
 	if ok && slug != nil {
 		warehouseQtyHeader := fmt.Sprintf("%v (warehouse quantity)", slug)
@@ -263,7 +264,7 @@ type AttributeData struct {
 	DateTime   any
 }
 
-func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, attributeIDs util.AnyArray[string], resultData map[string]map[string][]any, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]any, model.StringInterface) {
+func (s *ServiceCsv) handleAttributeData(pk string, data model_types.JSONString, attributeIDs util.AnyArray[string], resultData map[string]map[string][]any, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]any, model_types.JSONString) {
 	attributePK := data.Pop(attributeFields["attribute_pk"], "").(string)
 
 	attributeData := AttributeData{
@@ -287,9 +288,9 @@ func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, 
 	return resultData, data
 }
 
-func (s *ServiceCsv) handleChannelData(pk string, data model.StringInterface, channelIDs util.AnyArray[string], resultData map[string]map[string][]any, pkLookup, slugLookup string, fields model.StringMap) (map[string]map[string][]any, model.StringInterface) {
+func (s *ServiceCsv) handleChannelData(pk string, data model_types.JSONString, channelIDs util.AnyArray[string], resultData map[string]map[string][]any, pkLookup, slugLookup string, fields model.StringMap) (map[string]map[string][]any, model_types.JSONString) {
 	channelPK := data.Pop(pkLookup, "").(string)
-	channelData := model.StringInterface{
+	channelData := model_types.JSONString{
 		"slug": data.Pop(slugLookup, nil),
 	}
 
@@ -400,7 +401,7 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 	return ""
 }
 
-func (s *ServiceCsv) addChannelInfoToData(pk string, channelData model.StringInterface, resultData map[string]map[string][]any, fields []string) map[string]map[string][]any {
+func (s *ServiceCsv) addChannelInfoToData(pk string, channelData model_types.JSONString, resultData map[string]map[string][]any, fields []string) map[string]map[string][]any {
 	slug, ok := channelData["slug"]
 	if ok && slug != nil {
 		for _, field := range fields {

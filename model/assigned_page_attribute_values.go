@@ -256,7 +256,7 @@ func (o *AssignedPageAttributeValue) Value(mods ...qm.QueryMod) attributeValueQu
 
 // LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedPageAttributeValueL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedPageAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedPageAttributeValueL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedPageAttributeValue any, mods queries.Applicator) error {
 	var slice []*AssignedPageAttributeValue
 	var object *AssignedPageAttributeValue
 
@@ -282,7 +282,7 @@ func (assignedPageAttributeValueL) LoadAssignment(e boil.Executor, singular bool
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedPageAttributeValueR{}
@@ -304,7 +304,7 @@ func (assignedPageAttributeValueL) LoadAssignment(e boil.Executor, singular bool
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -368,7 +368,7 @@ func (assignedPageAttributeValueL) LoadAssignment(e boil.Executor, singular bool
 
 // LoadValue allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedPageAttributeValueL) LoadValue(e boil.Executor, singular bool, maybeAssignedPageAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedPageAttributeValueL) LoadValue(e boil.Executor, singular bool, maybeAssignedPageAttributeValue any, mods queries.Applicator) error {
 	var slice []*AssignedPageAttributeValue
 	var object *AssignedPageAttributeValue
 
@@ -394,7 +394,7 @@ func (assignedPageAttributeValueL) LoadValue(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedPageAttributeValueR{}
@@ -416,7 +416,7 @@ func (assignedPageAttributeValueL) LoadValue(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -494,7 +494,7 @@ func (o *AssignedPageAttributeValue) SetAssignment(exec boil.Executor, insert bo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedPageAttributeValuePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -540,7 +540,7 @@ func (o *AssignedPageAttributeValue) SetValue(exec boil.Executor, insert bool, r
 		strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedPageAttributeValuePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -765,7 +765,7 @@ func (o AssignedPageAttributeValueSlice) UpdateAll(exec boil.Executor, cols M) (
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -887,7 +887,7 @@ func (o *AssignedPageAttributeValue) Upsert(exec boil.Executor, updateOnConflict
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -971,7 +971,7 @@ func (o AssignedPageAttributeValueSlice) DeleteAll(exec boil.Executor) (int64, e
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedPageAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1017,7 +1017,7 @@ func (o *AssignedPageAttributeValueSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AssignedPageAttributeValueSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedPageAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -67,7 +67,7 @@ func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string,
 func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model_helper.AppError {
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return model_helper.NewAppError("UpdateOrCreateProductVariantChannelListings", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdateOrCreateProductVariantChannelListings", model_helper.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	relationsToUpsert := make(model.ProductVariantChannelListings, len(inputList))

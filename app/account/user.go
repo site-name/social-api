@@ -79,7 +79,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 			return nil, model_helper.NewAppError(
 				"UserSetDefaultAddress",
 				"app.model.invalid_input.app_error",
-				map[string]interface{}{
+				map[string]any{
 					"field": errInput.Field,
 					"value": errInput.Value,
 				}, "",
@@ -175,7 +175,7 @@ func (a *ServiceAccount) CreateUser(c request.Context, user model.User) (*model.
 	// message.Add("user_id", ruser.Id)
 	// a.Publish(message)
 
-	if pluginsEnvironment, appErr := a.srv.PluginService().GetPluginsEnvironment(); pluginsEnvironment != nil && appErr == nil {
+	if pluginsEnvironment, appErr := a.srv.Plugin.GetPluginsEnvironment(); pluginsEnvironment != nil && appErr == nil {
 		a.srv.Go(func() {
 			pluginContext := app.PluginContext(c)
 			pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
@@ -298,7 +298,11 @@ func (a *ServiceAccount) VerifyEmailFromToken(userSuppliedTokenString string) *m
 		return model_helper.NewAppError("VerifyEmailFromToken", "api.user.verify_email.token_parse.error", nil, "", http.StatusInternalServerError)
 	}
 
-	user, err := a.GetUserByOptions(model.UserWhere.ID.EQ(tokenData.UserId))
+	user, err := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.UserWhere.ID.EQ(tokenData.UserId),
+		),
+	})
 	if err != nil {
 		return err
 	}
@@ -372,7 +376,9 @@ func (a *ServiceAccount) IsUsernameTaken(name string) bool {
 		return false
 	}
 
-	user, err := a.GetUserByOptions(model.UserWhere.Username.EQ(name))
+	user, err := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.Username.EQ(name)),
+	})
 	return err == nil && user != nil
 }
 
@@ -386,7 +392,9 @@ func (a *ServiceAccount) GetUsers(options model_helper.UserGetOptions) (model.Us
 }
 
 func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model_helper.MfaSecret, *model_helper.AppError) {
-	user, appErr := a.GetUserByOptions(model.UserWhere.ID.EQ(userID))
+	user, appErr := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.ID.EQ(userID)),
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -408,7 +416,9 @@ func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model_helper.MfaSecr
 }
 
 func (a *ServiceAccount) ActivateMfa(userID, token string) *model_helper.AppError {
-	user, appErr := a.GetUserByOptions(model.UserWhere.ID.EQ(userID))
+	user, appErr := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.ID.EQ(userID)),
+	})
 	if appErr != nil {
 		return appErr
 	}
@@ -457,7 +467,7 @@ func (a *ServiceAccount) GetProfileImage(user *model.User) ([]byte, bool, *model
 	}
 
 	path := "users/" + user.ID + "/profile.png"
-	data, err := a.srv.FileService().ReadFile(path)
+	data, err := a.srv.File.ReadFile(path)
 	if err != nil {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
@@ -465,7 +475,7 @@ func (a *ServiceAccount) GetProfileImage(user *model.User) ([]byte, bool, *model
 		}
 
 		if user.LastPictureUpdate == 0 {
-			if _, err := a.srv.FileService().WriteFile(bytes.NewReader(img), path); err != nil {
+			if _, err := a.srv.File.WriteFile(bytes.NewReader(img), path); err != nil {
 				return nil, false, err
 			}
 		}
@@ -486,7 +496,7 @@ func (a *ServiceAccount) SetDefaultProfileImage(user *model.User) *model_helper.
 	}
 
 	path := getProfileImagePath(user.ID)
-	if _, err := a.srv.FileService().WriteFile(bytes.NewReader(img), path); err != nil {
+	if _, err := a.srv.File.WriteFile(bytes.NewReader(img), path); err != nil {
 		return err
 	}
 
@@ -546,7 +556,7 @@ func (a *ServiceAccount) SetProfileImageFromMultiPartFile(userID string, f multi
 
 func (a *ServiceAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model_helper.AppError) {
 	// Decode image into Image object
-	img, _, err := a.srv.FileService().ImageDecoder().Decode(file)
+	img, _, err := a.srv.File.ImageDecoder().Decode(file)
 	if err != nil {
 		return nil, model_helper.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -559,7 +569,7 @@ func (a *ServiceAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model_help
 	img = imaging.FillCenter(img, profileWidthAndHeight, profileWidthAndHeight)
 
 	buf := new(bytes.Buffer)
-	err = a.srv.FileService().ImageEncoder().EncodePNG(buf, img)
+	err = a.srv.File.ImageEncoder().EncodePNG(buf, img)
 	if err != nil {
 		return nil, model_helper.NewAppError("SetProfileImage", "api.user.upload_profile_user.encode.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -573,11 +583,11 @@ func (a *ServiceAccount) SetProfileImageFromFile(userID string, file io.Reader) 
 	}
 
 	path := getProfileImagePath(userID)
-	if storedData, err := a.srv.FileService().ReadFile(path); err == nil && bytes.Equal(storedData, buf.Bytes()) {
+	if storedData, err := a.srv.File.ReadFile(path); err == nil && bytes.Equal(storedData, buf.Bytes()) {
 		return nil
 	}
 
-	if _, err := a.srv.FileService().WriteFile(buf, path); err != nil {
+	if _, err := a.srv.File.WriteFile(buf, path); err != nil {
 		return model_helper.NewAppError("SetProfileImage", "api.user.upload_profile_user.upload_profile.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -636,7 +646,9 @@ func (a *ServiceAccount) UpdateActive(c *request.Context, user model.User, activ
 }
 
 func (a *ServiceAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model_helper.AppError {
-	user, err := a.GetUserByOptions(model.UserWhere.ID.EQ(userID))
+	user, err := a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.ID.EQ(userID)),
+	})
 	if err != nil {
 		return err
 	}
@@ -701,7 +713,7 @@ func (a *ServiceAccount) UpdateUserRolesWithUser(user model.User, newRoles strin
 }
 
 func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model_helper.AppError {
-	users, err := a.FidUsersByOptions()
+	users, err := a.FindUsersByOptions(model_helper.UserFilterOptions{})
 	if err != nil {
 		return model_helper.NewAppError("PermanentDeleteAllUsers", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -713,7 +725,9 @@ func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model_help
 }
 
 func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model_helper.AppError) {
-	return a.GetUserByOptions(model.UserWhere.ID.EQ(userID))
+	return a.GetUserByOptions(model_helper.UserFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.ID.EQ(userID)),
+	})
 }
 
 func (a *ServiceAccount) UpdateUser(user model.User, sendNotifications bool) (*model.User, *model_helper.AppError) {
@@ -741,7 +755,11 @@ func (a *ServiceAccount) UpdateUser(user model.User, sendNotifications bool) (*m
 			newEmail = user.Email
 			// Don't set new eMail on user account if email verification is required, this will be done as a post-verification action
 			// to avoid users being able to set non-controlled eMails as their account email
-			if _, appErr := a.GetUserByOptions(model.UserWhere.Email.EQ(strings.ToLower(newEmail))); appErr == nil {
+			if _, appErr := a.GetUserByOptions(
+				model_helper.UserFilterOptions{
+					CommonQueryOptions: model_helper.NewCommonQueryOptions(model.UserWhere.Email.ILIKE(user.Email)),
+				},
+			); appErr == nil {
 				return nil, model_helper.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "user_id="+user.ID, http.StatusBadRequest)
 			}
 
@@ -863,7 +881,7 @@ func (a *ServiceAccount) GetStatusFromCache(userID string) *model.Status {
 	return nil
 }
 
-func (a *ServiceAccount) SearchUsers(props *model_helper.UserSearch, options *model_helper.UserSearchOptions) (model.UserSlice, *model_helper.AppError) {
+func (a *ServiceAccount) SearchUsers(props model_helper.UserSearch, options model_helper.UserSearchOptions) (model.UserSlice, *model_helper.AppError) {
 	term := strings.TrimSpace(props.Term)
 
 	users, err := a.srv.Store.User().Search(term, options)
@@ -909,7 +927,7 @@ func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user model.User
 	}
 
 	for _, info := range infos {
-		res, err := a.srv.FileService().FileExists(info.Path)
+		res, err := a.srv.File.FileExists(info.Path)
 		if err != nil {
 			slog.Warn(
 				"Error checking existance of file",
@@ -924,7 +942,7 @@ func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user model.User
 			continue
 		}
 
-		err = a.srv.FileService().RemoveFile(info.Path)
+		err = a.srv.File.RemoveFile(info.Path)
 		if err != nil {
 			slog.Warn("Unable to remove file", slog.String("path", info.Path), slog.Err(err))
 		}
@@ -1081,7 +1099,7 @@ func (a *ServiceAccount) GetUsersByIds(userIDs []string, options store.UserGetBy
 }
 
 func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) (model.UserSlice, *model_helper.AppError) {
-	users, err := a.FidUsersByOptions(model_helper.UserFilterOptions{
+	users, err := a.FindUsersByOptions(model_helper.UserFilterOptions{
 		CommonQueryOptions: model_helper.NewCommonQueryOptions(
 			model.UserWhere.Username.IN(usernames),
 		),
@@ -1277,16 +1295,16 @@ func getProfileImagePath(userID string) string {
 	return filepath.Join("users", userID, "profile.png")
 }
 
-func (s *ServiceAccount) FidUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError) {
+func (s *ServiceAccount) FindUsersByOptions(options model_helper.UserFilterOptions) (model.UserSlice, *model_helper.AppError) {
 	users, err := s.srv.Store.User().Find(options)
 	if err != nil {
-		return nil, model_helper.NewAppError("FidUsersByOptions", "app.account.users_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("FindUsersByOptions", "app.account.users_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return users, nil
 }
 
 func (s *ServiceAccount) GetUserByOptions(options model_helper.UserFilterOptions) (*model.User, *model_helper.AppError) {
-	users, appErr := s.FidUsersByOptions(options)
+	users, appErr := s.FindUsersByOptions(options)
 	if appErr != nil {
 		return nil, appErr
 	}

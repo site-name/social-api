@@ -177,7 +177,7 @@ type PaymentGateway struct {
 type InitializedPaymentResponse struct {
 	Gateway string
 	Name    string
-	Data    interface{}
+	Data    any
 }
 
 type PaymentInterface interface {

@@ -226,7 +226,7 @@ func (a *ServiceAccount) authenticateUser(c *request.Context, user model.User, p
 		return nil, model_helper.NewAppError(
 			"login",
 			"api.user.login.use_auth_service.app_error",
-			map[string]interface{}{
+			map[string]any{
 				"AuthService": strings.ToUpper(user.AuthService),
 			},
 			"", http.StatusBadRequest,

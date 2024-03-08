@@ -70,7 +70,7 @@ func TestRender(t *testing.T) {
 	mt := NewFromTemplate(tpl)
 
 	data := Data{
-		Props: map[string]interface{}{
+		Props: map[string]any{
 			"Bar": "bar",
 		},
 	}

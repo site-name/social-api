@@ -59,8 +59,8 @@ package shop
 // 	})
 // }
 
-// func (s *SqlShopStore) ScanFields(shop model.ShopSettings) []interface{} {
-// 	return []interface{}{
+// func (s *SqlShopStore) ScanFields(shop model.ShopSettings) []any {
+// 	return []any{
 // 		&shop.Id,
 // 		&shop.CreateAt,
 // 		&shop.UpdateAt,
@@ -154,7 +154,7 @@ package shop
 // 	return &res, nil
 // }
 
-// func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (string, []interface{}, error) {
+// func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (string, []any, error) {
 // 	selectFields := ss.ModelFields("Shops.")
 // 	if options.SelectRelatedCompanyAddress {
 // 		selectFields = append(selectFields, ss.Address().ModelFields("Addresses.")...)

@@ -390,7 +390,7 @@ func (o *MenuItem) ParentMenuItems(mods ...qm.QueryMod) menuItemQuery {
 
 // LoadCategory allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemL) LoadCategory(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadCategory(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -416,7 +416,7 @@ func (menuItemL) LoadCategory(e boil.Executor, singular bool, maybeMenuItem inte
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -442,7 +442,7 @@ func (menuItemL) LoadCategory(e boil.Executor, singular bool, maybeMenuItem inte
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -506,7 +506,7 @@ func (menuItemL) LoadCategory(e boil.Executor, singular bool, maybeMenuItem inte
 
 // LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemL) LoadCollection(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadCollection(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -532,7 +532,7 @@ func (menuItemL) LoadCollection(e boil.Executor, singular bool, maybeMenuItem in
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -558,7 +558,7 @@ func (menuItemL) LoadCollection(e boil.Executor, singular bool, maybeMenuItem in
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -622,7 +622,7 @@ func (menuItemL) LoadCollection(e boil.Executor, singular bool, maybeMenuItem in
 
 // LoadParent allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemL) LoadParent(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadParent(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -648,7 +648,7 @@ func (menuItemL) LoadParent(e boil.Executor, singular bool, maybeMenuItem interf
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -674,7 +674,7 @@ func (menuItemL) LoadParent(e boil.Executor, singular bool, maybeMenuItem interf
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -738,7 +738,7 @@ func (menuItemL) LoadParent(e boil.Executor, singular bool, maybeMenuItem interf
 
 // LoadMenu allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemL) LoadMenu(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadMenu(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -764,7 +764,7 @@ func (menuItemL) LoadMenu(e boil.Executor, singular bool, maybeMenuItem interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -786,7 +786,7 @@ func (menuItemL) LoadMenu(e boil.Executor, singular bool, maybeMenuItem interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -850,7 +850,7 @@ func (menuItemL) LoadMenu(e boil.Executor, singular bool, maybeMenuItem interfac
 
 // LoadPage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemL) LoadPage(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadPage(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -876,7 +876,7 @@ func (menuItemL) LoadPage(e boil.Executor, singular bool, maybeMenuItem interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -902,7 +902,7 @@ func (menuItemL) LoadPage(e boil.Executor, singular bool, maybeMenuItem interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -966,7 +966,7 @@ func (menuItemL) LoadPage(e boil.Executor, singular bool, maybeMenuItem interfac
 
 // LoadMenuItemTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuItemL) LoadMenuItemTranslations(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadMenuItemTranslations(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -992,7 +992,7 @@ func (menuItemL) LoadMenuItemTranslations(e boil.Executor, singular bool, maybeM
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -1011,7 +1011,7 @@ func (menuItemL) LoadMenuItemTranslations(e boil.Executor, singular bool, maybeM
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1072,7 +1072,7 @@ func (menuItemL) LoadMenuItemTranslations(e boil.Executor, singular bool, maybeM
 
 // LoadParentMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuItemL) LoadParentMenuItems(e boil.Executor, singular bool, maybeMenuItem interface{}, mods queries.Applicator) error {
+func (menuItemL) LoadParentMenuItems(e boil.Executor, singular bool, maybeMenuItem any, mods queries.Applicator) error {
 	var slice []*MenuItem
 	var object *MenuItem
 
@@ -1098,7 +1098,7 @@ func (menuItemL) LoadParentMenuItems(e boil.Executor, singular bool, maybeMenuIt
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuItemR{}
@@ -1117,7 +1117,7 @@ func (menuItemL) LoadParentMenuItems(e boil.Executor, singular bool, maybeMenuIt
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1192,7 +1192,7 @@ func (o *MenuItem) SetCategory(exec boil.Executor, insert bool, related *Categor
 		strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1271,7 +1271,7 @@ func (o *MenuItem) SetCollection(exec boil.Executor, insert bool, related *Colle
 		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1350,7 +1350,7 @@ func (o *MenuItem) SetParent(exec boil.Executor, insert bool, related *MenuItem)
 		strmangle.SetParamNames("\"", "\"", 1, []string{"parent_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1429,7 +1429,7 @@ func (o *MenuItem) SetMenu(exec boil.Executor, insert bool, related *Menu) error
 		strmangle.SetParamNames("\"", "\"", 1, []string{"menu_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1475,7 +1475,7 @@ func (o *MenuItem) SetPage(exec boil.Executor, insert bool, related *Page) error
 		strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []any{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1556,7 +1556,7 @@ func (o *MenuItem) AddMenuItemTranslations(exec boil.Executor, insert bool, rela
 				strmangle.SetParamNames("\"", "\"", 1, []string{"menu_item_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1608,7 +1608,7 @@ func (o *MenuItem) AddParentMenuItems(exec boil.Executor, insert bool, related .
 				strmangle.SetParamNames("\"", "\"", 1, []string{"parent_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1650,7 +1650,7 @@ func (o *MenuItem) AddParentMenuItems(exec boil.Executor, insert bool, related .
 // Sets related.R.Parent's ParentMenuItems accordingly.
 func (o *MenuItem) SetParentMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	query := "update \"menu_items\" set \"parent_id\" = null where \"parent_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1910,7 +1910,7 @@ func (o MenuItemSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2032,7 +2032,7 @@ func (o *MenuItem) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2116,7 +2116,7 @@ func (o MenuItemSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), menuItemPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2162,7 +2162,7 @@ func (o *MenuItemSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := MenuItemSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), menuItemPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

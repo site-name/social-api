@@ -250,7 +250,7 @@ func (o *Menu) TopMenuShops(mods ...qm.QueryMod) shopQuery {
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu any, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -276,7 +276,7 @@ func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu interface{}
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuR{}
@@ -295,7 +295,7 @@ func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu interface{}
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -356,7 +356,7 @@ func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu interface{}
 
 // LoadTopMenuShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadTopMenuShops(e boil.Executor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadTopMenuShops(e boil.Executor, singular bool, maybeMenu any, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -382,7 +382,7 @@ func (menuL) LoadTopMenuShops(e boil.Executor, singular bool, maybeMenu interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &menuR{}
@@ -401,7 +401,7 @@ func (menuL) LoadTopMenuShops(e boil.Executor, singular bool, maybeMenu interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -478,7 +478,7 @@ func (o *Menu) AddMenuItems(exec boil.Executor, insert bool, related ...*MenuIte
 				strmangle.SetParamNames("\"", "\"", 1, []string{"menu_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -530,7 +530,7 @@ func (o *Menu) AddTopMenuShops(exec boil.Executor, insert bool, related ...*Shop
 				strmangle.SetParamNames("\"", "\"", 1, []string{"top_menu_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -572,7 +572,7 @@ func (o *Menu) AddTopMenuShops(exec boil.Executor, insert bool, related ...*Shop
 // Sets related.R.TopMenu's TopMenuShops accordingly.
 func (o *Menu) SetTopMenuShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	query := "update \"shops\" set \"top_menu_id\" = null where \"top_menu_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -832,7 +832,7 @@ func (o MenuSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -954,7 +954,7 @@ func (o *Menu) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1038,7 +1038,7 @@ func (o MenuSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), menuPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1084,7 +1084,7 @@ func (o *MenuSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := MenuSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), menuPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

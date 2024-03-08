@@ -5,6 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
@@ -33,7 +34,7 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction boil.ContextTrans
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -45,9 +46,9 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanc
 			GiftcardID: item.Giftcard.Id,
 			UserID:     userID,
 			Type:       model.GIFT_CARD_EVENT_TYPE_USED_IN_ORDER,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"order_id": orderID,
-				"balance": model.StringInterface{
+				"balance": model_types.JSONString{
 					"currency":             item.Giftcard.Currency,
 					"current_balance":      item.Giftcard.CurrentBalanceAmount,
 					"old_currency_balance": item.PreviousBalance,
@@ -59,7 +60,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanc
 	return s.BulkUpsertGiftcardEvents(transaction, events...)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
@@ -71,7 +72,7 @@ func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards [
 			GiftcardID: giftCard.Id,
 			UserID:     userID,
 			Type:       model.GIFT_CARD_EVENT_TYPE_BOUGHT,
-			Parameters: model.StringInterface{
+			Parameters: model_types.JSONString{
 				"order_id":    orderID,
 				"expiry_date": giftCard.ExpiryDate,
 			},

@@ -6,7 +6,6 @@ package sub_app_iface
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +19,7 @@ type WarehouseService interface {
 	// Iterate by stocks and allocate as many items as needed or available in stock
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
-	AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*model.InsufficientStock, *model_helper.AppError)
+	AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model_types.JSONString) (*model.InsufficientStock, *model_helper.AppError)
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 	AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model.InsufficientStock, *model_helper.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
@@ -51,7 +50,7 @@ type WarehouseService interface {
 	// or there is not enough available preorder items for a variant.
 	//
 	// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
 	// DeAllocateStockForOrder Remove all allocations for given order
 	DeAllocateStockForOrder(ord *model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// DeactivatePreorderForVariant Complete preorder for product variant.
@@ -84,7 +83,7 @@ type WarehouseService interface {
 	// DeletePreorderAllocations tells store to delete given preorder allocations
 	DeletePreorderAllocations(transaction *gorm.DB, preorderAllocationIDs ...string) *model_helper.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
-	FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model_helper.AppError)
+	FilterStocksForChannel(option model_helper.StockFilterForChannelOption) ([]*model.Stock, *model_helper.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
 	FilterStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) (model.Stocks, *model_helper.AppError)
 	// FindWarehousesForCountry returns a list of warehouses that are available in given country
@@ -131,7 +130,7 @@ type WarehouseService interface {
 	// Validate if there is stock available for given variants in given country.
 	//
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
-	CheckStockQuantityBulk(variants model.ProductVariants, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockQuantityBulk(variants model.ProductVariants, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
 	// ValidateWarehouseCount
 	//
 	//	Every ShippingZone can be assigned to only one warehouse.

@@ -68,6 +68,32 @@ func (_m *AssignedProductAttributeStore) GetWithOption(option model_helper.Assig
 	return r0, r1
 }
 
+// Save provides a mock function with given fields: assignedProductAttribute
+func (_m *AssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+	ret := _m.Called(assignedProductAttribute)
+
+	var r0 *model.AssignedProductAttribute
+	var r1 error
+	if rf, ok := ret.Get(0).(func(model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)); ok {
+		return rf(assignedProductAttribute)
+	}
+	if rf, ok := ret.Get(0).(func(model.AssignedProductAttribute) *model.AssignedProductAttribute); ok {
+		r0 = rf(assignedProductAttribute)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.AssignedProductAttribute)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(model.AssignedProductAttribute) error); ok {
+		r1 = rf(assignedProductAttribute)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewAssignedProductAttributeStore interface {
 	mock.TestingT
 	Cleanup(func())

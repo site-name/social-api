@@ -1234,6 +1234,22 @@ func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option model_hel
 	return result, err
 }
 
+func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error) {
 	start := timemodule.Now()
 
@@ -1266,10 +1282,10 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValues model.AssignedProductAttributeValueSlice) (model.AssignedProductAttributeValueSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
+	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValues)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3168,10 +3184,10 @@ func (s *TimerLayerInvoiceEventStore) Upsert(invoiceEvent model.InvoiceEvent) (*
 	return result, err
 }
 
-func (s *TimerLayerJobStore) Count(mods model_helper.JobFilterOptions) (int64, error) {
+func (s *TimerLayerJobStore) Count(options model_helper.JobFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.Count(mods)
+	result, err := s.JobStore.Count(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3200,10 +3216,10 @@ func (s *TimerLayerJobStore) Delete(id string) (string, error) {
 	return result, err
 }
 
-func (s *TimerLayerJobStore) FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error) {
+func (s *TimerLayerJobStore) FindAll(options model_helper.JobFilterOptions) (model.JobSlice, error) {
 	start := timemodule.Now()
 
-	result, err := s.JobStore.FindAll(mods)
+	result, err := s.JobStore.FindAll(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6332,7 +6348,7 @@ func (s *TimerLayerUserStore) Save(user model.User) (*model.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Search(term string, options *model_helper.UserSearchOptions) (model.UserSlice, error) {
+func (s *TimerLayerUserStore) Search(term string, options model_helper.UserSearchOptions) (model.UserSlice, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Search(term, options)

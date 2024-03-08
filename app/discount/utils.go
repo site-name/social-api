@@ -237,7 +237,7 @@ func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *go
 func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model_helper.AppError) {
 	// validate params
 	if len(prices) == 0 {
-		return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "please provide prices list", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "prices"}, "please provide prices list", http.StatusBadRequest)
 	}
 
 	minPrice, _ := util.MinMaxMoneyInMoneySlice(prices)

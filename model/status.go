@@ -379,7 +379,7 @@ func (o StatusSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -501,7 +501,7 @@ func (o *Status) Upsert(exec boil.Executor, updateOnConflict bool, conflictColum
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -585,7 +585,7 @@ func (o StatusSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), statusPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -631,7 +631,7 @@ func (o *StatusSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := StatusSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), statusPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

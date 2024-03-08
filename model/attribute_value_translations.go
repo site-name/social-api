@@ -413,7 +413,7 @@ func (o AttributeValueTranslationSlice) UpdateAll(exec boil.Executor, cols M) (i
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -535,7 +535,7 @@ func (o *AttributeValueTranslation) Upsert(exec boil.Executor, updateOnConflict 
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -619,7 +619,7 @@ func (o AttributeValueTranslationSlice) DeleteAll(exec boil.Executor) (int64, er
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeValueTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -665,7 +665,7 @@ func (o *AttributeValueTranslationSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AttributeValueTranslationSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeValueTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -96,15 +96,15 @@ type precomputedWebSocketEventJSON struct {
 
 // webSocketEventJSON mirrors WebSocketEvent to make some of its unexported fields serializable
 type webSocketEventJSON struct {
-	Event     string                 `json:"event"`
-	Data      map[string]interface{} `json:"data"`
-	Broadcast *WebsocketBroadcast    `json:"broadcast"`
-	Sequence  int64                  `json:"seq"`
+	Event     string              `json:"event"`
+	Data      map[string]any      `json:"data"`
+	Broadcast *WebsocketBroadcast `json:"broadcast"`
+	Sequence  int64               `json:"seq"`
 }
 
 type WebSocketEvent struct {
 	event           string
-	data            map[string]interface{}
+	data            map[string]any
 	broadcast       *WebsocketBroadcast
 	sequence        int64
 	precomputedJSON *precomputedWebSocketEventJSON
@@ -125,14 +125,14 @@ func (ev *WebSocketEvent) PrecomputeJSON() *WebSocketEvent {
 	return copy
 }
 
-func (ev *WebSocketEvent) Add(key string, value interface{}) {
+func (ev *WebSocketEvent) Add(key string, value any) {
 	ev.data[key] = value
 }
 
 func NewWebSocketEvent(event, userId string, omitUsers map[string]bool) *WebSocketEvent {
 	return &WebSocketEvent{
 		event: event,
-		data:  make(map[string]interface{}),
+		data:  make(map[string]any),
 		broadcast: &WebsocketBroadcast{
 			// TeamId:    teamId,
 			// ChannelId: channelId,
@@ -152,7 +152,7 @@ func (ev *WebSocketEvent) Copy() *WebSocketEvent {
 	return copy
 }
 
-func (ev *WebSocketEvent) GetData() map[string]interface{} {
+func (ev *WebSocketEvent) GetData() map[string]any {
 	return ev.data
 }
 
@@ -170,7 +170,7 @@ func (ev *WebSocketEvent) SetEvent(event string) *WebSocketEvent {
 	return copy
 }
 
-func (ev *WebSocketEvent) SetData(data map[string]interface{}) *WebSocketEvent {
+func (ev *WebSocketEvent) SetData(data map[string]any) *WebSocketEvent {
 	copy := ev.Copy()
 	copy.data = data
 	return copy
@@ -234,13 +234,13 @@ func WebSocketEventFromJson(data io.Reader) *WebSocketEvent {
 	ev.event = o.Event
 	if u, ok := o.Data["user"]; ok {
 		// We need to convert to and from JSON again
-		// because the user is in the form of a map[string]interface{}.
+		// because the user is in the form of a map[string]any.
 		buf, err := json.Marshal(u)
 		if err != nil {
 			return nil
 		}
 		// NOTE: not sure this is properly handled yet.
-		var user interface{}
+		var user any
 		json.NewDecoder(bytes.NewReader(buf)).Decode(&user)
 		o.Data["user"] = user
 	}
@@ -254,17 +254,17 @@ func WebSocketEventFromJson(data io.Reader) *WebSocketEvent {
 // for a request made to the server. This is available through the ResponseChannel
 // channel in WebSocketClient.
 type WebSocketResponse struct {
-	Status   string                 `json:"status"`              // The status of the response. For example: OK, FAIL.
-	SeqReply int64                  `json:"seq_reply,omitempty"` // A counter which is incremented for every response sent.
-	Data     map[string]interface{} `json:"data,omitempty"`      // The data contained in the response.
-	Error    *AppError              `json:"error,omitempty"`     // A field that is set if any error has occurred.
+	Status   string         `json:"status"`              // The status of the response. For example: OK, FAIL.
+	SeqReply int64          `json:"seq_reply,omitempty"` // A counter which is incremented for every response sent.
+	Data     map[string]any `json:"data,omitempty"`      // The data contained in the response.
+	Error    *AppError      `json:"error,omitempty"`     // A field that is set if any error has occurred.
 }
 
-func (m *WebSocketResponse) Add(key string, value interface{}) {
+func (m *WebSocketResponse) Add(key string, value any) {
 	m.Data[key] = value
 }
 
-func NewWebSocketResponse(status string, seqReply int64, data map[string]interface{}) *WebSocketResponse {
+func NewWebSocketResponse(status string, seqReply int64, data map[string]any) *WebSocketResponse {
 	return &WebSocketResponse{Status: status, SeqReply: seqReply, Data: data}
 }
 

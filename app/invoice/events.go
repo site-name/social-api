@@ -32,7 +32,7 @@ func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOp
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrNotFound); ok {
-			return nil, model_helper.NewAppError("UpsertInvoiceEvent", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("UpsertInvoiceEvent", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
 		}
 		return nil, model_helper.NewAppError("UpsertInvoiceEvent", "app.invoice.error_upserting_invoice_event.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

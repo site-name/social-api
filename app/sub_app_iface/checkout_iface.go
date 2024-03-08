@@ -46,7 +46,7 @@ type CheckoutService interface {
 	// BaseCheckoutTotal returns the total cost of the checkout
 	//
 	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model_helper.AppError)
+	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount any, currency string) (*goprices.TaxedMoney, *model_helper.AppError)
 	// CalculateCheckoutTotalWithGiftcards
 	CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price
@@ -98,7 +98,7 @@ type CheckoutService interface {
 	// GetCustomerEmail returns checkout's user's email
 	GetCustomerEmail(ckout *model.Checkout) (string, *model_helper.AppError)
 	// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
-	GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model_helper.AppError)
+	GetDeliveryMethodInfo(deliveryMethod any, address *model.Address) (model.DeliveryMethodBaseInterface, *model_helper.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
 	// Specific products are products, collections and categories.
 	// Product must be assigned directly to the discounted category, assigning
@@ -129,14 +129,14 @@ type CheckoutService interface {
 	// :raises ValidationError
 	//
 	// NOTE: Make sure user is authenticated before calling this method.
-	CompleteCheckout(dbTransaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings model.ShopSettings, trackingCode string, redirectURL string) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model_helper.AppError)
+	CompleteCheckout(dbTransaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]any, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ any, siteSettings model.ShopSettings, trackingCode string, redirectURL string) (*model.Order, bool, model_types.JSONString, *model.PaymentError, *model_helper.AppError)
 	// PrepareInsufficientStockCheckoutValidationAppError
 	PrepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model_helper.AppError
 	// RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
 	// Will clear both voucher and discount if the discount is no longer applicable.
 	RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model_helper.AppError
 	// ReleaseVoucherUsage
-	ReleaseVoucherUsage(orderData map[string]interface{}) *model_helper.AppError
+	ReleaseVoucherUsage(orderData map[string]any) *model_helper.AppError
 	// RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
 	RemovePromoCodeFromCheckout(checkoutInfo model.CheckoutInfo, promoCode string) *model_helper.AppError
 	// RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
@@ -150,7 +150,7 @@ type CheckoutService interface {
 	// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 	// and set new value for checkoutInfo's ShippingMethodChannelListings
 	// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
-	UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod interface{}) *model_helper.AppError
+	UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod any) *model_helper.AppError
 	// UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 	// then updates its ValidShippingMethods
 	UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model_helper.AppError

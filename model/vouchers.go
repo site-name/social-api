@@ -149,14 +149,14 @@ func (w whereHelperVoucherType) GTE(x VoucherType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperVoucherType) IN(slice []VoucherType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperVoucherType) NIN(slice []VoucherType) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
+	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -489,7 +489,7 @@ func (o *Voucher) VoucherTranslations(mods ...qm.QueryMod) voucherTranslationQue
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadOrders(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadOrders(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -515,7 +515,7 @@ func (voucherL) LoadOrders(e boil.Executor, singular bool, maybeVoucher interfac
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -534,7 +534,7 @@ func (voucherL) LoadOrders(e boil.Executor, singular bool, maybeVoucher interfac
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -595,7 +595,7 @@ func (voucherL) LoadOrders(e boil.Executor, singular bool, maybeVoucher interfac
 
 // LoadVoucherCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherCategories(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherCategories(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -621,7 +621,7 @@ func (voucherL) LoadVoucherCategories(e boil.Executor, singular bool, maybeVouch
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -640,7 +640,7 @@ func (voucherL) LoadVoucherCategories(e boil.Executor, singular bool, maybeVouch
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -701,7 +701,7 @@ func (voucherL) LoadVoucherCategories(e boil.Executor, singular bool, maybeVouch
 
 // LoadVoucherChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -727,7 +727,7 @@ func (voucherL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybe
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -746,7 +746,7 @@ func (voucherL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybe
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -807,7 +807,7 @@ func (voucherL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybe
 
 // LoadVoucherCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherCollections(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherCollections(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -833,7 +833,7 @@ func (voucherL) LoadVoucherCollections(e boil.Executor, singular bool, maybeVouc
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -852,7 +852,7 @@ func (voucherL) LoadVoucherCollections(e boil.Executor, singular bool, maybeVouc
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -913,7 +913,7 @@ func (voucherL) LoadVoucherCollections(e boil.Executor, singular bool, maybeVouc
 
 // LoadVoucherCustomers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherCustomers(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherCustomers(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -939,7 +939,7 @@ func (voucherL) LoadVoucherCustomers(e boil.Executor, singular bool, maybeVouche
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -958,7 +958,7 @@ func (voucherL) LoadVoucherCustomers(e boil.Executor, singular bool, maybeVouche
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1019,7 +1019,7 @@ func (voucherL) LoadVoucherCustomers(e boil.Executor, singular bool, maybeVouche
 
 // LoadVoucherProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherProducts(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherProducts(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -1045,7 +1045,7 @@ func (voucherL) LoadVoucherProducts(e boil.Executor, singular bool, maybeVoucher
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -1064,7 +1064,7 @@ func (voucherL) LoadVoucherProducts(e boil.Executor, singular bool, maybeVoucher
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1125,7 +1125,7 @@ func (voucherL) LoadVoucherProducts(e boil.Executor, singular bool, maybeVoucher
 
 // LoadVoucherTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (voucherL) LoadVoucherTranslations(e boil.Executor, singular bool, maybeVoucher interface{}, mods queries.Applicator) error {
+func (voucherL) LoadVoucherTranslations(e boil.Executor, singular bool, maybeVoucher any, mods queries.Applicator) error {
 	var slice []*Voucher
 	var object *Voucher
 
@@ -1151,7 +1151,7 @@ func (voucherL) LoadVoucherTranslations(e boil.Executor, singular bool, maybeVou
 		}
 	}
 
-	args := make(map[interface{}]struct{})
+	args := make(map[any]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherR{}
@@ -1170,7 +1170,7 @@ func (voucherL) LoadVoucherTranslations(e boil.Executor, singular bool, maybeVou
 		return nil
 	}
 
-	argsSlice := make([]interface{}, len(args))
+	argsSlice := make([]any, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1247,7 +1247,7 @@ func (o *Voucher) AddOrders(exec boil.Executor, insert bool, related ...*Order) 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1289,7 +1289,7 @@ func (o *Voucher) AddOrders(exec boil.Executor, insert bool, related ...*Order) 
 // Sets related.R.Voucher's Orders accordingly.
 func (o *Voucher) SetOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
+	values := []any{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1372,7 +1372,7 @@ func (o *Voucher) AddVoucherCategories(exec boil.Executor, insert bool, related 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCategoryPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1424,7 +1424,7 @@ func (o *Voucher) AddVoucherChannelListings(exec boil.Executor, insert bool, rel
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1476,7 +1476,7 @@ func (o *Voucher) AddVoucherCollections(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCollectionPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1528,7 +1528,7 @@ func (o *Voucher) AddVoucherCustomers(exec boil.Executor, insert bool, related .
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCustomerPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1580,7 +1580,7 @@ func (o *Voucher) AddVoucherProducts(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherProductPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1632,7 +1632,7 @@ func (o *Voucher) AddVoucherTranslations(exec boil.Executor, insert bool, relate
 				strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherTranslationPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []any{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1861,7 +1861,7 @@ func (o VoucherSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]interface{}, len(cols))
+	args := make([]any, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1983,7 +1983,7 @@ func (o *Voucher) Upsert(exec boil.Executor, updateOnConflict bool, conflictColu
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []interface{}
+	var returns []any
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2067,7 +2067,7 @@ func (o VoucherSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []interface{}
+	var args []any
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2113,7 +2113,7 @@ func (o *VoucherSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := VoucherSlice{}
-	var args []interface{}
+	var args []any
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

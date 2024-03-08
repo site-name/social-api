@@ -54,7 +54,7 @@ func init() {
 			metrics:      s.Metrics,
 			cluster:      s.Cluster,
 			sessionPool: sync.Pool{
-				New: func() interface{} {
+				New: func() any {
 					return &model.Session{}
 				},
 			},

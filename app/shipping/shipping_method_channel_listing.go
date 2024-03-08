@@ -12,8 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
-func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model_helper.AppError) {
+func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option model_helper.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListingSlice, *model_helper.AppError) {
 	listings, err := a.srv.Store.ShippingMethodChannelListing().FilterByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("ShippingMethodChannelListingsByOption", "app.shipping.error_finding_shipping_method_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

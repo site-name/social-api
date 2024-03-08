@@ -17,7 +17,7 @@ import (
 )
 
 // M type is for providing columns and column values to UpdateAll.
-type M map[string]interface{}
+type M map[string]any
 
 // ErrSyncFail occurs during insert when the record could not be retrieved in
 // order to populate default value information. This usually happens when LastInsertId
@@ -4483,7 +4483,7 @@ func (e NullAttributeEntityType) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullAttributeEntityType) Scan(value interface{}) error {
+func (e *NullAttributeEntityType) Scan(value any) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil
@@ -6331,7 +6331,7 @@ func (e NullOrderOrigin) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullOrderOrigin) Scan(value interface{}) error {
+func (e *NullOrderOrigin) Scan(value any) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil
@@ -6671,7 +6671,7 @@ func (e NullCurrency) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullCurrency) Scan(value interface{}) error {
+func (e *NullCurrency) Scan(value any) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil

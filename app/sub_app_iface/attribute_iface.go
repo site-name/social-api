@@ -27,8 +27,8 @@ type AttributeService interface {
 	// `instance` must be either *Product or *ProductVariant or *Page.
 	// `attributeID` must be ID of processing `Attribute`
 	//
-	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model_helper.AppError)
+	// Returned any must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
+	AssociateAttributeValuesToInstance(instance any, attributeID string, values model.AttributeValues) (any, *model_helper.AppError)
 	// AttributeProductByOption returns an attribute product filtered using given option
 	AttributeProductByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, *model_helper.AppError)
 	// AttributesByOption returns a list of attributes filtered using given options

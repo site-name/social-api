@@ -14,6 +14,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/web"
 )
 
@@ -143,7 +144,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 		}
 		// validate all found attribute values are children of attribute
 		if !lo.EveryBy(removeValues, func(vl *model.AttributeValue) bool { return vl.AttributeID == attribute.Id }) {
-			return nil, model_helper.NewAppError("AttributeUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "one of attribute values does not belong to given attribute", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("AttributeUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "removeValues"}, "one of attribute values does not belong to given attribute", http.StatusBadRequest)
 		}
 
 		// remove attribute values designated:
@@ -255,14 +256,14 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 		contentType := args.Input.ContentType
 		if (fileUrl != nil && *fileUrl != "") ||
 			(contentType != nil && *contentType != "") {
-			return nil, model_helper.NewAppError("AttributeValueCreate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fileUrl or contentType"}, "fieUrl and contentType can only be defined for swatch attribute", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("AttributeValueCreate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fileUrl or contentType"}, "fieUrl and contentType can only be defined for swatch attribute", http.StatusBadRequest)
 		}
 	}
 
 	// construct instance
 	attrValue := &model.AttributeValue{
 		Name:        args.Input.Name,
-		RichText:    model.StringInterface(args.Input.RichText),
+		RichText:    model_types.JSONString(args.Input.RichText),
 		FileUrl:     args.Input.FileURL,
 		ContentType: args.Input.ContentType,
 		AttributeID: attribute.Id,
@@ -292,7 +293,7 @@ func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id UUI
 		return nil, appErr
 	}
 	if len(attrValues) == 0 {
-		return nil, model_helper.NewAppError("AttributeValueDelete", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id.String()+" is in valid", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AttributeValueDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "id="+args.Id.String()+" is in valid", http.StatusBadRequest)
 	}
 	attrValue := attrValues[0]
 
@@ -321,7 +322,7 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(attrValues) == 0 {
-		return nil, model_helper.NewAppError("AttributeValueUpdate", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id.String()+" is in valid", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AttributeValueUpdate", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "Id"}, "id="+args.Id.String()+" is in valid", http.StatusBadRequest)
 	}
 
 	attrValue := attrValues[0]
@@ -339,7 +340,7 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	if v := args.Input.Value; v != nil {
 		attrValue.Value = *v
 	}
-	attrValue.RichText = model.StringInterface(args.Input.RichText)
+	attrValue.RichText = model_types.JSONString(args.Input.RichText)
 	attrValue.FileUrl = args.Input.FileURL
 	attrValue.ContentType = args.Input.ContentType
 
@@ -383,7 +384,7 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args AttributeReo
 
 	for _, move := range args.Moves {
 		if !attributeValueMap[move.ID] { // not contains
-			return nil, model_helper.NewAppError("AttributeReorderValues", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "move.Id"}, fmt.Sprintf("attribute value with id=%s does not belong to the attribute", move.ID), http.StatusBadRequest)
+			return nil, model_helper.NewAppError("AttributeReorderValues", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "move.Id"}, fmt.Sprintf("attribute value with id=%s does not belong to the attribute", move.ID), http.StatusBadRequest)
 		}
 
 		operations[move.ID] = (*int)(unsafe.Pointer(move.SortOrder))
@@ -420,13 +421,13 @@ func (args *AttributesArgs) parse() (*model.AttributeFilterOption, *model_helper
 
 	if args.ChannelSlug != nil {
 		if !slug.IsSlug(*args.ChannelSlug) {
-			return nil, model_helper.NewAppError("AttributesArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("AttributesArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
 		}
 		attributeFilter.ChannelSlug = args.ChannelSlug
 	}
 
 	if args.SortBy != nil && !args.SortBy.Field.IsValid() {
-		return nil, model_helper.NewAppError("AttributesArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("AttributesArgs.parse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
 	}
 
 	paginValue, appErr := args.GraphqlParams.Parse("AttributesArgs.parse")
@@ -485,10 +486,10 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Slug *string
 }) (*Attribute, error) {
 	if (args.Id == nil && args.Slug == nil) || (args.Id != nil && args.Slug != nil) {
-		return nil, model_helper.NewAppError("Attribute", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug, not both", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Attribute", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "id/slug"}, "please provide id or slug, not both", http.StatusBadRequest)
 	}
 	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
-		return nil, model_helper.NewAppError("Attribute", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
+		return nil, model_helper.NewAppError("Attribute", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
 	var conditions squirrel.Sqlizer

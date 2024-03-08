@@ -16,7 +16,7 @@ var (
 //
 // `to_string` flag is used for returning concatenated string from all blocks
 // instead of returning json object.
-// func CleanEditorJS(definitions map[string][]map[string]interface{}) string {
+// func CleanEditorJS(definitions map[string][]map[string]any) string {
 // 	var str string
 
 // 	blocks, found := definitions["blocks"]
@@ -27,13 +27,13 @@ var (
 // 	for key, block := range blocks {
 // 		blockType := block["type"]
 // 		data, ok := block["data"]
-// 		dataMap, yes := data.(map[string]interface{})
+// 		dataMap, yes := data.(map[string]any)
 // 		if !ok || data == nil || !yes {
 // 			continue
 // 		}
 
 // 		if blockType == "list" {
-// 			items := dataMap["items"].([]interface{})
+// 			items := dataMap["items"].([]any)
 // 			for itemIdx, item := range items {
 // 				if item == nil {
 // 					continue

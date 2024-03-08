@@ -39,7 +39,7 @@ func (*ServiceDiscount) Decorator(preValue any) types.DiscountCalculator {
 			*goprices.TaxedMoney,
 			*goprices.TaxedMoneyRange:
 		default:
-			return nil, model_helper.NewAppError("DiscountCalculator", model_helper.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "first"}, "", http.StatusBadRequest)
+			return nil, model_helper.NewAppError("DiscountCalculator", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "first"}, "", http.StatusBadRequest)
 		}
 
 		if fromGross == nil { // fixed discount
