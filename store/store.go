@@ -136,11 +136,6 @@ type Store interface {
 	ShopStaff() ShopStaffStore                                         //
 	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
-
-	// AssignedVariantAttributeValue() AssignedVariantAttributeValueStore //
-	// AssignedVariantAttribute() AssignedVariantAttributeStore           //
-	// AttributeVariant() AttributeVariantStore                           //
-	// AttributeProduct() AttributeProductStore                           //
 }
 
 // shop
@@ -235,26 +230,6 @@ type (
 		Get(pageID string) (*model.AttributePage, error)
 		GetByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, error)
 	}
-	// AssignedVariantAttributeValueStore interface {
-	// 	Save(assignedVariantAttrValue model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                                 // Save inserts new value into database then returns it with an error
-	// 	Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                     // Get try finding a value with given id then returns it with an error
-	// 	SaveInBulk(assignmentID string, attributeValueIDs []string) (model.AssignedVariantAttributeValueSlice, error)                                                    // SaveInBulk save multiple values into database then returns them
-	// 	SelectForSort(assignmentID string) (assignedVariantAttributeValues model.AssignedVariantAttributeValueSlice, attributeValues []*model.AttributeValue, err error) // SelectForSort
-	// 	UpdateInBulk(attributeValues model.AssignedVariantAttributeValueSlice) error                                                                                     // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
-	// 	FilterByOptions(options model.AssignedVariantAttributeValueFilterOptions) (model.AssignedVariantAttributeValueSlice, error)
-	// }
-	// AssignedVariantAttributeStore interface {
-	// Save(assignedVariantAttribute model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error)         // Save insert new instance into database then returns it with an error
-	// Get(id string) (*model.AssignedVariantAttribute, error)                                                        // Get find assigned variant model from database then returns it with an error
-	// GetWithOption(option model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error)      // GetWithOption try finding an assigned variant model with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
-	// FilterByOption(option model.AssignedVariantAttributeFilterOption) (model.AssignedVariantAttributeSlice, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
-	// }
-	// AttributeVariantStore interface {
-	// 	Save(attributeVariant model.AttributeVariant) (*model.AttributeVariant, error)
-	// 	Get(attributeVariantID string) (*model.AttributeVariant, error)
-	// 	GetByOption(option model.AttributeVariantFilterOption) (*model.AttributeVariant, error) // GetByOption finds 1 model variant with given option.
-	// 	FilterByOptions(options model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
-	// }
 	AssignedProductAttributeValueStore interface {
 		Save(assignedProductAttrValue model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                             // Get try finding an instance with given id then returns the value with an error
@@ -262,17 +237,9 @@ type (
 		FilterByOptions(options model_helper.AssignedProductAttributeValueFilterOptions) (model.AssignedProductAttributeValueSlice, error)
 	}
 	AssignedProductAttributeStore interface {
-		// Save(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)           // Save inserts new assgignedProductAttribute into database and returns it with an error
-		// Get(id string) (*model.AssignedProductAttribute, error)                                                          // Get finds and returns an assignedProductAttribute with en error
 		GetWithOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
 		FilterByOptions(options model_helper.AssignedProductAttributeFilterOption) (model.AssignedProductAttributeSlice, error)
 	}
-	// AttributeProductStore interface {
-	// 	Save(attributeProduct model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
-	// 	Get(attributeProductID string) (*model.AttributeProduct, error)                               // Get finds an attributeProduct relationship and returns it with an error
-	// 	GetByOption(option model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition
-	// 	FilterByOptions(option model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) // FilterByOptions returns attributeProducts with given condition
-	// }
 	CustomProductAttributeStore interface {
 		Upsert(tx boil.ContextTransactor, record model.CustomProductAttribute) (*model.CustomProductAttribute, error)
 		Delete(tx boil.ContextTransactor, ids []string) (int64, error)
@@ -721,8 +688,8 @@ type JobStore interface {
 	UpdateStatus(id string, status model.JobStatus) (*model.Job, error)
 	UpdateStatusOptimistically(id string, currentStatus model.JobStatus, newStatus model.JobStatus) (bool, error) // update job status from current status to new status
 	Get(id string) (*model.Job, error)
-	FindAll(mods model_helper.JobFilterOptions) (model.JobSlice, error)
-	Count(mods model_helper.JobFilterOptions) (int64, error)
+	FindAll(options model_helper.JobFilterOptions) (model.JobSlice, error)
+	Count(options model_helper.JobFilterOptions) (int64, error)
 	Delete(id string) (string, error)
 	// GetAllPage(offset int, limit int) ([]*model.Job, error)
 	// GetAllByType(jobType string) ([]*model.Job, error)

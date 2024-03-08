@@ -196,7 +196,7 @@ func (srv *JobServer) CancellationWatcher(ctx context.Context, jobId string, can
 			return
 		case <-time.After(CancelWatcherPollingInterval * time.Millisecond):
 			slog.Debug("CancellationWatcher for Job started polling.", slog.String("job_id", jobId))
-			if jobStatus, err := srv.Store.Job().Get(model.JobWhere.ID.EQ(jobId)); err == nil {
+			if jobStatus, err := srv.Store.Job().Get(jobId); err == nil {
 				if jobStatus.Status == model.JobStatusCancelRequested {
 					close(cancelChan)
 					return
@@ -218,7 +218,12 @@ func GenerateNextStartDateTime(now time.Time, nextStartTime time.Time) *time.Tim
 
 // CheckForPendingJobsByType counts in database if there are jobs with PENDING status and have type of given jobType.
 func (srv *JobServer) CheckForPendingJobsByType(jobType model.JobType) (bool, *model_helper.AppError) {
-	count, err := srv.Store.Job().Count(model.JobWhere.Status.EQ(model.JobStatusPending), model.JobWhere.Type.EQ(jobType))
+	count, err := srv.Store.Job().Count(model_helper.JobFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.JobWhere.Status.EQ(model.JobStatusPending),
+			model.JobWhere.Type.EQ(jobType),
+		),
+	})
 	if err != nil {
 		return false, model_helper.NewAppError("CheckForPendingJobsByType", "app.job.get_count_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -232,15 +237,23 @@ func (srv *JobServer) GetLastSuccessfulJobByType(jobType model.JobType) (*model.
 		statuses = append(statuses, model.JobStatusWarning)
 	}
 
-	job, err := srv.Store.Job().
-		Get(
+	jobs, err := srv.Store.Job().FindAll(model_helper.JobFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
 			model.JobWhere.Status.IN(statuses),
 			model.JobWhere.Type.EQ(jobType),
 			qm.OrderBy(model.JobColumns.CreatedAt+" DESC"),
-		)
-	var nfErr *store.ErrNotFound
-	if err != nil && !errors.As(err, &nfErr) {
-		return nil, model_helper.NewAppError("GetLastSuccessfulJobByType", "app.job.get_newest_job_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
+			qm.Limit(1),
+		),
+	})
+	var statusCode = 0
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+	} else if len(jobs) == 0 {
+		statusCode = http.StatusNotFound
 	}
-	return job, nil
+	if statusCode != 0 {
+		return nil, model_helper.NewAppError("GetLastSuccessfulJobByType", "app.job.get_newest_job_by_status_and_type.app_error", nil, "", statusCode)
+	}
+
+	return jobs[0], nil
 }
