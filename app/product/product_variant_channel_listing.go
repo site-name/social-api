@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
@@ -23,7 +23,7 @@ func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.Pr
 }
 
 // BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
-func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *gorm.DB, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model_helper.AppError) {
+func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction boil.ContextTransactor, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model_helper.AppError) {
 	variantChannelListings, err := s.srv.Store.ProductVariantChannelListing().BulkUpsert(transaction, listings)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -117,7 +117,7 @@ func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID s
 			return
 		}
 
-		appErr = s.UpdateProductDiscountedPrice(tx, *product, []*model.DiscountInfo{})
+		appErr = s.UpdateProductDiscountedPrice(tx, *product, []*model_helper.DiscountInfo{})
 		if appErr != nil {
 			slog.Error("failed to update discounted price for parent product of given channel", slog.Err(appErr))
 			return

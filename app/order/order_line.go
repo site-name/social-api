@@ -8,11 +8,12 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) UpsertOrderLine(transaction boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, *model_helper.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -142,7 +143,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

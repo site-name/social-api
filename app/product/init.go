@@ -35,7 +35,7 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 		if orderValue != nil && orderValue.CreateAt >= util.MillisFromTime(*startDate) {
 			revenue, err = revenue.Add(orderLine.TotalPrice)
 			if err != nil {
-				return nil, model_helper.NewAppError("CalculateRevenueForVariant", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("CalculateRevenueForVariant", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	}

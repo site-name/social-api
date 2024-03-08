@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
 )
 
@@ -145,7 +146,7 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInte
 }
 
 // CancelOrder Release allocation of unfulfilled order items.
-func (a *ServiceOrder) CancelOrder(transaction *gorm.DB, order *model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError {
+func (a *ServiceOrder) CancelOrder(transaction boil.ContextTransactor, order *model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError {
 	// determine user id
 	var userID *string
 	if user != nil {
@@ -233,7 +234,7 @@ func (a *ServiceOrder) OrderVoided(order model.Order, user *model.User, _ any, p
 }
 
 // OrderReturned
-func (a *ServiceOrder) OrderReturned(transaction *gorm.DB, order model.Order, user *model.User, _ any, returnedLines []*model.QuantityOrderLine) *model_helper.AppError {
+func (a *ServiceOrder) OrderReturned(transaction boil.ContextTransactor, order model.Order, user *model.User, _ any, returnedLines []*model.QuantityOrderLine) *model_helper.AppError {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
@@ -804,7 +805,7 @@ func (a *ServiceOrder) CleanMarkOrderAsPaid(order *model.Order) *model_helper.Ap
 	return nil
 }
 
-func (s *ServiceOrder) increaseOrderLineQuantity(transaction *gorm.DB, orderLinesInfo []*model.OrderLineData) *model_helper.AppError {
+func (s *ServiceOrder) increaseOrderLineQuantity(transaction boil.ContextTransactor, orderLinesInfo []*model.OrderLineData) *model_helper.AppError {
 	orderLines := []*model.OrderLine{}
 
 	for _, lineInfo := range orderLinesInfo {
@@ -1508,7 +1509,7 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 // populateReplaceOrderFields create new order based on the state of given originalOrder
 //
 // If original order has shippingAddress/billingAddress, the new order copy these address(es) and change their IDs
-func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorm.DB, originalOrder model.Order) (replaceOrder *model.Order, appErr *model_helper.AppError) {
+func (a *ServiceOrder) populateReplaceOrderFields(transaction boil.ContextTransactor, originalOrder model.Order) (replaceOrder *model.Order, appErr *model_helper.AppError) {
 	replaceOrder = &model.Order{
 		Status:             model.ORDER_STATUS_DRAFT,
 		UserID:             originalOrder.UserID,

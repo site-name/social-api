@@ -206,7 +206,7 @@ type AccountService interface {
 	SanitizeProfile(user *model.User, asAdmin bool)
 	SaveAndBroadcastStatus(status model.Status)
 	SearchUserAccessTokens(term string) (model.UserAccessTokenSlice, *model_helper.AppError)
-	SearchUsers(props *model_helper.UserSearch, options *model_helper.UserSearchOptions) (model.UserSlice, *model_helper.AppError)
+	SearchUsers(props model_helper.UserSearch, options model_helper.UserSearchOptions) (model.UserSlice, *model_helper.AppError)
 	SendEmailVerification(user *model.User, newEmail, redirect string) *model_helper.AppError
 	SendPasswordReset(email string, siteURL string) (bool, *model_helper.AppError)
 	SessionCacheLength() int

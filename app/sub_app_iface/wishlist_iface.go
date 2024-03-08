@@ -5,7 +5,8 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/sitename/sitename/temp/model"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // WishlistService contains methods for working with wishlists
@@ -15,9 +16,9 @@ type WishlistService interface {
 	// AddProductVariant add given product variant into given wishlist
 	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model_helper.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-	BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model_helper.AppError)
+	BulkUpsertWishlistItems(transaction boil.ContextTransactor, wishlistItems model.WishlistItems) (model.WishlistItems, *model_helper.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-	DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model_helper.AppError)
+	DeleteWishlistItemsByOption(transaction boil.ContextTransactor, option *model.WishlistItemFilterOption) (int64, *model_helper.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist
 	GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model_helper.AppError)
 	// GetOrCreateWishlistItem insert or get wishlist items

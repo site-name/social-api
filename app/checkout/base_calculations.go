@@ -2,7 +2,6 @@ package checkout
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
@@ -15,6 +14,7 @@ import (
 
 func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
+
 	if shippingMethodInfo, ok := deliveryMethodInfo.(*model_helper.ShippingMethodInfo); ok {
 		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
 	}
@@ -23,7 +23,7 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.Ch
 	return zeroTaxed, nil
 }
 
-func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_helper.CheckoutInfo, shippingMethodInfo *model_helper.ShippingMethodInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_helper.CheckoutInfo, shippingMethodInfo model_helper.ShippingMethodInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	var (
 		shippingMethod   = shippingMethodInfo.DeliveryMethod
 		shippingRequired bool
@@ -69,21 +69,19 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_hel
 // BaseCheckoutTotal returns the total cost of the checkout
 //
 // NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency string) (*goprices.TaxedMoney, *model_helper.AppError) {
-	// valudate input
+func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency model.Currency) (*goprices.TaxedMoney, *model_helper.AppError) {
 	switch discount.(type) {
 	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
 	default:
 		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
 	}
 
-	// this method reqires all values's currencies are uppoer-cased and supported by system
-	currency = strings.ToUpper(currency)
+	// this method reqires all values's currencies are upper-cased and supported by system
 	currencyMap := map[string]bool{}
 	currencyMap[subTotal.GetCurrency()] = true
 	currencyMap[shippingPrice.GetCurrency()] = true
 	currencyMap[discount.(goprices.Currencier).GetCurrency()] = true // validated in the beginning
-	currencyMap[currency] = true
+	currencyMap[currency.String()] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
 		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)

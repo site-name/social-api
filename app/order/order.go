@@ -16,11 +16,11 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction *gorm.DB, order *model.Order) (*model.Order, *model_helper.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction boil.ContextTransactor, order *model.Order) (*model.Order, *model_helper.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, []*model.Order{order})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (a *ServiceOrder) UpsertOrder(transaction *gorm.DB, order *model.Order) (*m
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *ServiceOrder) BulkUpsertOrders(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, *model_helper.AppError) {
+func (a *ServiceOrder) BulkUpsertOrders(transaction boil.ContextTransactor, orders []*model.Order) ([]*model.Order, *model_helper.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, orders)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok { // error caused by IsValid()
@@ -109,7 +109,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model_helper.Ap
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.Order) *model_helper.AppError {
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction boil.ContextTransactor, orDer *model.Order) *model_helper.AppError {
 	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
 	})
@@ -317,7 +317,7 @@ func (a *ServiceOrder) CustomerEmail(ord *model.Order) (string, *model_helper.Ap
 	return ord.UserEmail, nil
 }
 
-func (s *ServiceOrder) DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model_helper.AppError) {
+func (s *ServiceOrder) DeleteOrders(transaction boil.ContextTransactor, ids []string) (int64, *model_helper.AppError) {
 	count, err := s.srv.Store.Order().Delete(transaction, ids)
 	if err != nil {
 		return 0, model_helper.NewAppError("DeleteOrders", "app.order.delete_orders.app_error", nil, err.Error(), http.StatusInternalServerError)

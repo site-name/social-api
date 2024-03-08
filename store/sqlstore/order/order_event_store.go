@@ -12,7 +12,7 @@ func NewSqlOrderEventStore(s store.Store) store.OrderEventStore {
 	return &SqlOrderEventStore{s}
 }
 
-// func (oes *SqlOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+// func (oes *SqlOrderEventStore) Save(transaction boil.ContextTransactor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 // 	if transaction == nil {
 // 		transaction = oes.GetMaster()
 // 	}

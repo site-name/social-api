@@ -12,7 +12,7 @@ import (
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ProductVariantById finds product variant by given id
@@ -36,7 +36,7 @@ func (a *ServiceProduct) ProductVariantGetPrice(
 	collections []*model.Collection,
 	channel model.Channel,
 	channelListing *model.ProductVariantChannelListing,
-	discounts []*model.DiscountInfo, // optional
+	discounts []*model_helper.DiscountInfo, // optional
 ) (*goprices.Money, *model_helper.AppError) {
 	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
@@ -115,7 +115,7 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model_helper.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction boil.ContextTransactor, variant *model.ProductVariant) (*model.ProductVariant, *model_helper.AppError) {
 	upsertedVariant, err := s.srv.Store.ProductVariant().Save(transaction, variant)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

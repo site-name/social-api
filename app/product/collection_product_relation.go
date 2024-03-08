@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
@@ -19,7 +19,7 @@ func (s *ServiceProduct) CollectionProductRelationsByOptions(options *model.Coll
 	return relations, nil
 }
 
-func (s *ServiceProduct) CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model_helper.AppError) {
+func (s *ServiceProduct) CreateCollectionProductRelations(transaction boil.ContextTransactor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model_helper.AppError) {
 	relations, err := s.srv.Store.CollectionProduct().BulkSave(transaction, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

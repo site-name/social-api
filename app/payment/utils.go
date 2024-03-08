@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // CreatePaymentInformation Extract order information along with payment details.
@@ -158,7 +158,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 //
 // `storePaymentMethod` default to model.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
-	transaction *gorm.DB,
+	transaction boil.ContextTransactor,
 	gateway string,
 	total *decimal.Decimal,
 	currency string,

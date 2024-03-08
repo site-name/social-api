@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model_helper.AppError) {
@@ -16,7 +16,7 @@ func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]
 	})
 }
 
-func (a *ServiceCheckout) DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model_helper.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(transaction boil.ContextTransactor, checkoutLineIDs []string) *model_helper.AppError {
 	err := a.srv.Store.CheckoutLine().DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		return model_helper.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)

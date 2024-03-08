@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option
@@ -34,7 +34,7 @@ func (a *ServiceWishlist) WishlistItemByOption(option *model.WishlistItemFilterO
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model_helper.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction boil.ContextTransactor, wishlistItems model.WishlistItems) (model.WishlistItems, *model_helper.AppError) {
 	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -86,7 +86,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistIt
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model_helper.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction boil.ContextTransactor, option *model.WishlistItemFilterOption) (int64, *model_helper.AppError) {
 	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model_helper.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

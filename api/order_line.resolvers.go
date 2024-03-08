@@ -108,7 +108,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	for _, input := range args.Input {
 		variant, ok := variantsMap[input.VariantID]
 		if ok && variant != nil {
-			orderLine, insufStockErr, appErr := embedCtx.App.Srv().OrderService().AddVariantToOrder(*order, *variant, int(input.Quantity), requester, nil, pluginMng, []*model.DiscountInfo{}, order.IsUnconfirmed())
+			orderLine, insufStockErr, appErr := embedCtx.App.Srv().OrderService().AddVariantToOrder(*order, *variant, int(input.Quantity), requester, nil, pluginMng, []*model_helper.DiscountInfo{}, order.IsUnconfirmed())
 			if appErr != nil {
 				return nil, appErr
 			}

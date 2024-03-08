@@ -86,7 +86,7 @@ func (a *ServiceProduct) GetVariantPrice(
 	variantChannelListing model.ProductVariantChannelListing,
 	product model.Product,
 	collections []*model.Collection,
-	discounts []*model.DiscountInfo,
+	discounts []*model_helper.DiscountInfo,
 	chanNel model.Channel,
 
 ) (*goprices.Money, *model_helper.AppError) {
@@ -108,7 +108,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 	variants model.ProductVariants,
 	variantsChannelListing []*model.ProductVariantChannelListing,
 	collections []*model.Collection,
-	discounts []*model.DiscountInfo,
+	discounts []*model_helper.DiscountInfo,
 	chanNel model.Channel,
 
 ) (*goprices.MoneyRange, *model_helper.AppError) {
@@ -172,7 +172,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	variants []*model.ProductVariant,
 	variantsChannelListing []*model.ProductVariantChannelListing,
 	collections []*model.Collection,
-	discounts []*model.DiscountInfo,
+	discounts []*model_helper.DiscountInfo,
 	chanNel model.Channel,
 	manager interfaces.PluginManagerInterface,
 	countryCode model.CountryCode, // can be empty
@@ -207,7 +207,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	}
 
 	var undiscounted *goprices.TaxedMoneyRange
-	undiscountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, []*model.DiscountInfo{}, chanNel)
+	undiscountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, []*model_helper.DiscountInfo{}, chanNel)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -262,7 +262,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 	product model.Product,
 	productChannelListing *model.ProductChannelListing,
 	collections []*model.Collection,
-	discounts []*model.DiscountInfo,
+	discounts []*model_helper.DiscountInfo,
 	chanNel model.Channel,
 	plugins interfaces.PluginManagerInterface,
 	country model.CountryCode, // can be empty
@@ -278,7 +278,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 		return nil, appErr
 	}
 
-	variarntPrice, appErr = a.GetVariantPrice(variant, variantChannelListing, product, collections, []*model.DiscountInfo{}, chanNel)
+	variarntPrice, appErr = a.GetVariantPrice(variant, variantChannelListing, product, collections, []*model_helper.DiscountInfo{}, chanNel)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -290,7 +290,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 
 	discount, err := getTotalDiscount(undiscounted, discounted)
 	if err != nil {
-		return nil, model_helper.NewAppError("GetVariantAvailability", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GetVariantAvailability", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (

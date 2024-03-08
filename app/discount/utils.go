@@ -90,7 +90,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model_helper.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError) {
 	var (
 		atomicValue                 atomic.Int32
 		appErrChan                  = make(chan *model_helper.AppError)
@@ -134,7 +134,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 //
 // `discounts` is optional
-func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model_helper.AppError) {
+func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model_helper.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model_helper.AppError) {
 	if len(discounts) > 0 {
 
 		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL, variantID)
@@ -158,7 +158,7 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product model.Product, price 
 }
 
 // ValidateVoucherForCheckout validates given voucher
-func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model_helper.AppError) {
+func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (*model.NotApplicable, *model_helper.AppError) {
 	quantity, appErr := a.srv.CheckoutService().CalculateCheckoutQuantity(lines)
 	if appErr != nil {
 		return nil, appErr
@@ -285,7 +285,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 		case money := <-valueChan:
 			addedMoney, err := totalAmount.Add(money)
 			if err != nil {
-				return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+				return nil, model_helper.NewAppError("GetProductsVoucherDiscount", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
 			totalAmount = addedMoney
 		default:
@@ -425,7 +425,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	return channelListingMap, nil
 }
 
-func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model_helper.AppError) {
+func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model_helper.DiscountInfo, *model_helper.AppError) {
 	// finds active sales
 	activeSales, appErr := a.ActiveSales(&date)
 	if appErr != nil {
@@ -504,7 +504,7 @@ func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo,
 		}
 	}
 
-	var discountInfos []*model.DiscountInfo
+	var discountInfos []*model_helper.DiscountInfo
 
 	for _, sale := range activeSales {
 		discountInfos = append(discountInfos, &model.DiscountInfo{
@@ -521,7 +521,7 @@ func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo,
 }
 
 // FetchActiveDiscounts returns discounts that are activated
-func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model.DiscountInfo, *model_helper.AppError) {
+func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model_helper.DiscountInfo, *model_helper.AppError) {
 	return a.FetchDiscounts(time.Now().UTC())
 }
 

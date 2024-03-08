@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // FulfillmentsByOption returns a list of fulfillments be given options
@@ -21,7 +21,7 @@ func (a *ServiceOrder) FulfillmentsByOption(option *model.FulfillmentFilterOptio
 }
 
 // UpsertFulfillment performs some actions then save given fulfillment
-func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, *model_helper.AppError) {
+func (a *ServiceOrder) UpsertFulfillment(transaction boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, *model_helper.AppError) {
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
 		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(&model.FulfillmentFilterOption{
@@ -74,7 +74,7 @@ func (a *ServiceOrder) FulfillmentByOption(option *model.FulfillmentFilterOption
 }
 
 // BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
-func (a *ServiceOrder) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) *model_helper.AppError {
+func (a *ServiceOrder) BulkDeleteFulfillments(transaction boil.ContextTransactor, fulfillments model.Fulfillments) *model_helper.AppError {
 	err := a.srv.Store.Fulfillment().BulkDeleteFulfillments(transaction, fulfillments)
 	if err != nil {
 		return model_helper.NewAppError("BulkDeleteFulfillments", "app.order.error_deleting_fulfillments.app_error", nil, err.Error(), http.StatusInternalServerError)

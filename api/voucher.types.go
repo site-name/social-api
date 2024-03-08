@@ -15,9 +15,9 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
-func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*dataloader.Result[[]*model.DiscountInfo] {
+func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*dataloader.Result[[]*model_helper.DiscountInfo] {
 	var (
-		res             = make([]*dataloader.Result[[]*model.DiscountInfo], len(dateTimes))
+		res             = make([]*dataloader.Result[[]*model_helper.DiscountInfo], len(dateTimes))
 		salesMap        = map[time.Time]model.Sales{}
 		saleIDS         []string
 		channelListings = map[string]map[string]*model.SaleChannelListing{}
@@ -70,7 +70,7 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*da
 	}
 
 	for i, datetime := range dateTimes {
-		items := make([]*model.DiscountInfo, len(salesMap[datetime]))
+		items := make([]*model_helper.DiscountInfo, len(salesMap[datetime]))
 
 		for idx, sale := range salesMap[datetime] {
 			items[idx] = &model.DiscountInfo{
@@ -83,14 +83,14 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*da
 			}
 		}
 
-		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Data: items}
+		res[i] = &dataloader.Result[[]*model_helper.DiscountInfo]{Data: items}
 	}
 
 	return res
 
 errorLabel:
 	for i := range dateTimes {
-		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Error: appErr}
+		res[i] = &dataloader.Result[[]*model_helper.DiscountInfo]{Error: appErr}
 	}
 	return res
 }

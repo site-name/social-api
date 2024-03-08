@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // getVariantPricesInChannelsDict
@@ -37,7 +37,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 	variantPrices []*goprices.Money,
 	product model.Product,
 	collections []*model.Collection,
-	discounts []*model.DiscountInfo,
+	discounts []*model_helper.DiscountInfo,
 	chanNel model.Channel,
 
 ) (*goprices.Money, *model_helper.AppError) {
@@ -76,7 +76,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 // UpdateProductDiscountedPrice
 //
 // NOTE: `discounts` can be nil
-func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, product model.Product, discounts []*model.DiscountInfo) *model_helper.AppError {
+func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction boil.ContextTransactor, product model.Product, discounts []*model_helper.DiscountInfo) *model_helper.AppError {
 	if len(discounts) == 0 {
 		var appErr *model_helper.AppError
 		discounts, appErr = a.srv.DiscountService().FetchActiveDiscounts()
@@ -183,7 +183,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 }
 
 // UpdateProductsDiscountedPrices
-func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, products []*model.Product, discounts []*model.DiscountInfo) *model_helper.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction boil.ContextTransactor, products []*model.Product, discounts []*model_helper.DiscountInfo) *model_helper.AppError {
 	if len(discounts) == 0 {
 		var appErr *model_helper.AppError
 		discounts, appErr = a.srv.DiscountService().FetchActiveDiscounts()
@@ -222,7 +222,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, pr
 	return nil
 }
 
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model_helper.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction boil.ContextTransactor, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model_helper.AppError {
 	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -238,7 +238,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction 
 // UpdateProductsDiscountedPricesOfDiscount
 //
 // NOTE: discount must be either *Sale or *Voucher
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount any) *model_helper.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction boil.ContextTransactor, discount any) *model_helper.AppError {
 	var (
 		productFilterOption    model.ProductFilterOption
 		categoryFilterOption   model.CategoryFilterOption

@@ -105,7 +105,7 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, cou
 // or there is not enough available preorder items for a variant.
 //
 // `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model.InsufficientStock, *model_helper.AppError) {
 	stockVariants, stockQuantities, preorderVariants, preorderQuantities := s.splitLinesForTrackableAndPreorder(variants, quantities)
 
 	if len(stockVariants) > 0 {
@@ -159,7 +159,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	quantities []int,
 	channelSlug string,
 	additionalFilterLookup model_types.JSONString, // can be nil, if non-nil then it must be map[string]any{"warehouse_id": <an UUID string>}
-	existingLines []*model.CheckoutLineInfo, // can be nil
+	existingLines model_helper.CheckoutLineInfos, // can be nil
 	replace bool, // default false
 ) (*model.InsufficientStock, *model_helper.AppError) {
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
@@ -31,7 +32,7 @@ type GiftcardService interface {
 	// GiftcardsCreate creates purchased gift cards
 	GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLineSlice, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events
-	GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError)
+	GiftcardsUsedInOrderEvent(transaction boil.ContextTransactor, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError)
 	// PromoCodeIsGiftCard checks whether there is giftcard with given code
 	PromoCodeIsGiftCard(code string) (bool, *model_helper.AppError)
 	// RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
@@ -52,7 +53,7 @@ type GiftcardService interface {
 	GetDefaultGiftcardPayload(giftCard model.GiftCard) model_types.JSONString
 	GetGiftCard(id string) (*model.Giftcard, *model_helper.AppError)
 	GetNonShippableGiftcardLines(lines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError)
-	GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError)
+	GiftcardsBoughtEvent(transaction boil.ContextTransactor, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError)
 	GiftcardsByCheckout(checkoutToken string) (model.GiftcardSlice, *model_helper.AppError)
 	OrderHasGiftcardLines(order *model.Order) (bool, *model_helper.AppError)
 	SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ any, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model_helper.AppError

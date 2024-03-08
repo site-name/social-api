@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // AllocationsByOption returns all warehouse allocations filtered based on given option
@@ -20,7 +20,7 @@ func (a *ServiceWarehouse) AllocationsByOption(option *model.AllocationFilterOpt
 }
 
 // BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-func (a *ServiceWarehouse) BulkUpsertAllocations(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, *model_helper.AppError) {
+func (a *ServiceWarehouse) BulkUpsertAllocations(transaction boil.ContextTransactor, allocations []*model.Allocation) ([]*model.Allocation, *model_helper.AppError) {
 	allocations, err := a.srv.Store.Allocation().BulkUpsert(transaction, allocations)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -42,7 +42,7 @@ func (a *ServiceWarehouse) BulkUpsertAllocations(transaction *gorm.DB, allocatio
 
 // BulkDeleteAllocations performs bulk delete given allocations.
 // If non-nil transaction is provided, perform bulk delete operation within it.
-func (a *ServiceWarehouse) BulkDeleteAllocations(transaction *gorm.DB, allocationIDs []string) *model_helper.AppError {
+func (a *ServiceWarehouse) BulkDeleteAllocations(transaction boil.ContextTransactor, allocationIDs []string) *model_helper.AppError {
 	err := a.srv.Store.Allocation().BulkDelete(transaction, allocationIDs)
 	if err != nil {
 		return model_helper.NewAppError("BulkDeleteAllocations", "app.warehouse.error_deleting_allocations.app_error", nil, err.Error(), http.StatusInternalServerError)

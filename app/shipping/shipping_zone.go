@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ShippingZonesByOption returns all shipping zones that satisfy given options
@@ -19,7 +19,7 @@ func (a *ServiceShipping) ShippingZonesByOption(option *model.ShippingZoneFilter
 	return shippingZones, nil
 }
 
-func (s *ServiceShipping) UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model_helper.AppError) {
+func (s *ServiceShipping) UpsertShippingZone(transaction boil.ContextTransactor, zone *model.ShippingZone) (*model.ShippingZone, *model_helper.AppError) {
 	zone, err := s.srv.Store.ShippingZone().Upsert(transaction, zone)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -30,7 +30,7 @@ func (s *ServiceShipping) UpsertShippingZone(transaction *gorm.DB, zone *model.S
 	return zone, nil
 }
 
-func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError) {
+func (s *ServiceShipping) DeleteShippingZones(transaction boil.ContextTransactor, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError) {
 	numDeleted, err := s.srv.Store.ShippingZone().Delete(transaction, conditions)
 	if err != nil {
 		return 0, model_helper.NewAppError("DeleteShippingZones", "app.shipping.delete_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -38,7 +38,7 @@ func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *
 	return numDeleted, nil
 }
 
-func (s *ServiceShipping) ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError {
+func (s *ServiceShipping) ToggleShippingZoneRelations(transaction boil.ContextTransactor, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model_helper.AppError {
 	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 	if err != nil {
 		if _, ok := err.(*store.ErrInvalidInput); ok {

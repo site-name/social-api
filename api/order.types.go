@@ -679,7 +679,7 @@ func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod
 		return nil, err
 	}
 
-	availableShippingMethods := []*model.ShippingMethod{}
+	availableShippingMethods := model.ShippingMethodSlice{}
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 	displayGrossPrice := *embedCtx.App.Config().ShopSettings.DisplayGrossPrices
 

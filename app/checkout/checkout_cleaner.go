@@ -10,7 +10,7 @@ import (
 )
 
 // CleanCheckoutShipping
-func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos) *model_helper.AppError {
 	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr
@@ -39,7 +39,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo,
 	return nil
 }
 
-func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model_helper.AppError {
+func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model_helper.CheckoutInfo) *model_helper.AppError {
 	if checkoutInfo.BillingAddress == nil {
 		return model_helper.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -47,7 +47,7 @@ func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model_helper.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model_helper.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}

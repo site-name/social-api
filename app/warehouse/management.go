@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 type StockData struct {
@@ -648,7 +648,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 }
 
 // decreaseStocksQuantity
-func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorm.DB, orderLinesInfo model.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*model.Stock, quantityAllocationForStocks map[string]int) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction boil.ContextTransactor, orderLinesInfo model.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*model.Stock, quantityAllocationForStocks map[string]int) (*model.InsufficientStock, *model_helper.AppError) {
 
 	var (
 		insufficientStocks []*model.InsufficientStockData
@@ -1063,7 +1063,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 // no warehouse assigned to any shipping zone handles order's country.
 //
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
-func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorm.DB, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model_helper.AppError) {
+func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction boil.ContextTransactor, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model_helper.AppError) {
 	if transaction == nil {
 		return nil, nil, model_helper.NewAppError("getStockForPreorderAllocation", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
 	}

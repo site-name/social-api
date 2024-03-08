@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // NOTE: Refer to ./schemas/channel.graphqls for directive used
@@ -199,7 +199,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 		return nil, model_helper.NewAppError("ChannelDelete", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
 	}
 
-	deleteCheckoutsByChannelID := func(channelID string, transaction *gorm.DB) *model_helper.AppError {
+	deleteCheckoutsByChannelID := func(channelID string, transaction boil.ContextTransactor) *model_helper.AppError {
 		return embedCtx.App.Srv().
 			CheckoutService().
 			DeleteCheckoutsByOption(transaction, &model.CheckoutFilterOption{

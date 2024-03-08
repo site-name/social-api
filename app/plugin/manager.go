@@ -112,7 +112,7 @@ func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *mo
 	return anAddress, nil
 }
 
-func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	subTotal, appErr := m.CalculateCheckoutSubTotal(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -144,13 +144,13 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, 
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutTotal", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	lineTotalSum, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
 	var err error
 
@@ -162,7 +162,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 
 		lineTotalSum, err = lineTotalSum.Add(taxedMoney)
 		if err != nil {
-			return nil, model_helper.NewAppError("CalculateCheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("CalculateCheckoutSubTotal", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -170,7 +170,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutShippingPrice(&checkoutInfo, lines)
 	if appErr != nil {
 		return nil, appErr
@@ -192,13 +192,13 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInf
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateCheckoutShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutShipping", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutLineTotal(&checkoutLineInfo, &checkoutInfo.Channel, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -220,7 +220,7 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutIn
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateCheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutLineTotal", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -267,13 +267,13 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateOrderShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderShipping", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
+func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&shippingPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -341,13 +341,13 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateOrderlineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderlineTotal", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
 	defaultValue := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
 
 	var taxedMoney *goprices.TaxedMoney
@@ -366,7 +366,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateCheckoutLineUnitPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateCheckoutLineUnitPrice", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -376,7 +376,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 	orderLine.PopulateNonDbFields() // this is needed
 	defaultValue, err := orderLine.UnitPrice.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (
@@ -397,13 +397,13 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CalculateOrderLineUnit", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
+func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseTaxRate(&unitPrice)
 	if appErr != nil {
 		return nil, appErr
@@ -518,7 +518,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("ApplyTaxesToProduct", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ApplyTaxesToProduct", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	return quantizedTaxedMoney, nil
 }
@@ -548,13 +548,13 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model_helper.NewAppError("ApplyTaxesToShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("ApplyTaxesToShipping", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
 }
 
-func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos) (any, *model_helper.AppError) {
+func (m *PluginManager) PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model.CheckoutLineInfos) (any, *model_helper.AppError) {
 	var defaultValue any = nil
 
 	var (

@@ -10,11 +10,11 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(checkout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model_helper.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(checkout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines model_helper.CheckoutLineInfos) (model.ShippingMethodSlice, *model_helper.AppError) {
 	if checkout.ShippingAddressID == nil {
 		return nil, nil
 	}
@@ -79,7 +79,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(checkout *model.C
 }
 
 // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model_helper.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines model_helper.CheckoutLineInfos) (model.ShippingMethodSlice, *model_helper.AppError) {
 	if order.ShippingAddressID == nil {
 		return nil, nil
 	}
@@ -104,7 +104,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, 
 
 		orderProductIDs = lo.Map(orderLines, func(o *model.OrderLine, _ int) string { return o.ProductVariant.ProductID })
 	} else {
-		orderProductIDs = lo.Map(lines, func(item *model.CheckoutLineInfo, _ int) string { return item.Product.Id })
+		orderProductIDs = lo.Map(lines, func(item *model_helper.CheckoutLineInfo, _ int) string { return item.Product.Id })
 	}
 
 	applicableShippingMethods, err := a.srv.Store.ShippingMethod().ApplicableShippingMethods(
@@ -140,7 +140,7 @@ func (s *ServiceShipping) ShippingMethodByOption(option *model.ShippingMethodFil
 }
 
 // ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
-func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model_helper.AppError) {
+func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) (model.ShippingMethodSlice, *model_helper.AppError) {
 	methods, err := s.srv.Store.ShippingMethod().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("ShippingMethodsByOptions", "app.shipping.error_finding_shipping_methods.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -148,7 +148,7 @@ func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethod
 	return methods, nil
 }
 
-func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model_helper.AppError {
+func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction boil.ContextTransactor, shippingMethodIds, channelIds []string) *model_helper.AppError {
 	// unlink shipping methods from order and checkout instances
 	// when method is no longer available in given channels
 	_, checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
@@ -190,7 +190,7 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	return nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model_helper.AppError) {
+func (s *ServiceShipping) UpsertShippingMethod(transaction boil.ContextTransactor, method *model.ShippingMethod) (*model.ShippingMethod, *model_helper.AppError) {
 	method, err := s.srv.Store.ShippingMethod().Upsert(transaction, method)
 	if err != nil {
 		return nil, model_helper.NewAppError("UpsertShippingMethod", "app.shipping.error_upserting_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)

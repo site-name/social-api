@@ -8,6 +8,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
 )
 
@@ -163,9 +164,9 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	return res
 }
 
-func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*model.CheckoutLineInfo] {
+func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[model_helper.CheckoutLineInfos] {
 	var (
-		res = make([]*dataloader.Result[[]*model.CheckoutLineInfo], len(tokens))
+		res = make([]*dataloader.Result[model_helper.CheckoutLineInfos], len(tokens))
 
 		variantIDS      []string
 		channelIDS      []string
@@ -184,7 +185,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		collectionsMap     = map[string][]*model.Collection{}                 // keys are product variant ids
 		channelListingsMap = map[string]*model.ProductVariantChannelListing{} // keys are variantID__channelID format
 
-		linesInfoMap = map[string][]*model.CheckoutLineInfo{} // keys are checkout tokens
+		linesInfoMap = map[string]model_helper.CheckoutLineInfos{} // keys are checkout tokens
 	)
 
 	checkouts, errs := CheckoutByTokenLoader.LoadMany(ctx, tokens)()
@@ -264,7 +265,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 	for i := 0; i < min(len(checkouts), len(checkoutLines)); i++ {
 		for _, line := range checkoutLines[i] {
-			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model.CheckoutLineInfo{
+			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model_helper.CheckoutLineInfo{
 				Line:           *line,
 				Variant:        *variantsMap[line.VariantID],
 				ChannelListing: *channelListingsMap[line.VariantID+"__"+checkouts[i].ChannelID],
@@ -276,13 +277,13 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 	}
 
 	for idx, token := range tokens {
-		res[idx] = &dataloader.Result[[]*model.CheckoutLineInfo]{Data: linesInfoMap[token]}
+		res[idx] = &dataloader.Result[model_helper.CheckoutLineInfos]{Data: linesInfoMap[token]}
 	}
 	return res
 
 errorLabel:
 	for idx := range tokens {
-		res[idx] = &dataloader.Result[[]*model.CheckoutLineInfo]{Error: errs[0]}
+		res[idx] = &dataloader.Result[model_helper.CheckoutLineInfos]{Error: errs[0]}
 	}
 	return res
 }

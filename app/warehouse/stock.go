@@ -7,11 +7,11 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, *model_helper.AppError) {
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction boil.ContextTransactor, stocks []*model.Stock) ([]*model.Stock, *model_helper.AppError) {
 	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

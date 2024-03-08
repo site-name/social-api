@@ -11,10 +11,10 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
-func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model_helper.AppError) {
+func (a *ServiceDiscount) UpsertSale(transaction boil.ContextTransactor, sale *model.Sale) (*model.Sale, *model_helper.AppError) {
 	sale, err := a.srv.Store.DiscountSale().Upsert(transaction, sale)
 	if err != nil {
 		return nil, model_helper.NewAppError("UpsertSale", "app.discount.error_upsert_sale.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -109,7 +109,7 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_h
 	return expiredSalesByDate, nil
 }
 
-func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
+func (s *ServiceDiscount) ToggleSaleRelations(transaction boil.ContextTransactor, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
 	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.Sales{{Id: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
 		return model_helper.NewAppError("ToggleSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale relations", http.StatusInternalServerError)

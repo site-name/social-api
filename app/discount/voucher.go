@@ -16,7 +16,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // UpsertVoucher update or insert given voucher
@@ -282,7 +282,7 @@ func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*model.Voucher, *m
 	return expiredVouchers, nil
 }
 
-func (s *ServiceDiscount) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
+func (s *ServiceDiscount) ToggleVoucherRelations(transaction boil.ContextTransactor, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
 	err := s.srv.Store.DiscountVoucher().ToggleVoucherRelations(transaction, vouchers, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
 		return model_helper.NewAppError("ToggleVoucherRelations", "app.discount.insert_voucher_relations.app_error", nil, "failed to insert voucher relations", http.StatusInternalServerError)

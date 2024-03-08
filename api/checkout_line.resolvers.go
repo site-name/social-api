@@ -123,10 +123,10 @@ func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, 
 		checkout *model.Checkout,
 		variants model.ProductVariants,
 		quantities []int,
-		checkoutInfo *model.CheckoutInfo,
+		checkoutInfo *model_helper.CheckoutInfo,
 		lines model.CheckoutLineInfos,
 		manager interfaces.PluginManagerInterface,
-		discounts []*model.DiscountInfo,
+		discounts []*model_helper.DiscountInfo,
 		replace bool,
 	) (model.CheckoutLineInfos, *model_helper.AppError) {
 

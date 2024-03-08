@@ -6,7 +6,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // TransactionsByOption returns a list of transactions filtered based on given option
@@ -41,7 +41,7 @@ func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*model.Pay
 	return lastTran, nil
 }
 
-func (a *ServicePayment) SaveTransaction(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError) {
+func (a *ServicePayment) SaveTransaction(transaction boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError) {
 	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

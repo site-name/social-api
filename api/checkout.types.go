@@ -10,6 +10,7 @@ import (
 	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
@@ -249,7 +250,7 @@ func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	productIDs := lo.Map(infos, func(i *model.CheckoutLineInfo, _ int) string { return i.Product.Id })
+	productIDs := lo.Map(infos, func(i *model_helper.CheckoutLineInfo, _ int) string { return i.Product.Id })
 	productTypes, errs := ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
 	if len(errs) != 0 && errs[0] != nil {
 		return false, errs[0]
@@ -360,7 +361,7 @@ func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMet
 		return []*ShippingMethod{}, nil
 	}
 
-	availableIDs := model.ShippingMethods(shippingMethods).IDs()
+	availableIDs := model.ShippingMethodSlice(shippingMethods).IDs()
 	shippingMethods, errs := ShippingMethodByIdLoader.LoadMany(ctx, availableIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		return nil, errs[0]
@@ -614,9 +615,9 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 	return res
 }
 
-func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.CheckoutInfo] {
+func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model_helper.CheckoutInfo] {
 	var (
-		res        = make([]*dataloader.Result[*model.CheckoutInfo], len(tokens))
+		res        = make([]*dataloader.Result[*model_helper.CheckoutInfo], len(tokens))
 		channelIDs []string
 		channels   []*model.Channel
 
@@ -626,7 +627,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		collectionPointIDs []string //
 		addresses          []*model.Address
 		users              []*model.User
-		shippingMethods    []*model.ShippingMethod
+		shippingMethods    model.ShippingMethodSlice
 		collectionPoints   []*model.WareHouse
 		checkouts          []*model.Checkout
 
@@ -642,7 +643,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		deliveryMethod any // must be either *model.ShippingMethod or *model.WareHouse
 		errs           []error
 
-		checkoutInfoMap = map[string]*model.CheckoutInfo{} // keys are checkout tokens
+		checkoutInfoMap = map[string]*model_helper.CheckoutInfo{} // keys are checkout tokens
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -759,7 +760,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 			goto errorLabel
 		}
 
-		checkoutInfoMap[token] = &model.CheckoutInfo{
+		checkoutInfoMap[token] = &model_helper.CheckoutInfo{
 			Checkout:                      *checkout,
 			User:                          user,
 			Channel:                       *channel,
@@ -771,13 +772,13 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 
 	for idx, token := range tokens {
-		res[idx] = &dataloader.Result[*model.CheckoutInfo]{Data: checkoutInfoMap[token]}
+		res[idx] = &dataloader.Result[*model_helper.CheckoutInfo]{Data: checkoutInfoMap[token]}
 	}
 	return res
 
 errorLabel:
 	for i := range tokens {
-		res[i] = &dataloader.Result[*model.CheckoutInfo]{Error: errs[0]}
+		res[i] = &dataloader.Result[*model_helper.CheckoutInfo]{Error: errs[0]}
 	}
 	return res
 }

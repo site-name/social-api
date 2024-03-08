@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
+	"github.com/sitename/sitename/temp/model"
 )
 
 // PluginService contains methods for working with plugins

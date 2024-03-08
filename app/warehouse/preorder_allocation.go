@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // PreOrderAllocationsByOptions returns a list of preorder allocations filtered using given options
@@ -20,7 +20,7 @@ func (s *ServiceWarehouse) PreOrderAllocationsByOptions(options *model.PreorderA
 }
 
 // DeletePreorderAllocations tells store to delete given preorder allocations
-func (s *ServiceWarehouse) DeletePreorderAllocations(transaction *gorm.DB, preorderAllocationIDs ...string) *model_helper.AppError {
+func (s *ServiceWarehouse) DeletePreorderAllocations(transaction boil.ContextTransactor, preorderAllocationIDs ...string) *model_helper.AppError {
 	err := s.srv.Store.PreorderAllocation().Delete(transaction, preorderAllocationIDs...)
 	if err != nil {
 		return model_helper.NewAppError("DeletePreorderAllocations", "app.warehouse.error_deleting_preorder_allocations_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -29,7 +29,7 @@ func (s *ServiceWarehouse) DeletePreorderAllocations(transaction *gorm.DB, preor
 }
 
 // BulkCreate tells store to insert given preorder allocations into database then returns them
-func (s *ServiceWarehouse) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model_helper.AppError) {
+func (s *ServiceWarehouse) BulkCreate(transaction boil.ContextTransactor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model_helper.AppError) {
 	allocations, err := s.srv.Store.PreorderAllocation().BulkCreate(transaction, preorderAllocations)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

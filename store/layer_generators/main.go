@@ -313,9 +313,7 @@ func extractStoreMetadata() (*storeMetadata, error) {
 				metadata.SubStores[subStoreName] = subStore{Methods: map[string]methodData{}}
 				for _, method := range x.Type.(*ast.InterfaceType).Methods.List {
 					methodName := method.Names[0].Name
-					if !stringInSlice(methodName, "CreateIndexesIfNotExists", "ModelFields", "ScanFields", "TableName") {
-						metadata.SubStores[subStoreName].Methods[methodName] = extractMethodMetadata(method, src)
-					}
+					metadata.SubStores[subStoreName].Methods[methodName] = extractMethodMetadata(method, src)
 				}
 			}
 		}
@@ -325,15 +323,15 @@ func extractStoreMetadata() (*storeMetadata, error) {
 	return &metadata, nil
 }
 
-func stringInSlice(str string, slice ...string) bool {
-	for _, item := range slice {
-		if str == item {
-			return true
-		}
-	}
+// func stringInSlice(str string, slice ...string) bool {
+// 	for _, item := range slice {
+// 		if str == item {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 func generateLayer(name, templateFile string) ([]byte, error) {
 	out := bytes.NewBufferString("")

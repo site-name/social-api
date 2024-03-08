@@ -17,6 +17,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
 )
 
@@ -116,7 +117,7 @@ func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(order *model.Order) (*m
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *model.Order) ([][2]*model.OrderDiscount, *model_helper.AppError) {
+func (a *ServiceOrder) RecalculateOrderDiscounts(transaction boil.ContextTransactor, order *model.Order) ([][2]*model.OrderDiscount, *model_helper.AppError) {
 	var changedOrderDiscounts [][2]*model.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
@@ -164,7 +165,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *mo
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
+func (a *ServiceOrder) RecalculateOrder(transaction boil.ContextTransactor, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 	appErr := a.RecalculateOrderPrices(transaction, order, kwargs)
 	if appErr != nil {
 		return appErr
@@ -189,7 +190,7 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order
 }
 
 // ReCalculateOrderWeight
-func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model_helper.AppError {
+func (a *ServiceOrder) ReCalculateOrderWeight(transaction boil.ContextTransactor, order *model.Order) *model_helper.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Expr(model.OrderLineTableName+".OrderID = ? AND Orderlines.VariantID IS NOT NULL", order.Id),
 	})
@@ -639,7 +640,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(order model.Order) (int
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, order model.Order) *model_helper.AppError {
+func (a *ServiceOrder) UpdateOrderStatus(transaction boil.ContextTransactor, order model.Order) *model_helper.AppError {
 
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(order)
 	if appErr != nil {
@@ -675,7 +676,7 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, order model.Order
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError) {
 	transaction := s.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -876,7 +877,7 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ any) *model_helper.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction boil.ContextTransactor, checkoutInfo model_helper.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ any) *model_helper.AppError {
 	var (
 		balanceData       = model.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -970,7 +971,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -1023,7 +1024,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID stri
 	return nil, nil
 }
 
-func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError {
+func (a *ServiceOrder) CreateOrderEvent(transaction boil.ContextTransactor, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError {
 	var appErr *model_helper.AppError
 
 	var savingUserID *string
@@ -1190,7 +1191,7 @@ func (a *ServiceOrder) RestockOrderLines(order *model.Order, manager interfaces.
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorm.DB, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError) {
+func (a *ServiceOrder) RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
@@ -1277,7 +1278,7 @@ func (a *ServiceOrder) SumOrderTotals(orders []*model.Order, currencyCode string
 }
 
 // GetValidShippingMethodsForOrder returns a list of valid shipping methods for given order
-func (a *ServiceOrder) GetValidShippingMethodsForOrder(order *model.Order) ([]*model.ShippingMethod, *model_helper.AppError) {
+func (a *ServiceOrder) GetValidShippingMethodsForOrder(order *model.Order) (model.ShippingMethodSlice, *model_helper.AppError) {
 	orderRequireShipping, appErr := a.OrderShippingIsRequired(order.Id)
 	if appErr != nil {
 		return nil, appErr
@@ -1307,7 +1308,7 @@ func (a *ServiceOrder) GetValidShippingMethodsForOrder(order *model.Order) ([]*m
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, order *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model_helper.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction boil.ContextTransactor, order *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model_helper.AppError {
 	order.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1323,11 +1324,11 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, order *
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, order.Total.Net)
 	if err != nil {
-		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	grossTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, order.Total.Gross)
 	if err != nil {
-		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	newAmount, _ := order.Total.Sub(grossTotal)
@@ -1338,7 +1339,7 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, order *
 
 	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
 	if err != nil {
-		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("UpdateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	order.Total = newOrderTotal
 
@@ -1441,7 +1442,7 @@ func (a *ServiceOrder) GetTotalOrderDiscount(order *model.Order) (*goprices.Mone
 		orderDiscount.PopulateNonDbFields()
 		addedMoney, err := totalOrderDiscount.Add(orderDiscount.Amount)
 		if err != nil { // order's Currency != orderDiscount.Currency
-			return nil, model_helper.NewAppError("GetTotalOrderDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model_helper.NewAppError("GetTotalOrderDiscount", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		} else {
 			totalOrderDiscount = addedMoney
 		}
@@ -1470,16 +1471,16 @@ func (a *ServiceOrder) GetOrderDiscounts(order *model.Order) ([]*model.OrderDisc
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, order *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model_helper.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction boil.ContextTransactor, order *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model_helper.AppError) {
 	order.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, order.Currency, order.Total.Net)
 	if err != nil {
-		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	grossTotal, err := a.ApplyDiscountToValue(value, valueType, order.Currency, order.Total.Gross)
 	if err != nil {
-		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	sub, _ := order.Total.Sub(grossTotal.(*goprices.Money))
@@ -1496,7 +1497,7 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, order *
 
 	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
 	if err != nil {
-		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("CreateOrderDiscountForOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	order.Total = newOrderTotal
@@ -1509,7 +1510,7 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, order *
 }
 
 // RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorm.DB, order *model.Order, orderDiscount *model.OrderDiscount) *model_helper.AppError {
+func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction boil.ContextTransactor, order *model.Order, orderDiscount *model.OrderDiscount) *model_helper.AppError {
 	appErr := a.srv.DiscountService().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
 	if appErr != nil {
 		return appErr
@@ -1520,7 +1521,7 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorm.DB, order 
 
 	newOrderTotal, err := order.Total.Add(orderDiscount.Amount)
 	if err != nil {
-		return model_helper.NewAppError("RemoveOrderDiscountFromOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("RemoveOrderDiscountFromOrder", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	order.Total = newOrderTotal
@@ -1552,12 +1553,12 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(tx *gorm.DB, orderLine model.O
 	if orderLine.UnitDiscountValue != value || orderLine.UnitDiscountType != valueType {
 		unitPriceWithDiscount, err := a.ApplyDiscountToValue(value, valueType, orderLine.UnDiscountedUnitPrice.Currency, orderLine.UnDiscountedUnitPrice)
 		if err != nil {
-			return model_helper.NewAppError("UpdateDiscountForOrderLine", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("UpdateDiscountForOrderLine", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		newOrderLineUnitDiscount, err := orderLine.UnDiscountedUnitPrice.Sub(unitPriceWithDiscount)
 		if err != nil {
-			return model_helper.NewAppError("UpdateDiscountForOrderLine", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("UpdateDiscountForOrderLine", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		orderLine.UnitDiscount = newOrderLineUnitDiscount.Gross
@@ -1586,7 +1587,7 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(tx *gorm.DB, orderLine model.O
 }
 
 // RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-func (a *ServiceOrder) RemoveDiscountFromOrderLine(transaction *gorm.DB, orderLine model.OrderLine, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError {
+func (a *ServiceOrder) RemoveDiscountFromOrderLine(transaction boil.ContextTransactor, orderLine model.OrderLine, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError {
 	orderLine.PopulateNonDbFields()
 
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice

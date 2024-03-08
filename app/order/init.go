@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 func init() {
@@ -32,7 +32,7 @@ type ServiceOrder struct {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
-	return func(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
+	return func(transaction boil.ContextTransactor, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]any)
 		}
@@ -69,7 +69,7 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 	}
 }
 
-func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError {
+func (a *ServiceOrder) decoratedFunc(transaction boil.ContextTransactor, order *model.Order, kwargs map[string]any) *model_helper.AppError {
 	order.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
@@ -86,7 +86,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, k
 
 		addedPrice, err := totalPrice.Add(orderLine.TotalPrice)
 		if err != nil {
-			return model_helper.NewAppError("RecalculateOrderPrices", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("RecalculateOrderPrices", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		totalPrice = addedPrice
 		// reassign value here since `addedPrice` can be nil if error occurs.
@@ -108,7 +108,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, k
 	}
 	subResult, err := totalPrice.Sub(voucherDiscount)
 	if err != nil {
-		return model_helper.NewAppError("RecalculateOrderPrices", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("RecalculateOrderPrices", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	totalPrice = subResult
 

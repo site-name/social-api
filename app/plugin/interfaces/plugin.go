@@ -74,11 +74,11 @@ type BasePluginInterface interface {
 	// Calculate the total for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout total. Return TaxedMoney.
-	CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate the shipping costs for model.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of shipping costs. Return TaxedMoney.
-	CalculateCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate the shipping costs for the order.
 	// Update shipping costs in the order in case of changes in shipping address or
 	// changes in draft order. Return TaxedMoney.
@@ -86,13 +86,13 @@ type BasePluginInterface interface {
 	// Calculate checkout line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout line total. Return TaxedMoney.
-	CalculateCheckoutLineTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutLineTotal(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate order line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a order line total. Return TaxedMoney.
 	CalculateOrderLineTotal(orDer *model.Order, orderLine *model.OrderLine, variant model.ProductVariant, product model.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate checkout line unit price
-	CalculateCheckoutLineUnitPrice(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
+	CalculateCheckoutLineUnitPrice(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Calculate order line unit price.
 	// Update order line unit price in the order in case of changes in draft order.
 	// Return TaxedMoney.
@@ -100,11 +100,11 @@ type BasePluginInterface interface {
 	// of an order line unit price.
 	CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	//
-	GetCheckoutLineTaxRate(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
+	GetCheckoutLineTaxRate(checkoutInfo *model_helper.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
 	GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
-	GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
+	GetCheckoutShippingTaxRate(checkoutInfo model_helper.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model_helper.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	//
 	GetOrderShippingTaxRate(orDer model.Order, previousValue decimal.Decimal) (*decimal.Decimal, *model_helper.AppError)
 	// Return list of all tax categories.
@@ -125,7 +125,7 @@ type BasePluginInterface interface {
 	ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model_helper.AppError)
 	// Trigger directly before order creation.
 	// Overwrite this method if you need to trigger specific logic before an order is created.
-	PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError)
+	PreprocessOrderCreation(checkoutInfo model_helper.CheckoutInfo, discounts []*model_helper.DiscountInfo, lines model.CheckoutLineInfos, previousValue any) (any, *model_helper.AppError)
 	// Trigger when order is created.
 	// Overwrite this method if you need to trigger specific logic after an order is created.
 	OrderCreated(orDer model.Order, previousValue any) (any, *model_helper.AppError)

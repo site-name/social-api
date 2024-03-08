@@ -252,8 +252,8 @@ func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 	}), nil
 }
 
-func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[model.ShippingMethodChannelListings] {
-	res := make([]*dataloader.Result[model.ShippingMethodChannelListings], len(channelIDs))
+func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[model.ShippingMethodChannelListingSlice] {
+	res := make([]*dataloader.Result[model.ShippingMethodChannelListingSlice], len(channelIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	listings, appErr := embedCtx.App.Srv().ShippingService().
@@ -262,17 +262,17 @@ func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channel
 		})
 	if appErr != nil {
 		for idx := range channelIDs {
-			res[idx] = &dataloader.Result[model.ShippingMethodChannelListings]{Error: appErr}
+			res[idx] = &dataloader.Result[model.ShippingMethodChannelListingSlice]{Error: appErr}
 		}
 		return res
 	}
 
-	listingMap := map[string]model.ShippingMethodChannelListings{}
+	listingMap := map[string]model.ShippingMethodChannelListingSlice{}
 	for _, listing := range listings {
 		listingMap[listing.ChannelID] = append(listingMap[listing.ChannelID], listing)
 	}
 	for idx, id := range channelIDs {
-		res[idx] = &dataloader.Result[model.ShippingMethodChannelListings]{Data: listingMap[id]}
+		res[idx] = &dataloader.Result[model.ShippingMethodChannelListingSlice]{Data: listingMap[id]}
 	}
 	return res
 }
@@ -281,7 +281,7 @@ func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var err error
-	var shippingMethods model.ShippingMethods
+	var shippingMethods model.ShippingMethodSlice
 
 	if embedCtx.CurrentChannelID != "" {
 		shippingMethods, err = ShippingMethodsByShippingZoneIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()

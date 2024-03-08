@@ -21,8 +21,8 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 	"github.com/uber/jaeger-client-go/utils"
+	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 type AccountAddressCreate struct {
@@ -1361,7 +1361,7 @@ type DraftOrderCreateInput struct {
 	Lines []*OrderLineCreateInput `json:"lines"`
 }
 
-func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginMng interfaces.PluginManagerInterface) *model_helper.AppError {
+func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction boil.ContextTransactor, pluginMng interfaces.PluginManagerInterface) *model_helper.AppError {
 	appErr := d.DraftOrderInput.patchOrder(embedCtx, order, transaction, pluginMng, false)
 	if appErr != nil {
 		return appErr
@@ -1401,7 +1401,7 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 		for _, line := range d.Lines {
 			variant := variantMap[line.VariantID]
 			if variant != nil {
-				addedOrderLine, insufErr, appErr := embedCtx.App.Srv().OrderService().AddVariantToOrder(*order, *variant, int(line.Quantity), user, nil, pluginMng, []*model.DiscountInfo{}, false)
+				addedOrderLine, insufErr, appErr := embedCtx.App.Srv().OrderService().AddVariantToOrder(*order, *variant, int(line.Quantity), user, nil, pluginMng, []*model_helper.DiscountInfo{}, false)
 				if appErr != nil {
 					return appErr
 				}
@@ -1565,7 +1565,7 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model_h
 
 // patchOrder must be called after calling to validate()
 // `isUpdate` indicates whether the operation is updating given order or creating a new one.
-func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginManager interfaces.PluginManagerInterface, isUpdate bool) *model_helper.AppError {
+func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction boil.ContextTransactor, pluginManager interfaces.PluginManagerInterface, isUpdate bool) *model_helper.AppError {
 	order.UserID = d.User
 	order.ShippingMethodID = d.ShippingMethod
 	order.RedirectUrl = d.RedirectURL

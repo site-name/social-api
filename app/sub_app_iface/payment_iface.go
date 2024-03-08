@@ -8,6 +8,8 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/temp/model"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -76,7 +78,7 @@ type PaymentService interface {
 	// `extraData`, `ckout`, `ord` can be nil
 	//
 	// `storePaymentMethod` default to model.StorePaymentMethod.NONE
-	CreatePayment(transaction *gorm.DB, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model_helper.AppError)
+	CreatePayment(transaction boil.ContextTransactor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model_helper.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
@@ -98,7 +100,7 @@ type PaymentService interface {
 	// IsCurrencySupported Return true if the given gateway supports given currency.
 	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
-	PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError)
+	PaymentByID(transaction boil.ContextTransactor, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError)
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *model.Payment) (bool, *model_helper.AppError)
 	// PaymentRefundOrVoid
@@ -112,9 +114,9 @@ type PaymentService interface {
 	// UpdatePayment
 	UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model_helper.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError
+	UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
-	UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model_helper.AppError)
+	UpsertPayment(transaction boil.ContextTransactor, payMent *model.Payment) (*model.Payment, *model_helper.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model_helper.AppError)
@@ -127,7 +129,7 @@ type PaymentService interface {
 	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model.CustomerSource, *model_helper.AppError)
 	PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError)
-	SaveTransaction(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
+	SaveTransaction(transaction boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
 	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)
 	UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
 }

@@ -138,8 +138,8 @@ func shippingZoneByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	return res
 }
 
-func shippingMethodsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[[]*model.ShippingMethod] {
-	res := make([]*dataloader.Result[[]*model.ShippingMethod], len(shippingZoneIDs))
+func shippingMethodsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.ShippingMethodSlice] {
+	res := make([]*dataloader.Result[model.ShippingMethodSlice], len(shippingZoneIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	shippingMethods, appErr := embedCtx.App.Srv().
@@ -149,18 +149,18 @@ func shippingMethodsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs 
 		})
 	if appErr != nil {
 		for idx := range shippingZoneIDs {
-			res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Error: appErr}
+			res[idx] = &dataloader.Result[model.ShippingMethodSlice]{Error: appErr}
 		}
 		return res
 	}
 
-	var shippingMethodMap = map[string][]*model.ShippingMethod{} // keys are shipping zone ids
+	var shippingMethodMap = map[string]model.ShippingMethodSlice{} // keys are shipping zone ids
 	for _, method := range shippingMethods {
 		shippingMethodMap[method.ShippingZoneID] = append(shippingMethodMap[method.ShippingZoneID], method)
 	}
 
 	for idx, zoneID := range shippingZoneIDs {
-		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Data: shippingMethodMap[zoneID]}
+		res[idx] = &dataloader.Result[model.ShippingMethodSlice]{Data: shippingMethodMap[zoneID]}
 	}
 	return res
 }
@@ -196,7 +196,7 @@ func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) 
 	var (
 		res      = make([]*dataloader.Result[[]*model.Product], len(ids))
 		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
-		methods  model.ShippingMethods
+		methods  model.ShippingMethodSlice
 	)
 
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("").Find(&methods, "Id IN ?", ids).Error
@@ -261,15 +261,15 @@ func channelsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []strin
 	return res
 }
 
-func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.ShippingMethod] {
+func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[model.ShippingMethodSlice] {
 	var (
-		res                                        = make([]*dataloader.Result[[]*model.ShippingMethod], len(idPairs))
+		res                                        = make([]*dataloader.Result[model.ShippingMethodSlice], len(idPairs))
 		shippingZoneIDs                            = make([]string, len(idPairs))
 		channelIDs                                 = make([]string, len(idPairs))
 		shippingMethodIDs                          []string
 		shippingMethodChannelListings              []*model.ShippingMethodChannelListing
-		shippingMethodMap                          = map[string]*model.ShippingMethod{}   // keys are shipping method ids
-		shippingMethodsByShippingZoneAndChannelMap = map[string][]*model.ShippingMethod{} // keys have format of shippingZoneID__channelID
+		shippingMethodMap                          = map[string]*model.ShippingMethod{}     // keys are shipping method ids
+		shippingMethodsByShippingZoneAndChannelMap = map[string]model.ShippingMethodSlice{} // keys have format of shippingZoneID__channelID
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -311,13 +311,13 @@ func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, id
 		}
 	}
 	for idx, id := range idPairs {
-		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Data: shippingMethodsByShippingZoneAndChannelMap[id]}
+		res[idx] = &dataloader.Result[model.ShippingMethodSlice]{Data: shippingMethodsByShippingZoneAndChannelMap[id]}
 	}
 	return res
 
 errorLabel:
 	for idx := range idPairs {
-		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Error: appErr}
+		res[idx] = &dataloader.Result[model.ShippingMethodSlice]{Error: appErr}
 	}
 	return res
 }

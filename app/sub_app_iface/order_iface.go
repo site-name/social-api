@@ -9,17 +9,19 @@ import (
 	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
 // OrderService contains methods for working with orders
 type OrderService interface {
 	// AddGiftcardsToOrder
-	AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ any) *model_helper.AppError
+	AddGiftcardsToOrder(transaction boil.ContextTransactor, checkoutInfo model_helper.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ any) *model_helper.AppError
 	// AddVariantToOrder Add total_quantity of variant to order.
 	//
 	// Returns an order line the variant was added to.
-	AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError)
+	AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError)
 	// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 	AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model_helper.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
@@ -28,13 +30,13 @@ type OrderService interface {
 	// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
 	AutomaticallyFulfillDigitalLines(order model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
 	// BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
-	BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) *model_helper.AppError
+	BulkDeleteFulfillments(transaction boil.ContextTransactor, fulfillments model.Fulfillments) *model_helper.AppError
 	// BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
-	BulkUpsertFulfillmentLines(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model_helper.AppError)
+	BulkUpsertFulfillmentLines(transaction boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model_helper.AppError)
 	// BulkUpsertOrderLines perform bulk upsert given order lines
-	BulkUpsertOrderLines(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError)
+	BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError)
 	// BulkUpsertOrders performs bulk upsert given orders
-	BulkUpsertOrders(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, *model_helper.AppError)
+	BulkUpsertOrders(transaction boil.ContextTransactor, orders []*model.Order) ([]*model.Order, *model_helper.AppError)
 	// Calculate discount value depending on voucher and discount types.
 	//
 	// Raise NotApplicable if voucher of given type cannot be applied.
@@ -44,27 +46,27 @@ type OrderService interface {
 	// CancelFulfillment Return products to corresponding stocks.
 	CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, warehouse *model.WareHouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
 	// CancelOrder Release allocation of unfulfilled order items.
-	CancelOrder(transaction *gorm.DB, order *model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError
+	CancelOrder(transaction boil.ContextTransactor, order *model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// CancelWaitingFulfillment cancels fulfillments which is in waiting for approval state.
 	CancelWaitingFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 	//
 	// NOTE: userID can be empty
-	ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError)
+	ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError)
 	// CleanMarkOrderAsPaid Check if an order can be marked as paid.
 	CleanMarkOrderAsPaid(order *model.Order) *model_helper.AppError
 	// CommonCreateOrderEvent is common method for creating desired order event instance
-	CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model_helper.AppError)
+	CommonCreateOrderEvent(transaction boil.ContextTransactor, option *model.OrderEventOption) (*model.OrderEvent, *model_helper.AppError)
 	// CreateGiftcardsWhenApprovingFulfillment
 	CreateGiftcardsWhenApprovingFulfillment(order *model.Order, linesData []*model.OrderLineData, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings) *model_helper.AppError
 	// CreateOrderDiscountForOrder Add new order discount and update the prices
-	CreateOrderDiscountForOrder(transaction *gorm.DB, order *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model_helper.AppError)
+	CreateOrderDiscountForOrder(transaction boil.ContextTransactor, order *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model_helper.AppError)
 	// CreateReplaceOrder Create draft order with lines to replace
 	CreateReplaceOrder(user *model.User, _ any, originalOrder model.Order, orderLinesToReplace []*model.OrderLineData, fulfillmentLinesToReplace []*model.FulfillmentLineData) (*model.Order, *model_helper.AppError)
 	// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
 	CustomerEmail(ord *model.Order) (string, *model_helper.AppError)
 	// DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
-	DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) *model_helper.AppError
+	DeleteFulfillmentLinesByOption(transaction boil.ContextTransactor, option *model.FulfillmentLineFilterOption) *model_helper.AppError
 	// DeleteOrderLine Delete an order line from an order.
 	DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
@@ -129,7 +131,7 @@ type OrderService interface {
 	// GetTotalOrderDiscount Return total order discount assigned to the order
 	GetTotalOrderDiscount(order *model.Order) (*goprices.Money, *model_helper.AppError)
 	// GetValidShippingMethodsForOrder returns a list of valid shipping methods for given order
-	GetValidShippingMethodsForOrder(order *model.Order) ([]*model.ShippingMethod, *model_helper.AppError)
+	GetValidShippingMethodsForOrder(order *model.Order) (model.ShippingMethodSlice, *model_helper.AppError)
 	// HandleFullyPaidOrder
 	//
 	// user can be nil
@@ -182,7 +184,7 @@ type OrderService interface {
 	// OrderRefunded
 	OrderRefunded(order model.Order, user *model.User, _ any, amount decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// OrderReturned
-	OrderReturned(transaction *gorm.DB, order model.Order, user *model.User, _ any, returnedLines []*model.QuantityOrderLine) *model_helper.AppError
+	OrderReturned(transaction boil.ContextTransactor, order model.Order, user *model.User, _ any, returnedLines []*model.QuantityOrderLine) *model_helper.AppError
 	// OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 	OrderShippingIsRequired(orderID string) (bool, *model_helper.AppError)
 	// OrderShippingUpdated
@@ -235,11 +237,11 @@ type OrderService interface {
 	// order create the draft order with all user details, and requested lines.
 	ProcessReplace(requester *model.User, order model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.Order, *model_helper.AppError)
 	// ReCalculateOrderWeight
-	ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model_helper.AppError
+	ReCalculateOrderWeight(transaction boil.ContextTransactor, order *model.Order) *model_helper.AppError
 	// Recalculate all order discounts assigned to order.
 	//
 	// It returns the list of tuples which contains order discounts where the amount has been changed.
-	RecalculateOrderDiscounts(transaction *gorm.DB, order *model.Order) ([][2]*model.OrderDiscount, *model_helper.AppError)
+	RecalculateOrderDiscounts(transaction boil.ContextTransactor, order *model.Order) ([][2]*model.OrderDiscount, *model_helper.AppError)
 	// Recalculate and assign total price of order.
 	//
 	// Total price is a sum of items in order and order shipping price minus
@@ -249,15 +251,15 @@ type OrderService interface {
 	// update_voucher_discount argument set to False.
 	//
 	// NOTE: `kwargs` can be nil
-	RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]any) *model_helper.AppError
+	RecalculateOrder(transaction boil.ContextTransactor, order *model.Order, kwargs map[string]any) *model_helper.AppError
 	// RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-	RemoveDiscountFromOrderLine(transaction *gorm.DB, orderLine model.OrderLine, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError
+	RemoveDiscountFromOrderLine(transaction boil.ContextTransactor, orderLine model.OrderLine, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError
 	// RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-	RemoveOrderDiscountFromOrder(transaction *gorm.DB, order *model.Order, orderDiscount *model.OrderDiscount) *model_helper.AppError
+	RemoveOrderDiscountFromOrder(transaction boil.ContextTransactor, order *model.Order, orderDiscount *model.OrderDiscount) *model_helper.AppError
 	// RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 	//
 	// Return products to stocks and update order lines quantity fulfilled values.
-	RestockFulfillmentLines(transaction *gorm.DB, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError)
+	RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError)
 	// RestockOrderLines Return ordered products to corresponding stocks
 	RestockOrderLines(order *model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// SendFulfillmentConfirmationToCustomer
@@ -277,21 +279,21 @@ type OrderService interface {
 	// UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 	//
 	// `reason`, `valueType` and `value` can be nil
-	UpdateOrderDiscountForOrder(transaction *gorm.DB, order *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model_helper.AppError
+	UpdateOrderDiscountForOrder(transaction boil.ContextTransactor, order *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model_helper.AppError
 	// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
 	UpdateOrderPrices(tx *gorm.DB, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model_helper.AppError
 	// UpdateOrderStatus Update order status depending on fulfillments
-	UpdateOrderStatus(transaction *gorm.DB, order model.Order) *model_helper.AppError
+	UpdateOrderStatus(transaction boil.ContextTransactor, order model.Order) *model_helper.AppError
 	// UpdateOrderTotalPaid update given order's total paid amount
-	UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.Order) *model_helper.AppError
+	UpdateOrderTotalPaid(transaction boil.ContextTransactor, orDer *model.Order) *model_helper.AppError
 	// UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 	UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc
 	// UpsertFulfillment performs some actions then save given fulfillment
-	UpsertFulfillment(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, *model_helper.AppError)
+	UpsertFulfillment(transaction boil.ContextTransactor, fulfillment *model.Fulfillment) (*model.Fulfillment, *model_helper.AppError)
 	// UpsertOrder depends on given order's Id property to decide update/save it
-	UpsertOrder(transaction *gorm.DB, order *model.Order) (*model.Order, *model_helper.AppError)
+	UpsertOrder(transaction boil.ContextTransactor, order *model.Order) (*model.Order, *model_helper.AppError)
 	// UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-	UpsertOrderLine(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, *model_helper.AppError)
+	UpsertOrderLine(transaction boil.ContextTransactor, orderLine *model.OrderLine) (*model.OrderLine, *model_helper.AppError)
 	// ValidateDraftOrder checks if the given order contains the proper data.
 	//
 	//	// Has proper customer data,
@@ -303,15 +305,15 @@ type OrderService interface {
 	// ValidateProductIsPublishedInChannel checks if some of given variants belong to unpublished products
 	ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model_helper.AppError
 	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
-	CreateOrderEvent(transaction *gorm.DB, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError
+	CreateOrderEvent(transaction boil.ContextTransactor, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError
 	CreateReturnFulfillment(requester *model.User, order model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
-	DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model_helper.AppError)
-	DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ any, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
+	DeleteOrders(transaction boil.ContextTransactor, ids []string) (int64, *model_helper.AppError)
+	DraftOrderCreatedFromReplaceEvent(transaction boil.ContextTransactor, draftOrder model.Order, originalOrder model.Order, user *model.User, _ any, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
 	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model_helper.AppError)
-	FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
-	FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError)
-	FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
-	FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ any, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
+	FulfillmentAwaitsApprovalEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
+	FulfillmentCanceledEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError)
+	FulfillmentFulfilledItemsEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
+	FulfillmentReplacedEvent(transaction boil.ContextTransactor, orDer model.Order, user *model.User, _ any, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
 	FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ any, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError)
 	GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError)
 	GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model_helper.AppError)
@@ -320,13 +322,13 @@ type OrderService interface {
 	MatchOrdersWithNewUser(user *model.User) *model_helper.AppError
 	OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user *model.User, _ any) (*model.OrderEvent, *model_helper.AppError)
 	OrderCreatedEvent(orDer model.Order, user *model.User, _ any, fromDraft bool) (*model.OrderEvent, *model_helper.AppError)
-	OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError)
-	OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError)
-	OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model_helper.AppError
+	OrderDiscountAutomaticallyUpdatedEvent(transaction boil.ContextTransactor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError)
+	OrderDiscountEvent(transaction boil.ContextTransactor, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError)
+	OrderDiscountsAutomaticallyUpdatedEvent(transaction boil.ContextTransactor, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model_helper.AppError
 	OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model_helper.AppError)
-	OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ any, transactionReference string) (*model.OrderEvent, *model_helper.AppError)
+	OrderManuallyMarkedAsPaidEvent(transaction boil.ContextTransactor, orDer model.Order, user *model.User, _ any, transactionReference string) (*model.OrderEvent, *model_helper.AppError)
 	OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model_helper.AppError)
-	OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ any) (*model.OrderEvent, *model_helper.AppError)
+	OrderReplacementCreated(transaction boil.ContextTransactor, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ any) (*model.OrderEvent, *model_helper.AppError)
 	PrepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model_types.JSONString
 	SendFulfillmentUpdate(order *model.Order, fulfillment *model.Fulfillment, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	SendOrderCancelledConfirmation(order *model.Order, user *model.User, _, manager interfaces.PluginManagerInterface) *model_helper.AppError

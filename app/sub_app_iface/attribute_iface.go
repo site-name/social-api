@@ -4,21 +4,13 @@
 package sub_app_iface
 
 import (
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"gorm.io/gorm"
 )
 
 // AttributeService contains methods for working with attributes
 type AttributeService interface {
-	// AssignedPageAttributeByOption returns 1 assigned page attribute
-	AssignedPageAttributeByOption(option model_helper.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError)
-	// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError)
-	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
-	AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model_helper.AppError)
-	// AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
-	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, *model_helper.AppError)
 	// AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
 	// Note: be award this function invokes the “set“ method on the instance's
 	// attribute association. Meaning any values already assigned or concurrently
@@ -27,28 +19,22 @@ type AttributeService interface {
 	// `instance` must be either *Product or *ProductVariant or *Page.
 	// `attributeID` must be ID of processing `Attribute`
 	//
-	// Returned any must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance any, attributeID string, values model.AttributeValues) (any, *model_helper.AppError)
-	// AttributeProductByOption returns an attribute product filtered using given option
-	AttributeProductByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, *model_helper.AppError)
+	// Returned any must be either: `*AssignedProductAttribute` or `*AssignedPageAttribute`
+	AssociateAttributeValuesToInstance(instance any, attributeID string, values model.AttributeValueSlice) (any, *model_helper.AppError)
 	// AttributesByOption returns a list of attributes filtered using given options
 	AttributesByOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, *model_helper.AppError)
-	// GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-	GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError)
-	// GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-	GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model_helper.AppError)
-	// GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
-	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model_helper.AppError)
 	// UpsertAttribute inserts or updates given attribute and returns it
 	UpsertAttribute(attr model.Attribute) (*model.Attribute, *model_helper.AppError)
-	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model_helper.AppError)
+	AssignedPageAttributeByOption(option model_helper.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model_helper.AppError)
+	AssignedProductAttributeByOption(option model_helper.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model_helper.AppError)
 	AttributeByOption(option model_helper.AttributeFilterOption) (*model.Attribute, *model_helper.AppError)
 	AttributePageByOption(option model_helper.AttributePageFilterOption) (*model.AttributePage, *model_helper.AppError)
-	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model_helper.AppError)
 	AttributeValuesOfAttribute(attributeID string) (model.AttributeValueSlice, *model_helper.AppError)
 	BulkUpsertAttributeValue(transaction boil.ContextTransactor, values model.AttributeValueSlice) (model.AttributeValueSlice, *model_helper.AppError)
-	DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model_helper.AppError)
+	DeleteAttributeValues(tx boil.ContextTransactor, ids []string) (int64, *model_helper.AppError)
 	DeleteAttributes(ids []string) (int64, *model_helper.AppError)
 	FilterAttributeValuesByOptions(option model_helper.AttributeValueFilterOptions) (model.AttributeValueSlice, *model_helper.AppError)
+	GetOrCreateAssignedPageAttribute(assignedPageAttribute model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model_helper.AppError)
+	GetOrCreateAssignedProductAttribute(assignedProductAttribute model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model_helper.AppError)
 	PerformReordering(values model.AttributeValueSlice, operations map[string]*int) *model_helper.AppError
 }

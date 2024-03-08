@@ -23,7 +23,7 @@ func init() {
 	})
 }
 
-func (s *ServicePage) FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model_helper.AppError) {
+func (s *ServicePage) FindPagesByOptions(options model_helper.PageFilterOptions) (model.PageSlice, *model_helper.AppError) {
 	pages, err := s.srv.Store.Page().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("FindPagesByOptions", "app.page.finding_pages_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)

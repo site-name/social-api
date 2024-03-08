@@ -11,7 +11,8 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/sitename/sitename/temp/model"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // DiscountService contains methods for working with discounts
@@ -27,7 +28,7 @@ type DiscountService interface {
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
-	CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model_helper.AppError)
+	CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model_helper.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model_helper.AppError)
 	// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
 	CreateNewVoucherCustomer(voucherID string, customerEmail string) (*model.VoucherCustomer, *model_helper.AppError)
 	// Decorator returns a function to calculate discount
@@ -41,7 +42,7 @@ type DiscountService interface {
 	// ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
 	ExpiredVouchers(date *time.Time) ([]*model.Voucher, *model_helper.AppError)
 	// FetchActiveDiscounts returns discounts that are activated
-	FetchActiveDiscounts() ([]*model.DiscountInfo, *model_helper.AppError)
+	FetchActiveDiscounts() ([]*model_helper.DiscountInfo, *model_helper.AppError)
 	// FetchCatalogueInfo may return a map with keys are ["categories", "collections", "products", "variants"].
 	//
 	// values are slices of uuid strings
@@ -72,7 +73,7 @@ type DiscountService interface {
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
 	GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model_helper.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.
-	GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError)
+	GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model_helper.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError)
 	// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model_helper.AppError)
 	// GetVoucherDiscount
@@ -98,7 +99,7 @@ type DiscountService interface {
 	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
 	SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model_helper.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
-	UpsertOrderDiscount(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model_helper.AppError)
+	UpsertOrderDiscount(transaction boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model_helper.AppError)
 	// UpsertVoucher update or insert given voucher
 	UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model_helper.AppError)
 	// ValidateMinSpent validates if the order cost at least a specific amount of money
@@ -108,7 +109,7 @@ type DiscountService interface {
 	// ValidateOnlyForStaff validate if voucher is only for staff
 	ValidateOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model_helper.AppError)
 	// ValidateVoucherForCheckout validates given voucher
-	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model_helper.AppError)
+	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (*model.NotApplicable, *model_helper.AppError)
 	// VoucherById finds and returns a voucher with given id
 	VoucherById(voucherID string) (*model.Voucher, *model_helper.AppError)
 	// VoucherByOption returns 1 voucher filtered using given options
@@ -123,13 +124,13 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model_helper.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model_helper.AppError)
-	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model_helper.AppError)
+	FetchDiscounts(date time.Time) ([]*model_helper.DiscountInfo, *model_helper.AppError)
 	FilterVats(options *model.VatFilterOptions) ([]*model.Vat, *model_helper.AppError)
 	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError)
 	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model_helper.AppError)
-	ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
-	ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
-	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model_helper.AppError)
+	ToggleSaleRelations(transaction boil.ContextTransactor, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
+	ToggleVoucherRelations(transaction boil.ContextTransactor, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError
+	UpsertSale(transaction boil.ContextTransactor, sale *model.Sale) (*model.Sale, *model_helper.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model_helper.AppError)
 }

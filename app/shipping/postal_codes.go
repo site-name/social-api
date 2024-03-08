@@ -13,11 +13,11 @@ var (
 	ukPostalCodePattern    = regexp.MustCompile(`^([A-Z]{1,2})([0-9]+)([A-Z]?) ?([0-9][A-Z]{2})$`) // ukPostalCodePattern to check againts United Kingdom postal codes
 	irishPostalCodePattern = regexp.MustCompile(`([\dA-Z]{3}) ?([\dA-Z]{4})`)                      // irishPostalCodePattern to check againts ireland postal codes
 	countryFuncMap         = map[model.CountryCode]checkPostalCodeFunc{
-		model.CountryCodeGb: CheckUkPostalCode,    // United Kingdom
-		model.CountryCodeIm: CheckUkPostalCode,    // Isle of Man
-		model.CountryCodeGg: CheckUkPostalCode,    // Guernsey
-		model.CountryCodeJe: CheckUkPostalCode,    // Jersey
-		model.CountryCodeIe: CheckIRishPostalCode, // Ireland
+		model.CountryCodeGB: CheckUkPostalCode,    // United Kingdom
+		model.CountryCodeIM: CheckUkPostalCode,    // Isle of Man
+		model.CountryCodeGG: CheckUkPostalCode,    // Guernsey
+		model.CountryCodeJE: CheckUkPostalCode,    // Jersey
+		model.CountryCodeIE: CheckIRishPostalCode, // Ireland
 	}
 )
 
@@ -67,9 +67,13 @@ func CheckPostalCodeInRange(countryCode model.CountryCode, postalCode, start, en
 	return fun(postalCode, start, end)
 }
 
-func CheckShippingMethodForPostalCode(customerShippingAddress *model.Address, method *model.ShippingMethod) map[*model.ShippingMethodPostalCodeRule]bool {
+func CheckShippingMethodForPostalCode(customerShippingAddress model.Address, method model.ShippingMethod) map[*model.ShippingMethodPostalCodeRule]bool {
+	var rules model.ShippingMethodPostalCodeRuleSlice
+	if method.R != nil {
+		rules = method.R.ShippingMethodPostalCodeRules
+	}
 	return lo.SliceToMap(
-		method.GetshippingMethodPostalCodeRules(),
+		rules,
 		func(rule *model.ShippingMethodPostalCodeRule) (*model.ShippingMethodPostalCodeRule, bool) {
 			return rule, CheckPostalCodeInRange(customerShippingAddress.Country, customerShippingAddress.PostalCode, rule.Start, rule.End)
 		},
@@ -77,7 +81,7 @@ func CheckShippingMethodForPostalCode(customerShippingAddress *model.Address, me
 }
 
 // IsShippingMethodApplicableForPostalCode Return if shipping method is applicable with the postal code rules.
-func IsShippingMethodApplicableForPostalCode(customerShippingAddress *model.Address, shippingMethod *model.ShippingMethod) bool {
+func IsShippingMethodApplicableForPostalCode(customerShippingAddress model.Address, shippingMethod model.ShippingMethod) bool {
 	result := CheckShippingMethodForPostalCode(customerShippingAddress, shippingMethod)
 
 	resultLength := len(result)
@@ -94,9 +98,9 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *model.Addr
 
 	for key, value := range result {
 		switch key.InclusionType {
-		case model.INCLUDE:
+		case model.InclusionTypeInclude:
 			numberOfInclude++
-		case model.EXCLUDE:
+		case model.InclusionTypeExclude:
 			numberOfExclude++
 		}
 
@@ -109,9 +113,8 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *model.Addr
 	return numberOfInclude == resultLength && atLeastOneValueTrue || (numberOfExclude == resultLength && allValueAreFalse)
 }
 
-// FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
-func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod {
+func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods model.ShippingMethodSlice, shippingAddress model.Address) model.ShippingMethodSlice {
 	return lo.Filter(shippingMethods, func(method *model.ShippingMethod, _ int) bool {
-		return IsShippingMethodApplicableForPostalCode(shippingAddress, method)
+		return method != nil && IsShippingMethodApplicableForPostalCode(shippingAddress, *method)
 	})
 }

@@ -12,7 +12,7 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	return &SqlCollectionProductStore{s}
 }
 
-// func (ps *SqlCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.ProductCollection) ([]*model.CollectionProduct, error) {
+// func (ps *SqlCollectionProductStore) BulkSave(transaction boil.ContextTransactor, relations []*model.ProductCollection) ([]*model.CollectionProduct, error) {
 // 	if transaction == nil {
 // 		transaction = ps.GetMaster()
 // 	}
@@ -96,7 +96,7 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 // 	return res, nil
 // }
 
-// func (s *SqlCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
+// func (s *SqlCollectionProductStore) Delete(transaction boil.ContextTransactor, options *model.CollectionProductFilterOptions) error {
 // 	query := s.GetQueryBuilder().Delete(model.CollectionProductRelationTableName).Where(options.Conditions)
 // 	queryString, args, err := query.ToSql()
 // 	if err != nil {

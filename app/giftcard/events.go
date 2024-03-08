@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"gorm.io/gorm"
 )
 
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
@@ -34,7 +33,7 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction boil.ContextTrans
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction boil.ContextTransactor, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -60,7 +59,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanc
 	return s.BulkUpsertGiftcardEvents(transaction, events...)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction boil.ContextTransactor, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id

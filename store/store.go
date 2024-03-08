@@ -424,7 +424,7 @@ type (
 		// GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)             // GetByOption finds and returns a product type with given options
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
-	CategoryTranslationStore any
+	CategoryTranslationStore interface{}
 	CategoryStore            interface {
 		Upsert(category model.Category) (*model.Category, error)                                  // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id

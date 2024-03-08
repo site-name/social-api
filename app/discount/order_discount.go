@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // OrderDiscountsByOption filters and returns order discounts with given option
@@ -19,7 +19,7 @@ func (a *ServiceDiscount) OrderDiscountsByOption(option *model.OrderDiscountFilt
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *ServiceDiscount) UpsertOrderDiscount(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model_helper.AppError) {
+func (a *ServiceDiscount) UpsertOrderDiscount(transaction boil.ContextTransactor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model_helper.AppError) {
 	orderDiscount, err := a.srv.Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

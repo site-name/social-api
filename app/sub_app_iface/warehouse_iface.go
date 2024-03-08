@@ -6,7 +6,9 @@ package sub_app_iface
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/sitename/sitename/modules/model_types"
+	"github.com/sitename/sitename/temp/model"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // WarehouseService contains methods for working with warehouses
@@ -30,14 +32,14 @@ type WarehouseService interface {
 	// validation steps, for instance in checkout completion.
 	ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model_helper.AppError)
 	// BulkCreate tells store to insert given preorder allocations into database then returns them
-	BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model_helper.AppError)
+	BulkCreate(transaction boil.ContextTransactor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model_helper.AppError)
 	// BulkDeleteAllocations performs bulk delete given allocations.
 	// If non-nil transaction is provided, perform bulk delete operation within it.
-	BulkDeleteAllocations(transaction *gorm.DB, allocationIDs []string) *model_helper.AppError
+	BulkDeleteAllocations(transaction boil.ContextTransactor, allocationIDs []string) *model_helper.AppError
 	// BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-	BulkUpsertAllocations(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, *model_helper.AppError)
+	BulkUpsertAllocations(transaction boil.ContextTransactor, allocations []*model.Allocation) ([]*model.Allocation, *model_helper.AppError)
 	// BulkUpsertStocks updates or insderts given stock based on its Id property
-	BulkUpsertStocks(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, *model_helper.AppError)
+	BulkUpsertStocks(transaction boil.ContextTransactor, stocks []*model.Stock) ([]*model.Stock, *model_helper.AppError)
 	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 	// :raises InsufficientStock: when there is not enough available items for a variant.
 	CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model_helper.AppError)
@@ -50,7 +52,7 @@ type WarehouseService interface {
 	// or there is not enough available preorder items for a variant.
 	//
 	// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model.InsufficientStock, *model_helper.AppError)
 	// DeAllocateStockForOrder Remove all allocations for given order
 	DeAllocateStockForOrder(ord *model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// DeactivatePreorderForVariant Complete preorder for product variant.
@@ -81,7 +83,7 @@ type WarehouseService interface {
 	// DecreaseAllocations Decreate allocations for provided order lines.
 	DecreaseAllocations(lineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
 	// DeletePreorderAllocations tells store to delete given preorder allocations
-	DeletePreorderAllocations(transaction *gorm.DB, preorderAllocationIDs ...string) *model_helper.AppError
+	DeletePreorderAllocations(transaction boil.ContextTransactor, preorderAllocationIDs ...string) *model_helper.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
 	FilterStocksForChannel(option model_helper.StockFilterForChannelOption) ([]*model.Stock, *model_helper.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
@@ -130,7 +132,7 @@ type WarehouseService interface {
 	// Validate if there is stock available for given variants in given country.
 	//
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
-	CheckStockQuantityBulk(variants model.ProductVariants, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model_types.JSONString, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockQuantityBulk(variants model.ProductVariants, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model.InsufficientStock, *model_helper.AppError)
 	// ValidateWarehouseCount
 	//
 	//	Every ShippingZone can be assigned to only one warehouse.

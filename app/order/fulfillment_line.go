@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // FulfillmentLinesByOption returns all fulfillment lines by option
@@ -19,7 +19,7 @@ func (a *ServiceOrder) FulfillmentLinesByOption(option *model.FulfillmentLineFil
 }
 
 // BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
-func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model_helper.AppError) {
+func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model_helper.AppError) {
 	fulfillmentLines, err := a.srv.Store.FulfillmentLine().BulkUpsert(transaction, fulfillmentLines)
 	if err != nil {
 		return nil, model_helper.NewAppError("BulkUpsertFulfillmentLines", "app.order.error_bulk_creating_fulfillment_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -29,7 +29,7 @@ func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction *gorm.DB, fulfillm
 }
 
 // DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
-func (a *ServiceOrder) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) *model_helper.AppError {
+func (a *ServiceOrder) DeleteFulfillmentLinesByOption(transaction boil.ContextTransactor, option *model.FulfillmentLineFilterOption) *model_helper.AppError {
 	err := a.srv.Store.FulfillmentLine().DeleteFulfillmentLinesByOption(transaction, option)
 	if err != nil {
 		return model_helper.NewAppError("DeleteFulfillmentLinesByOption", "app.order.error_deleting_fulfillment_lines_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

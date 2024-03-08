@@ -8,11 +8,12 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
 )
 
 // CommonCreateOrderEvent is common method for creating desired order event instance
-func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model_helper.AppError) {
+func (a *ServiceOrder) CommonCreateOrderEvent(transaction boil.ContextTransactor, option *model.OrderEventOption) (*model.OrderEvent, *model_helper.AppError) {
 	newOrderEvent := &model.OrderEvent{
 		OrderID:    option.OrderID,
 		Type:       option.Type,
@@ -74,7 +75,7 @@ func (s *ServiceOrder) PrepareDiscountObject(orderDiscount *model.OrderDiscount,
 	return discountParameters
 }
 
-func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model_helper.AppError {
+func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction boil.ContextTransactor, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model_helper.AppError {
 	for _, tuple := range changedOrderDiscounts {
 		_, appErr := a.OrderDiscountAutomaticallyUpdatedEvent(
 			transaction,
@@ -90,7 +91,7 @@ func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm
 	return nil
 }
 
-func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
+func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction boil.ContextTransactor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
 	return a.OrderDiscountEvent(
 		transaction,
 		model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
@@ -101,7 +102,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.
 	)
 }
 
-func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
+func (a *ServiceOrder) OrderDiscountEvent(transaction boil.ContextTransactor, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user == nil || !model_helper.IsValidId(user.Id) {
 		userID = nil
@@ -160,7 +161,7 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, or
 	})
 }
 
-func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) FulfillmentCanceledEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -179,7 +180,7 @@ func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *mod
 	})
 }
 
-func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -231,7 +232,7 @@ func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user 
 	})
 }
 
-func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
@@ -264,7 +265,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user 
 	})
 }
 
-func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ any, transactionReference string) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction boil.ContextTransactor, orDer model.Order, user *model.User, _ any, transactionReference string) (*model.OrderEvent, *model_helper.AppError) {
 	var (
 		userID     *string
 		parameters = model_types.JSONString{}
@@ -284,7 +285,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDe
 	})
 }
 
-func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ any, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction boil.ContextTransactor, draftOrder model.Order, originalOrder model.Order, user *model.User, _ any, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
@@ -301,7 +302,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, d
 	})
 }
 
-func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ any, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) FulfillmentReplacedEvent(transaction boil.ContextTransactor, orDer model.Order, user *model.User, _ any, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
 	if user != nil && model_helper.IsValidId(user.Id) {
@@ -318,7 +319,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer mode
 	})
 }
 
-func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ any) (*model.OrderEvent, *model_helper.AppError) {
+func (s *ServiceOrder) OrderReplacementCreated(transaction boil.ContextTransactor, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ any) (*model.OrderEvent, *model_helper.AppError) {
 	var userID *string
 
 	if user != nil && model_helper.IsValidId(user.Id) {

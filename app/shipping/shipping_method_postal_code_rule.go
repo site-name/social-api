@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 func (s *ServiceShipping) ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model_helper.AppError) {
@@ -17,7 +17,7 @@ func (s *ServiceShipping) ShippingMethodPostalCodeRulesByOptions(options *model.
 	return rules, nil
 }
 
-func (s *ServiceShipping) CreateShippingMethodPostalCodeRules(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model_helper.AppError) {
+func (s *ServiceShipping) CreateShippingMethodPostalCodeRules(transaction boil.ContextTransactor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model_helper.AppError) {
 	rules, err := s.srv.Store.ShippingMethodPostalCodeRule().Save(transaction, rules)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

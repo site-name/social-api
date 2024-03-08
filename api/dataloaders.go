@@ -5,6 +5,7 @@ import (
 
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 const batchCapacity = 200
@@ -76,8 +77,8 @@ var (
 	CheckoutLinesByCheckoutTokenLoader     = dataloader.NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLine](batchCapacity))
 	CheckoutByTokenLoader                  = dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *model.Checkout](batchCapacity))
 	CheckoutLineByIdLoader                 = dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *model.CheckoutLine](batchCapacity))
-	CheckoutLinesInfoByCheckoutTokenLoader = dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLineInfo](batchCapacity))
-	CheckoutInfoByCheckoutTokenLoader      = dataloader.NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, *model.CheckoutInfo](batchCapacity))
+	CheckoutLinesInfoByCheckoutTokenLoader = dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, model_helper.CheckoutLineInfos](batchCapacity))
+	CheckoutInfoByCheckoutTokenLoader      = dataloader.NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, *model_helper.CheckoutInfo](batchCapacity))
 
 	// attribute
 	AttributesByAttributeIdLoader                     = dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *model.Attribute](batchCapacity))
@@ -106,17 +107,17 @@ var (
 	ShippingMethodByIdLoader       = dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity))
 	// NOTE: keys have format of shippingMethodID__channelID
 	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity))
-	ShippingMethodsByShippingZoneIdLoader                              = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
+	ShippingMethodsByShippingZoneIdLoader                              = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, model.ShippingMethodSlice](batchCapacity))
 	PostalCodeRulesByShippingMethodIdLoader                            = dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
 	ShippingMethodChannelListingByShippingMethodIdLoader               = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodChannelListing](batchCapacity))
 	ExcludedProductByShippingMethodIDLoader                            = dataloader.NewBatchedLoader(excludedProductByShippingMethodIDLoader, dataloader.WithBatchCapacity[string, []*model.Product](batchCapacity))
 	// NOTE: keys have format of shippingZoneID__channelID
-	ShippingMethodsByShippingZoneIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
+	ShippingMethodsByShippingZoneIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, model.ShippingMethodSlice](batchCapacity))
 	ShippingZonesByWarehouseIDLoader                    = dataloader.NewBatchedLoader(shippingZonesByWarehouseIDLoader, dataloader.WithBatchCapacity[string, model.ShippingZones](batchCapacity))
-	ShippingMethodChannelListingsByChannelIdLoader      = dataloader.NewBatchedLoader(shippingMethodChannelListingsByChannelIdLoader, dataloader.WithBatchCapacity[string, model.ShippingMethodChannelListings](batchCapacity))
+	ShippingMethodChannelListingsByChannelIdLoader      = dataloader.NewBatchedLoader(shippingMethodChannelListingsByChannelIdLoader, dataloader.WithBatchCapacity[string, model.ShippingMethodChannelListingSlice](batchCapacity))
 
 	// discount
-	DiscountsByDateTimeLoader = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))
+	DiscountsByDateTimeLoader = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model_helper.DiscountInfo](batchCapacity))
 	// NOTE: keys have format of SaleID__channelID
 	SaleChannelListingBySaleIdAndChanneSlugLoader = dataloader.NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity))
 	SaleChannelListingBySaleIdLoader              = dataloader.NewBatchedLoader(saleChannelListingBySaleIdLoader, dataloader.WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity))

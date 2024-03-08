@@ -19,7 +19,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 type ServiceCheckout struct {
@@ -119,7 +119,7 @@ func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCo
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckouts(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, *model_helper.AppError) {
+func (a *ServiceCheckout) UpsertCheckouts(transaction boil.ContextTransactor, checkouts []*model.Checkout) ([]*model.Checkout, *model_helper.AppError) {
 	checkouts, err := a.srv.Store.Checkout().Upsert(transaction, checkouts)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -244,7 +244,7 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*
 }
 
 // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
-func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.CheckoutLineInfo) (*measurement.Weight, *model_helper.AppError) {
+func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos model_helper.CheckoutLineInfos) (*measurement.Weight, *model_helper.AppError) {
 	checkoutLineIDs := []string{}
 	for _, lineInfo := range checkoutLineInfos {
 		if !model_helper.IsValidId(lineInfo.Line.Id) {
@@ -265,7 +265,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.Checkou
 }
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) *model_helper.AppError {
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction boil.ContextTransactor, option *model.CheckoutFilterOption) *model_helper.AppError {
 	err := s.srv.Store.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model_helper.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

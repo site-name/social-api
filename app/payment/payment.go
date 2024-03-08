@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // ServicePayment handle all logics related to payment
@@ -30,7 +30,7 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError) {
+func (a *ServicePayment) PaymentByID(transaction boil.ContextTransactor, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError) {
 	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions:    squirrel.Expr(model.PaymentTableName+".Id = ?", paymentID),
 		DbTransaction: transaction,
@@ -138,7 +138,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model_he
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model_helper.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction boil.ContextTransactor, payMent *model.Payment) (*model.Payment, *model_helper.AppError) {
 	var err error
 
 	if !model_helper.IsValidId(payMent.Id) {
@@ -172,7 +172,7 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*mode
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
 		return model_helper.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)

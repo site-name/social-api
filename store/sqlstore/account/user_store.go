@@ -843,7 +843,7 @@ func (s *SqlUserStore) IsEmpty() (bool, error) {
 // 	return &user, nil
 // }
 
-// func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
+// func (s *SqlUserStore) AddRelations(transaction boil.ContextTransactor, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 // 	if transaction == nil {
 // 		transaction = s.GetMaster()
 // 	}
@@ -872,7 +872,7 @@ func (s *SqlUserStore) IsEmpty() (bool, error) {
 // 	return nil
 // }
 
-// func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
+// func (s *SqlUserStore) RemoveRelations(transaction boil.ContextTransactor, userID string, relations any, customerNoteOnUser bool) *model_helper.AppError {
 // 	if transaction == nil {
 // 		transaction = s.GetMaster()
 // 	}
