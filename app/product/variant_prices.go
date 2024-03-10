@@ -86,7 +86,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction boil.ContextTr
 	}
 
 	var (
-		collectionsContainProduct   model.Collections
+		collectionsContainProduct   model.CollectionSlice
 		variantPricesInChannelsDict map[string][]*goprices.Money
 		productChannelListings      model.ProductChannelListings
 		atomicValue                 atomic.Int32
@@ -321,13 +321,13 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction bo
 			atomicInt32.Add(-1)
 
 			switch t := val.(type) {
-			case model.Products:
+			case model.ProductSlice:
 				productIDs = t.IDs()
-			case model.Categories:
+			case model.CategorySlice:
 				categoryIDs = t.IDs(false)
-			case model.ProductVariants:
+			case model.ProductVariantSlice:
 				variantIDs = t.IDs()
-			case model.Collections:
+			case model.CollectionSlice:
 				collectionIDs = t.IDs()
 			}
 		default:

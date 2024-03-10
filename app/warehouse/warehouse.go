@@ -23,7 +23,7 @@ func init() {
 }
 
 // WarehouseByOption returns a list of warehouses based on given option
-func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) ([]*model.WareHouse, *model_helper.AppError) {
+func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError) {
 	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -33,7 +33,7 @@ func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOptio
 }
 
 // WarehouseByOption returns a warehouse filtered using given option
-func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.WareHouse, *model_helper.AppError) {
+func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -47,7 +47,7 @@ func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption
 }
 
 // WarehouseByStockID returns a warehouse that owns the given stock
-func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.WareHouse, *model_helper.AppError) {
+func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.Warehouse, *model_helper.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -89,7 +89,7 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 }
 
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
-func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model_helper.AppError) {
+func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) (model.WarehouseSlice, *model_helper.AppError) {
 	return a.WarehousesByOption(&model.WarehouseFilterOption{
 		ShippingZonesCountries: squirrel.Like{model.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,
@@ -97,7 +97,7 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCod
 	})
 }
 
-func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model_helper.AppError) {
+func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.Warehouse) (*model.Warehouse, *model_helper.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().Save(warehouse)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -118,7 +118,7 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 // Note this method does not check stocks quantity for given `CheckoutLine`s.
 // This method should be used only if stocks quantity will be checked in further
 // validation steps, for instance in checkout completion.
-func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model_helper.AppError) {
+func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.WarehouseSlice, *model_helper.AppError) {
 	// stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
 	// 	SelectRelatedProductVariant: true,
 	// 	ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},

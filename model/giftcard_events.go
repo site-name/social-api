@@ -89,14 +89,14 @@ func (w whereHelperGiftcardEventType) GTE(x GiftcardEventType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperGiftcardEventType) IN(slice []GiftcardEventType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperGiftcardEventType) NIN(slice []GiftcardEventType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -258,7 +258,7 @@ func (o *GiftcardEvent) Giftcard(mods ...qm.QueryMod) giftcardQuery {
 
 // LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardEventL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcardEvent any, mods queries.Applicator) error {
+func (giftcardEventL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcardEvent interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardEvent
 	var object *GiftcardEvent
 
@@ -284,7 +284,7 @@ func (giftcardEventL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcard
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardEventR{}
@@ -306,7 +306,7 @@ func (giftcardEventL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcard
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -384,7 +384,7 @@ func (o *GiftcardEvent) SetGiftcard(exec boil.Executor, insert bool, related *Gi
 		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardEventPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -609,7 +609,7 @@ func (o GiftcardEventSlice) UpdateAll(exec boil.Executor, cols M) (int64, error)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -731,7 +731,7 @@ func (o *GiftcardEvent) Upsert(exec boil.Executor, updateOnConflict bool, confli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -815,7 +815,7 @@ func (o GiftcardEventSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardEventPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -861,7 +861,7 @@ func (o *GiftcardEventSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := GiftcardEventSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardEventPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

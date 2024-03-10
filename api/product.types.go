@@ -329,7 +329,7 @@ func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *Address
 
 	if productChannelListing != nil && productChannelListing.IsAvailableForPurchase() {
 		// check variant availability:
-		var variants model.ProductVariants
+		var variants model.ProductVariantSlice
 		if requesterIsStaffOfShop && embedCtx.CurrentChannelID == "" {
 			variants, err = ProductVariantsByProductIdLoader.Load(ctx, p.ID)()
 		} else if requesterIsStaffOfShop && embedCtx.CurrentChannelID != "" {
@@ -383,7 +383,7 @@ func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
 	embedCtx.CheckAuthenticatedAndHasRoleAny("Product.variants", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	requesterIsShopStaff := embedCtx.Err == nil
 
-	var variants model.ProductVariants
+	var variants model.ProductVariantSlice
 	var err error
 
 	if requesterIsShopStaff && embedCtx.CurrentChannelID == "" {

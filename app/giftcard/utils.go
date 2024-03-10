@@ -44,7 +44,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(checkout *model.Checkout, em
 		return &model.InvalidPromoCode{}, nil
 	}
 
-	return nil, a.AddGiftcardRelations(nil, model.Giftcards{giftcard}, []*model.Checkout{checkout})
+	return nil, a.AddGiftcardRelations(nil, model.Giftcards{giftcard}, model.CheckoutSlice{checkout})
 }
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
@@ -59,7 +59,7 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkou
 		return nil
 	}
 
-	return a.RemoveGiftcardRelations(nil, giftcards, []*model.Checkout{checkout})
+	return a.RemoveGiftcardRelations(nil, giftcards, model.CheckoutSlice{checkout})
 }
 
 // ToggleGiftcardStatus set status of given giftcard to inactive/active

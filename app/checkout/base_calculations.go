@@ -15,7 +15,7 @@ import (
 func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
 
-	if shippingMethodInfo, ok := deliveryMethodInfo.(*model_helper.ShippingMethodInfo); ok {
+	if shippingMethodInfo, ok := deliveryMethodInfo.(model_helper.ShippingMethodInfo); ok {
 		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
 	}
 
@@ -30,7 +30,7 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_hel
 		appErr           *model_helper.AppError
 	)
 
-	if lines != nil {
+	if len(lines) > 0 {
 		productIDs := lo.Map(lines.Products(), func(item *model.Product, _ int) string { return item.ID })
 		shippingRequired, appErr = s.srv.Product.ProductsRequireShipping(productIDs)
 	} else {
@@ -83,14 +83,14 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippi
 	currencyMap[discount.(goprices.Currencier).GetCurrency()] = true // validated in the beginning
 	currencyMap[currency.String()] = true
 
-	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
+	if _, err := goprices.GetCurrencyPrecision(currency.String()); err != nil || len(currencyMap) > 1 {
 		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
 	}
 
 	total, _ := subTotal.Add(shippingPrice)
 	total, _ = total.Sub(discount)
 
-	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency)
+	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency.String())
 	if zeroTaxedMoney.LessThanOrEqual(*total) {
 		return total, nil
 	}
@@ -124,14 +124,11 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo model_helper.Ch
 }
 
 func (a *ServiceCheckout) BaseOrderLineTotal(orderLine model.OrderLine) (*goprices.TaxedMoney, *model_helper.AppError) {
-	if orderLine.UnitPrice != nil {
-		unitPrice := orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
-		unitPrice, _ = unitPrice.Quantize(goprices.Up, -1)
+	orderLineUnitPrice := model_helper.OrderLineGetUnitPrice(orderLine)
 
-		return unitPrice, nil
-	}
-
-	return nil, model_helper.NewAppError("BaseOrderLineTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "orderLine"}, "", http.StatusBadRequest)
+	unitPrice := orderLineUnitPrice.Mul(float64(orderLine.Quantity))
+	quantizedUnitPrice, _ := unitPrice.Quantize(goprices.Up, -1)
+	return quantizedUnitPrice, nil
 }
 
 func (a *ServiceCheckout) BaseTaxRate(price goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
@@ -146,6 +143,7 @@ func (a *ServiceCheckout) BaseTaxRate(price goprices.TaxedMoney) (*decimal.Decim
 }
 
 // BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
-func (a *ServiceCheckout) BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) *goprices.TaxedMoney {
-	return totalLinePrice.TrueDiv(float64(quantity))
+func (a *ServiceCheckout) BaseCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int) *goprices.TaxedMoney {
+	res := totalLinePrice.TrueDiv(float64(quantity))
+	return &res
 }

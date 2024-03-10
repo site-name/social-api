@@ -7,19 +7,20 @@ package checkout
 import (
 	"context"
 	"net/http"
-	"sort"
-	"time"
 
 	"github.com/mattermost/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type ServiceCheckout struct {
@@ -33,8 +34,7 @@ func init() {
 	})
 }
 
-// CheckoutByOption returns a checkout filtered by given option
-func (a *ServiceCheckout) CheckoutByOption(option *model.CheckoutFilterOption) (*model.Checkout, *model_helper.AppError) {
+func (a *ServiceCheckout) CheckoutByOption(option model_helper.CheckoutFilterOptions) (*model.Checkout, *model_helper.AppError) {
 	chekout, err := a.srv.Store.Checkout().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -47,9 +47,8 @@ func (a *ServiceCheckout) CheckoutByOption(option *model.CheckoutFilterOption) (
 	return chekout, nil
 }
 
-// CheckoutsByOption returns a list of checkouts, filtered by given option
-func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, *model_helper.AppError) {
-	totalCount, checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
+func (a *ServiceCheckout) CheckoutsByOption(option model_helper.CheckoutFilterOptions) (model.CheckoutSlice, *model_helper.AppError) {
+	checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
 	var (
 		statusCode int
 		errMsg     string
@@ -62,38 +61,29 @@ func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) 
 	}
 
 	if statusCode != 0 {
-		return 0, nil, model_helper.NewAppError("CheckoutsByOption", "app.checkout.error_finding_checkouts.app_error", nil, errMsg, statusCode)
+		return nil, model_helper.NewAppError("CheckoutsByOption", "app.checkout.error_finding_checkouts.app_error", nil, errMsg, statusCode)
 	}
 
-	return totalCount, checkouts, nil
+	return checkouts, nil
 }
 
-// GetCustomerEmail returns checkout's user's email
-func (a *ServiceCheckout) GetCustomerEmail(ckout *model.Checkout) (string, *model_helper.AppError) {
-	if ckout.UserID != nil {
-		user, appErr := a.srv.AccountService().UserById(context.Background(), *ckout.UserID)
+func (a *ServiceCheckout) GetCustomerEmail(checkout model.Checkout) (string, *model_helper.AppError) {
+	if !checkout.UserID.IsNil() {
+		user, appErr := a.srv.Account.UserById(context.Background(), *checkout.UserID.String)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotFound {
-				return ckout.Email, nil
+				return checkout.Email, nil
 			}
 			return "", appErr // returns system caused error
 		}
 		return user.Email, nil
 	}
-	return ckout.Email, nil
+	return checkout.Email, nil
 }
 
-// CheckoutShippingRequired checks if given checkout require shipping
+// TODO: check if we need this method. Since we don't use product_type anymore
 func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model_helper.AppError) {
-	/*
-					checkout
-					|      |
-		...<--|		   |--> checkoutLine <-- productVariant <-- product <-- productType
-																							|												     |
-													 ...checkoutLine <--|              ...product <--|
-	*/
-
-	productTypes, appErr := a.srv.ProductService().ProductTypesByCheckoutToken(checkoutToken)
+	productTypes, appErr := a.srv.Product.ProductTypesByCheckoutToken(checkoutToken)
 	if appErr != nil {
 		// if product types not found for checkout:
 		if appErr.StatusCode == http.StatusNotFound {
@@ -111,15 +101,13 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 	return false, nil
 }
 
-func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model_helper.AppError {
-	// no need to validate country code here, since checkout.IsValid() does that
-	ckout.Country = newCountryCode
-	_, appErr := a.UpsertCheckouts(nil, []*model.Checkout{ckout})
+func (a *ServiceCheckout) CheckoutSetCountry(checkout model.Checkout, newCountryCode model.CountryCode) *model_helper.AppError {
+	checkout.Country = newCountryCode
+	_, appErr := a.UpsertCheckouts(nil, model.CheckoutSlice{&checkout})
 	return appErr
 }
 
-// UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckouts(transaction boil.ContextTransactor, checkouts []*model.Checkout) ([]*model.Checkout, *model_helper.AppError) {
+func (a *ServiceCheckout) UpsertCheckouts(transaction boil.ContextTransactor, checkouts model.CheckoutSlice) (model.CheckoutSlice, *model_helper.AppError) {
 	checkouts, err := a.srv.Store.Checkout().Upsert(transaction, checkouts)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
@@ -139,31 +127,31 @@ func (a *ServiceCheckout) UpsertCheckouts(transaction boil.ContextTransactor, ch
 	return checkouts, nil
 }
 
-func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model_helper.AppError) {
-	addressID := ckout.ShippingAddressID
-	if addressID == nil {
-		addressID = ckout.BillingAddressID
+func (a *ServiceCheckout) CheckoutCountry(checkout model.Checkout) (model.CountryCode, *model_helper.AppError) {
+	addressID := checkout.ShippingAddressID
+	if addressID.IsNil() {
+		addressID = checkout.BillingAddressID
 	}
 
-	if addressID == nil {
-		return ckout.Country, nil
+	if addressID.IsNil() {
+		return checkout.Country, nil
 	}
 
-	address, appErr := a.srv.AccountService().AddressById(*addressID)
+	address, appErr := a.srv.Account.AddressById(*addressID.String)
 	if appErr != nil {
 		// return immediately if the error is caused by system
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return "", appErr
 		}
 		if address == nil || address.Country == "" {
-			return ckout.Country, nil
+			return checkout.Country, nil
 		}
 	}
 
 	countryCode := address.Country
-	if countryCode != ckout.Country {
+	if countryCode != checkout.Country {
 		// set new country code for checkout:
-		appErr := a.CheckoutSetCountry(ckout, countryCode)
+		appErr := a.CheckoutSetCountry(checkout, countryCode)
 		if appErr != nil {
 			return "", appErr
 		}
@@ -173,16 +161,18 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryC
 }
 
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
-func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model_helper.AppError) {
-	_, giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
-		Conditions: squirrel.And{
-			squirrel.Or{
-				squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
-				squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
+func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkout model.Checkout) (*goprices.Money, *model_helper.AppError) {
+	_, giftcards, appErr := a.srv.Giftcard.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CheckoutToken: model.GiftcardCheckoutWhere.CheckoutID.EQ(checkout.Token),
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model_helper.And{
+				squirrel.Or{
+					squirrel.Eq{model.GiftcardTableColumns.ExpiryDate: nil},
+					squirrel.GtOrEq{model.GiftcardTableColumns.ExpiryDate: util.StartOfDay(model_helper.GetTimeUTCNow())},
+				},
+				squirrel.Eq{model.GiftcardTableColumns.IsActive: true},
 			},
-			squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
-		},
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -190,18 +180,18 @@ func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout
 
 	balanceAmount := decimal.Zero
 	for _, giftcard := range giftcards {
-		if giftcard != nil && giftcard.CurrentBalanceAmount != nil {
-			balanceAmount = balanceAmount.Add(*giftcard.CurrentBalanceAmount)
+		if giftcard != nil && !giftcard.CurrentBalanceAmount.IsNil() {
+			balanceAmount = balanceAmount.Add(*giftcard.CurrentBalanceAmount.Decimal)
 		}
 	}
 
 	return &goprices.Money{
 		Amount:   balanceAmount,
-		Currency: checkOut.Currency,
+		Currency: checkout.Currency.String(),
 	}, nil
 }
 
-func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model_helper.AppError) {
+func (a *ServiceCheckout) CheckoutLineWithVariant(checkout model.Checkout, productVariantID string) (*model.CheckoutLine, *model_helper.AppError) {
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(checkout.Token)
 	if appErr != nil {
 		// in case checkout has no checkout lines:
@@ -220,10 +210,13 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, prod
 	return nil, nil
 }
 
-// CheckoutLastActivePayment returns the most recent payment made for given checkout
-func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model_helper.AppError) {
-	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
+func (a *ServiceCheckout) CheckoutLastActivePayment(checkout model.Checkout) (*model.Payment, *model_helper.AppError) {
+	payments, appErr := a.srv.Payment.PaymentsByOption(model_helper.PaymentFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentWhere.CheckoutID.EQ(model_types.NewNullString(checkout.Token)),
+			qm.OrderBy(model.PaymentColumns.CreatedAt+" "+string(model_helper.DESC)),
+			qm.Limit(1),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -231,14 +224,6 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*
 	if len(payments) == 0 {
 		return nil, nil
 	}
-	if len(payments) == 1 {
-		return payments[0], nil
-	}
-
-	// find latest payment by comparing their creation time
-	sort.SliceStable(payments, func(i, j int) bool {
-		return payments[i].CreateAt > payments[j].CreateAt
-	})
 
 	return payments[0], nil
 }
@@ -247,8 +232,8 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*
 func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos model_helper.CheckoutLineInfos) (*measurement.Weight, *model_helper.AppError) {
 	checkoutLineIDs := []string{}
 	for _, lineInfo := range checkoutLineInfos {
-		if !model_helper.IsValidId(lineInfo.Line.Id) {
-			checkoutLineIDs = append(checkoutLineIDs, lineInfo.Line.Id)
+		if !model_helper.IsValidId(lineInfo.Line.ID) {
+			checkoutLineIDs = append(checkoutLineIDs, lineInfo.Line.ID)
 		}
 	}
 
@@ -264,9 +249,14 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos model_helper.Che
 	return totalWeight, nil
 }
 
-// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction boil.ContextTransactor, option *model.CheckoutFilterOption) *model_helper.AppError {
-	err := s.srv.Store.Checkout().DeleteCheckoutsByOption(transaction, option)
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction boil.ContextTransactor, option model_helper.CheckoutFilterOptions) *model_helper.AppError {
+	checkouts, appErr := s.CheckoutsByOption(option)
+	if appErr != nil {
+		return appErr
+	}
+
+	checkoutIDs := lo.Map(checkouts, func(item *model.Checkout, _ int) string { return item.Token })
+	err := s.srv.Store.Checkout().Delete(transaction, checkoutIDs)
 	if err != nil {
 		return model_helper.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

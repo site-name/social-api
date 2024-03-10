@@ -229,7 +229,7 @@ func (o *SaleCollection) Sale(mods ...qm.QueryMod) saleQuery {
 
 // LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleCollectionL) LoadCollection(e boil.Executor, singular bool, maybeSaleCollection any, mods queries.Applicator) error {
+func (saleCollectionL) LoadCollection(e boil.Executor, singular bool, maybeSaleCollection interface{}, mods queries.Applicator) error {
 	var slice []*SaleCollection
 	var object *SaleCollection
 
@@ -255,7 +255,7 @@ func (saleCollectionL) LoadCollection(e boil.Executor, singular bool, maybeSaleC
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleCollectionR{}
@@ -277,7 +277,7 @@ func (saleCollectionL) LoadCollection(e boil.Executor, singular bool, maybeSaleC
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -341,7 +341,7 @@ func (saleCollectionL) LoadCollection(e boil.Executor, singular bool, maybeSaleC
 
 // LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleCollectionL) LoadSale(e boil.Executor, singular bool, maybeSaleCollection any, mods queries.Applicator) error {
+func (saleCollectionL) LoadSale(e boil.Executor, singular bool, maybeSaleCollection interface{}, mods queries.Applicator) error {
 	var slice []*SaleCollection
 	var object *SaleCollection
 
@@ -367,7 +367,7 @@ func (saleCollectionL) LoadSale(e boil.Executor, singular bool, maybeSaleCollect
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleCollectionR{}
@@ -389,7 +389,7 @@ func (saleCollectionL) LoadSale(e boil.Executor, singular bool, maybeSaleCollect
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -467,7 +467,7 @@ func (o *SaleCollection) SetCollection(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -513,7 +513,7 @@ func (o *SaleCollection) SetSale(exec boil.Executor, insert bool, related *Sale)
 		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -738,7 +738,7 @@ func (o SaleCollectionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -860,7 +860,7 @@ func (o *SaleCollection) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -944,7 +944,7 @@ func (o SaleCollectionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleCollectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -990,7 +990,7 @@ func (o *SaleCollectionSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := SaleCollectionSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleCollectionPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

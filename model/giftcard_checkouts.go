@@ -222,7 +222,7 @@ func (o *GiftcardCheckout) Giftcard(mods ...qm.QueryMod) giftcardQuery {
 
 // LoadCheckout allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftcardCheckout any, mods queries.Applicator) error {
+func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardCheckout
 	var object *GiftcardCheckout
 
@@ -248,7 +248,7 @@ func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftc
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
@@ -270,7 +270,7 @@ func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftc
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (giftcardCheckoutL) LoadCheckout(e boil.Executor, singular bool, maybeGiftc
 
 // LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardCheckoutL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcardCheckout any, mods queries.Applicator) error {
+func (giftcardCheckoutL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardCheckout
 	var object *GiftcardCheckout
 
@@ -360,7 +360,7 @@ func (giftcardCheckoutL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftc
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
@@ -382,7 +382,7 @@ func (giftcardCheckoutL) LoadGiftcard(e boil.Executor, singular bool, maybeGiftc
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *GiftcardCheckout) SetCheckout(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 	)
-	values := []any{related.Token, o.ID}
+	values := []interface{}{related.Token, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *GiftcardCheckout) SetGiftcard(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o GiftcardCheckoutSlice) UpdateAll(exec boil.Executor, cols M) (int64, err
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *GiftcardCheckout) Upsert(exec boil.Executor, updateOnConflict bool, con
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o GiftcardCheckoutSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardCheckoutPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *GiftcardCheckoutSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := GiftcardCheckoutSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardCheckoutPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

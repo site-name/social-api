@@ -105,7 +105,7 @@ func (ps *SqlProductStore) commonQueryBuilder(option model_helper.ProductFilterO
 
 func (ps *SqlProductStore) FilterByOption(option model_helper.ProductFilterOption) (model.ProductSlice, error) {
 	conditions := ps.commonQueryBuilder(option)
-	return model.Products(conditions...).All(ps.GetReplica())
+	return model.ProductSlice(conditions...).All(ps.GetReplica())
 }
 
 // channelQuery is a utility function to compose a filter query on `Channels` table.
@@ -195,7 +195,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) (model.ProductS
 func (ps *SqlProductStore) NotPublishedProducts(channelID string) (model.ProductSlice, error) {
 	today := util.MillisFromTime(util.StartOfDay(model_helper.GetTimeUTCNow()))
 
-	return model.Products(
+	return model.ProductSlice(
 		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductChannelListings, model.ProductTableColumns.ID, model.ProductChannelListingTableColumns.ProductID)),
 		model_helper.Or{
 			model_helper.And{
@@ -324,7 +324,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transacti
 	}
 
 	conds = append(conds, orConds)
-	return model.Products(conds...).All(transaction)
+	return model.ProductSlice(conds...).All(transaction)
 }
 
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
@@ -555,7 +555,7 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 
 func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model_helper.ProductCountByCategoryID, error) {
 	var res []*model_helper.ProductCountByCategoryID
-	err := model.Products(
+	err := model.ProductSlice(
 		qm.Select(
 			model.ProductTableColumns.CategoryID,
 			fmt.Sprintf("COUNT (%s) as %q", model.ProductTableColumns.ID, "product_count"),

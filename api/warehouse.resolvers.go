@@ -23,7 +23,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 	input := args.Input
 
 	var warehouseAddress model.Address
-	var newWarehouse model.WareHouse
+	var newWarehouse model.Warehouse
 
 	if input.CompanyName != nil && *input.CompanyName != "" {
 		warehouseAddress.CompanyName = *input.CompanyName
@@ -74,7 +74,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 			return nil, appErr
 		}
 
-		ok, appErr := embedCtx.App.Srv().WarehouseService().ValidateWarehouseCount(shippingZones, &model.WareHouse{})
+		ok, appErr := embedCtx.App.Srv().WarehouseService().ValidateWarehouseCount(shippingZones, &model.Warehouse{})
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -265,7 +265,7 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 		return &model.ShippingZone{Id: id}
 	})
 	err := embedCtx.App.Srv().Store.GetMaster().
-		Model(&model.WareHouse{Id: args.Id}).
+		Model(&model.Warehouse{Id: args.Id}).
 		Association("ShippingZones").
 		Append(shippingZonesToAdd)
 	if err != nil {
@@ -303,7 +303,7 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 
 	shippingZonesToRemove := lo.Map(args.ShippingZoneIds, func(id string, _ int) *model.ShippingZone { return &model.ShippingZone{Id: id} })
 	err := embedCtx.App.Srv().Store.GetMaster().
-		Model(&model.WareHouse{Id: args.Id}).
+		Model(&model.Warehouse{Id: args.Id}).
 		Association("ShippingZones").
 		Delete(shippingZonesToRemove)
 	if err != nil {
@@ -375,7 +375,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	sortKeyFunc := func(w *model.WareHouse) []any { return []any{model.WarehouseTableName + ".Name", w.Name} }
+	sortKeyFunc := func(w *model.Warehouse) []any { return []any{model.WarehouseTableName + ".Name", w.Name} }
 	res, appErr := newGraphqlPaginator(warehouses, sortKeyFunc, SystemWarehouseToGraphqlWarehouse, args.GraphqlParams).parse("Warehouses")
 	if appErr != nil {
 		return nil, appErr

@@ -225,7 +225,7 @@ func (o *CustomProductAttributeValue) AttributeValueAssignedProductVariantAttrib
 
 // LoadAttribute allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customProductAttributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeCustomProductAttributeValue any, mods queries.Applicator) error {
+func (customProductAttributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeCustomProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*CustomProductAttributeValue
 	var object *CustomProductAttributeValue
 
@@ -251,7 +251,7 @@ func (customProductAttributeValueL) LoadAttribute(e boil.Executor, singular bool
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customProductAttributeValueR{}
@@ -273,7 +273,7 @@ func (customProductAttributeValueL) LoadAttribute(e boil.Executor, singular bool
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -337,7 +337,7 @@ func (customProductAttributeValueL) LoadAttribute(e boil.Executor, singular bool
 
 // LoadAttributeValueAssignedProductVariantAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (customProductAttributeValueL) LoadAttributeValueAssignedProductVariantAttributeValues(e boil.Executor, singular bool, maybeCustomProductAttributeValue any, mods queries.Applicator) error {
+func (customProductAttributeValueL) LoadAttributeValueAssignedProductVariantAttributeValues(e boil.Executor, singular bool, maybeCustomProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*CustomProductAttributeValue
 	var object *CustomProductAttributeValue
 
@@ -363,7 +363,7 @@ func (customProductAttributeValueL) LoadAttributeValueAssignedProductVariantAttr
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &customProductAttributeValueR{}
@@ -382,7 +382,7 @@ func (customProductAttributeValueL) LoadAttributeValueAssignedProductVariantAttr
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -457,7 +457,7 @@ func (o *CustomProductAttributeValue) SetAttribute(exec boil.Executor, insert bo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customProductAttributeValuePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -505,7 +505,7 @@ func (o *CustomProductAttributeValue) AddAttributeValueAssignedProductVariantAtt
 				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductVariantAttributeValuePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -734,7 +734,7 @@ func (o CustomProductAttributeValueSlice) UpdateAll(exec boil.Executor, cols M) 
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -856,7 +856,7 @@ func (o *CustomProductAttributeValue) Upsert(exec boil.Executor, updateOnConflic
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -940,7 +940,7 @@ func (o CustomProductAttributeValueSlice) DeleteAll(exec boil.Executor) (int64, 
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customProductAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -986,7 +986,7 @@ func (o *CustomProductAttributeValueSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CustomProductAttributeValueSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customProductAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

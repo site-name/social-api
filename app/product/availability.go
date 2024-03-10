@@ -105,7 +105,7 @@ func (a *ServiceProduct) GetVariantPrice(
 
 func (a *ServiceProduct) GetProductPriceRange(
 	product model.Product,
-	variants model.ProductVariants,
+	variants model.ProductVariantSlice,
 	variantsChannelListing []*model.ProductVariantChannelListing,
 	collections []*model.Collection,
 	discounts []*model_helper.DiscountInfo,

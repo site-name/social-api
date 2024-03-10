@@ -106,7 +106,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	var (
 		res            []*dataloader.Result[*model.Channel]
 		errs           []error
-		checkouts      []*model.Checkout
+		checkouts      model.CheckoutSlice
 		channels       []*model.Channel
 		checkoutTokens []string
 		channelIDs     []string

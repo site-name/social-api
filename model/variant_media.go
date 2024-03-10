@@ -222,7 +222,7 @@ func (o *VariantMedium) Variant(mods ...qm.QueryMod) productVariantQuery {
 
 // LoadMedium allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMedium any, mods queries.Applicator) error {
+func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
 	var slice []*VariantMedium
 	var object *VariantMedium
 
@@ -248,7 +248,7 @@ func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMed
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &variantMediumR{}
@@ -270,7 +270,7 @@ func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMed
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMed
 
 // LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (variantMediumL) LoadVariant(e boil.Executor, singular bool, maybeVariantMedium any, mods queries.Applicator) error {
+func (variantMediumL) LoadVariant(e boil.Executor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
 	var slice []*VariantMedium
 	var object *VariantMedium
 
@@ -360,7 +360,7 @@ func (variantMediumL) LoadVariant(e boil.Executor, singular bool, maybeVariantMe
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &variantMediumR{}
@@ -382,7 +382,7 @@ func (variantMediumL) LoadVariant(e boil.Executor, singular bool, maybeVariantMe
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *VariantMedium) SetMedium(exec boil.Executor, insert bool, related *Prod
 		strmangle.SetParamNames("\"", "\"", 1, []string{"media_id"}),
 		strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *VariantMedium) SetVariant(exec boil.Executor, insert bool, related *Pro
 		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o VariantMediumSlice) UpdateAll(exec boil.Executor, cols M) (int64, error)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *VariantMedium) Upsert(exec boil.Executor, updateOnConflict bool, confli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o VariantMediumSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), variantMediumPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *VariantMediumSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := VariantMediumSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), variantMediumPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

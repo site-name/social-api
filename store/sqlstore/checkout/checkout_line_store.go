@@ -74,7 +74,7 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction boil.ContextTransactor,
 // and prefetch all related product variants, products
 //
 // this borrows the idea from Django's prefetch_related() method
-// func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
+// func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) (model.CheckoutLineSlice, []*model.ProductVariant, []*model.Product, error) {
 // 	selectFields := []string{
 // 		model.CheckoutLineTableName + ".*",
 // 		model.ProductVariantTableName + ".*",
@@ -102,8 +102,8 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction boil.ContextTransactor,
 
 // 	var (
 // 		checkoutLines   model.CheckoutLines
-// 		productVariants model.ProductVariants
-// 		products        model.Products
+// 		productVariants model.ProductVariantSlice
+// 		products        model.ProductSlice
 // 	)
 
 // 	for rows.Next() {

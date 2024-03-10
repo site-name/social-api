@@ -17,8 +17,8 @@ import (
 func productByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[*model.Product] {
 	var (
 		res        = make([]*dataloader.Result[*model.Product], len(variantIDS))
-		products   model.Products
-		variants   model.ProductVariants
+		products   model.ProductSlice
+		variants   model.ProductVariantSlice
 		variantMap = map[string]string{}         // keys are variant ids, values are product ids
 		productMap = map[string]*model.Product{} // keys are product ids
 		errs       []error
@@ -179,7 +179,7 @@ func productTypeByVariantIdLoader(ctx context.Context, variantIDS []string) []*d
 	var (
 		res          []*dataloader.Result[*model.ProductType]
 		productTypes []*model.ProductType
-		variants     model.ProductVariants
+		variants     model.ProductVariantSlice
 		errs         []error
 	)
 	variants, errs = ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
@@ -268,7 +268,7 @@ func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*d
 		goto errorLabel
 	}
 
-	collections, errs = CollectionsByProductIdLoader.LoadMany(ctx, model.ProductVariants(variants).ProductIDs())()
+	collections, errs = CollectionsByProductIdLoader.LoadMany(ctx, model.ProductVariantSlice(variants).ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -576,7 +576,7 @@ func productTypeByIdLoader(ctx context.Context, ids []string) []*dataloader.Resu
 func productVariantsByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
 	var (
 		res        = make([]*dataloader.Result[[]*model.ProductVariant], len(productIDs))
-		variantMap = map[string]model.ProductVariants{} // keys are product ids
+		variantMap = map[string]model.ProductVariantSlice{} // keys are product ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -633,7 +633,7 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 		variantMap = map[string]*model.ProductVariant{} // keys are product variant ids
 
 		variantChannelListings model.ProductVariantChannelListings
-		idPairVariantMap       = map[string]model.ProductVariants{} // keys have format of productID__channelID
+		idPairVariantMap       = map[string]model.ProductVariantSlice{} // keys have format of productID__channelID
 		productIDs             []string
 		channelIDs             []string
 	)
@@ -696,8 +696,8 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	var (
 		res                    = make([]*dataloader.Result[[]*model.ProductVariant], len(idPairs))
 		variantChannelListings model.ProductVariantChannelListings
-		variantMap             = map[string]*model.ProductVariant{} // keys are product variant ids
-		idPairVariantMap       = map[string]model.ProductVariants{} // keys have format of productID__channelID
+		variantMap             = map[string]*model.ProductVariant{}     // keys are product variant ids
+		idPairVariantMap       = map[string]model.ProductVariantSlice{} // keys have format of productID__channelID
 		productIDs             []string
 		channelIDs             []string
 	)
@@ -793,7 +793,7 @@ func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*
 	var (
 		res      = make([]*dataloader.Result[[]*model.ProductMedia], len(variantIDs))
 		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
-		variants model.ProductVariants
+		variants model.ProductVariantSlice
 	)
 
 	err := embedCtx.App.Srv().
@@ -978,7 +978,7 @@ func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*da
 		voucherMap[voucher.Id] = voucher
 	}
 	for idx, id := range voucherIDs {
-		var categories model.Categories
+		var categories model.CategorySlice
 
 		voucher := voucherMap[id]
 		if voucher != nil {
@@ -1010,7 +1010,7 @@ func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*d
 	}
 
 	for idx, id := range voucherIDs {
-		var cols model.Collections
+		var cols model.CollectionSlice
 		voucher := voucherMap[id]
 		if voucher != nil {
 			cols = voucher.Collections
@@ -1041,7 +1041,7 @@ func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*data
 	}
 
 	for idx, id := range voucherIDs {
-		var prds model.Products
+		var prds model.ProductSlice
 		voucher := voucherMap[id]
 		if voucher != nil {
 			prds = voucher.Products
@@ -1072,7 +1072,7 @@ func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) 
 	}
 
 	for idx, id := range voucherIDs {
-		var variants model.ProductVariants
+		var variants model.ProductVariantSlice
 		voucher := voucherMap[id]
 		if voucher != nil {
 			variants = voucher.ProductVariants
@@ -1103,7 +1103,7 @@ func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataload
 	}
 
 	for idx, id := range saleIDs {
-		var cates model.Categories
+		var cates model.CategorySlice
 		sale := saleMap[id]
 		if sale != nil {
 			cates = sale.Categories
@@ -1134,7 +1134,7 @@ func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloa
 	}
 
 	for idx, id := range saleIDs {
-		var cols model.Collections
+		var cols model.CollectionSlice
 		sale := saleMap[id]
 		if sale != nil {
 			cols = sale.Collections
@@ -1165,7 +1165,7 @@ func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader
 	}
 
 	for idx, id := range saleIDs {
-		var prds model.Products
+		var prds model.ProductSlice
 		sale := saleMap[id]
 		if sale != nil {
 			prds = sale.Products
@@ -1197,7 +1197,7 @@ func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dat
 
 	for idx, id := range saleIDs {
 		sale := saleMap[id]
-		var variants model.ProductVariants
+		var variants model.ProductVariantSlice
 		if sale != nil {
 			variants = sale.ProductVariants
 		}
@@ -1235,7 +1235,7 @@ func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 func categoryChildrenByCategoryIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Category] {
 	var (
 		res         = make([]*dataloader.Result[[]*model.Category], len(ids))
-		childrenMap = map[string]model.Categories{} // keys are parent category ids
+		childrenMap = map[string]model.CategorySlice{} // keys are parent category ids
 	)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	parentIDsMap := lo.SliceToMap(ids, func(c string) (string, bool) { return c, true })

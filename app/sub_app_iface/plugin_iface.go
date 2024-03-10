@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/plugin"
-	"github.com/sitename/sitename/temp/model"
+	"github.com/sitename/sitename/model"
 )
 
 // PluginService contains methods for working with plugins
@@ -28,16 +28,16 @@ type PluginService interface {
 	// Notifies cluster peers through config change.
 	EnablePlugin(id string) *model_helper.AppError
 	// FilterPluginConfigurations returns a list of plugin configurations filtered using given options
-	FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model_helper.AppError)
+	FilterPluginConfigurations(options *model_helper.PluginConfigurationFilterOptions) (model_helper.PluginConfigurations, *model_helper.AppError)
 	// GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
-	GetClusterPluginStatuses() (model.PluginStatuses, *model_helper.AppError)
+	GetClusterPluginStatuses() (model_helper.PluginStatuses, *model_helper.AppError)
 	// GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 	// and plugins that are installed locally.
-	GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model_helper.AppError)
+	GetMarketplacePlugins(filter *model_helper.MarketplacePluginFilter) ([]*model_helper.MarketplacePlugin, *model_helper.AppError)
 	// GetPluginConfiguration finds and returns a plugin configuration based on given options
-	GetPluginConfiguration(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model_helper.AppError)
+	GetPluginConfiguration(options *model_helper.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model_helper.AppError)
 	// GetPluginStatuses returns the status for plugins installed on this server.
-	GetPluginStatuses() (model.PluginStatuses, *model_helper.AppError)
+	GetPluginStatuses() (model_helper.PluginStatuses, *model_helper.AppError)
 	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
 	// initialized.
 	//
@@ -57,25 +57,25 @@ type PluginService interface {
 	DeleteAllExpiredPluginKeys() *model_helper.AppError
 	DeleteAllKeysForPlugin(pluginID string) *model_helper.AppError
 	DeletePluginKey(pluginID string, key string) *model_helper.AppError
-	GetActivePluginManifests() ([]*model.Manifest, *model_helper.AppError)
+	GetActivePluginManifests() ([]*model_helper.Manifest, *model_helper.AppError)
 	GetPluginKey(pluginID string, key string) ([]byte, *model_helper.AppError)
 	GetPluginManager() interfaces.PluginManagerInterface
 	GetPluginPublicKeyFiles() ([]string, *model_helper.AppError)
-	GetPluginStatus(id string) (*model.PluginStatus, *model_helper.AppError)
-	GetPlugins() (*model.PluginsResponse, *model_helper.AppError)
+	GetPluginStatus(id string) (*model_helper.PluginStatus, *model_helper.AppError)
+	GetPlugins() (*model_helper.PluginsResponse, *model_helper.AppError)
 	GetPublicKey(name string) ([]byte, *model_helper.AppError)
 	InitPlugins(c *request.Context, pluginDir, webappPluginDir string)
-	InstallMarketplacePlugin(request *model.InstallMarketplacePluginRequest) (*model.Manifest, *model_helper.AppError)
-	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model.Manifest, *model_helper.AppError)
-	InstallPluginFromData(data model.PluginEventData)
-	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model.Manifest, *model_helper.AppError)
+	InstallMarketplacePlugin(request *model_helper.InstallMarketplacePluginRequest) (*model_helper.Manifest, *model_helper.AppError)
+	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model_helper.Manifest, *model_helper.AppError)
+	InstallPluginFromData(data model_helper.PluginEventData)
+	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model_helper.Manifest, *model_helper.AppError)
 	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model_helper.AppError)
 	RemovePlugin(id string) *model_helper.AppError
-	RemovePluginFromData(data model.PluginEventData)
+	RemovePluginFromData(data model_helper.PluginEventData)
 	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)
 	SetPluginKey(pluginID string, key string, value []byte) *model_helper.AppError
 	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model_helper.AppError
-	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, *model_helper.AppError)
+	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model_helper.PluginKVSetOptions) (bool, *model_helper.AppError)
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)
 	ShutDownPlugins()
 	VerifyPlugin(plugin, signature io.ReadSeeker) *model_helper.AppError

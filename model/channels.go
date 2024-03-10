@@ -94,14 +94,14 @@ func (w whereHelperCurrency) GTE(x Currency) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperCurrency) IN(slice []Currency) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperCurrency) NIN(slice []Currency) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -484,7 +484,7 @@ func (o *Channel) VoucherChannelListings(mods ...qm.QueryMod) voucherChannelList
 
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -510,7 +510,7 @@ func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel any, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -529,7 +529,7 @@ func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel any, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -590,7 +590,7 @@ func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel any, 
 
 // LoadCollectionChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -616,7 +616,7 @@ func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, ma
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -635,7 +635,7 @@ func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, ma
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -696,7 +696,7 @@ func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, ma
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -722,7 +722,7 @@ func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel any, mod
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -741,7 +741,7 @@ func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel any, mod
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -802,7 +802,7 @@ func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel any, mod
 
 // LoadPluginConfigurations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -828,7 +828,7 @@ func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeCh
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -847,7 +847,7 @@ func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeCh
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -908,7 +908,7 @@ func (channelL) LoadPluginConfigurations(e boil.Executor, singular bool, maybeCh
 
 // LoadProductChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -934,7 +934,7 @@ func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -953,7 +953,7 @@ func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1014,7 +1014,7 @@ func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 
 // LoadProductVariantChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1040,7 +1040,7 @@ func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -1059,7 +1059,7 @@ func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1120,7 +1120,7 @@ func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool
 
 // LoadSaleChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1146,7 +1146,7 @@ func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeCha
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -1165,7 +1165,7 @@ func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeCha
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1226,7 +1226,7 @@ func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeCha
 
 // LoadShippingMethodChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1252,7 +1252,7 @@ func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -1271,7 +1271,7 @@ func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1332,7 +1332,7 @@ func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool
 
 // LoadShippingZoneChannels allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1358,7 +1358,7 @@ func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeCh
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -1377,7 +1377,7 @@ func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeCh
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1438,7 +1438,7 @@ func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeCh
 
 // LoadVoucherChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybeChannel any, mods queries.Applicator) error {
+func (channelL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1464,7 +1464,7 @@ func (channelL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybe
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &channelR{}
@@ -1483,7 +1483,7 @@ func (channelL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybe
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1560,7 +1560,7 @@ func (o *Channel) AddCheckouts(exec boil.Executor, insert bool, related ...*Chec
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.Token}
+			values := []interface{}{o.ID, rel.Token}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1612,7 +1612,7 @@ func (o *Channel) AddCollectionChannelListings(exec boil.Executor, insert bool, 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1654,7 +1654,7 @@ func (o *Channel) AddCollectionChannelListings(exec boil.Executor, insert bool, 
 // Sets related.R.Channel's CollectionChannelListings accordingly.
 func (o *Channel) SetCollectionChannelListings(exec boil.Executor, insert bool, related ...*CollectionChannelListing) error {
 	query := "update \"collection_channel_listings\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1737,7 +1737,7 @@ func (o *Channel) AddOrders(exec boil.Executor, insert bool, related ...*Order) 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1789,7 +1789,7 @@ func (o *Channel) AddPluginConfigurations(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, pluginConfigurationPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1841,7 +1841,7 @@ func (o *Channel) AddProductChannelListings(exec boil.Executor, insert bool, rel
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1893,7 +1893,7 @@ func (o *Channel) AddProductVariantChannelListings(exec boil.Executor, insert bo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1945,7 +1945,7 @@ func (o *Channel) AddSaleChannelListings(exec boil.Executor, insert bool, relate
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1997,7 +1997,7 @@ func (o *Channel) AddShippingMethodChannelListings(exec boil.Executor, insert bo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2049,7 +2049,7 @@ func (o *Channel) AddShippingZoneChannels(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingZoneChannelPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2101,7 +2101,7 @@ func (o *Channel) AddVoucherChannelListings(exec boil.Executor, insert bool, rel
 				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2330,7 +2330,7 @@ func (o ChannelSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2452,7 +2452,7 @@ func (o *Channel) Upsert(exec boil.Executor, updateOnConflict bool, conflictColu
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2536,7 +2536,7 @@ func (o ChannelSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), channelPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2582,7 +2582,7 @@ func (o *ChannelSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ChannelSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), channelPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -379,7 +379,7 @@ func (o PreferenceSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -501,7 +501,7 @@ func (o *Preference) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -585,7 +585,7 @@ func (o PreferenceSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), preferencePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -631,7 +631,7 @@ func (o *PreferenceSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := PreferenceSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), preferencePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

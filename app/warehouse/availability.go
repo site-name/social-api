@@ -154,7 +154,7 @@ func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*model.P
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 func (a *ServiceWarehouse) CheckStockQuantityBulk(
-	variants model.ProductVariants,
+	variants model.ProductVariantSlice,
 	countryCode model.CountryCode,
 	quantities []int,
 	channelSlug string,
@@ -255,7 +255,7 @@ type structObject struct {
 
 // CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 // :raises InsufficientStock: when there is not enough available items for a variant.
-func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariantSlice, quantities []int, channelSlug string) (*model.InsufficientStock, *model_helper.AppError) {
 	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		Conditions:                        squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 		SelectRelatedChannel:              true,

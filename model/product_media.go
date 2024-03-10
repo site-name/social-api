@@ -109,14 +109,14 @@ func (w whereHelperProductMediaType) GTE(x ProductMediaType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperProductMediaType) IN(slice []ProductMediaType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperProductMediaType) NIN(slice []ProductMediaType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -310,7 +310,7 @@ func (o *ProductMedium) MediumVariantMedia(mods ...qm.QueryMod) variantMediumQue
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMedium any, mods queries.Applicator) error {
+func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -336,7 +336,7 @@ func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMe
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productMediumR{}
@@ -358,7 +358,7 @@ func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMe
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -422,7 +422,7 @@ func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMe
 
 // LoadMediumVariantMedia allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, maybeProductMedium any, mods queries.Applicator) error {
+func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -448,7 +448,7 @@ func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productMediumR{}
@@ -467,7 +467,7 @@ func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -542,7 +542,7 @@ func (o *ProductMedium) SetProduct(exec boil.Executor, insert bool, related *Pro
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productMediumPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -590,7 +590,7 @@ func (o *ProductMedium) AddMediumVariantMedia(exec boil.Executor, insert bool, r
 				strmangle.SetParamNames("\"", "\"", 1, []string{"media_id"}),
 				strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -819,7 +819,7 @@ func (o ProductMediumSlice) UpdateAll(exec boil.Executor, cols M) (int64, error)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -941,7 +941,7 @@ func (o *ProductMedium) Upsert(exec boil.Executor, updateOnConflict bool, confli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1025,7 +1025,7 @@ func (o ProductMediumSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productMediumPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1071,7 +1071,7 @@ func (o *ProductMediumSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ProductMediumSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productMediumPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

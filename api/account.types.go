@@ -269,7 +269,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
-		var checkouts []*model.Checkout
+		var checkouts model.CheckoutSlice
 		var err error
 
 		if args.ChannelID == nil {

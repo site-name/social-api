@@ -14,36 +14,36 @@ import (
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
 // Careful! It should be called inside a transaction.
 // :raises NotApplicable: When the voucher is not applicable in the current checkout.
-func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model_helper.CheckoutInfo) (map[string]*model.Voucher, *model.NotApplicable, *model_helper.AppError) {
+func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model_helper.CheckoutInfo) (map[string]*model.Voucher, *model_helper.NotApplicable, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, nil, true)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
-	if checkout.VoucherCode != nil && voucher == nil {
-		return nil, model.NewNotApplicable("getVoucherDataForOrder", "Voucher expired in meantime. Order placement aborted", nil, 0), nil
+	if !checkout.VoucherCode.IsNil() && voucher == nil {
+		return nil, model_helper.NewNotApplicable("getVoucherDataForOrder", "Voucher expired in meantime. Order placement aborted", nil, 0), nil
 	}
-
 	if voucher == nil {
 		return map[string]*model.Voucher{}, nil, nil
 	}
 
-	if voucher.UsageLimit != nil && *voucher.UsageLimit != 0 {
-		appErr = s.srv.DiscountService().IncreaseVoucherUsage(voucher)
+	if voucher.UsageLimit != 0 {
+		voucher, appErr = s.srv.Discount.AlterVoucherUsage(*voucher, 1)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 	}
 
 	if voucher.ApplyOncePerCustomer {
-		notApplicable, appErr := s.srv.DiscountService().AddVoucherUsageByCustomer(voucher, checkoutInfo.GetCustomerEmail())
+		notApplicable, appErr := s.srv.Discount.AddVoucherUsageByCustomer(voucher, checkoutInfo.GetCustomerEmail())
 		if notApplicable != nil || appErr != nil {
 			return nil, notApplicable, appErr
 		}
@@ -62,14 +62,15 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.
 	)
 
 	if checkoutInfo.User != nil && shippingAddress != nil {
-		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, *shippingAddress, model.ADDRESS_TYPE_SHIPPING, manager)
+		appErr = s.srv.Account.StoreUserAddress(checkoutInfo.User, *shippingAddress, model_helper.ADDRESS_TYPE_SHIPPING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Conditions: squirrel.Eq{model.AddressTableName + ".Id": shippingAddress.Id},
-			UserID:     squirrel.Eq{model.UserAddressTableName + ".user_id": checkoutInfo.User.Id},
+		addressesOfUser, appErr := s.srv.Account.AddressesByOption(model_helper.AddressFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.AddressWhere.ID.EQ(shippingAddress.ID),
+			),
 		})
 		if appErr != nil {
 			if appErr.StatusCode != http.StatusNotFound {
@@ -78,14 +79,14 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.
 		}
 
 		if len(addressesOfUser) > 0 {
-			copyShippingAddress, appErr = s.srv.AccountService().CopyAddress(shippingAddress)
+			copyShippingAddress, appErr = s.srv.Account.CopyAddress(shippingAddress)
 			if appErr != nil {
 				return nil, appErr
 			}
 		}
 	}
 
-	checkoutTotalWeight, appErr := s.srv.CheckoutService().CheckoutTotalWeight(lines)
+	checkoutTotalWeight, appErr := s.srv.Checkout.CheckoutTotalWeight(lines)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -119,14 +120,15 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model_helper.Chec
 	)
 
 	if checkoutInfo.User != nil && billingAddress != nil {
-		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, *billingAddress, model.ADDRESS_TYPE_BILLING, manager)
+		appErr = s.srv.Account.StoreUserAddress(checkoutInfo.User, *billingAddress, model_helper.ADDRESS_TYPE_BILLING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			UserID:     squirrel.Eq{model.UserAddressTableName + ".user_id": checkoutInfo.User.Id},
-			Conditions: squirrel.Eq{model.AddressTableName + ".Id": billingAddress.Id},
+		billingAddressOfUser, appErr := s.srv.Account.AddressesByOption(model_helper.AddressFilterOptions{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				model.AddressWhere.ID.EQ(billingAddress.ID),
+			),
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -153,16 +155,18 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model_helper.Chec
 }
 
 // validateGiftcards Check if all gift cards assigned to checkout are available.
-func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.NotApplicable, *model_helper.AppError) {
+func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model_helper.NotApplicable, *model_helper.AppError) {
 	var (
 		totalGiftcardsOfCheckout       int
 		totalActiveGiftcardsOfCheckout int
 		startOfToday                   = util.StartOfDay(time.Now().UTC())
 	)
 
-	_, allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkout.Token},
-		Distinct:      true,
+	_, allGiftcards, appErr := s.srv.Giftcard.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CheckoutToken: model.GiftcardCheckoutWhere.CheckoutID.EQ(checkout.Token),
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			qm.Distinct(model.GiftcardTableColumns.ID),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -174,14 +178,14 @@ func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.Not
 	// NOTE: active giftcards are active and has (ExpiryDate IS NULL || ExpiryDate >= beginning of Today)
 	var expiryDateOfGiftcard *time.Time
 	for _, giftcard := range allGiftcards {
-		expiryDateOfGiftcard = giftcard.ExpiryDate
-		if (expiryDateOfGiftcard == nil || util.StartOfDay(*expiryDateOfGiftcard).Equal(startOfToday) || util.StartOfDay(*expiryDateOfGiftcard).After(startOfToday)) && *giftcard.IsActive {
+		expiryDateOfGiftcard = giftcard.ExpiryDate.Time
+		if (expiryDateOfGiftcard == nil || util.StartOfDay(*expiryDateOfGiftcard).Equal(startOfToday) || util.StartOfDay(*expiryDateOfGiftcard).After(startOfToday)) && !giftcard.IsActive.IsNil() && *giftcard.IsActive.Bool {
 			totalActiveGiftcardsOfCheckout++
 		}
 	}
 
 	if totalActiveGiftcardsOfCheckout != totalGiftcardsOfCheckout {
-		return model.NewNotApplicable("validateGiftcards", "Gift card has expired. Order placement cancelled.", nil, 0), nil
+		return model_helper.NewNotApplicable("validateGiftcards", "Gift card has expired. Order placement cancelled.", nil, 0), nil
 	}
 
 	return nil, nil
@@ -197,19 +201,17 @@ func (s *ServiceCheckout) createLineForOrder(
 	discounts []*model_helper.DiscountInfo,
 	productsTranslation map[string]string,
 	variantsTranslation map[string]string,
-
-) (*model.OrderLineData, *model_helper.AppError) {
-
+) (*model_helper.OrderLineData, *model_helper.AppError) {
 	var (
 		checkoutLine          = checkoutLineInfo.Line
 		quantity              = checkoutLine.Quantity
 		variant               = checkoutLineInfo.Variant
 		product               = checkoutLineInfo.Product
 		address               = checkoutInfo.ShippingAddress
-		productName           = product.String()
-		variantName           = variant.String()
-		translatedProductName = productsTranslation[product.Id]
-		translatedVariantName = variantsTranslation[variant.Id]
+		productName           = product.Name
+		variantName           = model_helper.ProductVariantString(variant)
+		translatedProductName = productsTranslation[product.ID]
+		translatedVariantName = variantsTranslation[variant.ID]
 	)
 	if address == nil {
 		address = checkoutInfo.BillingAddress
@@ -236,7 +238,7 @@ func (s *ServiceCheckout) createLineForOrder(
 		return nil, appErr
 	}
 
-	productVariantRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping([]string{variant.ProductID})
+	productVariantRequireShipping, appErr := s.srv.Product.ProductsRequireShipping([]string{variant.ProductID})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -246,16 +248,16 @@ func (s *ServiceCheckout) createLineForOrder(
 		VariantName:           variantName,
 		TranslatedProductName: translatedProductName,
 		TranslatedVariantName: translatedVariantName,
-		ProductSku:            &variant.Sku,
+		ProductSku:            model_types.NewNullString(variant.Sku),
 		IsShippingRequired:    productVariantRequireShipping,
 		Quantity:              quantity,
-		VariantID:             &variant.Id,
-		UnitPrice:             unitPrice,
+		VariantID:             model_types.NewNullString(variant.ID),
+		TaxRate:               model_types.NullDecimal{Decimal: taxRate},
 		TotalPrice:            totalLinePrice,
-		TaxRate:               taxRate,
+		UnitPrice:             unitPrice,
 	}
 
-	return &model.OrderLineData{
+	return &model_helper.OrderLineData{
 		Line:        orderLine,
 		Quantity:    quantity,
 		Variant:     &variant,
@@ -266,27 +268,30 @@ func (s *ServiceCheckout) createLineForOrder(
 // createLinesForOrder Create a lines for the given order.
 // :raises InsufficientStock: when there is not enough items in stock for this variant.
 func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model_helper.AppError) {
+	lines = lines.FilterNils()
+	length := len(lines)
+
 	var (
 		translationLanguageCode = checkoutInfo.Checkout.LanguageCode
 		countryCode             = checkoutInfo.GetCountry()
-		variants                model.ProductVariants
-		quantities              []int
-		products                model.Products
+		variants                = make(model.ProductVariantSlice, length)
+		quantities              = make([]int, length)
+		productIDs              = make([]string, length)
+		variantIDs              = make([]string, length)
 	)
 
-	lines = lines.FilterNils()
-
-	for _, lineInfo := range lines {
-		variants = append(variants, &lineInfo.Variant)
-		quantities = append(quantities, lineInfo.Line.Quantity)
-		products = append(products, &lineInfo.Product)
+	for idx, lineInfo := range lines {
+		quantities[idx] = lineInfo.Line.Quantity
+		productIDs[idx] = lineInfo.Product.ID
+		variants[idx] = &lineInfo.Variant
+		variantIDs[idx] = lineInfo.Variant.ID
 	}
 
-	productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&model.ProductTranslationFilterOption{
-		Conditions: squirrel.Eq{
-			model.ProductTranslationTableName + ".ProductID":    products.IDs(),
-			model.ProductTranslationTableName + ".LanguageCode": translationLanguageCode,
-		},
+	productTranslations, appErr := s.srv.Product.ProductTranslationsByOption(model_helper.ProductTranslationFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.ProductTranslationWhere.ProductID.IN(productIDs),
+			model.ProductTranslationWhere.LanguageCode.EQ(translationLanguageCode),
+		),
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -301,11 +306,11 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 		}
 	}
 
-	variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&model.ProductVariantTranslationFilterOption{
-		Conditions: squirrel.Eq{
-			model.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs(),
-			model.ProductVariantTranslationTableName + ".LanguageCode":     translationLanguageCode,
-		},
+	variantTranslations, appErr := s.srv.Product.ProductVariantTranslationsByOption(model_helper.ProductVariantTranslationFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.ProductVariantTranslationWhere.ProductVariantID.IN(variantIDs),
+			model.ProductVariantTranslationWhere.LanguageCode.EQ(translationLanguageCode),
+		),
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -321,7 +326,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	additionalWarehouseLookup := checkoutInfo.DeliveryMethodInfo.GetWarehouseFilterLookup()
-	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockAndPreorderQuantityBulk(
+	insufficientStockErr, appErr := s.srv.Warehouse.CheckStockAndPreorderQuantityBulk(
 		variants,
 		countryCode,
 		quantities,
@@ -335,9 +340,9 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	var (
-		orderLineDatas []*model.OrderLineData
+		orderLineDatas []*model_helper.OrderLineData
 		appErrorChan   = make(chan *model_helper.AppError)
-		dataChan       = make(chan *model.OrderLineData)
+		dataChan       = make(chan *model_helper.OrderLineData)
 		atomicValue    atomic.Int32
 	)
 	defer func() {
@@ -552,7 +557,7 @@ func (s *ServiceCheckout) createOrder(transaction boil.ContextTransactor, checko
 		// store voucher as a fixed value as it this the simplest solution for now.
 		// This will be solved when we refactor the voucher logic to use .discounts
 		// relations
-		_, appErr := s.srv.DiscountService().UpsertOrderDiscount(transaction, &model.OrderDiscount{
+		_, appErr := s.srv.Discount.UpsertOrderDiscount(transaction, &model.OrderDiscount{
 			Type:           model.VOUCHER,
 			ValueType:      model.DISCOUNT_VALUE_TYPE_FIXED,
 			Value:          checkout.DiscountAmount,
@@ -681,7 +686,7 @@ func (s *ServiceCheckout) prepareCheckout(transaction boil.ContextTransactor, ma
 	}
 
 	if needUpdate {
-		_, appErr = s.UpsertCheckouts(transaction, []*model.Checkout{&checkout})
+		_, appErr = s.UpsertCheckouts(transaction, model.CheckoutSlice{&checkout})
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -696,13 +701,13 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]any) *model_h
 		voucher := iface.(*model.Voucher)
 
 		if voucher.UsageLimit != nil && *voucher.UsageLimit != 0 {
-			appErr := s.srv.DiscountService().DecreaseVoucherUsage(voucher)
+			appErr := s.srv.Discount.DecreaseVoucherUsage(voucher)
 			if appErr != nil {
 				return appErr
 			}
 
 			if userEmail, ok := orderData["user_email"]; ok {
-				appErr = s.srv.DiscountService().RemoveVoucherUsageByCustomer(voucher, userEmail.(string))
+				appErr = s.srv.Discount.RemoveVoucherUsageByCustomer(voucher, userEmail.(string))
 				if appErr != nil {
 					return appErr
 				}
@@ -899,7 +904,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 				return nil, false, nil, nil, appErr
 			}
 
-			paymentErr, appErr = s.srv.PaymentService().PaymentRefundOrVoid(dbTransaction, lastActivePaymentOfCheckout, manager, channelSlug)
+			paymentErr, appErr = s.srv.Payment.PaymentRefundOrVoid(dbTransaction, lastActivePaymentOfCheckout, manager, channelSlug)
 			if appErr != nil || paymentErr != nil {
 				return nil, false, nil, paymentErr, appErr
 			}

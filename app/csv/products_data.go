@@ -21,7 +21,7 @@ import (
 // csv writer and list of attribute and warehouse headers.
 //
 // TODO: consider improving me
-func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model_types.JSONString {
+func (a *ServiceCsv) GetProductsData(products model.ProductSlice, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model_types.JSONString {
 	var (
 		exportVariantID     = exportFields.Contains("variants__id")
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
@@ -80,7 +80,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 // If any many to many fields are in export_fields or some attribute_ids exists then
 // dict with product relations fields is returned.
 // Otherwise it returns empty di`ct.
-func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
+func (s *ServiceCsv) getProductsRelationsData(products model.ProductSlice, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
 		relationFields   = exportFields.InterSection(manyToManyFields)
@@ -93,7 +93,7 @@ func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFie
 	return map[string]model_helper.StringMap{}
 }
 
-func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, channelIDs []string) map[string]model_helper.StringMap {
+func (s *ServiceCsv) prepareProductsRelationsData(products model.ProductSlice, fields util.AnyArray[string], attributeIDs, channelIDs []string) map[string]model_helper.StringMap {
 	var (
 		channelFields = ProductExportFields.PRODUCT_CHANNEL_LISTING_FIELDS.DeepCopy()
 		resultData    = map[string]map[string][]any{}
@@ -159,7 +159,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 	return result
 }
 
-func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
+func (s *ServiceCsv) getVariantsRelationsData(products model.ProductSlice, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
 	manyToManyFields := ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"].Values()
 	relationsFields := exportFields.InterSection(manyToManyFields)
 
@@ -170,7 +170,7 @@ func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFie
 	return map[string]model_helper.StringMap{}
 }
 
-func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model_helper.StringMap {
+func (s *ServiceCsv) prepareVariantsRelationsData(products model.ProductSlice, fields util.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model_helper.StringMap {
 	var channelFields = ProductExportFields.VARIANT_CHANNEL_LISTING_FIELDS.DeepCopy()
 
 	// fields = append(fields, "variants__id")

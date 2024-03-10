@@ -17,7 +17,7 @@ import (
 )
 
 // M type is for providing columns and column values to UpdateAll.
-type M map[string]any
+type M map[string]interface{}
 
 // ErrSyncFail occurs during insert when the record could not be retrieved in
 // order to populate default value information. This usually happens when LastInsertId
@@ -4294,6 +4294,7 @@ const (
 	AttributeInputTypeBoolean     AttributeInputType = "boolean"
 	AttributeInputTypeDate        AttributeInputType = "date"
 	AttributeInputTypeDateTime    AttributeInputType = "date_time"
+	AttributeInputTypePlainText   AttributeInputType = "plain_text"
 )
 
 func AllAttributeInputType() []AttributeInputType {
@@ -4308,12 +4309,13 @@ func AllAttributeInputType() []AttributeInputType {
 		AttributeInputTypeBoolean,
 		AttributeInputTypeDate,
 		AttributeInputTypeDateTime,
+		AttributeInputTypePlainText,
 	}
 }
 
 func (e AttributeInputType) IsValid() error {
 	switch e {
-	case AttributeInputTypeDropdown, AttributeInputTypeMultiselect, AttributeInputTypeFile, AttributeInputTypeReference, AttributeInputTypeNumeric, AttributeInputTypeRichText, AttributeInputTypeSwatch, AttributeInputTypeBoolean, AttributeInputTypeDate, AttributeInputTypeDateTime:
+	case AttributeInputTypeDropdown, AttributeInputTypeMultiselect, AttributeInputTypeFile, AttributeInputTypeReference, AttributeInputTypeNumeric, AttributeInputTypeRichText, AttributeInputTypeSwatch, AttributeInputTypeBoolean, AttributeInputTypeDate, AttributeInputTypeDateTime, AttributeInputTypePlainText:
 		return nil
 	default:
 		return errors.New("enum is not valid")
@@ -4346,6 +4348,8 @@ func (e AttributeInputType) Ordinal() int {
 		return 8
 	case AttributeInputTypeDateTime:
 		return 9
+	case AttributeInputTypePlainText:
+		return 10
 
 	default:
 		panic(errors.New("enum is not valid"))
@@ -4356,20 +4360,22 @@ type AttributeEntityType string
 
 // Enum values for AttributeEntityType
 const (
-	AttributeEntityTypePage    AttributeEntityType = "page"
-	AttributeEntityTypeProduct AttributeEntityType = "product"
+	AttributeEntityTypePage           AttributeEntityType = "page"
+	AttributeEntityTypeProduct        AttributeEntityType = "product"
+	AttributeEntityTypeProductVariant AttributeEntityType = "product_variant"
 )
 
 func AllAttributeEntityType() []AttributeEntityType {
 	return []AttributeEntityType{
 		AttributeEntityTypePage,
 		AttributeEntityTypeProduct,
+		AttributeEntityTypeProductVariant,
 	}
 }
 
 func (e AttributeEntityType) IsValid() error {
 	switch e {
-	case AttributeEntityTypePage, AttributeEntityTypeProduct:
+	case AttributeEntityTypePage, AttributeEntityTypeProduct, AttributeEntityTypeProductVariant:
 		return nil
 	default:
 		return errors.New("enum is not valid")
@@ -4386,6 +4392,8 @@ func (e AttributeEntityType) Ordinal() int {
 		return 0
 	case AttributeEntityTypeProduct:
 		return 1
+	case AttributeEntityTypeProductVariant:
+		return 2
 
 	default:
 		panic(errors.New("enum is not valid"))
@@ -4483,7 +4491,7 @@ func (e NullAttributeEntityType) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullAttributeEntityType) Scan(value any) error {
+func (e *NullAttributeEntityType) Scan(value interface{}) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil
@@ -6331,7 +6339,7 @@ func (e NullOrderOrigin) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullOrderOrigin) Scan(value any) error {
+func (e *NullOrderOrigin) Scan(value interface{}) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil
@@ -6671,7 +6679,7 @@ func (e NullCurrency) IsZero() bool {
 }
 
 // Scan implements the Scanner interface.
-func (e *NullCurrency) Scan(value any) error {
+func (e *NullCurrency) Scan(value interface{}) error {
 	if value == nil {
 		e.Val, e.Valid = "", false
 		return nil

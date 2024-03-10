@@ -520,7 +520,7 @@ func (o *Checkout) Payments(mods ...qm.QueryMod) paymentQuery {
 
 // LoadBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -546,7 +546,7 @@ func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckou
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -572,7 +572,7 @@ func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckou
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -636,7 +636,7 @@ func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckou
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -662,7 +662,7 @@ func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout any, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -684,7 +684,7 @@ func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout any, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -748,7 +748,7 @@ func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout any, 
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -774,7 +774,7 @@ func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckou
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -800,7 +800,7 @@ func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckou
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -864,7 +864,7 @@ func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckou
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -890,7 +890,7 @@ func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout any, mod
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -916,7 +916,7 @@ func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout any, mod
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -980,7 +980,7 @@ func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout any, mod
 
 // LoadCollectionPoint allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1006,7 +1006,7 @@ func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeChecko
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -1032,7 +1032,7 @@ func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeChecko
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1096,7 +1096,7 @@ func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeChecko
 
 // LoadCheckoutLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1122,7 +1122,7 @@ func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -1141,7 +1141,7 @@ func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1202,7 +1202,7 @@ func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout
 
 // LoadGiftcardCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1228,7 +1228,7 @@ func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeChec
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -1247,7 +1247,7 @@ func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeChec
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1308,7 +1308,7 @@ func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeChec
 
 // LoadPayments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadPayments(e boil.Executor, singular bool, maybeCheckout any, mods queries.Applicator) error {
+func (checkoutL) LoadPayments(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1334,7 +1334,7 @@ func (checkoutL) LoadPayments(e boil.Executor, singular bool, maybeCheckout any,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &checkoutR{}
@@ -1353,7 +1353,7 @@ func (checkoutL) LoadPayments(e boil.Executor, singular bool, maybeCheckout any,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1428,7 +1428,7 @@ func (o *Checkout) SetBillingAddress(exec boil.Executor, insert bool, related *A
 		strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.Token}
+	values := []interface{}{related.ID, o.Token}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1507,7 +1507,7 @@ func (o *Checkout) SetChannel(exec boil.Executor, insert bool, related *Channel)
 		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.Token}
+	values := []interface{}{related.ID, o.Token}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1553,7 +1553,7 @@ func (o *Checkout) SetShippingMethod(exec boil.Executor, insert bool, related *S
 		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.Token}
+	values := []interface{}{related.ID, o.Token}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1632,7 +1632,7 @@ func (o *Checkout) SetUser(exec boil.Executor, insert bool, related *User) error
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.Token}
+	values := []interface{}{related.ID, o.Token}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1711,7 +1711,7 @@ func (o *Checkout) SetCollectionPoint(exec boil.Executor, insert bool, related *
 		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_point_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.Token}
+	values := []interface{}{related.ID, o.Token}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1792,7 +1792,7 @@ func (o *Checkout) AddCheckoutLines(exec boil.Executor, insert bool, related ...
 				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
 			)
-			values := []any{o.Token, rel.ID}
+			values := []interface{}{o.Token, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1844,7 +1844,7 @@ func (o *Checkout) AddGiftcardCheckouts(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 			)
-			values := []any{o.Token, rel.ID}
+			values := []interface{}{o.Token, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1896,7 +1896,7 @@ func (o *Checkout) AddPayments(exec boil.Executor, insert bool, related ...*Paym
 				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
 			)
-			values := []any{o.Token, rel.ID}
+			values := []interface{}{o.Token, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1938,7 +1938,7 @@ func (o *Checkout) AddPayments(exec boil.Executor, insert bool, related ...*Paym
 // Sets related.R.Checkout's Payments accordingly.
 func (o *Checkout) SetPayments(exec boil.Executor, insert bool, related ...*Payment) error {
 	query := "update \"payments\" set \"checkout_id\" = null where \"checkout_id\" = $1"
-	values := []any{o.Token}
+	values := []interface{}{o.Token}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -2198,7 +2198,7 @@ func (o CheckoutSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2320,7 +2320,7 @@ func (o *Checkout) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2404,7 +2404,7 @@ func (o CheckoutSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), checkoutPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2450,7 +2450,7 @@ func (o *CheckoutSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CheckoutSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), checkoutPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

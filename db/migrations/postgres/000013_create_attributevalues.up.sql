@@ -1,12 +1,13 @@
 CREATE TABLE IF NOT EXISTS attribute_values (
   id varchar(36) NOT NULL PRIMARY KEY,
   name varchar(250) NOT NULL,
-  value varchar(250) NOT NULL,
+  value varchar(255) NOT NULL,
   slug varchar(255) NOT NULL,
   file_url varchar(200),
   content_type varchar(50),
   attribute_id varchar(36) NOT NULL,
   rich_text text,
+  plain_text text,
   "boolean" boolean,
   datetime timestamp with time zone,
   sort_order integer

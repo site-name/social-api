@@ -1113,7 +1113,8 @@ CREATE TYPE attribute_input_type AS ENUM (
 	'swatch',
 	'boolean',
 	'date',
-	'date_time'
+	'date_time',
+	'plain_text'
 );
 END IF;
 END $$;
@@ -1124,7 +1125,8 @@ BEGIN
 THEN
 CREATE TYPE attribute_entity_type AS ENUM (
 	'page',
-	'product'
+	'product',
+	'product_variant'
 );
 END IF;
 END $$;

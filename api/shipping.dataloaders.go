@@ -214,7 +214,7 @@ func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) 
 	}
 
 	for idx, id := range ids {
-		var products model.Products
+		var products model.ProductSlice
 
 		method := methodMap[id]
 		if method != nil {
@@ -351,7 +351,7 @@ func shippingZonesByWarehouseIDLoader(ctx context.Context, warehouseIDs []string
 	var (
 		res        = make([]*dataloader.Result[model.ShippingZones], len(warehouseIDs))
 		embedCtx   = GetContextValue[*web.Context](ctx, WebCtx)
-		warehouses model.Warehouses
+		warehouses model.WarehouseSlice
 	)
 
 	err := embedCtx.App.Srv().Store.
@@ -366,7 +366,7 @@ func shippingZonesByWarehouseIDLoader(ctx context.Context, warehouseIDs []string
 		return res
 	}
 
-	warehouseMap := map[string]*model.WareHouse{}
+	warehouseMap := map[string]*model.Warehouse{}
 	for _, warehouse := range warehouses {
 		warehouseMap[warehouse.Id] = warehouse
 	}

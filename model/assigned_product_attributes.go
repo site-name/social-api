@@ -246,7 +246,7 @@ func (o *AssignedProductAttribute) AssignmentAssignedProductAttributeValues(mods
 
 // LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedProductAttribute any, mods queries.Applicator) error {
+func (assignedProductAttributeL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedProductAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttribute
 	var object *AssignedProductAttribute
 
@@ -272,7 +272,7 @@ func (assignedProductAttributeL) LoadAssignment(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedProductAttributeR{}
@@ -294,7 +294,7 @@ func (assignedProductAttributeL) LoadAssignment(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -358,7 +358,7 @@ func (assignedProductAttributeL) LoadAssignment(e boil.Executor, singular bool, 
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeL) LoadProduct(e boil.Executor, singular bool, maybeAssignedProductAttribute any, mods queries.Applicator) error {
+func (assignedProductAttributeL) LoadProduct(e boil.Executor, singular bool, maybeAssignedProductAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttribute
 	var object *AssignedProductAttribute
 
@@ -384,7 +384,7 @@ func (assignedProductAttributeL) LoadProduct(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedProductAttributeR{}
@@ -406,7 +406,7 @@ func (assignedProductAttributeL) LoadProduct(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -470,7 +470,7 @@ func (assignedProductAttributeL) LoadProduct(e boil.Executor, singular bool, may
 
 // LoadAssignmentAssignedProductAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (assignedProductAttributeL) LoadAssignmentAssignedProductAttributeValues(e boil.Executor, singular bool, maybeAssignedProductAttribute any, mods queries.Applicator) error {
+func (assignedProductAttributeL) LoadAssignmentAssignedProductAttributeValues(e boil.Executor, singular bool, maybeAssignedProductAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttribute
 	var object *AssignedProductAttribute
 
@@ -496,7 +496,7 @@ func (assignedProductAttributeL) LoadAssignmentAssignedProductAttributeValues(e 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedProductAttributeR{}
@@ -515,7 +515,7 @@ func (assignedProductAttributeL) LoadAssignmentAssignedProductAttributeValues(e 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -590,7 +590,7 @@ func (o *AssignedProductAttribute) SetAssignment(exec boil.Executor, insert bool
 		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -636,7 +636,7 @@ func (o *AssignedProductAttribute) SetProduct(exec boil.Executor, insert bool, r
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -684,7 +684,7 @@ func (o *AssignedProductAttribute) AddAssignmentAssignedProductAttributeValues(e
 				strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -913,7 +913,7 @@ func (o AssignedProductAttributeSlice) UpdateAll(exec boil.Executor, cols M) (in
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1035,7 +1035,7 @@ func (o *AssignedProductAttribute) Upsert(exec boil.Executor, updateOnConflict b
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1119,7 +1119,7 @@ func (o AssignedProductAttributeSlice) DeleteAll(exec boil.Executor) (int64, err
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedProductAttributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1165,7 +1165,7 @@ func (o *AssignedProductAttributeSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AssignedProductAttributeSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedProductAttributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

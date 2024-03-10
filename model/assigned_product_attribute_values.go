@@ -230,7 +230,7 @@ func (o *AssignedProductAttributeValue) Value(mods ...qm.QueryMod) attributeValu
 
 // LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedProductAttributeValue any, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -256,7 +256,7 @@ func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular b
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedProductAttributeValueR{}
@@ -278,7 +278,7 @@ func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular b
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -342,7 +342,7 @@ func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular b
 
 // LoadValue allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadValue(e boil.Executor, singular bool, maybeAssignedProductAttributeValue any, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadValue(e boil.Executor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -368,7 +368,7 @@ func (assignedProductAttributeValueL) LoadValue(e boil.Executor, singular bool, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &assignedProductAttributeValueR{}
@@ -390,7 +390,7 @@ func (assignedProductAttributeValueL) LoadValue(e boil.Executor, singular bool, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -468,7 +468,7 @@ func (o *AssignedProductAttributeValue) SetAssignment(exec boil.Executor, insert
 		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -514,7 +514,7 @@ func (o *AssignedProductAttributeValue) SetValue(exec boil.Executor, insert bool
 		strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -739,7 +739,7 @@ func (o AssignedProductAttributeValueSlice) UpdateAll(exec boil.Executor, cols M
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -861,7 +861,7 @@ func (o *AssignedProductAttributeValue) Upsert(exec boil.Executor, updateOnConfl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -945,7 +945,7 @@ func (o AssignedProductAttributeValueSlice) DeleteAll(exec boil.Executor) (int64
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedProductAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -991,7 +991,7 @@ func (o *AssignedProductAttributeValueSlice) ReloadAll(exec boil.Executor) error
 	}
 
 	slice := AssignedProductAttributeValueSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedProductAttributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

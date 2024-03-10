@@ -293,7 +293,7 @@ func (r *Resolver) OrderFulfillmentCancel(ctx context.Context, args struct {
 		return nil, model_helper.NewAppError("OrderFulfillmentCancel", "app.order.fulfillment_cannot_cancel.app_error", nil, "this fulfillment can not be canceled", http.StatusNotAcceptable)
 	}
 
-	var warehouse *model.WareHouse = nil
+	var warehouse *model.Warehouse = nil
 	if args.Input != nil && args.Input.WarehouseID != nil {
 		warehouse, appErr = embedCtx.App.Srv().WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
 			Conditions: squirrel.Expr(model.WarehouseTableName+".Id = ?", *args.Input.WarehouseID),

@@ -336,7 +336,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 // create a new allocation for this order line in this stock.
 //
 // NOTE: allocate is default to false
-func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *model.WareHouse, quantity int, allocate bool) *model_helper.AppError {
+func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *model.Warehouse, quantity int, allocate bool) *model_helper.AppError {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return model_helper.NewAppError("IncreseStock", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -1089,7 +1089,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction boil.Contex
 		order = preorderAllocation.GetOrderLine().Order
 	}
 
-	var wareHouse *model.WareHouse
+	var wareHouse *model.Warehouse
 
 	if order.ShippingMethodID != nil {
 		orderShippingMethod, appErr := s.srv.

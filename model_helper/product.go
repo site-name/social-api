@@ -1,6 +1,7 @@
 package model_helper
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -485,4 +486,20 @@ func PreorderAllocationIsValid(p model.PreorderAllocation) *AppError {
 	}
 
 	return nil
+}
+
+func ProductVariantString(p model.ProductVariant) string {
+	if p.Name != "" {
+		return p.Name
+	}
+
+	return fmt.Sprintf("ID:%s", p.ID)
+}
+
+type ProductTranslationFilterOption struct {
+	CommonQueryOptions
+}
+
+type ProductVariantTranslationFilterOption struct {
+	CommonQueryOptions
 }

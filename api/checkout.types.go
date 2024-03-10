@@ -503,13 +503,13 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
 // NOTE:
 // keys are strings that have format uuid__uuid.
 // The first uuid part is userID, second is channelID
-func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*model.Checkout] {
+func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[model.CheckoutSlice] {
 	var (
-		res        = make([]*dataloader.Result[[]*model.Checkout], len(keys))
+		res        = make([]*dataloader.Result[model.CheckoutSlice], len(keys))
 		userIDs    []string
 		channelIDs []string
 
-		checkoutsMap = map[string][]*model.Checkout{} // checkoutsMap has keys are each items of given param keys
+		checkoutsMap = map[string]model.CheckoutSlice{} // checkoutsMap has keys are each items of given param keys
 	)
 
 	for _, item := range keys {
@@ -536,7 +536,7 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		})
 	if appErr != nil {
 		for idx := range keys {
-			res[idx] = &dataloader.Result[[]*model.Checkout]{Error: appErr}
+			res[idx] = &dataloader.Result[model.CheckoutSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -548,15 +548,15 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		}
 	}
 	for idx, key := range keys {
-		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
+		res[idx] = &dataloader.Result[model.CheckoutSlice]{Data: checkoutsMap[key]}
 	}
 	return res
 }
 
-func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.Checkout] {
+func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[model.CheckoutSlice] {
 	var (
-		res          = make([]*dataloader.Result[[]*model.Checkout], len(userIDs))
-		checkoutsMap = map[string][]*model.Checkout{} // keys are user ids
+		res          = make([]*dataloader.Result[model.CheckoutSlice], len(userIDs))
+		checkoutsMap = map[string]model.CheckoutSlice{} // keys are user ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -571,7 +571,7 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		})
 	if appErr != nil {
 		for idx := range userIDs {
-			res[idx] = &dataloader.Result[[]*model.Checkout]{Error: appErr}
+			res[idx] = &dataloader.Result[model.CheckoutSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -582,7 +582,7 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		}
 	}
 	for idx, key := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
+		res[idx] = &dataloader.Result[model.CheckoutSlice]{Data: checkoutsMap[key]}
 	}
 	return res
 }
@@ -628,8 +628,8 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		addresses          []*model.Address
 		users              []*model.User
 		shippingMethods    model.ShippingMethodSlice
-		collectionPoints   []*model.WareHouse
-		checkouts          []*model.Checkout
+		collectionPoints   model.WarehouseSlice
+		checkouts          model.CheckoutSlice
 
 		shippingMethodIDChannelIDPairs []string // slice of shippingMethodID__channelID
 		shippingMethodChannelListings  []*model.ShippingMethodChannelListing
@@ -638,9 +638,9 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		userMap                         = map[string]*model.User{}
 		shippingMethodMap               = map[string]*model.ShippingMethod{}
 		shippingMethodChannelListingMap = map[string]*model.ShippingMethodChannelListing{}
-		collectionPointMap              = map[string]*model.WareHouse{}
+		collectionPointMap              = map[string]*model.Warehouse{}
 
-		deliveryMethod any // must be either *model.ShippingMethod or *model.WareHouse
+		deliveryMethod any // must be either *model.ShippingMethod or *model.Warehouse
 		errs           []error
 
 		checkoutInfoMap = map[string]*model_helper.CheckoutInfo{} // keys are checkout tokens
@@ -719,7 +719,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
-	collectionPointMap = lo.SliceToMap(collectionPoints, func(s *model.WareHouse) (string, *model.WareHouse) { return s.Id, s })
+	collectionPointMap = lo.SliceToMap(collectionPoints, func(s *model.Warehouse) (string, *model.Warehouse) { return s.Id, s })
 
 	for i := 0; i < min(len(tokens), len(checkouts), len(channels)); i++ {
 		var (

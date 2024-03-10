@@ -113,14 +113,14 @@ func (w whereHelperComplianceStatus) GTE(x ComplianceStatus) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperComplianceStatus) IN(slice []ComplianceStatus) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperComplianceStatus) NIN(slice []ComplianceStatus) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -148,14 +148,14 @@ func (w whereHelperComplianceType) GTE(x ComplianceType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperComplianceType) IN(slice []ComplianceType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperComplianceType) NIN(slice []ComplianceType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -327,7 +327,7 @@ func (o *Compliance) User(mods ...qm.QueryMod) userQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (complianceL) LoadUser(e boil.Executor, singular bool, maybeCompliance any, mods queries.Applicator) error {
+func (complianceL) LoadUser(e boil.Executor, singular bool, maybeCompliance interface{}, mods queries.Applicator) error {
 	var slice []*Compliance
 	var object *Compliance
 
@@ -353,7 +353,7 @@ func (complianceL) LoadUser(e boil.Executor, singular bool, maybeCompliance any,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &complianceR{}
@@ -375,7 +375,7 @@ func (complianceL) LoadUser(e boil.Executor, singular bool, maybeCompliance any,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -453,7 +453,7 @@ func (o *Compliance) SetUser(exec boil.Executor, insert bool, related *User) err
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, compliancePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -678,7 +678,7 @@ func (o ComplianceSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -800,7 +800,7 @@ func (o *Compliance) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -884,7 +884,7 @@ func (o ComplianceSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), compliancePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -930,7 +930,7 @@ func (o *ComplianceSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ComplianceSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), compliancePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

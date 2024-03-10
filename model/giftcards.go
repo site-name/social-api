@@ -428,7 +428,7 @@ func (o *Giftcard) OrderGiftcards(mods ...qm.QueryMod) orderGiftcardQuery {
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -454,7 +454,7 @@ func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard any, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -480,7 +480,7 @@ func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard any, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -544,7 +544,7 @@ func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard any, 
 
 // LoadUsedBy allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -570,7 +570,7 @@ func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard any, m
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -596,7 +596,7 @@ func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard any, m
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -660,7 +660,7 @@ func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard any, m
 
 // LoadCreatedBy allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -686,7 +686,7 @@ func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard any
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -712,7 +712,7 @@ func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard any
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -776,7 +776,7 @@ func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard any
 
 // LoadGiftcardCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -802,7 +802,7 @@ func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGift
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -821,7 +821,7 @@ func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGift
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -882,7 +882,7 @@ func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGift
 
 // LoadGiftcardEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -908,7 +908,7 @@ func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcar
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -927,7 +927,7 @@ func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcar
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -988,7 +988,7 @@ func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcar
 
 // LoadOrderGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadOrderGiftcards(e boil.Executor, singular bool, maybeGiftcard any, mods queries.Applicator) error {
+func (giftcardL) LoadOrderGiftcards(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -1014,7 +1014,7 @@ func (giftcardL) LoadOrderGiftcards(e boil.Executor, singular bool, maybeGiftcar
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &giftcardR{}
@@ -1033,7 +1033,7 @@ func (giftcardL) LoadOrderGiftcards(e boil.Executor, singular bool, maybeGiftcar
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1108,7 +1108,7 @@ func (o *Giftcard) SetProduct(exec boil.Executor, insert bool, related *Product)
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1187,7 +1187,7 @@ func (o *Giftcard) SetUsedBy(exec boil.Executor, insert bool, related *User) err
 		strmangle.SetParamNames("\"", "\"", 1, []string{"used_by_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1266,7 +1266,7 @@ func (o *Giftcard) SetCreatedBy(exec boil.Executor, insert bool, related *User) 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"created_by_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1347,7 +1347,7 @@ func (o *Giftcard) AddGiftcardCheckouts(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1399,7 +1399,7 @@ func (o *Giftcard) AddGiftcardEvents(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardEventPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1451,7 +1451,7 @@ func (o *Giftcard) AddOrderGiftcards(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1680,7 +1680,7 @@ func (o GiftcardSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1802,7 +1802,7 @@ func (o *Giftcard) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1886,7 +1886,7 @@ func (o GiftcardSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1932,7 +1932,7 @@ func (o *GiftcardSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := GiftcardSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), giftcardPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

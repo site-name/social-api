@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS attributes (
   storefront_search_position integer NOT NULL,
   available_in_grid boolean NOT NULL,
   metadata jsonb,
-  private_metadata jsonb
+  private_metadata jsonb,
+  max_sfort_order integer
 );
 
 

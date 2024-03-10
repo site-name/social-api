@@ -486,3 +486,26 @@ type FulfillmentLineFilterOption struct {
 	RelatedFulfillmentConds qm.QueryMod
 	Preload                 []string
 }
+
+func OrderLineGetUnitPrice(o model.OrderLine) goprices.TaxedMoney {
+	unitPriceNet := goprices.Money{
+		Amount:   o.UnitPriceNetAmount,
+		Currency: string(o.Currency),
+	}
+	unitPriceGross := goprices.Money{
+		Amount:   o.UnitPriceGrossAmount,
+		Currency: string(o.Currency),
+	}
+	return goprices.TaxedMoney{
+		Net:   unitPriceNet,
+		Gross: unitPriceGross,
+	}
+}
+
+type OrderLineData struct {
+	Line        model.OrderLine
+	Quantity    int
+	Variant     *model.ProductVariant // can be nil
+	Replace     bool                  // default false
+	WarehouseID *string               // can be nil
+}

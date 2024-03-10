@@ -229,7 +229,7 @@ func (o *SaleCategory) Sale(mods ...qm.QueryMod) saleQuery {
 
 // LoadCategory allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCategory any, mods queries.Applicator) error {
+func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCategory interface{}, mods queries.Applicator) error {
 	var slice []*SaleCategory
 	var object *SaleCategory
 
@@ -255,7 +255,7 @@ func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCateg
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleCategoryR{}
@@ -277,7 +277,7 @@ func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCateg
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -341,7 +341,7 @@ func (saleCategoryL) LoadCategory(e boil.Executor, singular bool, maybeSaleCateg
 
 // LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleCategoryL) LoadSale(e boil.Executor, singular bool, maybeSaleCategory any, mods queries.Applicator) error {
+func (saleCategoryL) LoadSale(e boil.Executor, singular bool, maybeSaleCategory interface{}, mods queries.Applicator) error {
 	var slice []*SaleCategory
 	var object *SaleCategory
 
@@ -367,7 +367,7 @@ func (saleCategoryL) LoadSale(e boil.Executor, singular bool, maybeSaleCategory 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &saleCategoryR{}
@@ -389,7 +389,7 @@ func (saleCategoryL) LoadSale(e boil.Executor, singular bool, maybeSaleCategory 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -467,7 +467,7 @@ func (o *SaleCategory) SetCategory(exec boil.Executor, insert bool, related *Cat
 		strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -513,7 +513,7 @@ func (o *SaleCategory) SetSale(exec boil.Executor, insert bool, related *Sale) e
 		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -738,7 +738,7 @@ func (o SaleCategorySlice) UpdateAll(exec boil.Executor, cols M) (int64, error) 
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -860,7 +860,7 @@ func (o *SaleCategory) Upsert(exec boil.Executor, updateOnConflict bool, conflic
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -944,7 +944,7 @@ func (o SaleCategorySlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleCategoryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -990,7 +990,7 @@ func (o *SaleCategorySlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := SaleCategorySlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleCategoryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

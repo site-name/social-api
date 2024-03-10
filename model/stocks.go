@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -22,11 +23,12 @@ import (
 
 // Stock is an object representing the database table.
 type Stock struct {
-	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt        int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	WarehouseID      string `boil:"warehouse_id" json:"warehouse_id" toml:"warehouse_id" yaml:"warehouse_id"`
-	ProductVariantID string `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
-	Quantity         int    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	ID               string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt        int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	WarehouseID      string                 `boil:"warehouse_id" json:"warehouse_id" toml:"warehouse_id" yaml:"warehouse_id"`
+	ProductVariantID string                 `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	Quantity         int                    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	Annotations      model_types.JSONString `boil:"annotations" json:"-" toml:"-" yaml:"-"`
 
 	R *stockR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L stockL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,12 +40,14 @@ var StockColumns = struct {
 	WarehouseID      string
 	ProductVariantID string
 	Quantity         string
+	Annotations      string
 }{
 	ID:               "id",
 	CreatedAt:        "created_at",
 	WarehouseID:      "warehouse_id",
 	ProductVariantID: "product_variant_id",
 	Quantity:         "quantity",
+	Annotations:      "annotations",
 }
 
 var StockTableColumns = struct {
@@ -52,12 +56,14 @@ var StockTableColumns = struct {
 	WarehouseID      string
 	ProductVariantID string
 	Quantity         string
+	Annotations      string
 }{
 	ID:               "stocks.id",
 	CreatedAt:        "stocks.created_at",
 	WarehouseID:      "stocks.warehouse_id",
 	ProductVariantID: "stocks.product_variant_id",
 	Quantity:         "stocks.quantity",
+	Annotations:      "stocks.annotations",
 }
 
 // Generated where
@@ -68,12 +74,14 @@ var StockWhere = struct {
 	WarehouseID      whereHelperstring
 	ProductVariantID whereHelperstring
 	Quantity         whereHelperint
+	Annotations      whereHelpermodel_types_JSONString
 }{
 	ID:               whereHelperstring{field: "\"stocks\".\"id\""},
 	CreatedAt:        whereHelperint64{field: "\"stocks\".\"created_at\""},
 	WarehouseID:      whereHelperstring{field: "\"stocks\".\"warehouse_id\""},
 	ProductVariantID: whereHelperstring{field: "\"stocks\".\"product_variant_id\""},
 	Quantity:         whereHelperint{field: "\"stocks\".\"quantity\""},
+	Annotations:      whereHelpermodel_types_JSONString{field: "\"stocks\".\"annotations\""},
 }
 
 // StockRels is where relationship names are stored.
@@ -134,9 +142,9 @@ func (r *stockR) GetFulfillmentLines() FulfillmentLineSlice {
 type stockL struct{}
 
 var (
-	stockAllColumns            = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity"}
+	stockAllColumns            = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity", "annotations"}
 	stockColumnsWithoutDefault = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity"}
-	stockColumnsWithDefault    = []string{}
+	stockColumnsWithDefault    = []string{"annotations"}
 	stockPrimaryKeyColumns     = []string{"id"}
 	stockGeneratedColumns      = []string{}
 )
@@ -284,7 +292,7 @@ func (o *Stock) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
+func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -310,7 +318,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock any,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -332,7 +340,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock any,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -396,7 +404,7 @@ func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock any,
 
 // LoadWarehouse allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
+func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -422,7 +430,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock any, mods
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -444,7 +452,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock any, mods
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -508,7 +516,7 @@ func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock any, mods
 
 // LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
+func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -534,7 +542,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock any, mo
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -553,7 +561,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock any, mo
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -614,7 +622,7 @@ func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock any, mo
 
 // LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock any, mods queries.Applicator) error {
+func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -640,7 +648,7 @@ func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock an
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &stockR{}
@@ -659,7 +667,7 @@ func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock an
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -734,7 +742,7 @@ func (o *Stock) SetProductVariant(exec boil.Executor, insert bool, related *Prod
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -780,7 +788,7 @@ func (o *Stock) SetWarehouse(exec boil.Executor, insert bool, related *Warehouse
 		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -828,7 +836,7 @@ func (o *Stock) AddAllocations(exec boil.Executor, insert bool, related ...*Allo
 				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -880,7 +888,7 @@ func (o *Stock) AddFulfillmentLines(exec boil.Executor, insert bool, related ...
 				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -922,7 +930,7 @@ func (o *Stock) AddFulfillmentLines(exec boil.Executor, insert bool, related ...
 // Sets related.R.Stock's FulfillmentLines accordingly.
 func (o *Stock) SetFulfillmentLines(exec boil.Executor, insert bool, related ...*FulfillmentLine) error {
 	query := "update \"fulfillment_lines\" set \"stock_id\" = null where \"stock_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1182,7 +1190,7 @@ func (o StockSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1304,7 +1312,7 @@ func (o *Stock) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumn
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1388,7 +1396,7 @@ func (o StockSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), stockPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1434,7 +1442,7 @@ func (o *StockSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := StockSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), stockPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

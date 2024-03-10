@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/model_types"
+	"github.com/sitename/sitename/modules/util"
 )
 
 func AttributePageIsValid(a model.AttributePage) *AppError {
@@ -284,4 +285,48 @@ func DeepCopyAttributeValueSlice(av model.AttributeValueSlice) model.AttributeVa
 		res[i] = DeepCopyAttributeValue(v)
 	}
 	return res
+}
+
+var (
+	ALLOWED_IN_VARIANT_SELECTION = util.AnyArray[model.AttributeInputType]{model.AttributeInputTypeDropdown, model.AttributeInputTypeBoolean, model.AttributeInputTypeSwatch, model.AttributeInputTypeNumeric, model.AttributeInputTypeNumeric}
+	TYPES_WITH_CHOICES           = util.AnyArray[model.AttributeInputType]{model.AttributeInputTypeDropdown, model.AttributeInputTypeMultiselect, model.AttributeInputTypeSwatch}
+	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[model.AttributeInputType]{model.AttributeInputTypeFile, model.AttributeInputTypeReference, model.AttributeInputTypeRichText, model.AttributeInputTypeNumeric, model.AttributeInputTypeDate, model.AttributeInputTypeDateTime, model.AttributeInputTypePlainText} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[model.AttributeInputType]{model.AttributeInputTypeRichText, model.AttributeInputTypePlainText}
+)
+
+var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]model.AttributeInputType{
+	"filterable_in_storefront": {
+		model.AttributeInputTypeDropdown,
+		model.AttributeInputTypeMultiselect,
+		model.AttributeInputTypeNumeric,
+		model.AttributeInputTypeSwatch,
+		model.AttributeInputTypeBoolean,
+		model.AttributeInputTypeDate,
+		model.AttributeInputTypeDateTime,
+	},
+	"filterable_in_dashboard": {
+		model.AttributeInputTypeDropdown,
+		model.AttributeInputTypeMultiselect,
+		model.AttributeInputTypeNumeric,
+		model.AttributeInputTypeSwatch,
+		model.AttributeInputTypeBoolean,
+		model.AttributeInputTypeDate,
+		model.AttributeInputTypeDateTime,
+	},
+	"available_in_grid": {
+		model.AttributeInputTypeDropdown,
+		model.AttributeInputTypeMultiselect,
+		model.AttributeInputTypeNumeric,
+		model.AttributeInputTypeSwatch,
+		model.AttributeInputTypeBoolean,
+		model.AttributeInputTypeDate,
+		model.AttributeInputTypeDateTime,
+	},
+	"storefront_search_position": {
+		model.AttributeInputTypeDropdown,
+		model.AttributeInputTypeMultiselect,
+		model.AttributeInputTypeBoolean,
+		model.AttributeInputTypeDate,
+		model.AttributeInputTypeDateTime,
+	},
 }

@@ -98,11 +98,11 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option model_helper.WarehouseFil
 
 func (wh *SqlWareHouseStore) FilterByOprion(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, error) {
 	conds := wh.commonQueryBuilder(option)
-	return model.Warehouses(conds...).All(wh.GetReplica())
+	return model.WarehouseSlice(conds...).All(wh.GetReplica())
 }
 
 func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.Warehouse, error) {
-	warehouse, err := model.Warehouses(
+	warehouse, err := model.WarehouseSlice(
 		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Stocks, model.StockTableColumns.WarehouseID, model.WarehouseTableColumns.ID)),
 		model.StockWhere.ID.EQ(stockID),
 	).One(ws.GetReplica())
@@ -143,7 +143,7 @@ func (w *SqlWareHouseStore) Delete(transaction boil.ContextTransactor, ids []str
 		transaction = w.GetMaster()
 	}
 
-	_, err := model.Warehouses(model.WarehouseWhere.ID.IN(ids)).DeleteAll(transaction)
+	_, err := model.WarehouseSlice(model.WarehouseWhere.ID.IN(ids)).DeleteAll(transaction)
 	return err
 }
 

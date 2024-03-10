@@ -232,7 +232,7 @@ func (o *Wishlist) WishlistItems(mods ...qm.QueryMod) wishlistItemQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist any, mods queries.Applicator) error {
+func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
 	var slice []*Wishlist
 	var object *Wishlist
 
@@ -258,7 +258,7 @@ func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist any, mod
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &wishlistR{}
@@ -280,7 +280,7 @@ func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist any, mod
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -344,7 +344,7 @@ func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist any, mod
 
 // LoadWishlistItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist any, mods queries.Applicator) error {
+func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
 	var slice []*Wishlist
 	var object *Wishlist
 
@@ -370,7 +370,7 @@ func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &wishlistR{}
@@ -389,7 +389,7 @@ func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -464,7 +464,7 @@ func (o *Wishlist) SetUser(exec boil.Executor, insert bool, related *User) error
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, wishlistPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -512,7 +512,7 @@ func (o *Wishlist) AddWishlistItems(exec boil.Executor, insert bool, related ...
 				strmangle.SetParamNames("\"", "\"", 1, []string{"wishlist_id"}),
 				strmangle.WhereClause("\"", "\"", 2, wishlistItemPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -741,7 +741,7 @@ func (o WishlistSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -863,7 +863,7 @@ func (o *Wishlist) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -947,7 +947,7 @@ func (o WishlistSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -993,7 +993,7 @@ func (o *WishlistSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := WishlistSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

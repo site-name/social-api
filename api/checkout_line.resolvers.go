@@ -121,7 +121,7 @@ func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, 
 
 	var cleanInput = func(
 		checkout *model.Checkout,
-		variants model.ProductVariants,
+		variants model.ProductVariantSlice,
 		quantities []int,
 		checkoutInfo *model_helper.CheckoutInfo,
 		lines model_helper.CheckoutLineInfos,

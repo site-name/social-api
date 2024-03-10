@@ -407,7 +407,7 @@ func (o ClusterDiscoverySlice) UpdateAll(exec boil.Executor, cols M) (int64, err
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -529,7 +529,7 @@ func (o *ClusterDiscovery) Upsert(exec boil.Executor, updateOnConflict bool, con
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -613,7 +613,7 @@ func (o ClusterDiscoverySlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), clusterDiscoveryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -659,7 +659,7 @@ func (o *ClusterDiscoverySlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ClusterDiscoverySlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), clusterDiscoveryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

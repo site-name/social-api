@@ -83,14 +83,14 @@ func (w whereHelperInclusionType) GTE(x InclusionType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperInclusionType) IN(slice []InclusionType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperInclusionType) NIN(slice []InclusionType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -250,7 +250,7 @@ func (o *ShippingMethodPostalCodeRule) ShippingMethod(mods ...qm.QueryMod) shipp
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodPostalCodeRuleL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodPostalCodeRule any, mods queries.Applicator) error {
+func (shippingMethodPostalCodeRuleL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodPostalCodeRule interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodPostalCodeRule
 	var object *ShippingMethodPostalCodeRule
 
@@ -276,7 +276,7 @@ func (shippingMethodPostalCodeRuleL) LoadShippingMethod(e boil.Executor, singula
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodPostalCodeRuleR{}
@@ -298,7 +298,7 @@ func (shippingMethodPostalCodeRuleL) LoadShippingMethod(e boil.Executor, singula
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -376,7 +376,7 @@ func (o *ShippingMethodPostalCodeRule) SetShippingMethod(exec boil.Executor, ins
 		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodPostalCodeRulePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -601,7 +601,7 @@ func (o ShippingMethodPostalCodeRuleSlice) UpdateAll(exec boil.Executor, cols M)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -723,7 +723,7 @@ func (o *ShippingMethodPostalCodeRule) Upsert(exec boil.Executor, updateOnConfli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -807,7 +807,7 @@ func (o ShippingMethodPostalCodeRuleSlice) DeleteAll(exec boil.Executor) (int64,
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodPostalCodeRulePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -853,7 +853,7 @@ func (o *ShippingMethodPostalCodeRuleSlice) ReloadAll(exec boil.Executor) error 
 	}
 
 	slice := ShippingMethodPostalCodeRuleSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodPostalCodeRulePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

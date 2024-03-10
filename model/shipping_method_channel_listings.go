@@ -259,7 +259,7 @@ func (o *ShippingMethodChannelListing) ShippingMethod(mods ...qm.QueryMod) shipp
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeShippingMethodChannelListing any, mods queries.Applicator) error {
+func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodChannelListing
 	var object *ShippingMethodChannelListing
 
@@ -285,7 +285,7 @@ func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodChannelListingR{}
@@ -307,7 +307,7 @@ func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -371,7 +371,7 @@ func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool,
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodChannelListingL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodChannelListing any, mods queries.Applicator) error {
+func (shippingMethodChannelListingL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodChannelListing
 	var object *ShippingMethodChannelListing
 
@@ -397,7 +397,7 @@ func (shippingMethodChannelListingL) LoadShippingMethod(e boil.Executor, singula
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodChannelListingR{}
@@ -419,7 +419,7 @@ func (shippingMethodChannelListingL) LoadShippingMethod(e boil.Executor, singula
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -497,7 +497,7 @@ func (o *ShippingMethodChannelListing) SetChannel(exec boil.Executor, insert boo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodChannelListingPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -543,7 +543,7 @@ func (o *ShippingMethodChannelListing) SetShippingMethod(exec boil.Executor, ins
 		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodChannelListingPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -768,7 +768,7 @@ func (o ShippingMethodChannelListingSlice) UpdateAll(exec boil.Executor, cols M)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -890,7 +890,7 @@ func (o *ShippingMethodChannelListing) Upsert(exec boil.Executor, updateOnConfli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -974,7 +974,7 @@ func (o ShippingMethodChannelListingSlice) DeleteAll(exec boil.Executor) (int64,
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1020,7 +1020,7 @@ func (o *ShippingMethodChannelListingSlice) ReloadAll(exec boil.Executor) error 
 	}
 
 	slice := ShippingMethodChannelListingSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

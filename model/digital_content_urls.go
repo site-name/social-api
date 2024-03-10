@@ -244,7 +244,7 @@ func (o *DigitalContentURL) Line(mods ...qm.QueryMod) orderLineQuery {
 
 // LoadContent allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigitalContentURL any, mods queries.Applicator) error {
+func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -270,7 +270,7 @@ func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigit
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &digitalContentURLR{}
@@ -292,7 +292,7 @@ func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigit
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -356,7 +356,7 @@ func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigit
 
 // LoadLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalContentURL any, mods queries.Applicator) error {
+func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -382,7 +382,7 @@ func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalC
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &digitalContentURLR{}
@@ -408,7 +408,7 @@ func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalC
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -486,7 +486,7 @@ func (o *DigitalContentURL) SetContent(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"content_id"}),
 		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -532,7 +532,7 @@ func (o *DigitalContentURL) SetLine(exec boil.Executor, insert bool, related *Or
 		strmangle.SetParamNames("\"", "\"", 1, []string{"line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -779,7 +779,7 @@ func (o DigitalContentURLSlice) UpdateAll(exec boil.Executor, cols M) (int64, er
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -901,7 +901,7 @@ func (o *DigitalContentURL) Upsert(exec boil.Executor, updateOnConflict bool, co
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -985,7 +985,7 @@ func (o DigitalContentURLSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), digitalContentURLPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1031,7 +1031,7 @@ func (o *DigitalContentURLSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := DigitalContentURLSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), digitalContentURLPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

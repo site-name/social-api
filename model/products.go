@@ -543,7 +543,7 @@ func (o *Product) VoucherProducts(mods ...qm.QueryMod) voucherProductQuery {
 
 // LoadAssignedProductAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -569,7 +569,7 @@ func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, ma
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -588,7 +588,7 @@ func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, ma
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -649,7 +649,7 @@ func (productL) LoadAssignedProductAttributes(e boil.Executor, singular bool, ma
 
 // LoadCustomProductAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -675,7 +675,7 @@ func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, mayb
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -694,7 +694,7 @@ func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, mayb
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -755,7 +755,7 @@ func (productL) LoadCustomProductAttributes(e boil.Executor, singular bool, mayb
 
 // LoadGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -781,7 +781,7 @@ func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct any, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -800,7 +800,7 @@ func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct any, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -861,7 +861,7 @@ func (productL) LoadGiftcards(e boil.Executor, singular bool, maybeProduct any, 
 
 // LoadProductChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -887,7 +887,7 @@ func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -906,7 +906,7 @@ func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -967,7 +967,7 @@ func (productL) LoadProductChannelListings(e boil.Executor, singular bool, maybe
 
 // LoadProductCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -993,7 +993,7 @@ func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProd
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1012,7 +1012,7 @@ func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProd
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1073,7 +1073,7 @@ func (productL) LoadProductCollections(e boil.Executor, singular bool, maybeProd
 
 // LoadProductMedia allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1099,7 +1099,7 @@ func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct an
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1118,7 +1118,7 @@ func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct an
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1179,7 +1179,7 @@ func (productL) LoadProductMedia(e boil.Executor, singular bool, maybeProduct an
 
 // LoadProductTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1205,7 +1205,7 @@ func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybePro
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1224,7 +1224,7 @@ func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybePro
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1285,7 +1285,7 @@ func (productL) LoadProductTranslations(e boil.Executor, singular bool, maybePro
 
 // LoadProductVariants allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1311,7 +1311,7 @@ func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1330,7 +1330,7 @@ func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1391,7 +1391,7 @@ func (productL) LoadProductVariants(e boil.Executor, singular bool, maybeProduct
 
 // LoadSaleProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1417,7 +1417,7 @@ func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct an
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1436,7 +1436,7 @@ func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct an
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1497,7 +1497,7 @@ func (productL) LoadSaleProducts(e boil.Executor, singular bool, maybeProduct an
 
 // LoadShippingMethodExcludedProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1523,7 +1523,7 @@ func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular boo
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1542,7 +1542,7 @@ func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular boo
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1603,7 +1603,7 @@ func (productL) LoadShippingMethodExcludedProducts(e boil.Executor, singular boo
 
 // LoadVoucherProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct any, mods queries.Applicator) error {
+func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
 	var slice []*Product
 	var object *Product
 
@@ -1629,7 +1629,7 @@ func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productR{}
@@ -1648,7 +1648,7 @@ func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1725,7 +1725,7 @@ func (o *Product) AddAssignedProductAttributes(exec boil.Executor, insert bool, 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductAttributePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1777,7 +1777,7 @@ func (o *Product) AddCustomProductAttributes(exec boil.Executor, insert bool, re
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customProductAttributePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1829,7 +1829,7 @@ func (o *Product) AddGiftcards(exec boil.Executor, insert bool, related ...*Gift
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1871,7 +1871,7 @@ func (o *Product) AddGiftcards(exec boil.Executor, insert bool, related ...*Gift
 // Sets related.R.Product's Giftcards accordingly.
 func (o *Product) SetGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	query := "update \"giftcards\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1954,7 +1954,7 @@ func (o *Product) AddProductChannelListings(exec boil.Executor, insert bool, rel
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2006,7 +2006,7 @@ func (o *Product) AddProductCollections(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2058,7 +2058,7 @@ func (o *Product) AddProductMedia(exec boil.Executor, insert bool, related ...*P
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productMediumPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2110,7 +2110,7 @@ func (o *Product) AddProductTranslations(exec boil.Executor, insert bool, relate
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productTranslationPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2162,7 +2162,7 @@ func (o *Product) AddProductVariants(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productVariantPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2214,7 +2214,7 @@ func (o *Product) AddSaleProducts(exec boil.Executor, insert bool, related ...*S
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2266,7 +2266,7 @@ func (o *Product) AddShippingMethodExcludedProducts(exec boil.Executor, insert b
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2318,7 +2318,7 @@ func (o *Product) AddVoucherProducts(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherProductPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -2547,7 +2547,7 @@ func (o ProductSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -2669,7 +2669,7 @@ func (o *Product) Upsert(exec boil.Executor, updateOnConflict bool, conflictColu
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -2753,7 +2753,7 @@ func (o ProductSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -2799,7 +2799,7 @@ func (o *ProductSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ProductSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

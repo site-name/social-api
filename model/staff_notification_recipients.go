@@ -209,7 +209,7 @@ func (o *StaffNotificationRecipient) User(mods ...qm.QueryMod) userQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (staffNotificationRecipientL) LoadUser(e boil.Executor, singular bool, maybeStaffNotificationRecipient any, mods queries.Applicator) error {
+func (staffNotificationRecipientL) LoadUser(e boil.Executor, singular bool, maybeStaffNotificationRecipient interface{}, mods queries.Applicator) error {
 	var slice []*StaffNotificationRecipient
 	var object *StaffNotificationRecipient
 
@@ -235,7 +235,7 @@ func (staffNotificationRecipientL) LoadUser(e boil.Executor, singular bool, mayb
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &staffNotificationRecipientR{}
@@ -261,7 +261,7 @@ func (staffNotificationRecipientL) LoadUser(e boil.Executor, singular bool, mayb
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -339,7 +339,7 @@ func (o *StaffNotificationRecipient) SetUser(exec boil.Executor, insert bool, re
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, staffNotificationRecipientPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -597,7 +597,7 @@ func (o StaffNotificationRecipientSlice) UpdateAll(exec boil.Executor, cols M) (
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -719,7 +719,7 @@ func (o *StaffNotificationRecipient) Upsert(exec boil.Executor, updateOnConflict
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -803,7 +803,7 @@ func (o StaffNotificationRecipientSlice) DeleteAll(exec boil.Executor) (int64, e
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), staffNotificationRecipientPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -849,7 +849,7 @@ func (o *StaffNotificationRecipientSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := StaffNotificationRecipientSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), staffNotificationRecipientPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

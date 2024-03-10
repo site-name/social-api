@@ -80,6 +80,7 @@ func (as *SqlAttributeValueStore) Delete(tx boil.ContextTransactor, ids []string
 	if tx == nil {
 		tx = as.GetMaster()
 	}
+
 	return model.AttributeValues(model.AttributeValueWhere.ID.IN(ids)).DeleteAll(tx)
 }
 

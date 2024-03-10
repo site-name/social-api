@@ -72,9 +72,9 @@ var (
 	FulfillmentLinesByFulfillmentIDLoader   = dataloader.NewBatchedLoader(fulfillmentLinesByFulfillmentIDLoader, dataloader.WithBatchCapacity[string, []*model.FulfillmentLine](batchCapacity))
 
 	// checkout
-	CheckoutByUserLoader                   = dataloader.NewBatchedLoader(checkoutByUserLoader, dataloader.WithBatchCapacity[string, []*model.Checkout](batchCapacity))
-	CheckoutByUserAndChannelLoader         = dataloader.NewBatchedLoader(checkoutByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*model.Checkout](batchCapacity))
-	CheckoutLinesByCheckoutTokenLoader     = dataloader.NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLine](batchCapacity))
+	CheckoutByUserLoader                   = dataloader.NewBatchedLoader(checkoutByUserLoader, dataloader.WithBatchCapacity[string, model.CheckoutSlice](batchCapacity))
+	CheckoutByUserAndChannelLoader         = dataloader.NewBatchedLoader(checkoutByUserAndChannelLoader, dataloader.WithBatchCapacity[string, model.CheckoutSlice](batchCapacity))
+	CheckoutLinesByCheckoutTokenLoader     = dataloader.NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, model.CheckoutLineSlice](batchCapacity))
 	CheckoutByTokenLoader                  = dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *model.Checkout](batchCapacity))
 	CheckoutLineByIdLoader                 = dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *model.CheckoutLine](batchCapacity))
 	CheckoutLinesInfoByCheckoutTokenLoader = dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, model_helper.CheckoutLineInfos](batchCapacity))
@@ -136,7 +136,7 @@ var (
 	ProductVariantsBySaleIDLoader                       = dataloader.NewBatchedLoader(productVariantsBySaleIDLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
 
 	// warehouse
-	WarehouseByIdLoader            = dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *model.WareHouse](batchCapacity))
+	WarehouseByIdLoader            = dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *model.Warehouse](batchCapacity))
 	AllocationsByOrderLineIdLoader = dataloader.NewBatchedLoader(allocationsByOrderLineIdLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
 	StocksByIDLoader               = dataloader.NewBatchedLoader(stocksByIDLoader, dataloader.WithBatchCapacity[string, *model.Stock](batchCapacity))
 	AllocationsByStockIDLoader     = dataloader.NewBatchedLoader(allocationsByStockIDLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
@@ -154,7 +154,7 @@ var (
 	//
 	// NOTE: keys have format of variantID__countryCode__channelID
 	AvailableQuantityByProductVariantIdCountryCodeAndChannelIDLoader = dataloader.NewBatchedLoader(availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader, dataloader.WithBatchCapacity[string, int](batchCapacity))
-	WarehousesByShippingZoneIDLoader                                 = dataloader.NewBatchedLoader(warehousesByShippingZoneIDLoader, dataloader.WithBatchCapacity[string, model.Warehouses](batchCapacity))
+	WarehousesByShippingZoneIDLoader                                 = dataloader.NewBatchedLoader(warehousesByShippingZoneIDLoader, dataloader.WithBatchCapacity[string, model.WarehouseSlice](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity))

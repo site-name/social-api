@@ -31,6 +31,7 @@ type AttributeValue struct {
 	ContentType model_types.NullString `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
 	AttributeID string                 `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
 	RichText    model_types.NullString `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
+	PlainText   model_types.NullString `boil:"plain_text" json:"plain_text,omitempty" toml:"plain_text" yaml:"plain_text,omitempty"`
 	Boolean     model_types.NullBool   `boil:"boolean" json:"boolean,omitempty" toml:"boolean" yaml:"boolean,omitempty"`
 	Datetime    model_types.NullTime   `boil:"datetime" json:"datetime,omitempty" toml:"datetime" yaml:"datetime,omitempty"`
 	SortOrder   model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
@@ -48,6 +49,7 @@ var AttributeValueColumns = struct {
 	ContentType string
 	AttributeID string
 	RichText    string
+	PlainText   string
 	Boolean     string
 	Datetime    string
 	SortOrder   string
@@ -60,6 +62,7 @@ var AttributeValueColumns = struct {
 	ContentType: "content_type",
 	AttributeID: "attribute_id",
 	RichText:    "rich_text",
+	PlainText:   "plain_text",
 	Boolean:     "boolean",
 	Datetime:    "datetime",
 	SortOrder:   "sort_order",
@@ -74,6 +77,7 @@ var AttributeValueTableColumns = struct {
 	ContentType string
 	AttributeID string
 	RichText    string
+	PlainText   string
 	Boolean     string
 	Datetime    string
 	SortOrder   string
@@ -86,6 +90,7 @@ var AttributeValueTableColumns = struct {
 	ContentType: "attribute_values.content_type",
 	AttributeID: "attribute_values.attribute_id",
 	RichText:    "attribute_values.rich_text",
+	PlainText:   "attribute_values.plain_text",
 	Boolean:     "attribute_values.boolean",
 	Datetime:    "attribute_values.datetime",
 	SortOrder:   "attribute_values.sort_order",
@@ -154,6 +159,7 @@ var AttributeValueWhere = struct {
 	ContentType whereHelpermodel_types_NullString
 	AttributeID whereHelperstring
 	RichText    whereHelpermodel_types_NullString
+	PlainText   whereHelpermodel_types_NullString
 	Boolean     whereHelpermodel_types_NullBool
 	Datetime    whereHelpermodel_types_NullTime
 	SortOrder   whereHelpermodel_types_NullInt
@@ -166,6 +172,7 @@ var AttributeValueWhere = struct {
 	ContentType: whereHelpermodel_types_NullString{field: "\"attribute_values\".\"content_type\""},
 	AttributeID: whereHelperstring{field: "\"attribute_values\".\"attribute_id\""},
 	RichText:    whereHelpermodel_types_NullString{field: "\"attribute_values\".\"rich_text\""},
+	PlainText:   whereHelpermodel_types_NullString{field: "\"attribute_values\".\"plain_text\""},
 	Boolean:     whereHelpermodel_types_NullBool{field: "\"attribute_values\".\"boolean\""},
 	Datetime:    whereHelpermodel_types_NullTime{field: "\"attribute_values\".\"datetime\""},
 	SortOrder:   whereHelpermodel_types_NullInt{field: "\"attribute_values\".\"sort_order\""},
@@ -219,9 +226,9 @@ func (r *attributeValueR) GetValueAssignedProductAttributeValues() AssignedProdu
 type attributeValueL struct{}
 
 var (
-	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
+	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "plain_text", "boolean", "datetime", "sort_order"}
 	attributeValueColumnsWithoutDefault = []string{"id", "name", "value", "slug", "attribute_id"}
-	attributeValueColumnsWithDefault    = []string{"file_url", "content_type", "rich_text", "boolean", "datetime", "sort_order"}
+	attributeValueColumnsWithDefault    = []string{"file_url", "content_type", "rich_text", "plain_text", "boolean", "datetime", "sort_order"}
 	attributeValuePrimaryKeyColumns     = []string{"id"}
 	attributeValueGeneratedColumns      = []string{}
 )
@@ -358,7 +365,7 @@ func (o *AttributeValue) ValueAssignedProductAttributeValues(mods ...qm.QueryMod
 
 // LoadAttribute allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttributeValue any, mods queries.Applicator) error {
+func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -384,7 +391,7 @@ func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttrib
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeValueR{}
@@ -406,7 +413,7 @@ func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttrib
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -470,7 +477,7 @@ func (attributeValueL) LoadAttribute(e boil.Executor, singular bool, maybeAttrib
 
 // LoadValueAssignedPageAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueAssignedPageAttributeValues(e boil.Executor, singular bool, maybeAttributeValue any, mods queries.Applicator) error {
+func (attributeValueL) LoadValueAssignedPageAttributeValues(e boil.Executor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -496,7 +503,7 @@ func (attributeValueL) LoadValueAssignedPageAttributeValues(e boil.Executor, sin
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeValueR{}
@@ -515,7 +522,7 @@ func (attributeValueL) LoadValueAssignedPageAttributeValues(e boil.Executor, sin
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -576,7 +583,7 @@ func (attributeValueL) LoadValueAssignedPageAttributeValues(e boil.Executor, sin
 
 // LoadValueAssignedProductAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueAssignedProductAttributeValues(e boil.Executor, singular bool, maybeAttributeValue any, mods queries.Applicator) error {
+func (attributeValueL) LoadValueAssignedProductAttributeValues(e boil.Executor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -602,7 +609,7 @@ func (attributeValueL) LoadValueAssignedProductAttributeValues(e boil.Executor, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeValueR{}
@@ -621,7 +628,7 @@ func (attributeValueL) LoadValueAssignedProductAttributeValues(e boil.Executor, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -696,7 +703,7 @@ func (o *AttributeValue) SetAttribute(exec boil.Executor, insert bool, related *
 		strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 		strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -744,7 +751,7 @@ func (o *AttributeValue) AddValueAssignedPageAttributeValues(exec boil.Executor,
 				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedPageAttributeValuePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -796,7 +803,7 @@ func (o *AttributeValue) AddValueAssignedProductAttributeValues(exec boil.Execut
 				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1025,7 +1032,7 @@ func (o AttributeValueSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1147,7 +1154,7 @@ func (o *AttributeValue) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1231,7 +1238,7 @@ func (o AttributeValueSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1277,7 +1284,7 @@ func (o *AttributeValueSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AttributeValueSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeValuePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

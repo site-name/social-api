@@ -38,7 +38,7 @@ func (a *ServiceProduct) ProductVariantGetPrice(
 	channelListing *model.ProductVariantChannelListing,
 	discounts []*model_helper.DiscountInfo, // optional
 ) (*goprices.Money, *model_helper.AppError) {
-	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
+	return a.srv.Discount.CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
 
 // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
@@ -70,7 +70,7 @@ func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model
 }
 
 // ProductVariantsByOption returns a list of product variants satisfy given option
-func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariants, *model_helper.AppError) {
+func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, *model_helper.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -229,7 +229,7 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 	return numDeleted, nil
 }
 
-func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError {
+func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariantSlice, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError {
 	// create tx:
 	tx := s.srv.Store.GetMaster().Begin()
 	if tx.Error != nil {
@@ -269,6 +269,6 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	return nil
 }
 
-// func (s *ServiceProduct) GetProductVariantsForRequester(id, sku, channelIdOrSlug string, requesterIsShopStaff bool) (model.ProductVariants, *model_helper.AppError) {
+// func (s *ServiceProduct) GetProductVariantsForRequester(id, sku, channelIdOrSlug string, requesterIsShopStaff bool) (model.ProductVariantSlice, *model_helper.AppError) {
 // 	s.srv.AccountService().Per
 // }

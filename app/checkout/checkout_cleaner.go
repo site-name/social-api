@@ -3,15 +3,16 @@ package checkout
 import (
 	"net/http"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// CleanCheckoutShipping
 func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) *model_helper.AppError {
-	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+	productIDs := lo.Map(lines.Products(), func(item *model.Product, _ int) string { return item.ID })
+	requireShipping, appErr := a.srv.Product.ProductsRequireShipping(productIDs)
 	if appErr != nil {
 		return appErr
 	}
@@ -27,7 +28,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model_helper.Checko
 			return model_helper.NewAppError("CleanCheckoutShipping", "app.discount.shipping_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
-		if !deliveruMethodInfo.IsMethodInValidMethods(&checkoutInfo) {
+		if !deliveruMethodInfo.IsMethodInValidMethods(checkoutInfo) {
 			appErr = a.ClearDeliveryMethod(checkoutInfo)
 			if appErr != nil {
 				return appErr
@@ -47,7 +48,7 @@ func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model_helper.Checkout
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model_helper.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(tx boil.ContextTransactor, manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo, lastPayment *model.Payment) (*model_helper.PaymentError, *model_helper.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}
@@ -58,7 +59,7 @@ func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.P
 	}
 
 	if !isFullyPaid {
-		paymentErr, appErr := a.srv.PaymentService().PaymentRefundOrVoid(tx, lastPayment, manager, checkoutInfo.Channel.Slug)
+		paymentErr, appErr := a.srv.Payment.PaymentRefundOrVoid(tx, lastPayment, manager, checkoutInfo.Channel.Slug)
 		if paymentErr != nil || appErr != nil {
 			return paymentErr, appErr
 		}

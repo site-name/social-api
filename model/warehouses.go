@@ -109,14 +109,14 @@ func (w whereHelperWarehouseClickAndCollectOption) GTE(x WarehouseClickAndCollec
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperWarehouseClickAndCollectOption) IN(slice []WarehouseClickAndCollectOption) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperWarehouseClickAndCollectOption) NIN(slice []WarehouseClickAndCollectOption) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -382,7 +382,7 @@ func (o *Warehouse) WarehouseShippingZones(mods ...qm.QueryMod) warehouseShippin
 
 // LoadAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse any, mods queries.Applicator) error {
+func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -408,7 +408,7 @@ func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse any
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &warehouseR{}
@@ -434,7 +434,7 @@ func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse any
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -498,7 +498,7 @@ func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse any
 
 // LoadCollectionPointCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, maybeWarehouse any, mods queries.Applicator) error {
+func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -524,7 +524,7 @@ func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, m
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &warehouseR{}
@@ -543,7 +543,7 @@ func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, m
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -604,7 +604,7 @@ func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, m
 
 // LoadCollectionPointOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, maybeWarehouse any, mods queries.Applicator) error {
+func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -630,7 +630,7 @@ func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, mayb
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &warehouseR{}
@@ -649,7 +649,7 @@ func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, mayb
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -710,7 +710,7 @@ func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, mayb
 
 // LoadStocks allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse any, mods queries.Applicator) error {
+func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -736,7 +736,7 @@ func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse any,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &warehouseR{}
@@ -755,7 +755,7 @@ func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse any,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -816,7 +816,7 @@ func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse any,
 
 // LoadWarehouseShippingZones allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadWarehouseShippingZones(e boil.Executor, singular bool, maybeWarehouse any, mods queries.Applicator) error {
+func (warehouseL) LoadWarehouseShippingZones(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -842,7 +842,7 @@ func (warehouseL) LoadWarehouseShippingZones(e boil.Executor, singular bool, may
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &warehouseR{}
@@ -861,7 +861,7 @@ func (warehouseL) LoadWarehouseShippingZones(e boil.Executor, singular bool, may
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -936,7 +936,7 @@ func (o *Warehouse) SetAddress(exec boil.Executor, insert bool, related *Address
 		strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, warehousePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1017,7 +1017,7 @@ func (o *Warehouse) AddCollectionPointCheckouts(exec boil.Executor, insert bool,
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_point_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.Token}
+			values := []interface{}{o.ID, rel.Token}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1059,7 +1059,7 @@ func (o *Warehouse) AddCollectionPointCheckouts(exec boil.Executor, insert bool,
 // Sets related.R.CollectionPoint's CollectionPointCheckouts accordingly.
 func (o *Warehouse) SetCollectionPointCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"collection_point_id\" = null where \"collection_point_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1142,7 +1142,7 @@ func (o *Warehouse) AddCollectionPointOrders(exec boil.Executor, insert bool, re
 				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_point_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1184,7 +1184,7 @@ func (o *Warehouse) AddCollectionPointOrders(exec boil.Executor, insert bool, re
 // Sets related.R.CollectionPoint's CollectionPointOrders accordingly.
 func (o *Warehouse) SetCollectionPointOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"collection_point_id\" = null where \"collection_point_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1267,7 +1267,7 @@ func (o *Warehouse) AddStocks(exec boil.Executor, insert bool, related ...*Stock
 				strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 				strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1319,7 +1319,7 @@ func (o *Warehouse) AddWarehouseShippingZones(exec boil.Executor, insert bool, r
 				strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 				strmangle.WhereClause("\"", "\"", 2, warehouseShippingZonePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1548,7 +1548,7 @@ func (o WarehouseSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1670,7 +1670,7 @@ func (o *Warehouse) Upsert(exec boil.Executor, updateOnConflict bool, conflictCo
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1754,7 +1754,7 @@ func (o WarehouseSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), warehousePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1800,7 +1800,7 @@ func (o *WarehouseSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := WarehouseSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), warehousePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

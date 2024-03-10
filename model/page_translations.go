@@ -230,7 +230,7 @@ func (o *PageTranslation) Page(mods ...qm.QueryMod) pageQuery {
 
 // LoadPage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (pageTranslationL) LoadPage(e boil.Executor, singular bool, maybePageTranslation any, mods queries.Applicator) error {
+func (pageTranslationL) LoadPage(e boil.Executor, singular bool, maybePageTranslation interface{}, mods queries.Applicator) error {
 	var slice []*PageTranslation
 	var object *PageTranslation
 
@@ -256,7 +256,7 @@ func (pageTranslationL) LoadPage(e boil.Executor, singular bool, maybePageTransl
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageTranslationR{}
@@ -278,7 +278,7 @@ func (pageTranslationL) LoadPage(e boil.Executor, singular bool, maybePageTransl
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -356,7 +356,7 @@ func (o *PageTranslation) SetPage(exec boil.Executor, insert bool, related *Page
 		strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 		strmangle.WhereClause("\"", "\"", 2, pageTranslationPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -581,7 +581,7 @@ func (o PageTranslationSlice) UpdateAll(exec boil.Executor, cols M) (int64, erro
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -703,7 +703,7 @@ func (o *PageTranslation) Upsert(exec boil.Executor, updateOnConflict bool, conf
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -787,7 +787,7 @@ func (o PageTranslationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pageTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -833,7 +833,7 @@ func (o *PageTranslationSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := PageTranslationSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pageTranslationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -215,7 +215,7 @@ func (o *UserAccessToken) User(mods ...qm.QueryMod) userQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userAccessTokenL) LoadUser(e boil.Executor, singular bool, maybeUserAccessToken any, mods queries.Applicator) error {
+func (userAccessTokenL) LoadUser(e boil.Executor, singular bool, maybeUserAccessToken interface{}, mods queries.Applicator) error {
 	var slice []*UserAccessToken
 	var object *UserAccessToken
 
@@ -241,7 +241,7 @@ func (userAccessTokenL) LoadUser(e boil.Executor, singular bool, maybeUserAccess
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &userAccessTokenR{}
@@ -263,7 +263,7 @@ func (userAccessTokenL) LoadUser(e boil.Executor, singular bool, maybeUserAccess
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -341,7 +341,7 @@ func (o *UserAccessToken) SetUser(exec boil.Executor, insert bool, related *User
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userAccessTokenPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -566,7 +566,7 @@ func (o UserAccessTokenSlice) UpdateAll(exec boil.Executor, cols M) (int64, erro
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -688,7 +688,7 @@ func (o *UserAccessToken) Upsert(exec boil.Executor, updateOnConflict bool, conf
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -772,7 +772,7 @@ func (o UserAccessTokenSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userAccessTokenPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -818,7 +818,7 @@ func (o *UserAccessTokenSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := UserAccessTokenSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userAccessTokenPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

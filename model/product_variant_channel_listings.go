@@ -104,14 +104,14 @@ func (w whereHelperNullCurrency) GTE(x NullCurrency) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperNullCurrency) IN(slice []NullCurrency) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperNullCurrency) NIN(slice []NullCurrency) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -303,7 +303,7 @@ func (o *ProductVariantChannelListing) Variant(mods ...qm.QueryMod) productVaria
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeProductVariantChannelListing any, mods queries.Applicator) error {
+func (productVariantChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ProductVariantChannelListing
 	var object *ProductVariantChannelListing
 
@@ -329,7 +329,7 @@ func (productVariantChannelListingL) LoadChannel(e boil.Executor, singular bool,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantChannelListingR{}
@@ -351,7 +351,7 @@ func (productVariantChannelListingL) LoadChannel(e boil.Executor, singular bool,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -415,7 +415,7 @@ func (productVariantChannelListingL) LoadChannel(e boil.Executor, singular bool,
 
 // LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantChannelListingL) LoadVariant(e boil.Executor, singular bool, maybeProductVariantChannelListing any, mods queries.Applicator) error {
+func (productVariantChannelListingL) LoadVariant(e boil.Executor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ProductVariantChannelListing
 	var object *ProductVariantChannelListing
 
@@ -441,7 +441,7 @@ func (productVariantChannelListingL) LoadVariant(e boil.Executor, singular bool,
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &productVariantChannelListingR{}
@@ -463,7 +463,7 @@ func (productVariantChannelListingL) LoadVariant(e boil.Executor, singular bool,
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -541,7 +541,7 @@ func (o *ProductVariantChannelListing) SetChannel(exec boil.Executor, insert boo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -587,7 +587,7 @@ func (o *ProductVariantChannelListing) SetVariant(exec boil.Executor, insert boo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -812,7 +812,7 @@ func (o ProductVariantChannelListingSlice) UpdateAll(exec boil.Executor, cols M)
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -934,7 +934,7 @@ func (o *ProductVariantChannelListing) Upsert(exec boil.Executor, updateOnConfli
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1018,7 +1018,7 @@ func (o ProductVariantChannelListingSlice) DeleteAll(exec boil.Executor) (int64,
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1064,7 +1064,7 @@ func (o *ProductVariantChannelListingSlice) ReloadAll(exec boil.Executor) error 
 	}
 
 	slice := ProductVariantChannelListingSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantChannelListingPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

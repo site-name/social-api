@@ -243,7 +243,7 @@ func (o *PageType) Pages(mods ...qm.QueryMod) pageQuery {
 
 // LoadAttributePages allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageType any, mods queries.Applicator) error {
+func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
 	var slice []*PageType
 	var object *PageType
 
@@ -269,7 +269,7 @@ func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageTyp
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageTypeR{}
@@ -288,7 +288,7 @@ func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageTyp
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -349,7 +349,7 @@ func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageTyp
 
 // LoadPages allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageTypeL) LoadPages(e boil.Executor, singular bool, maybePageType any, mods queries.Applicator) error {
+func (pageTypeL) LoadPages(e boil.Executor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
 	var slice []*PageType
 	var object *PageType
 
@@ -375,7 +375,7 @@ func (pageTypeL) LoadPages(e boil.Executor, singular bool, maybePageType any, mo
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &pageTypeR{}
@@ -394,7 +394,7 @@ func (pageTypeL) LoadPages(e boil.Executor, singular bool, maybePageType any, mo
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -471,7 +471,7 @@ func (o *PageType) AddAttributePages(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"page_type_id"}),
 				strmangle.WhereClause("\"", "\"", 2, attributePagePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -523,7 +523,7 @@ func (o *PageType) AddPages(exec boil.Executor, insert bool, related ...*Page) e
 				strmangle.SetParamNames("\"", "\"", 1, []string{"page_type_id"}),
 				strmangle.WhereClause("\"", "\"", 2, pagePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -752,7 +752,7 @@ func (o PageTypeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -874,7 +874,7 @@ func (o *PageType) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -958,7 +958,7 @@ func (o PageTypeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pageTypePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1004,7 +1004,7 @@ func (o *PageTypeSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := PageTypeSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pageTypePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS attribute_translations (
   id varchar(36) NOT NULL PRIMARY KEY,
   attribute_id varchar(36) NOT NULL,
   language_code language_code NOT NULL,
-  name varchar(100) NOT NULL
+  name varchar(255) NOT NULL
 );
 
 ALTER TABLE ONLY attribute_translations

@@ -365,7 +365,7 @@ func (o SystemSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -487,7 +487,7 @@ func (o *System) Upsert(exec boil.Executor, updateOnConflict bool, conflictColum
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -571,7 +571,7 @@ func (o SystemSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), systemPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -617,7 +617,7 @@ func (o *SystemSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := SystemSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), systemPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

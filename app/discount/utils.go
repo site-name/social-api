@@ -16,18 +16,9 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-// IncreaseVoucherUsage increase voucher's uses by 1
-func (a *ServiceDiscount) IncreaseVoucherUsage(voucher *model.Voucher) *model_helper.AppError {
-	voucher.Used++
-	_, appErr := a.UpsertVoucher(voucher)
-	return appErr
-}
-
-// DecreaseVoucherUsage decreases voucher's uses by 1
-func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *model.Voucher) *model_helper.AppError {
-	voucher.Used--
-	_, appErr := a.UpsertVoucher(voucher)
-	return appErr
+func (a *ServiceDiscount) AlterVoucherUsage(voucher model.Voucher, usageDelta int) (*model.Voucher, *model_helper.AppError) {
+	voucher.Used += usageDelta
+	return a.UpsertVoucher(&voucher)
 }
 
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
@@ -90,7 +81,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model_helper.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.CollectionSlice, discountInfos []*model_helper.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model_helper.AppError) {
 	var (
 		atomicValue                 atomic.Int32
 		appErrChan                  = make(chan *model_helper.AppError)
@@ -543,7 +534,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	atmicValue.Add(4)
 
 	go func() {
-		categories, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
+		categories, appErr := s.srv.Product.CategoriesByOption(&model.CategoryFilterOption{
 			SaleID: squirrel.Eq{model.SaleCategoryTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
@@ -554,7 +545,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	}()
 
 	go func() {
-		_, collections, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
+		_, collections, appErr := s.srv.Product.CollectionsByOption(&model.CollectionFilterOption{
 			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
@@ -565,7 +556,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	}()
 
 	go func() {
-		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
+		products, appErr := s.srv.Product.ProductsByOption(&model.ProductFilterOption{
 			SaleID: squirrel.Eq{model.SaleProductTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
@@ -576,7 +567,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	}()
 
 	go func() {
-		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+		productVariants, appErr := s.srv.Product.ProductVariantsByOption(&model.ProductVariantFilterOption{
 			SaleID: squirrel.Eq{model.SaleProductVariantTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
@@ -595,13 +586,13 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 			atmicValue.Add(-1)
 
 			switch t := v.(type) {
-			case model.Categories:
+			case model.CategorySlice:
 				res["categories"] = t.IDs(false)
-			case model.Products:
+			case model.ProductSlice:
 				res["products"] = t.IDs()
-			case model.ProductVariants:
+			case model.ProductVariantSlice:
 				res["variants"] = t.IDs()
-			case model.Collections:
+			case model.CollectionSlice:
 				res["collections"] = t.IDs()
 			}
 		}
@@ -612,7 +603,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 // IsValidPromoCode checks if given code is valid giftcard code or voucher code
 func (s *ServiceDiscount) IsValidPromoCode(code string) bool {
-	codeIsGiftcard, appErr := s.srv.GiftcardService().PromoCodeIsGiftCard(code)
+	codeIsGiftcard, appErr := s.srv.Giftcard.PromoCodeIsGiftCard(code)
 	if appErr != nil {
 		s.srv.Log.Error("IsValidPromoCode", slog.Err(appErr))
 	}

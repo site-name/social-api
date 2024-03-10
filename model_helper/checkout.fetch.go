@@ -99,7 +99,6 @@ func (c CheckoutInfo) GetCustomerEmail() string {
 // DeliveryMethodBaseInterface
 type DeliveryMethodBaseInterface interface {
 	WarehousePK() string
-	// DeliveryMethodOrderField() map[string]any
 	IsLocalCollectionPoint() bool
 	DeliveryMethodName() map[string]string
 	GetWarehouseFilterLookup() map[string]any // the returning map contains nothing or {"warehouse_id": <an UUID>}
@@ -113,6 +112,7 @@ type DeliveryMethodBaseInterface interface {
 
 	String() string
 	Self() any // Self returns the current object which implements DeliveryMethodBaseInterface
+	// DeliveryMethodOrderField() map[string]any
 }
 
 // check if some struct types satisfy DeliveryMethodBaseInterface
@@ -128,15 +128,15 @@ type DeliveryMethodBase struct {
 	ShippingAddress *model.Address // can be nil
 }
 
-func (d *DeliveryMethodBase) Self() any {
+func (d DeliveryMethodBase) Self() any {
 	return d
 }
 
-func (d *DeliveryMethodBase) String() string {
+func (d DeliveryMethodBase) String() string {
 	return "DeliveryMethodBase"
 }
 
-func (d *DeliveryMethodBase) WarehousePK() string {
+func (d DeliveryMethodBase) WarehousePK() string {
 	return ""
 }
 
@@ -146,40 +146,40 @@ func (d *DeliveryMethodBase) WarehousePK() string {
 // 	}
 // }
 
-func (d *DeliveryMethodBase) IsLocalCollectionPoint() bool {
+func (d DeliveryMethodBase) IsLocalCollectionPoint() bool {
 	return false
 }
 
-func (d *DeliveryMethodBase) DeliveryMethodName() map[string]string {
+func (d DeliveryMethodBase) DeliveryMethodName() map[string]string {
 	return map[string]string{"shipping_method_name": ""}
 }
 
-func (d *DeliveryMethodBase) GetWarehouseFilterLookup() map[string]any {
+func (d DeliveryMethodBase) GetWarehouseFilterLookup() map[string]any {
 	return map[string]any{}
 }
 
-func (d *DeliveryMethodBase) IsValidDeliveryMethod() bool {
+func (d DeliveryMethodBase) IsValidDeliveryMethod() bool {
 	return false
 }
 
-func (d *DeliveryMethodBase) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
+func (d DeliveryMethodBase) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
 	return false
 }
 
-func (d *DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) error {
+func (d DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) error {
 	checkoutInfo.ShippingMethodChannelListings = nil
 	return nil
 }
 
-func (d *DeliveryMethodBase) GetDeliveryMethod() any {
+func (d DeliveryMethodBase) GetDeliveryMethod() any {
 	return d.DeliveryMethod
 }
 
-func (d *DeliveryMethodBase) GetShippingAddress() *model.Address {
+func (d DeliveryMethodBase) GetShippingAddress() *model.Address {
 	return d.ShippingAddress
 }
 
-func (d *DeliveryMethodBase) GetOrderKey() string {
+func (d DeliveryMethodBase) GetOrderKey() string {
 	return "shipping_method"
 }
 
@@ -190,15 +190,15 @@ type ShippingMethodInfo struct {
 	ShippingAddress *model.Address // can be nil
 }
 
-func (d *ShippingMethodInfo) Self() any {
-	return d
+func (s ShippingMethodInfo) Self() any {
+	return s
 }
 
-func (d *ShippingMethodInfo) String() string {
+func (_ ShippingMethodInfo) String() string {
 	return "ShippingMethodInfo"
 }
 
-func (s *ShippingMethodInfo) DeliveryMethodName() map[string]string {
+func (s ShippingMethodInfo) DeliveryMethodName() map[string]string {
 	return map[string]string{"shipping_method_name": s.DeliveryMethod.Name}
 }
 
@@ -212,11 +212,11 @@ func (s *ShippingMethodInfo) DeliveryMethodName() map[string]string {
 // 	return map[string]any{}
 // }
 
-func (s *ShippingMethodInfo) IsValidDeliveryMethod() bool {
+func (s ShippingMethodInfo) IsValidDeliveryMethod() bool {
 	return s.ShippingAddress != nil
 }
 
-func (s *ShippingMethodInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
+func (s ShippingMethodInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
 	validDeliveryMethods := checkoutInfo.ValidDeliveryMethods()
 	if len(validDeliveryMethods) == 0 {
 		return false
@@ -234,7 +234,7 @@ func (s *ShippingMethodInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) b
 // ErrorNotUsable
 var ErrorNotUsable = errors.New("this method is not usable, please use a method with same name and is a instance method of service checkout")
 
-func (d *ShippingMethodInfo) UpdateChannelListings(_ *CheckoutInfo) error {
+func (_ ShippingMethodInfo) UpdateChannelListings(_ *CheckoutInfo) error {
 	return ErrorNotUsable
 }
 
@@ -245,11 +245,11 @@ type CollectionPointInfo struct {
 	ShippingAddress *model.Address
 }
 
-func (d *CollectionPointInfo) Self() any {
+func (d CollectionPointInfo) Self() any {
 	return d
 }
 
-func (d *CollectionPointInfo) String() string {
+func (_ CollectionPointInfo) String() string {
 	return "CollectionPointInfo"
 }
 
@@ -259,30 +259,30 @@ func (d *CollectionPointInfo) String() string {
 // 	}
 // }
 
-func (c *CollectionPointInfo) WarehousePK() string {
+func (c CollectionPointInfo) WarehousePK() string {
 	return c.DeliveryMethod.ID
 }
 
-func (c *CollectionPointInfo) IsLocalCollectionPoint() bool {
+func (c CollectionPointInfo) IsLocalCollectionPoint() bool {
 	return c.DeliveryMethod.ClickAndCollectOption == model.WarehouseClickAndCollectOptionLocal
 }
 
-func (c *CollectionPointInfo) DeliveryMethodName() map[string]string {
+func (c CollectionPointInfo) DeliveryMethodName() map[string]string {
 	return map[string]string{"collection_point_name": c.DeliveryMethod.Name}
 }
 
-func (c *CollectionPointInfo) GetWarehouseFilterLookup() map[string]any {
+func (c CollectionPointInfo) GetWarehouseFilterLookup() map[string]any {
 	if c.IsLocalCollectionPoint() {
 		return map[string]any{"warehouse_id": c.DeliveryMethod.ID}
 	}
 	return make(map[string]any)
 }
 
-func (c *CollectionPointInfo) IsValidDeliveryMethod() bool {
+func (c CollectionPointInfo) IsValidDeliveryMethod() bool {
 	return c.ShippingAddress != nil && model_types.PrimitiveIsNotNilAndEqual(c.DeliveryMethod.AddressID.String, c.ShippingAddress.ID)
 }
 
-func (c *CollectionPointInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
+func (c CollectionPointInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) bool {
 	if len(checkoutInfo.ValidDeliveryMethods()) == 0 {
 		return false
 	}
@@ -296,6 +296,6 @@ func (c *CollectionPointInfo) IsMethodInValidMethods(checkoutInfo CheckoutInfo) 
 	return false
 }
 
-func (c *CollectionPointInfo) GetOrderKey() string {
+func (_ CollectionPointInfo) GetOrderKey() string {
 	return "collection_point"
 }

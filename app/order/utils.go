@@ -349,13 +349,13 @@ func (a *ServiceOrder) UpdateOrderPrices(tx *gorm.DB, order model.Order, manager
 	return a.RecalculateOrder(tx, &order, map[string]any{})
 }
 
-func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError) {
+func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.WarehouseSlice, *model_helper.AppError) {
 	// check shipping required:
 	if !lo.SomeBy(lines, func(l *model.OrderLine) bool { return l.IsShippingRequired }) {
-		return model.Warehouses{}, nil
+		return model.WarehouseSlice{}, nil
 	}
 	if !addressCountryCode.IsValid() {
-		return model.Warehouses{}, nil
+		return model.WarehouseSlice{}, nil
 	}
 
 	warehouses, err := s.srv.Store.Warehouse().ApplicableForClickAndCollectOrderLines(lines, addressCountryCode)
@@ -373,9 +373,9 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, vouch
 	}
 
 	var (
-		discountedProducts    model.Products
-		discountedCategories  model.Categories
-		discountedCollections model.Collections
+		discountedProducts    model.ProductSlice
+		discountedCategories  model.CategorySlice
+		discountedCollections model.CollectionSlice
 
 		atomicValue atomic.Int32
 		appErrChan  = make(chan *model_helper.AppError)
@@ -457,7 +457,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, vouch
 			if orderLine.ProductVariant != nil {
 				var (
 					lineProduct     = orderLine.ProductVariant.Product
-					lineCollections model.Collections
+					lineCollections model.CollectionSlice
 					lineCategory    *model.Category
 				)
 				if lineProduct != nil {
@@ -1191,7 +1191,7 @@ func (a *ServiceOrder) RestockOrderLines(order *model.Order, manager interfaces.
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *ServiceOrder) RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError) {
+func (a *ServiceOrder) RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.Warehouse) (appErr *model_helper.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
@@ -1754,7 +1754,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model_helper.AppE
 }
 
 // ValidateProductIsPublishedInChannel checks if some of given variants belong to unpublished products
-func (s *ServiceOrder) ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model_helper.AppError {
+func (s *ServiceOrder) ValidateProductIsPublishedInChannel(variants model.ProductVariantSlice, channelID string) *model_helper.AppError {
 	var unPublishedProductsWithData, err = s.srv.Store.Product().NotPublishedProducts(channelID)
 	if err != nil {
 		return model_helper.NewAppError("ValidateProductIsPublishedInChannel", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)

@@ -8,9 +8,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
 func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*model.VoucherCustomer, *model_helper.AppError) {
-	voucher, err := a.srv.Store.VoucherCustomer().Save(&model.VoucherCustomer{
+	voucher, err := a.srv.Store.VoucherCustomer().Save(model.VoucherCustomer{
 		CustomerEmail: customerEmail,
 		VoucherID:     voucherID,
 	})
@@ -24,8 +23,7 @@ func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEma
 	return voucher, nil
 }
 
-// VoucherCustomerByOptions finds a voucher customer relation and returns it with an error
-func (a *ServiceDiscount) VoucherCustomerByOptions(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, *model_helper.AppError) {
+func (a *ServiceDiscount) VoucherCustomerByOptions(options model_helper.VoucherCustomerFilterOption) (*model.VoucherCustomer, *model_helper.AppError) {
 	voucherCustomer, err := a.srv.Store.VoucherCustomer().GetByOption(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -38,8 +36,7 @@ func (a *ServiceDiscount) VoucherCustomerByOptions(options *model.VoucherCustome
 	return voucherCustomer, nil
 }
 
-// VoucherCustomersByOption returns a slice of voucher customers filtered using given options
-func (s *ServiceDiscount) VoucherCustomersByOption(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, *model_helper.AppError) {
+func (s *ServiceDiscount) VoucherCustomersByOption(options model_helper.VoucherCustomerFilterOption) (model.VoucherCustomerSlice, *model_helper.AppError) {
 	voucherCustomers, err := s.srv.Store.VoucherCustomer().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("VoucherCustomersByOption", "app.discount.error_finding_voucher_customers_by_options", nil, err.Error(), http.StatusInternalServerError)

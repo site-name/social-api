@@ -237,7 +237,7 @@ func (o *FulfillmentLine) Stock(mods ...qm.QueryMod) stockQuery {
 
 // LoadOrderLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfillmentLine any, mods queries.Applicator) error {
+func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfillmentLine interface{}, mods queries.Applicator) error {
 	var slice []*FulfillmentLine
 	var object *FulfillmentLine
 
@@ -263,7 +263,7 @@ func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfi
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &fulfillmentLineR{}
@@ -285,7 +285,7 @@ func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfi
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -349,7 +349,7 @@ func (fulfillmentLineL) LoadOrderLine(e boil.Executor, singular bool, maybeFulfi
 
 // LoadStock allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (fulfillmentLineL) LoadStock(e boil.Executor, singular bool, maybeFulfillmentLine any, mods queries.Applicator) error {
+func (fulfillmentLineL) LoadStock(e boil.Executor, singular bool, maybeFulfillmentLine interface{}, mods queries.Applicator) error {
 	var slice []*FulfillmentLine
 	var object *FulfillmentLine
 
@@ -375,7 +375,7 @@ func (fulfillmentLineL) LoadStock(e boil.Executor, singular bool, maybeFulfillme
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &fulfillmentLineR{}
@@ -401,7 +401,7 @@ func (fulfillmentLineL) LoadStock(e boil.Executor, singular bool, maybeFulfillme
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -479,7 +479,7 @@ func (o *FulfillmentLine) SetOrderLine(exec boil.Executor, insert bool, related 
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -525,7 +525,7 @@ func (o *FulfillmentLine) SetStock(exec boil.Executor, insert bool, related *Sto
 		strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 		strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -783,7 +783,7 @@ func (o FulfillmentLineSlice) UpdateAll(exec boil.Executor, cols M) (int64, erro
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -905,7 +905,7 @@ func (o *FulfillmentLine) Upsert(exec boil.Executor, updateOnConflict bool, conf
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -989,7 +989,7 @@ func (o FulfillmentLineSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fulfillmentLinePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1035,7 +1035,7 @@ func (o *FulfillmentLineSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := FulfillmentLineSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fulfillmentLinePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

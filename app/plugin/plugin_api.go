@@ -225,12 +225,12 @@ func (api *PluginAPI) GetLDAPUserAttributes(userID string, attributes []string) 
 }
 
 func (api *PluginAPI) SearchUsers(search model_helper.UserSearch) (model.UserSlice, *model_helper.AppError) {
-	pluginSearchUsersOptions := &model_helper.UserSearchOptions{
+	pluginSearchUsersOptions := model_helper.UserSearchOptions{
 		IsAdmin:       true,
 		AllowInactive: search.AllowInactive,
 		Limit:         search.Limit,
 	}
-	return api.app.AccountService().SearchUsers(&search, pluginSearchUsersOptions)
+	return api.app.AccountService().SearchUsers(search, pluginSearchUsersOptions)
 }
 
 func (api *PluginAPI) GetProfileImage(userID string) ([]byte, *model_helper.AppError) {

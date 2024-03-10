@@ -119,14 +119,14 @@ func (w whereHelperShippingMethodType) GTE(x ShippingMethodType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperShippingMethodType) IN(slice []ShippingMethodType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperShippingMethodType) NIN(slice []ShippingMethodType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -420,7 +420,7 @@ func (o *ShippingMethod) ShippingMethodPostalCodeRules(mods ...qm.QueryMod) ship
 
 // LoadShippingZone allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodL) LoadShippingZone(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadShippingZone(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -446,7 +446,7 @@ func (shippingMethodL) LoadShippingZone(e boil.Executor, singular bool, maybeShi
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -468,7 +468,7 @@ func (shippingMethodL) LoadShippingZone(e boil.Executor, singular bool, maybeShi
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -532,7 +532,7 @@ func (shippingMethodL) LoadShippingZone(e boil.Executor, singular bool, maybeShi
 
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingMethodL) LoadCheckouts(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadCheckouts(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -558,7 +558,7 @@ func (shippingMethodL) LoadCheckouts(e boil.Executor, singular bool, maybeShippi
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -577,7 +577,7 @@ func (shippingMethodL) LoadCheckouts(e boil.Executor, singular bool, maybeShippi
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -638,7 +638,7 @@ func (shippingMethodL) LoadCheckouts(e boil.Executor, singular bool, maybeShippi
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingMethodL) LoadOrders(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadOrders(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -664,7 +664,7 @@ func (shippingMethodL) LoadOrders(e boil.Executor, singular bool, maybeShippingM
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -683,7 +683,7 @@ func (shippingMethodL) LoadOrders(e boil.Executor, singular bool, maybeShippingM
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -744,7 +744,7 @@ func (shippingMethodL) LoadOrders(e boil.Executor, singular bool, maybeShippingM
 
 // LoadShippingMethodChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingMethodL) LoadShippingMethodChannelListings(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadShippingMethodChannelListings(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -770,7 +770,7 @@ func (shippingMethodL) LoadShippingMethodChannelListings(e boil.Executor, singul
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -789,7 +789,7 @@ func (shippingMethodL) LoadShippingMethodChannelListings(e boil.Executor, singul
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -850,7 +850,7 @@ func (shippingMethodL) LoadShippingMethodChannelListings(e boil.Executor, singul
 
 // LoadShippingMethodExcludedProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingMethodL) LoadShippingMethodExcludedProducts(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadShippingMethodExcludedProducts(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -876,7 +876,7 @@ func (shippingMethodL) LoadShippingMethodExcludedProducts(e boil.Executor, singu
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -895,7 +895,7 @@ func (shippingMethodL) LoadShippingMethodExcludedProducts(e boil.Executor, singu
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -956,7 +956,7 @@ func (shippingMethodL) LoadShippingMethodExcludedProducts(e boil.Executor, singu
 
 // LoadShippingMethodPostalCodeRules allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (shippingMethodL) LoadShippingMethodPostalCodeRules(e boil.Executor, singular bool, maybeShippingMethod any, mods queries.Applicator) error {
+func (shippingMethodL) LoadShippingMethodPostalCodeRules(e boil.Executor, singular bool, maybeShippingMethod interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethod
 	var object *ShippingMethod
 
@@ -982,7 +982,7 @@ func (shippingMethodL) LoadShippingMethodPostalCodeRules(e boil.Executor, singul
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &shippingMethodR{}
@@ -1001,7 +1001,7 @@ func (shippingMethodL) LoadShippingMethodPostalCodeRules(e boil.Executor, singul
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1076,7 +1076,7 @@ func (o *ShippingMethod) SetShippingZone(exec boil.Executor, insert bool, relate
 		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1124,7 +1124,7 @@ func (o *ShippingMethod) AddCheckouts(exec boil.Executor, insert bool, related .
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.Token}
+			values := []interface{}{o.ID, rel.Token}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1166,7 +1166,7 @@ func (o *ShippingMethod) AddCheckouts(exec boil.Executor, insert bool, related .
 // Sets related.R.ShippingMethod's Checkouts accordingly.
 func (o *ShippingMethod) SetCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"shipping_method_id\" = null where \"shipping_method_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1249,7 +1249,7 @@ func (o *ShippingMethod) AddOrders(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1291,7 +1291,7 @@ func (o *ShippingMethod) AddOrders(exec boil.Executor, insert bool, related ...*
 // Sets related.R.ShippingMethod's Orders accordingly.
 func (o *ShippingMethod) SetOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"shipping_method_id\" = null where \"shipping_method_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1374,7 +1374,7 @@ func (o *ShippingMethod) AddShippingMethodChannelListings(exec boil.Executor, in
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodChannelListingPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1426,7 +1426,7 @@ func (o *ShippingMethod) AddShippingMethodExcludedProducts(exec boil.Executor, i
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1478,7 +1478,7 @@ func (o *ShippingMethod) AddShippingMethodPostalCodeRules(exec boil.Executor, in
 				strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shippingMethodPostalCodeRulePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1707,7 +1707,7 @@ func (o ShippingMethodSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1829,7 +1829,7 @@ func (o *ShippingMethod) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1913,7 +1913,7 @@ func (o ShippingMethodSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1959,7 +1959,7 @@ func (o *ShippingMethodSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := ShippingMethodSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

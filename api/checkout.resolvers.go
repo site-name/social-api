@@ -395,7 +395,7 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// save checkout
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(transaction, []*model.Checkout{&checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(transaction, model.CheckoutSlice{&checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -460,7 +460,7 @@ func (r *Resolver) CheckoutCustomerAttach(ctx context.Context, args struct {
 		checkout.UserID = &embedCtx.AppContext.Session().UserId
 	}
 
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -500,7 +500,7 @@ func (r *Resolver) CheckoutCustomerDetach(ctx context.Context, args struct{ Toke
 	}
 
 	checkout.UserID = nil
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -540,7 +540,7 @@ func (r *Resolver) CheckoutEmailUpdate(ctx context.Context, args struct {
 
 	checkout.Email = args.Email
 
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -838,7 +838,7 @@ func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struc
 	}
 	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(tran, []*model.Checkout{checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(tran, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -886,7 +886,7 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var (
-		warehouse      *model.WareHouse      = nil
+		warehouse      *model.Warehouse      = nil
 		shippingMethod *model.ShippingMethod = nil
 	)
 
@@ -955,7 +955,7 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 	}
 
 	var method any = warehouse
-	if method.(*model.WareHouse) == nil {
+	if method.(*model.Warehouse) == nil {
 		method = shippingMethod
 	}
 	deliveryMethodValid, appErr := embedCtx.App.Srv().CheckoutService().CleanDeliveryMethod(checkoutInfo, lines, method)
@@ -978,7 +978,7 @@ func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct
 	}
 
 	// update checkout
-	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1014,7 +1014,7 @@ func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 	}
 
 	checkout.LanguageCode = args.LanguageCode
-	updatedCheckouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	updatedCheckouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, model.CheckoutSlice{checkout})
 	if appErr != nil {
 		return nil, appErr
 	}

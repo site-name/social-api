@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -22,11 +23,12 @@ import (
 
 // Allocation is an object representing the database table.
 type Allocation struct {
-	ID                string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt         int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	OrderLineID       string `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
-	StockID           string `boil:"stock_id" json:"stock_id" toml:"stock_id" yaml:"stock_id"`
-	QuantityAllocated int    `boil:"quantity_allocated" json:"quantity_allocated" toml:"quantity_allocated" yaml:"quantity_allocated"`
+	ID                string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt         int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	OrderLineID       string                 `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
+	StockID           string                 `boil:"stock_id" json:"stock_id" toml:"stock_id" yaml:"stock_id"`
+	QuantityAllocated int                    `boil:"quantity_allocated" json:"quantity_allocated" toml:"quantity_allocated" yaml:"quantity_allocated"`
+	Annotations       model_types.JSONString `boil:"annotations" json:"-" toml:"-" yaml:"-"`
 
 	R *allocationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L allocationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,12 +40,14 @@ var AllocationColumns = struct {
 	OrderLineID       string
 	StockID           string
 	QuantityAllocated string
+	Annotations       string
 }{
 	ID:                "id",
 	CreatedAt:         "created_at",
 	OrderLineID:       "order_line_id",
 	StockID:           "stock_id",
 	QuantityAllocated: "quantity_allocated",
+	Annotations:       "annotations",
 }
 
 var AllocationTableColumns = struct {
@@ -52,12 +56,14 @@ var AllocationTableColumns = struct {
 	OrderLineID       string
 	StockID           string
 	QuantityAllocated string
+	Annotations       string
 }{
 	ID:                "allocations.id",
 	CreatedAt:         "allocations.created_at",
 	OrderLineID:       "allocations.order_line_id",
 	StockID:           "allocations.stock_id",
 	QuantityAllocated: "allocations.quantity_allocated",
+	Annotations:       "allocations.annotations",
 }
 
 // Generated where
@@ -71,18 +77,44 @@ func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, 
 func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelpermodel_types_JSONString struct{ field string }
+
+func (w whereHelpermodel_types_JSONString) EQ(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpermodel_types_JSONString) NEQ(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpermodel_types_JSONString) LT(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpermodel_types_JSONString) LTE(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpermodel_types_JSONString) GT(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpermodel_types_JSONString) GTE(x model_types.JSONString) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpermodel_types_JSONString) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_JSONString) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
 }
 
 var AllocationWhere = struct {
@@ -91,12 +123,14 @@ var AllocationWhere = struct {
 	OrderLineID       whereHelperstring
 	StockID           whereHelperstring
 	QuantityAllocated whereHelperint
+	Annotations       whereHelpermodel_types_JSONString
 }{
 	ID:                whereHelperstring{field: "\"allocations\".\"id\""},
 	CreatedAt:         whereHelperint64{field: "\"allocations\".\"created_at\""},
 	OrderLineID:       whereHelperstring{field: "\"allocations\".\"order_line_id\""},
 	StockID:           whereHelperstring{field: "\"allocations\".\"stock_id\""},
 	QuantityAllocated: whereHelperint{field: "\"allocations\".\"quantity_allocated\""},
+	Annotations:       whereHelpermodel_types_JSONString{field: "\"allocations\".\"annotations\""},
 }
 
 // AllocationRels is where relationship names are stored.
@@ -137,9 +171,9 @@ func (r *allocationR) GetStock() *Stock {
 type allocationL struct{}
 
 var (
-	allocationAllColumns            = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
+	allocationAllColumns            = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated", "annotations"}
 	allocationColumnsWithoutDefault = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
-	allocationColumnsWithDefault    = []string{}
+	allocationColumnsWithDefault    = []string{"annotations"}
 	allocationPrimaryKeyColumns     = []string{"id"}
 	allocationGeneratedColumns      = []string{}
 )
@@ -259,7 +293,7 @@ func (o *Allocation) Stock(mods ...qm.QueryMod) stockQuery {
 
 // LoadOrderLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation any, mods queries.Applicator) error {
+func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -285,7 +319,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &allocationR{}
@@ -307,7 +341,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -371,7 +405,7 @@ func (allocationL) LoadOrderLine(e boil.Executor, singular bool, maybeAllocation
 
 // LoadStock allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation any, mods queries.Applicator) error {
+func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -397,7 +431,7 @@ func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation any
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &allocationR{}
@@ -419,7 +453,7 @@ func (allocationL) LoadStock(e boil.Executor, singular bool, maybeAllocation any
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -497,7 +531,7 @@ func (o *Allocation) SetOrderLine(exec boil.Executor, insert bool, related *Orde
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -543,7 +577,7 @@ func (o *Allocation) SetStock(exec boil.Executor, insert bool, related *Stock) e
 		strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -768,7 +802,7 @@ func (o AllocationSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -890,7 +924,7 @@ func (o *Allocation) Upsert(exec boil.Executor, updateOnConflict bool, conflictC
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -974,7 +1008,7 @@ func (o AllocationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), allocationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1020,7 +1054,7 @@ func (o *AllocationSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AllocationSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), allocationPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

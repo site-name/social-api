@@ -438,7 +438,7 @@ func (a *ServiceOrder) FulfillmentTrackingUpdated(fulfillment *model.Fulfillment
 }
 
 // CancelFulfillment Return products to corresponding stocks.
-func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, warehouse *model.WareHouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError) {
+func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, warehouse *model.Warehouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError) {
 	// initialize a transaction
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {

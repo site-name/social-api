@@ -117,14 +117,14 @@ func (w whereHelperint16) LTE(x int16) qm.QueryMod { return qmhelper.Where(w.fie
 func (w whereHelperint16) GT(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperint16) GTE(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 func (w whereHelperint16) IN(slice []int16) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperint16) NIN(slice []int16) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -422,7 +422,7 @@ func (o *Category) VoucherCategories(mods ...qm.QueryMod) voucherCategoryQuery {
 
 // LoadParent allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (categoryL) LoadParent(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadParent(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -448,7 +448,7 @@ func (categoryL) LoadParent(e boil.Executor, singular bool, maybeCategory any, m
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -474,7 +474,7 @@ func (categoryL) LoadParent(e boil.Executor, singular bool, maybeCategory any, m
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -538,7 +538,7 @@ func (categoryL) LoadParent(e boil.Executor, singular bool, maybeCategory any, m
 
 // LoadParentCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryL) LoadParentCategories(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadParentCategories(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -564,7 +564,7 @@ func (categoryL) LoadParentCategories(e boil.Executor, singular bool, maybeCateg
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -583,7 +583,7 @@ func (categoryL) LoadParentCategories(e boil.Executor, singular bool, maybeCateg
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -644,7 +644,7 @@ func (categoryL) LoadParentCategories(e boil.Executor, singular bool, maybeCateg
 
 // LoadCategoryAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -670,7 +670,7 @@ func (categoryL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeCat
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -689,7 +689,7 @@ func (categoryL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeCat
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -750,7 +750,7 @@ func (categoryL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeCat
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryL) LoadMenuItems(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadMenuItems(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -776,7 +776,7 @@ func (categoryL) LoadMenuItems(e boil.Executor, singular bool, maybeCategory any
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -795,7 +795,7 @@ func (categoryL) LoadMenuItems(e boil.Executor, singular bool, maybeCategory any
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -856,7 +856,7 @@ func (categoryL) LoadMenuItems(e boil.Executor, singular bool, maybeCategory any
 
 // LoadSaleCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryL) LoadSaleCategories(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadSaleCategories(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -882,7 +882,7 @@ func (categoryL) LoadSaleCategories(e boil.Executor, singular bool, maybeCategor
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -901,7 +901,7 @@ func (categoryL) LoadSaleCategories(e boil.Executor, singular bool, maybeCategor
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -962,7 +962,7 @@ func (categoryL) LoadSaleCategories(e boil.Executor, singular bool, maybeCategor
 
 // LoadVoucherCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (categoryL) LoadVoucherCategories(e boil.Executor, singular bool, maybeCategory any, mods queries.Applicator) error {
+func (categoryL) LoadVoucherCategories(e boil.Executor, singular bool, maybeCategory interface{}, mods queries.Applicator) error {
 	var slice []*Category
 	var object *Category
 
@@ -988,7 +988,7 @@ func (categoryL) LoadVoucherCategories(e boil.Executor, singular bool, maybeCate
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &categoryR{}
@@ -1007,7 +1007,7 @@ func (categoryL) LoadVoucherCategories(e boil.Executor, singular bool, maybeCate
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1082,7 +1082,7 @@ func (o *Category) SetParent(exec boil.Executor, insert bool, related *Category)
 		strmangle.SetParamNames("\"", "\"", 1, []string{"parent_id"}),
 		strmangle.WhereClause("\"", "\"", 2, categoryPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1163,7 +1163,7 @@ func (o *Category) AddParentCategories(exec boil.Executor, insert bool, related 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"parent_id"}),
 				strmangle.WhereClause("\"", "\"", 2, categoryPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1205,7 +1205,7 @@ func (o *Category) AddParentCategories(exec boil.Executor, insert bool, related 
 // Sets related.R.Parent's ParentCategories accordingly.
 func (o *Category) SetParentCategories(exec boil.Executor, insert bool, related ...*Category) error {
 	query := "update \"categories\" set \"parent_id\" = null where \"parent_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1288,7 +1288,7 @@ func (o *Category) AddCategoryAttributes(exec boil.Executor, insert bool, relate
 				strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 				strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1340,7 +1340,7 @@ func (o *Category) AddMenuItems(exec boil.Executor, insert bool, related ...*Men
 				strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1382,7 +1382,7 @@ func (o *Category) AddMenuItems(exec boil.Executor, insert bool, related ...*Men
 // Sets related.R.Category's MenuItems accordingly.
 func (o *Category) SetMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	query := "update \"menu_items\" set \"category_id\" = null where \"category_id\" = $1"
-	values := []any{o.ID}
+	values := []interface{}{o.ID}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -1465,7 +1465,7 @@ func (o *Category) AddSaleCategories(exec boil.Executor, insert bool, related ..
 				strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1517,7 +1517,7 @@ func (o *Category) AddVoucherCategories(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCategoryPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1746,7 +1746,7 @@ func (o CategorySlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1868,7 +1868,7 @@ func (o *Category) Upsert(exec boil.Executor, updateOnConflict bool, conflictCol
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1952,7 +1952,7 @@ func (o CategorySlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1998,7 +1998,7 @@ func (o *CategorySlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := CategorySlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

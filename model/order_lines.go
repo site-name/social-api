@@ -468,7 +468,7 @@ func (o *OrderLine) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderLineL) LoadOrder(e boil.Executor, singular bool, maybeOrderLine any, mods queries.Applicator) error {
+func (orderLineL) LoadOrder(e boil.Executor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -494,7 +494,7 @@ func (orderLineL) LoadOrder(e boil.Executor, singular bool, maybeOrderLine any, 
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderLineR{}
@@ -516,7 +516,7 @@ func (orderLineL) LoadOrder(e boil.Executor, singular bool, maybeOrderLine any, 
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -580,7 +580,7 @@ func (orderLineL) LoadOrder(e boil.Executor, singular bool, maybeOrderLine any, 
 
 // LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderLineL) LoadVariant(e boil.Executor, singular bool, maybeOrderLine any, mods queries.Applicator) error {
+func (orderLineL) LoadVariant(e boil.Executor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -606,7 +606,7 @@ func (orderLineL) LoadVariant(e boil.Executor, singular bool, maybeOrderLine any
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderLineR{}
@@ -632,7 +632,7 @@ func (orderLineL) LoadVariant(e boil.Executor, singular bool, maybeOrderLine any
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -696,7 +696,7 @@ func (orderLineL) LoadVariant(e boil.Executor, singular bool, maybeOrderLine any
 
 // LoadLineDigitalContentURL allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (orderLineL) LoadLineDigitalContentURL(e boil.Executor, singular bool, maybeOrderLine any, mods queries.Applicator) error {
+func (orderLineL) LoadLineDigitalContentURL(e boil.Executor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -722,7 +722,7 @@ func (orderLineL) LoadLineDigitalContentURL(e boil.Executor, singular bool, mayb
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderLineR{}
@@ -742,7 +742,7 @@ func (orderLineL) LoadLineDigitalContentURL(e boil.Executor, singular bool, mayb
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -805,7 +805,7 @@ func (orderLineL) LoadLineDigitalContentURL(e boil.Executor, singular bool, mayb
 
 // LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderLineL) LoadAllocations(e boil.Executor, singular bool, maybeOrderLine any, mods queries.Applicator) error {
+func (orderLineL) LoadAllocations(e boil.Executor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -831,7 +831,7 @@ func (orderLineL) LoadAllocations(e boil.Executor, singular bool, maybeOrderLine
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderLineR{}
@@ -850,7 +850,7 @@ func (orderLineL) LoadAllocations(e boil.Executor, singular bool, maybeOrderLine
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -911,7 +911,7 @@ func (orderLineL) LoadAllocations(e boil.Executor, singular bool, maybeOrderLine
 
 // LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderLineL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeOrderLine any, mods queries.Applicator) error {
+func (orderLineL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -937,7 +937,7 @@ func (orderLineL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeOrde
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &orderLineR{}
@@ -956,7 +956,7 @@ func (orderLineL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeOrde
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -1031,7 +1031,7 @@ func (o *OrderLine) SetOrder(exec boil.Executor, insert bool, related *Order) er
 		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1077,7 +1077,7 @@ func (o *OrderLine) SetVariant(exec boil.Executor, insert bool, related *Product
 		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1158,7 +1158,7 @@ func (o *OrderLine) SetLineDigitalContentURL(exec boil.Executor, insert bool, re
 			strmangle.SetParamNames("\"", "\"", 1, []string{"line_id"}),
 			strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 		)
-		values := []any{o.ID, related.ID}
+		values := []interface{}{o.ID, related.ID}
 
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1231,7 +1231,7 @@ func (o *OrderLine) AddAllocations(exec boil.Executor, insert bool, related ...*
 				strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 				strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1283,7 +1283,7 @@ func (o *OrderLine) AddFulfillmentLines(exec boil.Executor, insert bool, related
 				strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -1512,7 +1512,7 @@ func (o OrderLineSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1634,7 +1634,7 @@ func (o *OrderLine) Upsert(exec boil.Executor, updateOnConflict bool, conflictCo
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1718,7 +1718,7 @@ func (o OrderLineSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderLinePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1764,7 +1764,7 @@ func (o *OrderLineSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := OrderLineSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderLinePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

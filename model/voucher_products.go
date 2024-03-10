@@ -222,7 +222,7 @@ func (o *VoucherProduct) Voucher(mods ...qm.QueryMod) voucherQuery {
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherProductL) LoadProduct(e boil.Executor, singular bool, maybeVoucherProduct any, mods queries.Applicator) error {
+func (voucherProductL) LoadProduct(e boil.Executor, singular bool, maybeVoucherProduct interface{}, mods queries.Applicator) error {
 	var slice []*VoucherProduct
 	var object *VoucherProduct
 
@@ -248,7 +248,7 @@ func (voucherProductL) LoadProduct(e boil.Executor, singular bool, maybeVoucherP
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherProductR{}
@@ -270,7 +270,7 @@ func (voucherProductL) LoadProduct(e boil.Executor, singular bool, maybeVoucherP
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -334,7 +334,7 @@ func (voucherProductL) LoadProduct(e boil.Executor, singular bool, maybeVoucherP
 
 // LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherProductL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherProduct any, mods queries.Applicator) error {
+func (voucherProductL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherProduct interface{}, mods queries.Applicator) error {
 	var slice []*VoucherProduct
 	var object *VoucherProduct
 
@@ -360,7 +360,7 @@ func (voucherProductL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherP
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherProductR{}
@@ -382,7 +382,7 @@ func (voucherProductL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherP
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -460,7 +460,7 @@ func (o *VoucherProduct) SetProduct(exec boil.Executor, insert bool, related *Pr
 		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherProductPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -506,7 +506,7 @@ func (o *VoucherProduct) SetVoucher(exec boil.Executor, insert bool, related *Vo
 		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherProductPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -731,7 +731,7 @@ func (o VoucherProductSlice) UpdateAll(exec boil.Executor, cols M) (int64, error
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -853,7 +853,7 @@ func (o *VoucherProduct) Upsert(exec boil.Executor, updateOnConflict bool, confl
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -937,7 +937,7 @@ func (o VoucherProductSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -983,7 +983,7 @@ func (o *VoucherProductSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := VoucherProductSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherProductPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

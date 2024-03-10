@@ -44,7 +44,7 @@ type OrderService interface {
 	// CanMarkOrderAsPaid checks if given order can be marked as paid.
 	CanMarkOrderAsPaid(ord *model.Order, payments []*model.Payment) (bool, *model_helper.AppError)
 	// CancelFulfillment Return products to corresponding stocks.
-	CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, warehouse *model.WareHouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
+	CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ any, warehouse *model.Warehouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
 	// CancelOrder Release allocation of unfulfilled order items.
 	CancelOrder(transaction boil.ContextTransactor, order *model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// CancelWaitingFulfillment cancels fulfillments which is in waiting for approval state.
@@ -259,7 +259,7 @@ type OrderService interface {
 	// RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 	//
 	// Return products to stocks and update order lines quantity fulfilled values.
-	RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model_helper.AppError)
+	RestockFulfillmentLines(transaction boil.ContextTransactor, fulfillment *model.Fulfillment, warehouse *model.Warehouse) (appErr *model_helper.AppError)
 	// RestockOrderLines Return ordered products to corresponding stocks
 	RestockOrderLines(order *model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// SendFulfillmentConfirmationToCustomer
@@ -303,7 +303,7 @@ type OrderService interface {
 	//	// Product variants are published.
 	ValidateDraftOrder(order *model.Order) *model_helper.AppError
 	// ValidateProductIsPublishedInChannel checks if some of given variants belong to unpublished products
-	ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model_helper.AppError
+	ValidateProductIsPublishedInChannel(variants model.ProductVariantSlice, channelID string) *model_helper.AppError
 	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
 	CreateOrderEvent(transaction boil.ContextTransactor, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError
 	CreateReturnFulfillment(requester *model.User, order model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
@@ -315,7 +315,7 @@ type OrderService interface {
 	FulfillmentFulfilledItemsEvent(transaction boil.ContextTransactor, orDer *model.Order, user *model.User, _ any, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model_helper.AppError)
 	FulfillmentReplacedEvent(transaction boil.ContextTransactor, orDer model.Order, user *model.User, _ any, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model_helper.AppError)
 	FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ any, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model_helper.AppError)
-	GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.Warehouses, *model_helper.AppError)
+	GetValidCollectionPointsForOrder(lines model.OrderLineSlice, addressCountryCode model.CountryCode) (model.WarehouseSlice, *model_helper.AppError)
 	GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model_helper.AppError)
 	LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model_types.JSONString
 	LinesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []model_types.JSONString

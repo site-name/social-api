@@ -54,7 +54,7 @@ func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model_h
 }
 
 // ProductsByOption returns a list of products that satisfy given option
-func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) (model.Products, *model_helper.AppError) {
+func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) (model.ProductSlice, *model_helper.AppError) {
 	products, err := a.srv.Store.Product().FilterByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -115,7 +115,7 @@ func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductM
 	return productMedias[0], nil
 }
 
-func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.Products, *model_helper.AppError) {
+func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.ProductSlice, *model_helper.AppError) {
 	productQuery := a.srv.Store.Product().VisibleToUserProductsQuery(channelIdOrSlug, userIsShopStaff)
 	products, err := a.srv.Store.Product().FilterByQuery(productQuery)
 	if err != nil {
@@ -124,7 +124,7 @@ func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userIs
 	return products, nil
 }
 
-func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model_helper.AppError) {
+func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.ProductSlice, *model_helper.AppError) {
 	productsQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(options)
 
 	if channelIdOrSlug != "" {

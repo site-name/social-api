@@ -444,7 +444,7 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 
 	// save m2m warehouse shipping zones
 	if len(args.Input.AddWarehouses) > 0 {
-		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
+		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.Warehouse { return &model.Warehouse{Id: id} })
 		err := transaction.Model(shippingZone).Association("Warehouses").Append(warehousesToAdd)
 		if err != nil {
 			return nil, model_helper.NewAppError("ShippingZoneCreate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)

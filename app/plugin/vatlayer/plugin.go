@@ -67,7 +67,7 @@ func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 		configuration[item.Get("name", "").(string)] = item["value"]
 	}
 	var originCountry = configuration.Get("origin_country", "").(string)
-	if upper := strings.ToUpper(originCountry); model.CountryCode(upper).IsValid() {
+	if upper := strings.ToUpper(originCountry); model.CountryCode(upper).IsValid() == nil {
 		originCountry = upper
 	} else {
 		originCountry = ""
@@ -77,7 +77,7 @@ func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 	var splitCountriesFromOrigin = []string{}
 
 	for _, str := range strings.FieldsFunc(countriesFromOrigin, func(r rune) bool { return r == ' ' || r == ',' }) {
-		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
+		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() == nil {
 			splitCountriesFromOrigin = append(splitCountriesFromOrigin, upper)
 		}
 	}
@@ -86,7 +86,7 @@ func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 	var splitExcludedCountries = []string{}
 
 	for _, str := range strings.FieldsFunc(excludedCountries, func(r rune) bool { return r == ' ' || r == ',' }) {
-		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
+		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() == nil {
 			splitExcludedCountries = append(splitExcludedCountries, upper)
 		}
 	}
@@ -139,7 +139,7 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model_helper.Check
 		return &previousValue, nil
 	}
 
-	checkoutSubTotal, appErr := vp.Manager.Srv.CheckoutService().CheckoutSubTotal(
+	checkoutSubTotal, appErr := vp.Manager.Srv.Checkout.CheckoutSubTotal(
 		vp.Manager,
 		checkoutInfo,
 		lines,
@@ -150,7 +150,7 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model_helper.Check
 		return nil, appErr
 	}
 
-	checkoutShippingPrice, appErr := vp.Manager.Srv.CheckoutService().CheckoutShippingPrice(
+	checkoutShippingPrice, appErr := vp.Manager.Srv.Checkout.CheckoutShippingPrice(
 		vp.Manager,
 		checkoutInfo,
 		lines,
@@ -188,7 +188,7 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model_helper
 			country := vp.Manager.Srv.Config().ShopSettings.Address.Country.String()
 
 			if country == "" {
-				country = model.DEFAULT_COUNTRY.String()
+				country = model_helper.DEFAULT_COUNTRY.String()
 			}
 		}
 	}

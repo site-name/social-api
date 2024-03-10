@@ -201,7 +201,7 @@ func (o *VoucherCustomer) Voucher(mods ...qm.QueryMod) voucherQuery {
 
 // LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherCustomerL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherCustomer any, mods queries.Applicator) error {
+func (voucherCustomerL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherCustomer interface{}, mods queries.Applicator) error {
 	var slice []*VoucherCustomer
 	var object *VoucherCustomer
 
@@ -227,7 +227,7 @@ func (voucherCustomerL) LoadVoucher(e boil.Executor, singular bool, maybeVoucher
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &voucherCustomerR{}
@@ -249,7 +249,7 @@ func (voucherCustomerL) LoadVoucher(e boil.Executor, singular bool, maybeVoucher
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -327,7 +327,7 @@ func (o *VoucherCustomer) SetVoucher(exec boil.Executor, insert bool, related *V
 		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherCustomerPrimaryKeyColumns),
 	)
-	values := []any{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ID}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -552,7 +552,7 @@ func (o VoucherCustomerSlice) UpdateAll(exec boil.Executor, cols M) (int64, erro
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -674,7 +674,7 @@ func (o *VoucherCustomer) Upsert(exec boil.Executor, updateOnConflict bool, conf
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -758,7 +758,7 @@ func (o VoucherCustomerSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherCustomerPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -804,7 +804,7 @@ func (o *VoucherCustomerSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := VoucherCustomerSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherCustomerPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

@@ -27,8 +27,8 @@ func convertToNaiveTaxedMoney[M goprices.MoneyObject](base M, taxes M, rateName 
 
 	case *goprices.Money:
 		return &goprices.TaxedMoney{
-			Net:   t,
-			Gross: t,
+			Net:   *t,
+			Gross: *t,
 		}
 
 	default:

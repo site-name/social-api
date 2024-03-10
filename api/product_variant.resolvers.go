@@ -27,7 +27,7 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	appErr := embedCtx.App.Srv().
 		ProductService().
 		ToggleVariantRelations(
-			model.ProductVariants{{Id: args.VariantID.String()}},
+			model.ProductVariantSlice{{Id: args.VariantID.String()}},
 			model.ProductMedias{{Id: args.MediaID.String()}},
 			nil,
 			nil,
@@ -54,7 +54,7 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	appErr := embedCtx.App.Srv().
 		ProductService().
 		ToggleVariantRelations(
-			model.ProductVariants{{Id: args.VariantID.String()}},
+			model.ProductVariantSlice{{Id: args.VariantID.String()}},
 			model.ProductMedias{{Id: args.MediaID.String()}},
 			nil,
 			nil,

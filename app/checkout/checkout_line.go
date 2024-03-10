@@ -3,16 +3,17 @@ package checkout
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model_helper.AppError) {
-	return a.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-		Conditions: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": checkoutToken},
+func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) (model.CheckoutLineSlice, *model_helper.AppError) {
+	return a.CheckoutLinesByOption(model_helper.CheckoutLineFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.CheckoutLineWhere.CheckoutID.EQ(checkoutToken),
+		),
 	})
 }
 
@@ -25,8 +26,8 @@ func (a *ServiceCheckout) DeleteCheckoutLines(transaction boil.ContextTransactor
 	return nil
 }
 
-func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model_helper.AppError) {
-	checkoutLine, err := a.srv.Store.CheckoutLine().Upsert(checkoutLine)
+func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine model.CheckoutLine) (*model.CheckoutLine, *model_helper.AppError) {
+	checkoutLines, err := a.srv.Store.CheckoutLine().Upsert(model.CheckoutLineSlice{&checkoutLine})
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -34,11 +35,11 @@ func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (
 		return nil, model_helper.NewAppError("CreateCheckoutLines", "app.checkout.failed_creating_checkoutline.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return checkoutLine, nil
+	return checkoutLines[0], nil
 }
 
-func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model_helper.AppError) {
-	checkoutLines, err := a.srv.Store.CheckoutLine().BulkCreate(checkoutLines)
+func (a *ServiceCheckout) UpsertCheckoutLines(checkoutLines model.CheckoutLineSlice) (model.CheckoutLineSlice, *model_helper.AppError) {
+	checkoutLines, err := a.srv.Store.CheckoutLine().Upsert(checkoutLines)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -47,30 +48,13 @@ func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*model.Checkou
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			status = http.StatusBadRequest
 		}
-		return nil, model_helper.NewAppError("BulkCreateCheckoutLines", "app.checkout.error_bulk_create_lines.app_error", nil, err.Error(), status)
+		return nil, model_helper.NewAppError("UpsertCheckoutLines", "app.checkout.error_bulk_create_lines.app_error", nil, err.Error(), status)
 	}
 
 	return checkoutLines, nil
 }
 
-func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model_helper.AppError {
-	err := a.srv.Store.CheckoutLine().BulkUpdate(checkoutLines)
-	if err != nil {
-		if appErr, ok := err.(*model_helper.AppError); ok {
-			return appErr
-		}
-		status := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrInvalidInput); ok {
-			status = http.StatusBadRequest
-		}
-		return model_helper.NewAppError("BulkUpdateCheckoutLines", "app.checkout.error_bulk_update_lines.app_error", nil, err.Error(), status)
-	}
-
-	return nil
-}
-
-// CheckoutLinesByOption returns a list of checkout lines filtered using given option
-func (s *ServiceCheckout) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, *model_helper.AppError) {
+func (s *ServiceCheckout) CheckoutLinesByOption(option model_helper.CheckoutLineFilterOptions) (model.CheckoutLineSlice, *model_helper.AppError) {
 	checkoutLines, err := s.srv.Store.CheckoutLine().CheckoutLinesByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("CheckoutLinesByOption", "app.checkout.error_finding_checkout_lines_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)

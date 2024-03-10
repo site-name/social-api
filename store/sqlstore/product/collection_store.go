@@ -176,7 +176,7 @@ func (cs *SqlCollectionStore) FilterByOption(option model_helper.CollectionFilte
 	conds := cs.commonQueryBuilder(option)
 	var customCollections model_helper.CustomCollectionSlice
 
-	err := model.Collections(conds...).Bind(context.Background(), cs.GetReplica(), &customCollections)
+	err := model.CollectionSlice(conds...).Bind(context.Background(), cs.GetReplica(), &customCollections)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections with given options")
 	}
@@ -189,6 +189,6 @@ func (s *SqlCollectionStore) Delete(tx boil.ContextTransactor, ids []string) err
 		tx = s.GetMaster()
 	}
 
-	_, err := model.Collections(model.CollectionWhere.ID.IN(ids)).DeleteAll(tx)
+	_, err := model.CollectionSlice(model.CollectionWhere.ID.IN(ids)).DeleteAll(tx)
 	return err
 }

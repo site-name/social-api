@@ -39,6 +39,7 @@ type Attribute struct {
 	AvailableInGrid          bool                    `boil:"available_in_grid" json:"available_in_grid" toml:"available_in_grid" yaml:"available_in_grid"`
 	Metadata                 model_types.JSONString  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata          model_types.JSONString  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	MaxSfortOrder            model_types.NullInt     `boil:"max_sfort_order" json:"max_sfort_order,omitempty" toml:"max_sfort_order" yaml:"max_sfort_order,omitempty"`
 
 	R *attributeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,6 +62,7 @@ var AttributeColumns = struct {
 	AvailableInGrid          string
 	Metadata                 string
 	PrivateMetadata          string
+	MaxSfortOrder            string
 }{
 	ID:                       "id",
 	Slug:                     "slug",
@@ -78,6 +80,7 @@ var AttributeColumns = struct {
 	AvailableInGrid:          "available_in_grid",
 	Metadata:                 "metadata",
 	PrivateMetadata:          "private_metadata",
+	MaxSfortOrder:            "max_sfort_order",
 }
 
 var AttributeTableColumns = struct {
@@ -97,6 +100,7 @@ var AttributeTableColumns = struct {
 	AvailableInGrid          string
 	Metadata                 string
 	PrivateMetadata          string
+	MaxSfortOrder            string
 }{
 	ID:                       "attributes.id",
 	Slug:                     "attributes.slug",
@@ -114,6 +118,7 @@ var AttributeTableColumns = struct {
 	AvailableInGrid:          "attributes.available_in_grid",
 	Metadata:                 "attributes.metadata",
 	PrivateMetadata:          "attributes.private_metadata",
+	MaxSfortOrder:            "attributes.max_sfort_order",
 }
 
 // Generated where
@@ -139,14 +144,14 @@ func (w whereHelperAttributeType) GTE(x AttributeType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperAttributeType) IN(slice []AttributeType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperAttributeType) NIN(slice []AttributeType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -174,14 +179,14 @@ func (w whereHelperAttributeInputType) GTE(x AttributeInputType) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperAttributeInputType) IN(slice []AttributeInputType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperAttributeInputType) NIN(slice []AttributeInputType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -209,14 +214,14 @@ func (w whereHelperNullAttributeEntityType) GTE(x NullAttributeEntityType) qm.Qu
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 func (w whereHelperNullAttributeEntityType) IN(slice []NullAttributeEntityType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperNullAttributeEntityType) NIN(slice []NullAttributeEntityType) qm.QueryMod {
-	values := make([]any, 0, len(slice))
+	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
@@ -239,32 +244,6 @@ func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
-type whereHelpermodel_types_JSONString struct{ field string }
-
-func (w whereHelpermodel_types_JSONString) EQ(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpermodel_types_JSONString) NEQ(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpermodel_types_JSONString) LT(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpermodel_types_JSONString) LTE(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpermodel_types_JSONString) GT(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpermodel_types_JSONString) GTE(x model_types.JSONString) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpermodel_types_JSONString) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpermodel_types_JSONString) IsNotNull() qm.QueryMod {
-	return qmhelper.WhereIsNotNull(w.field)
-}
-
 var AttributeWhere = struct {
 	ID                       whereHelperstring
 	Slug                     whereHelperstring
@@ -282,6 +261,7 @@ var AttributeWhere = struct {
 	AvailableInGrid          whereHelperbool
 	Metadata                 whereHelpermodel_types_JSONString
 	PrivateMetadata          whereHelpermodel_types_JSONString
+	MaxSfortOrder            whereHelpermodel_types_NullInt
 }{
 	ID:                       whereHelperstring{field: "\"attributes\".\"id\""},
 	Slug:                     whereHelperstring{field: "\"attributes\".\"slug\""},
@@ -299,6 +279,7 @@ var AttributeWhere = struct {
 	AvailableInGrid:          whereHelperbool{field: "\"attributes\".\"available_in_grid\""},
 	Metadata:                 whereHelpermodel_types_JSONString{field: "\"attributes\".\"metadata\""},
 	PrivateMetadata:          whereHelpermodel_types_JSONString{field: "\"attributes\".\"private_metadata\""},
+	MaxSfortOrder:            whereHelpermodel_types_NullInt{field: "\"attributes\".\"max_sfort_order\""},
 }
 
 // AttributeRels is where relationship names are stored.
@@ -339,9 +320,9 @@ func (r *attributeR) GetCategoryAttributes() CategoryAttributeSlice {
 type attributeL struct{}
 
 var (
-	attributeAllColumns            = []string{"id", "slug", "name", "type", "input_type", "entity_type", "unit", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid", "metadata", "private_metadata"}
+	attributeAllColumns            = []string{"id", "slug", "name", "type", "input_type", "entity_type", "unit", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid", "metadata", "private_metadata", "max_sfort_order"}
 	attributeColumnsWithoutDefault = []string{"id", "slug", "name", "type", "input_type", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid"}
-	attributeColumnsWithDefault    = []string{"entity_type", "unit", "metadata", "private_metadata"}
+	attributeColumnsWithDefault    = []string{"entity_type", "unit", "metadata", "private_metadata", "max_sfort_order"}
 	attributePrimaryKeyColumns     = []string{"id"}
 	attributeGeneratedColumns      = []string{}
 )
@@ -467,7 +448,7 @@ func (o *Attribute) CategoryAttributes(mods ...qm.QueryMod) categoryAttributeQue
 
 // LoadAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttribute any, mods queries.Applicator) error {
+func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
 	var slice []*Attribute
 	var object *Attribute
 
@@ -493,7 +474,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeR{}
@@ -512,7 +493,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -573,7 +554,7 @@ func (attributeL) LoadAttributeValues(e boil.Executor, singular bool, maybeAttri
 
 // LoadCategoryAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAttribute any, mods queries.Applicator) error {
+func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAttribute interface{}, mods queries.Applicator) error {
 	var slice []*Attribute
 	var object *Attribute
 
@@ -599,7 +580,7 @@ func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAt
 		}
 	}
 
-	args := make(map[any]struct{})
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &attributeR{}
@@ -618,7 +599,7 @@ func (attributeL) LoadCategoryAttributes(e boil.Executor, singular bool, maybeAt
 		return nil
 	}
 
-	argsSlice := make([]any, len(args))
+	argsSlice := make([]interface{}, len(args))
 	i := 0
 	for arg := range args {
 		argsSlice[i] = arg
@@ -695,7 +676,7 @@ func (o *Attribute) AddAttributeValues(exec boil.Executor, insert bool, related 
 				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 				strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -747,7 +728,7 @@ func (o *Attribute) AddCategoryAttributes(exec boil.Executor, insert bool, relat
 				strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 				strmangle.WhereClause("\"", "\"", 2, categoryAttributePrimaryKeyColumns),
 			)
-			values := []any{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ID}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -976,7 +957,7 @@ func (o AttributeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	colNames := make([]string, len(cols))
-	args := make([]any, len(cols))
+	args := make([]interface{}, len(cols))
 
 	i := 0
 	for name, value := range cols {
@@ -1098,7 +1079,7 @@ func (o *Attribute) Upsert(exec boil.Executor, updateOnConflict bool, conflictCo
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	var returns []any
+	var returns []interface{}
 	if len(cache.retMapping) != 0 {
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
@@ -1182,7 +1163,7 @@ func (o AttributeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 		return 0, nil
 	}
 
-	var args []any
+	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
@@ -1228,7 +1209,7 @@ func (o *AttributeSlice) ReloadAll(exec boil.Executor) error {
 	}
 
 	slice := AttributeSlice{}
-	var args []any
+	var args []interface{}
 	for _, obj := range *o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributePrimaryKeyMapping)
 		args = append(args, pkeyArgs...)

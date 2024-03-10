@@ -12,8 +12,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories {
-	var res model.Categories
+func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category) bool) model.CategorySlice {
+	var res model.CategorySlice
 
 	s.categoryMap.Range(func(id, value any) bool {
 		if category := value.(*model.Category); filter(category) {
@@ -25,9 +25,9 @@ func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category
 	return res
 }
 
-func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model_helper.AppError) {
+func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model.CategorySlice, *model_helper.AppError) {
 	if allowFromCache {
-		var res model.Categories
+		var res model.CategorySlice
 		notFoundCategoryIdMap := lo.SliceToMap(ids, func(id string) (string, struct{}) { return id, struct{}{} })
 
 		s.categoryMap.Range(func(id, value any) bool {
@@ -58,7 +58,7 @@ func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model
 }
 
 // CategoriesByOption returns all categories that satisfy given option
-func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) (model.Categories, *model_helper.AppError) {
+func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) (model.CategorySlice, *model_helper.AppError) {
 	categories, err := a.srv.Store.Category().FilterByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -88,7 +88,7 @@ func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*
 func (s *ServiceProduct) DoAnalyticCategories() *model_helper.AppError {
 	slog.Info("Analyzing categories")
 
-	var allCategories model.Categories
+	var allCategories model.CategorySlice
 	const limit = 500
 	var lastCategorySlug string
 
@@ -135,12 +135,12 @@ func (s *ServiceProduct) DoAnalyticCategories() *model_helper.AppError {
 // ClassifyCategories takes a slice of single categories.
 // Returns a slice of category families
 // NOTE: you can call this function
-func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.Categories {
+func (s *ServiceProduct) ClassifyCategories(categories model.CategorySlice) model.CategorySlice {
 	if len(categories) <= 1 {
 		return categories
 	}
 
-	var res model.Categories
+	var res model.CategorySlice
 	sort.SliceStable(categories, func(i, j int) bool {
 		return categories[i].Level > categories[j].Level
 	})

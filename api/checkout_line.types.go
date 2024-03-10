@@ -107,8 +107,8 @@ func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 	return productType.IsShippingRequired, nil
 }
 
-func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*model.CheckoutLine] {
-	res := make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
+func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[model.CheckoutLineSlice] {
+	res := make([]*dataloader.Result[model.CheckoutLineSlice], len(tokens))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	checkoutLines, appErr := embedCtx.App.Srv().
@@ -118,14 +118,14 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 		})
 	if appErr != nil {
 		for idx := range tokens {
-			res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: appErr}
+			res[idx] = &dataloader.Result[model.CheckoutLineSlice]{Error: appErr}
 		}
 		return res
 	}
 
 	// checkoutLinesMap has keys are checkout tokens.
 	// values are checkout lines belong to the checkout parent
-	var checkoutLinesMap = map[string][]*model.CheckoutLine{}
+	var checkoutLinesMap = map[string]model.CheckoutLineSlice{}
 	for _, line := range checkoutLines {
 		if line != nil {
 			checkoutLinesMap[line.CheckoutID] = append(checkoutLinesMap[line.CheckoutID], line)
@@ -133,7 +133,7 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 	}
 
 	for idx, token := range tokens {
-		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Data: checkoutLinesMap[token]}
+		res[idx] = &dataloader.Result[model.CheckoutLineSlice]{Data: checkoutLinesMap[token]}
 	}
 	return res
 }
@@ -170,7 +170,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 		variantIDS      []string
 		channelIDS      []string
-		checkoutLines   [][]*model.CheckoutLine
+		checkoutLines   []model.CheckoutLineSlice
 		variants        []*model.ProductVariant
 		products        []*model.Product
 		productTypes    []*model.ProductType

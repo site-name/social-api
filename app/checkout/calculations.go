@@ -44,7 +44,7 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 		return nil, appErr
 	}
 
-	checkoutTotalGiftcardBalance, appErr := s.CheckoutTotalGiftCardsBalance(&checkoutInfo.Checkout)
+	checkoutTotalGiftcardBalance, appErr := s.CheckoutTotalGiftCardsBalance(checkoutInfo.Checkout)
 	if appErr != nil {
 		return nil, appErr
 	}

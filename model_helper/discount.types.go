@@ -52,7 +52,7 @@ type CostsData struct {
 }
 
 func NewCostsData(costs []goprices.Money, margins []float64) *CostsData {
-	sort.Slice(costs, func(i, j int) bool {
+	sort.SliceStable(costs, func(i, j int) bool {
 		return costs[i].LessThan(costs[j])
 	})
 	sort.Float64s(margins)
