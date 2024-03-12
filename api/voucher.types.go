@@ -500,10 +500,10 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 	return res
 }
 
-func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.VoucherChannelListing] {
+func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[model.VoucherChannelListingSlice] {
 	var (
-		res                      = make([]*dataloader.Result[[]*model.VoucherChannelListing], len(voucherIDs))
-		voucherChannelListingMap = map[string][]*model.VoucherChannelListing{} // keys are voucher ids
+		res                      = make([]*dataloader.Result[model.VoucherChannelListingSlice], len(voucherIDs))
+		voucherChannelListingMap = map[string]model.VoucherChannelListingSlice{} // keys are voucher ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -513,7 +513,7 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 		})
 	if appErr != nil {
 		for idx := range voucherIDs {
-			res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: appErr}
+			res[idx] = &dataloader.Result[model.VoucherChannelListingSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -523,7 +523,7 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 	}
 
 	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
+		res[idx] = &dataloader.Result[model.VoucherChannelListingSlice]{Data: voucherChannelListingMap[id]}
 	}
 	return res
 }

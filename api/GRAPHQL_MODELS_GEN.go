@@ -4635,13 +4635,13 @@ type StaffDelete struct {
 }
 
 type StaffError struct {
-	Field       *string                `json:"field"`
-	Message     *string                `json:"message"`
-	Code        AccountErrorCode       `json:"code"`
-	AddressType *model.AddressTypeEnum `json:"addressType"`
-	Permissions []PermissionEnum       `json:"permissions"`
-	Groups      []string               `json:"groups"`
-	Users       []string               `json:"users"`
+	Field       *string                       `json:"field"`
+	Message     *string                       `json:"message"`
+	Code        AccountErrorCode              `json:"code"`
+	AddressType *model_helper.AddressTypeEnum `json:"addressType"`
+	Permissions []PermissionEnum              `json:"permissions"`
+	Groups      []string                      `json:"groups"`
+	Users       []string                      `json:"users"`
 }
 
 type StaffNotificationRecipientCreate struct {

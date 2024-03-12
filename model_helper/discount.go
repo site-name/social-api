@@ -1,6 +1,7 @@
 package model_helper
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -209,9 +210,6 @@ func VoucherPreUpdate(v *model.Voucher) {
 }
 
 func voucherCommonPre(v *model.Voucher) {
-	if v.OnlyForStaff.IsNil() {
-		v.OnlyForStaff = model_types.NewNullBool(false)
-	}
 	if model_types.PrimitiveIsNotNilAndNotEqual(v.Name.String, "") {
 		*v.Name.String = SanitizeUnicode(*v.Name.String)
 	}
@@ -221,13 +219,24 @@ func voucherCommonPre(v *model.Voucher) {
 	if v.Type.IsValid() != nil {
 		v.Type = model.VoucherTypeEntireOrder
 	}
-	if v.UsageLimit < 0 {
-		v.UsageLimit = 0
+	if !v.UsageLimit.IsNil() && *v.UsageLimit.Int < 0 {
+		v.UsageLimit.Int = GetPointerOfValue(0)
 	}
 	v.Countries = strings.ToUpper(v.Countries)
 	if v.Code == "" {
 		v.Code = NewPromoCode()
 	}
+}
+
+func VoucherValidateMinCheckoutItemsQuantity(v model.Voucher, quantity int) *NotApplicable {
+	if v.MinCheckoutItemsQuantity > quantity {
+		return &NotApplicable{
+			Where:                    "ValidateMinCheckoutItemsQuantity",
+			Message:                  fmt.Sprintf("This offer is onlyvalid for orders with a minimum of %d in quantity", v.MinCheckoutItemsQuantity),
+			MinCheckoutItemsQuantity: v.MinCheckoutItemsQuantity,
+		}
+	}
+	return nil
 }
 
 func SaleChannelListingPreSave(s *model.SaleChannelListing) {

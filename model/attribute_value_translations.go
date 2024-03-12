@@ -28,6 +28,7 @@ type AttributeValueTranslation struct {
 	AttributeValueID string                 `boil:"attribute_value_id" json:"attribute_value_id" toml:"attribute_value_id" yaml:"attribute_value_id"`
 	Name             string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
 	RichText         model_types.NullString `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
+	PlainText        model_types.NullString `boil:"plain_text" json:"plain_text,omitempty" toml:"plain_text" yaml:"plain_text,omitempty"`
 
 	R *attributeValueTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeValueTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,12 +40,14 @@ var AttributeValueTranslationColumns = struct {
 	AttributeValueID string
 	Name             string
 	RichText         string
+	PlainText        string
 }{
 	ID:               "id",
 	LanguageCode:     "language_code",
 	AttributeValueID: "attribute_value_id",
 	Name:             "name",
 	RichText:         "rich_text",
+	PlainText:        "plain_text",
 }
 
 var AttributeValueTranslationTableColumns = struct {
@@ -53,12 +56,14 @@ var AttributeValueTranslationTableColumns = struct {
 	AttributeValueID string
 	Name             string
 	RichText         string
+	PlainText        string
 }{
 	ID:               "attribute_value_translations.id",
 	LanguageCode:     "attribute_value_translations.language_code",
 	AttributeValueID: "attribute_value_translations.attribute_value_id",
 	Name:             "attribute_value_translations.name",
 	RichText:         "attribute_value_translations.rich_text",
+	PlainText:        "attribute_value_translations.plain_text",
 }
 
 // Generated where
@@ -95,12 +100,14 @@ var AttributeValueTranslationWhere = struct {
 	AttributeValueID whereHelperstring
 	Name             whereHelperstring
 	RichText         whereHelpermodel_types_NullString
+	PlainText        whereHelpermodel_types_NullString
 }{
 	ID:               whereHelperstring{field: "\"attribute_value_translations\".\"id\""},
 	LanguageCode:     whereHelperLanguageCode{field: "\"attribute_value_translations\".\"language_code\""},
 	AttributeValueID: whereHelperstring{field: "\"attribute_value_translations\".\"attribute_value_id\""},
 	Name:             whereHelperstring{field: "\"attribute_value_translations\".\"name\""},
 	RichText:         whereHelpermodel_types_NullString{field: "\"attribute_value_translations\".\"rich_text\""},
+	PlainText:        whereHelpermodel_types_NullString{field: "\"attribute_value_translations\".\"plain_text\""},
 }
 
 // AttributeValueTranslationRels is where relationship names are stored.
@@ -120,9 +127,9 @@ func (*attributeValueTranslationR) NewStruct() *attributeValueTranslationR {
 type attributeValueTranslationL struct{}
 
 var (
-	attributeValueTranslationAllColumns            = []string{"id", "language_code", "attribute_value_id", "name", "rich_text"}
+	attributeValueTranslationAllColumns            = []string{"id", "language_code", "attribute_value_id", "name", "rich_text", "plain_text"}
 	attributeValueTranslationColumnsWithoutDefault = []string{"id", "language_code", "attribute_value_id", "name"}
-	attributeValueTranslationColumnsWithDefault    = []string{"rich_text"}
+	attributeValueTranslationColumnsWithDefault    = []string{"rich_text", "plain_text"}
 	attributeValueTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeValueTranslationGeneratedColumns      = []string{}
 )

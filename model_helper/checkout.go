@@ -23,6 +23,11 @@ func CheckoutGetDiscountMoney(c model.Checkout) goprices.Money {
 	}
 }
 
+func CheckoutSetDiscountAmount(c *model.Checkout, money goprices.Money) {
+	c.DiscountAmount = money.Amount
+	c.Currency = model.Currency(money.Currency)
+}
+
 func CheckoutAddDiscountAmount(c *model.Checkout, amount decimal.Decimal) {
 	if c == nil {
 		return

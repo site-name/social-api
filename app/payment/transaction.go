@@ -3,14 +3,13 @@ package payment
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// TransactionsByOption returns a list of transactions filtered based on given option
-func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model_helper.AppError) {
+func (a *ServicePayment) TransactionsByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model_helper.AppError) {
 	transactions, err := a.srv.Store.PaymentTransaction().FilterByOption(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("TransactionsByOption", "app.payment.error_finding_transactions_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -19,48 +18,32 @@ func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFi
 }
 
 func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model_helper.AppError) {
-	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
+	trans, appErr := a.TransactionsByOption(model_helper.PaymentTransactionFilterOpts{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentTransactionWhere.PaymentID.EQ(paymentID),
+			qm.OrderBy(model.PaymentTransactionColumns.CreatedAt+" "+model_helper.DESC.String()),
+			qm.Limit(1),
+		),
 	})
 
 	if appErr != nil {
 		return nil, appErr
 	}
-
 	if len(trans) == 0 {
 		return nil, model_helper.NewAppError("GetLastPaymentTransaction", "app.payment.get_last_transaction_of_payment.app_error", nil, "payment has no transaction", http.StatusNotFound)
 	}
 
-	var lastTran *model.PaymentTransaction
-	for _, tran := range trans {
-		if lastTran == nil || tran.CreateAt >= lastTran.CreateAt {
-			lastTran = tran
-		}
-	}
-
-	return lastTran, nil
+	return trans[0], nil
 }
 
-func (a *ServicePayment) SaveTransaction(transaction boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError) {
-	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
+func (a *ServicePayment) UpsertTransaction(transaction boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError) {
+	upsertPaymentTransaction, err := a.srv.Store.PaymentTransaction().Upsert(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model_helper.NewAppError("SaveTransaction", "app.payment.save_transaction_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("UpsertTransaction", "app.payment.save_transaction_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return paymentTransaction, nil
-}
-
-func (a *ServicePayment) UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError) {
-	paymentTransaction, err := a.srv.Store.PaymentTransaction().Update(transaction)
-	if err != nil {
-		if appErr, ok := err.(*model_helper.AppError); ok {
-			return nil, appErr
-		}
-		return nil, model_helper.NewAppError("UpdateTransaction", "app.payment.error_updating.transaction.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return paymentTransaction, nil
+	return upsertPaymentTransaction, nil
 }

@@ -26,7 +26,7 @@ import (
 type Payment struct {
 	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Gateway            string                 `boil:"gateway" json:"gateway" toml:"gateway" yaml:"gateway"`
-	IsActive           model_types.NullBool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	IsActive           bool                   `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	ToConfirm          bool                   `boil:"to_confirm" json:"to_confirm" toml:"to_confirm" yaml:"to_confirm"`
 	CreatedAt          int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt          int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
@@ -297,7 +297,7 @@ func (w whereHelperStorePaymentMethod) NIN(slice []StorePaymentMethod) qm.QueryM
 var PaymentWhere = struct {
 	ID                 whereHelperstring
 	Gateway            whereHelperstring
-	IsActive           whereHelpermodel_types_NullBool
+	IsActive           whereHelperbool
 	ToConfirm          whereHelperbool
 	CreatedAt          whereHelperint64
 	UpdatedAt          whereHelperint64
@@ -335,7 +335,7 @@ var PaymentWhere = struct {
 }{
 	ID:                 whereHelperstring{field: "\"payments\".\"id\""},
 	Gateway:            whereHelperstring{field: "\"payments\".\"gateway\""},
-	IsActive:           whereHelpermodel_types_NullBool{field: "\"payments\".\"is_active\""},
+	IsActive:           whereHelperbool{field: "\"payments\".\"is_active\""},
 	ToConfirm:          whereHelperbool{field: "\"payments\".\"to_confirm\""},
 	CreatedAt:          whereHelperint64{field: "\"payments\".\"created_at\""},
 	UpdatedAt:          whereHelperint64{field: "\"payments\".\"updated_at\""},

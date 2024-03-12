@@ -40,7 +40,7 @@ func (s *ServiceOrder) LinePerQuantityToLineObject(quantity int, line *model.Ord
 	}
 }
 
-func orderLinesToQuantityOrderLine(orderLines []*model.OrderLine) []*model.QuantityOrderLine {
+func orderLinesToQuantityOrderLine(orderLines model.OrderLineSlice) []*model.QuantityOrderLine {
 	var res []*model.QuantityOrderLine
 	for _, line := range orderLines {
 		res = append(res, &model.QuantityOrderLine{

@@ -8,7 +8,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/model"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
@@ -23,7 +22,7 @@ type PaymentService interface {
 	//
 	// @paymentPostProcess
 	// Confirm confirms payment
-	Confirm(dbTransaction boil.ContextTransactor, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]any) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Confirm(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]any) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -31,7 +30,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Authorize(dbTransaction boil.ContextTransactor, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Authorize(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -39,7 +38,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Capture(dbTransaction boil.ContextTransactor, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Capture(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -47,7 +46,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	ProcessPayment(dbTransaction boil.ContextTransactor, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]any) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	ProcessPayment(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]any) (*model.PaymentTransaction, *model_helper.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -55,7 +54,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Refund(dbTransaction boil.ContextTransactor, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Refund(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -63,9 +62,9 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Void(dbTransaction boil.ContextTransactor, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
+	Void(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError)
 	// CleanAuthorize Check if payment can be authorized
-	CleanAuthorize(payMent *model.Payment) *model.PaymentError
+	CleanAuthorize(payment *model.Payment) *model.PaymentError
 	// CleanCapture Check if payment can be captured.
 	CleanCapture(pm *model.Payment, amount decimal.Decimal) *model.PaymentError
 	// CreatePayment Create a payment instance.
@@ -78,25 +77,23 @@ type PaymentService interface {
 	// `extraData`, `ckout`, `ord` can be nil
 	//
 	// `storePaymentMethod` default to model.StorePaymentMethod.NONE
-	CreatePayment(transaction boil.ContextTransactor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model_helper.StringMap) (*model.Payment, *model.PaymentError, *model_helper.AppError)
+	CreatePayment(transaction boil.ContextTransactor, gateway string, total *decimal.Decimal, currency model.Currency, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model_helper.StringMap) (*model.Payment, *model_helper.PaymentError, *model_helper.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
 	// billing/shipping addresses for optional fraud-prevention mechanisms.
-	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model_helper.PaymentData, *model_helper.AppError)
+	CreatePaymentInformation(payment model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]any) (*model_helper.PaymentData, *model_helper.AppError)
 	// CreateTransaction reate a transaction based on transaction kind and gateway response.
 	CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model_helper.AppError)
 	// FetchCustomerId Retrieve users customer_id stored for desired gateway.
 	// returning string could be "" or long string
 	FetchCustomerId(user *model.User, gateway string) (string, *model_helper.AppError)
 	// GatewayPostProcess
-	GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model_helper.AppError
+	GatewayPostProcess(paymentTransaction model.PaymentTransaction, payment *model.Payment) *model_helper.AppError
 	// GetAllPaymentsByCheckout returns all payments that belong to given checkout
-	GetAllPaymentsByCheckout(checkoutToken string) (model.PaymentSlice, *model_helper.AppError)
+	GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model_helper.AppError)
 	// GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
-	GetLastpayment(payments model.PaymentSlice) *model.Payment
-	// GetSubTotal adds up all Total prices of given order lines
-	GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model_helper.AppError)
+	GetLastpayment(payments []*model.Payment) *model.Payment
 	// IsCurrencySupported Return true if the given gateway supports given currency.
 	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
@@ -104,17 +101,15 @@ type PaymentService interface {
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *model.Payment) (bool, *model_helper.AppError)
 	// PaymentRefundOrVoid
-	PaymentRefundOrVoid(dbTransaction boil.ContextTransactor, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model_helper.AppError)
+	PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model_helper.AppError)
 	// PaymentsByOption returns all payments that satisfy given option
-	PaymentsByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, *model_helper.AppError)
+	PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model_helper.AppError)
 	// StoreCustomerId stores new value into given user's PrivateMetadata
 	StoreCustomerId(userID string, gateway string, customerID string) *model_helper.AppError
-	// TransactionsByOption returns a list of transactions filtered based on given option
-	TransactionsByOption(option model_helper.PaymentTransactionFilterOpts) (model.PaymentTransactionSlice, *model_helper.AppError)
 	// UpdatePayment
-	UpdatePayment(payMent model.Payment, gatewayResponse *model_helper.GatewayResponse) *model_helper.AppError
+	UpdatePayment(payment model.Payment, gatewayResponse *model_helper.GatewayResponse) *model_helper.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model_helper.PaymentPatch) *model_helper.AppError
+	UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
 	UpsertPayment(transaction boil.ContextTransactor, payMent *model.Payment) (*model.Payment, *model_helper.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
@@ -123,13 +118,14 @@ type PaymentService interface {
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model_helper.PaymentData, actionRequired bool, gatewayResponse *model_helper.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model_helper.AppError)
 	GetLastOrderPayment(orderID string) (*model.Payment, *model_helper.AppError)
 	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model_helper.AppError)
-	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model_helper.AppError)
-	GetTotalAuthorized(payments model.PaymentSlice, fallbackCurrency string) (*goprices.Money, *model_helper.AppError)
+	GetPaymentToken(payment *model.Payment) (string, *model.PaymentError, *model_helper.AppError)
+	GetSubTotal(orderLines model.OrderLineSlice, fallbackCurrency string) (*goprices.TaxedMoney, *model_helper.AppError)
+	GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model_helper.AppError)
 	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*model_helper.PaymentGateway
 	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model_helper.CustomerSource, *model_helper.AppError)
 	PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError)
-	SaveTransaction(transaction boil.ContextTransactor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
-	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)
-	UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
+	TransactionsByOption(option model_helper.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model_helper.AppError)
+	UpdatePaymentMethodDetails(payment model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)
+	UpsertTransaction(transaction boil.ContextTransactor, paymentTransaction model.PaymentTransaction) (*model.PaymentTransaction, *model_helper.AppError)
 }

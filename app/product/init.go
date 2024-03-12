@@ -17,7 +17,7 @@ import (
 func (a *ServiceProduct) CalculateRevenueForVariant(
 	variant *model.ProductVariant,
 	startDate *time.Time,
-	orderLines []*model.OrderLine,
+	orderLines model.OrderLineSlice,
 	ordersDict map[string]*model.Order,
 	currencyCode string,
 

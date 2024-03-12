@@ -367,7 +367,7 @@ func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLineSli
 }
 
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) (model.OrderLineSlice, *model_helper.AppError) {
 	if len(orderLines) == 0 {
 		return orderLines, nil
 	}
@@ -451,7 +451,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, vouch
 		len(discountedCategories) > 0 ||
 		len(discountedCollections) > 0 {
 
-		var discountedOrderLines []*model.OrderLine
+		var discountedOrderLines model.OrderLineSlice
 
 		for _, orderLine := range orderLines {
 			if orderLine.ProductVariant != nil {
@@ -494,7 +494,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLineSlice, vouch
 // Specific products are products, collections and categories.
 // Product must be assigned directly to the discounted category, assigning
 // product to child category won't work
-func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model_helper.AppError) {
+func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*goprices.Money, *model_helper.AppError) {
 	discountedOrderLines, appErr := a.GetDiscountedLines(orderLines, voucher)
 	if appErr != nil {
 		return nil, appErr
@@ -516,20 +516,19 @@ func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*model.
 // Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result any, notApplicableErr *model.NotApplicable, appErr *model_helper.AppError) {
-
+func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result any, notApplicableErr *model_helper.NotApplicable, appErr *model_helper.AppError) {
 	order.PopulateNonDbFields() // NOTE: must call this method before performing money, weight calculations
 
 	// validate if order has voucher attached to
-	if order.VoucherID == nil {
+	if order.VoucherID.IsNil() {
 		result = &goprices.Money{
-			Amount:   decimal.Zero,
-			Currency: order.Currency,
+			Amount:   decimal.NewFromInt(0),
+			Currency: order.Currency.String(),
 		}
 		return
 	}
 
-	notApplicableErr, appErr = a.srv.DiscountService().ValidateVoucherInOrder(order)
+	notApplicableErr, appErr = a.srv.Discount.ValidateVoucherInOrder(order)
 	if appErr != nil || notApplicableErr != nil {
 		return
 	}
@@ -541,22 +540,22 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result an
 		return
 	}
 
-	orderSubTotal, appErr := a.srv.PaymentService().GetSubTotal(orderLines, order.Currency)
+	orderSubTotal, appErr := a.srv.Payment.GetSubTotal(orderLines, order.Currency)
 	if appErr != nil {
 		return
 	}
 
-	voucherOfDiscount, appErr := a.srv.DiscountService().VoucherById(*order.VoucherID)
+	voucherOfDiscount, appErr := a.srv.Discount.VoucherById(*order.VoucherID)
 	if appErr != nil {
 		return
 	}
 
-	if voucherOfDiscount.Type == model.VOUCHER_TYPE_ENTIRE_ORDER {
-		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, order.ChannelID)
+	if voucherOfDiscount.Type == model.VoucherTypeEntireOrder {
+		result, appErr = a.srv.Discount.GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, order.ChannelID)
 		return
 	}
-	if voucherOfDiscount.Type == model.VOUCHER_TYPE_SHIPPING {
-		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, order.ShippingPrice, order.ChannelID)
+	if voucherOfDiscount.Type == model.VoucherTypeShipping {
+		result, appErr = a.srv.Discount.GetDiscountAmountFor(voucherOfDiscount, order.ShippingPrice, order.ChannelID)
 		return
 	}
 	// otherwise: Type is model.SPECIFIC_PRODUCT
@@ -569,7 +568,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(order *model.Order) (result an
 		return
 	}
 
-	result, appErr = a.srv.DiscountService().GetProductsVoucherDiscount(voucherOfDiscount, prices, order.ChannelID)
+	result, appErr = a.srv.Discount.GetProductsVoucherDiscount(voucherOfDiscount, prices, order.ChannelID)
 	return
 }
 
@@ -676,7 +675,7 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction boil.ContextTransactor, ord
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model_helper.InsufficientStock, *model_helper.AppError) {
 	transaction := s.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, nil, model_helper.NewAppError("AddVariantToOrder", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -949,7 +948,7 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *model.GiftCard, totalPric
 	}
 }
 
-func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
 	}
@@ -971,7 +970,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -1066,7 +1065,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction boil.ContextTransactor, orde
 }
 
 // DeleteOrderLine Delete an order line from an order.
-func (a *ServiceOrder) DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	order, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr

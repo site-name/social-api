@@ -79,7 +79,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.InsufficientStock, *model_helper.AppError) {
 	if user != nil && !model_helper.IsValidId(user.Id) {
 		user = nil
 	}
@@ -222,7 +222,7 @@ func GetGiftcardLines(lines model.OrderLineSlice) model.OrderLineSlice {
 	return res
 }
 
-func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ any, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlice, requestorUser *model.User, _ any, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model_helper.InsufficientStock, *model_helper.AppError) {
 	if len(giftcardLines) == 0 {
 		return nil, nil, model_helper.NewAppError("FulfillGiftcardLines", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "giftcardLines"}, "", http.StatusBadRequest)
 	}
@@ -273,7 +273,7 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLineSlic
 				}
 
 				return nil,
-					&model.InsufficientStock{
+					&model_helper.InsufficientStock{
 						Code: model.GIFT_CARD_NOT_APPLICABLE,
 						Items: []*model.InsufficientStockData{
 							{

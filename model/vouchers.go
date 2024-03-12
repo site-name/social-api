@@ -27,13 +27,13 @@ type Voucher struct {
 	Type                     VoucherType            `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Name                     model_types.NullString `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Code                     string                 `boil:"code" json:"code" toml:"code" yaml:"code"`
-	UsageLimit               int                    `boil:"usage_limit" json:"usage_limit" toml:"usage_limit" yaml:"usage_limit"`
+	UsageLimit               model_types.NullInt    `boil:"usage_limit" json:"usage_limit,omitempty" toml:"usage_limit" yaml:"usage_limit,omitempty"`
 	Used                     int                    `boil:"used" json:"used" toml:"used" yaml:"used"`
 	StartDate                int64                  `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
 	EndDate                  model_types.NullInt64  `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
 	ApplyOncePerOrder        bool                   `boil:"apply_once_per_order" json:"apply_once_per_order" toml:"apply_once_per_order" yaml:"apply_once_per_order"`
 	ApplyOncePerCustomer     bool                   `boil:"apply_once_per_customer" json:"apply_once_per_customer" toml:"apply_once_per_customer" yaml:"apply_once_per_customer"`
-	OnlyForStaff             model_types.NullBool   `boil:"only_for_staff" json:"only_for_staff,omitempty" toml:"only_for_staff" yaml:"only_for_staff,omitempty"`
+	OnlyForStaff             bool                   `boil:"only_for_staff" json:"only_for_staff" toml:"only_for_staff" yaml:"only_for_staff"`
 	DiscountValueType        DiscountValueType      `boil:"discount_value_type" json:"discount_value_type" toml:"discount_value_type" yaml:"discount_value_type"`
 	Countries                string                 `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
 	MinCheckoutItemsQuantity int                    `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity"`
@@ -168,13 +168,13 @@ var VoucherWhere = struct {
 	Type                     whereHelperVoucherType
 	Name                     whereHelpermodel_types_NullString
 	Code                     whereHelperstring
-	UsageLimit               whereHelperint
+	UsageLimit               whereHelpermodel_types_NullInt
 	Used                     whereHelperint
 	StartDate                whereHelperint64
 	EndDate                  whereHelpermodel_types_NullInt64
 	ApplyOncePerOrder        whereHelperbool
 	ApplyOncePerCustomer     whereHelperbool
-	OnlyForStaff             whereHelpermodel_types_NullBool
+	OnlyForStaff             whereHelperbool
 	DiscountValueType        whereHelperDiscountValueType
 	Countries                whereHelperstring
 	MinCheckoutItemsQuantity whereHelperint
@@ -187,13 +187,13 @@ var VoucherWhere = struct {
 	Type:                     whereHelperVoucherType{field: "\"vouchers\".\"type\""},
 	Name:                     whereHelpermodel_types_NullString{field: "\"vouchers\".\"name\""},
 	Code:                     whereHelperstring{field: "\"vouchers\".\"code\""},
-	UsageLimit:               whereHelperint{field: "\"vouchers\".\"usage_limit\""},
+	UsageLimit:               whereHelpermodel_types_NullInt{field: "\"vouchers\".\"usage_limit\""},
 	Used:                     whereHelperint{field: "\"vouchers\".\"used\""},
 	StartDate:                whereHelperint64{field: "\"vouchers\".\"start_date\""},
 	EndDate:                  whereHelpermodel_types_NullInt64{field: "\"vouchers\".\"end_date\""},
 	ApplyOncePerOrder:        whereHelperbool{field: "\"vouchers\".\"apply_once_per_order\""},
 	ApplyOncePerCustomer:     whereHelperbool{field: "\"vouchers\".\"apply_once_per_customer\""},
-	OnlyForStaff:             whereHelpermodel_types_NullBool{field: "\"vouchers\".\"only_for_staff\""},
+	OnlyForStaff:             whereHelperbool{field: "\"vouchers\".\"only_for_staff\""},
 	DiscountValueType:        whereHelperDiscountValueType{field: "\"vouchers\".\"discount_value_type\""},
 	Countries:                whereHelperstring{field: "\"vouchers\".\"countries\""},
 	MinCheckoutItemsQuantity: whereHelperint{field: "\"vouchers\".\"min_checkout_items_quantity\""},
@@ -292,8 +292,8 @@ type voucherL struct{}
 
 var (
 	voucherAllColumns            = []string{"id", "type", "name", "code", "usage_limit", "used", "start_date", "end_date", "apply_once_per_order", "apply_once_per_customer", "only_for_staff", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at", "metadata", "private_metadata"}
-	voucherColumnsWithoutDefault = []string{"id", "type", "code", "usage_limit", "used", "start_date", "apply_once_per_order", "apply_once_per_customer", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at"}
-	voucherColumnsWithDefault    = []string{"name", "end_date", "only_for_staff", "metadata", "private_metadata"}
+	voucherColumnsWithoutDefault = []string{"id", "type", "code", "used", "start_date", "apply_once_per_order", "apply_once_per_customer", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at"}
+	voucherColumnsWithDefault    = []string{"name", "usage_limit", "end_date", "only_for_staff", "metadata", "private_metadata"}
 	voucherPrimaryKeyColumns     = []string{"id"}
 	voucherGeneratedColumns      = []string{}
 )

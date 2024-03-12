@@ -86,10 +86,6 @@ func ProductIsValid(p model.Product) *AppError {
 	return nil
 }
 
-type ProductFilterOptions struct {
-	CommonQueryOptions
-}
-
 func CategoryPreSave(c *model.Category) {
 	if c.ID == "" {
 		c.ID = NewId()

@@ -90,7 +90,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError) {
+func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model_helper.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError) {
 	var (
 		appErr        *model_helper.AppError
 		previousValue model.Address = address
@@ -348,11 +348,11 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 }
 
 func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, checkoutLineInfo model_helper.CheckoutLineInfo, address *model.Address, discounts []*model_helper.DiscountInfo) (*goprices.TaxedMoney, *model_helper.AppError) {
-	defaultValue := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
+	defaultValue := m.Srv.Checkout.BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
 
 	var taxedMoney *goprices.TaxedMoney
 
-	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
+	for _, plg := range m.getPlugins(checkoutInfo.Channel.ID, true) {
 		taxedMoney, appErr := plg.CalculateCheckoutLineUnitPrice(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotImplemented {

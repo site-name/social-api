@@ -91,5 +91,5 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option model_helper.CategoryFilte
 func (cs *SqlCategoryStore) FilterByOption(option model_helper.CategoryFilterOption) (model.CategorySlice, error) {
 	conds := cs.commonQueryBuilder(option)
 
-	return model.CategorySlice(conds...).All(cs.GetReplica())
+	return model.Categories(conds...).All(cs.GetReplica())
 }

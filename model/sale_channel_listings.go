@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/sitename/sitename/modules/model_types"
+	"github.com/site-name/decimal"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,12 +23,12 @@ import (
 
 // SaleChannelListing is an object representing the database table.
 type SaleChannelListing struct {
-	ID            string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SaleID        string                  `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
-	ChannelID     string                  `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	DiscountValue model_types.NullDecimal `boil:"discount_value" json:"discount_value,omitempty" toml:"discount_value" yaml:"discount_value,omitempty"`
-	Currency      Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	CreatedAt     int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID            string          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SaleID        string          `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
+	ChannelID     string          `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	DiscountValue decimal.Decimal `boil:"discount_value" json:"discount_value" toml:"discount_value" yaml:"discount_value"`
+	Currency      Currency        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	CreatedAt     int64           `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *saleChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -72,14 +72,14 @@ var SaleChannelListingWhere = struct {
 	ID            whereHelperstring
 	SaleID        whereHelperstring
 	ChannelID     whereHelperstring
-	DiscountValue whereHelpermodel_types_NullDecimal
+	DiscountValue whereHelperdecimal_Decimal
 	Currency      whereHelperCurrency
 	CreatedAt     whereHelperint64
 }{
 	ID:            whereHelperstring{field: "\"sale_channel_listings\".\"id\""},
 	SaleID:        whereHelperstring{field: "\"sale_channel_listings\".\"sale_id\""},
 	ChannelID:     whereHelperstring{field: "\"sale_channel_listings\".\"channel_id\""},
-	DiscountValue: whereHelpermodel_types_NullDecimal{field: "\"sale_channel_listings\".\"discount_value\""},
+	DiscountValue: whereHelperdecimal_Decimal{field: "\"sale_channel_listings\".\"discount_value\""},
 	Currency:      whereHelperCurrency{field: "\"sale_channel_listings\".\"currency\""},
 	CreatedAt:     whereHelperint64{field: "\"sale_channel_listings\".\"created_at\""},
 }

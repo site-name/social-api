@@ -16,14 +16,13 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // AccountService contains methods for working with accounts
 type AccountService interface {
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
-	// AddressesByOption returns a list of addresses by given option
-	AddressesByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, *model_helper.AppError)
 	// AttachSessionCookies sets:
 	//
 	// 1) session cookie with value of given s's session's token to given w
@@ -34,8 +33,6 @@ type AccountService interface {
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	// AuthenticateUserForLogin
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *model.User, err *model_helper.AppError)
-	// ChangeUserDefaultAddress set default address for given user
-	ChangeUserDefaultAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) (*model.User, *model_helper.AppError)
 	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
@@ -137,16 +134,16 @@ type AccountService interface {
 	SendSetPasswordNotification(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
 	// Trigger sending an account confirmation notification for the given user
 	SendAccountConfirmation(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
-	// UpsertAddress depends on given address's Id to decide update or insert it
-	UpsertAddress(transaction store.ContextRunner, address model.Address) (*model.Address, *model_helper.AppError)
 	ActivateMfa(userID, token string) *model_helper.AppError
 	AddStatusCache(status model.Status)
 	AddStatusCacheSkipClusterSend(status model.Status)
 	AddressById(id string) (*model.Address, *model_helper.AppError)
+	AddressesByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, *model_helper.AppError)
 	AddressesByUserId(userID string) (model.AddressSlice, *model_helper.AppError)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model_helper.AppError)
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model_helper.AppError
 	BroadcastStatus(status model.Status)
+	ChangeUserDefaultAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) (*model.User, *model_helper.AppError)
 	CheckProviderAttributes(user model.User, patch model_helper.UserPatch) string
 	CheckUserAllAuthenticationCriteria(user model.User, mfaToken string) *model_helper.AppError
 	ClearStatusCache()
@@ -160,6 +157,7 @@ type AccountService interface {
 	CreateUserWithToken(c request.Context, user model.User, token model.Token) (*model.User, *model_helper.AppError)
 	CustomerEventsByOptions(options model_helper.CustomerEventFilterOptions) (model.CustomerEventSlice, *model_helper.AppError)
 	DeactivateMfa(userID string) *model_helper.AppError
+	DeleteAddresses(tx boil.ContextTransactor, ids []string) *model_helper.AppError
 	DeletePreferences(userID string, preferences model.PreferenceSlice) *model_helper.AppError
 	DeleteToken(token model.Token) *model_helper.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model_helper.AppError
@@ -218,6 +216,7 @@ type AccountService interface {
 	SetStatusOnline(userID string, manual bool)
 	StatusByID(statusID string) (*model.Status, *model_helper.AppError)
 	StatusesByIDs(statusIDs []string) (model.StatusSlice, *model_helper.AppError)
+	StoreUserAddress(user model.User, address model.Address, addressType model_helper.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	UpdateActive(c *request.Context, user model.User, active bool) (*model.User, *model_helper.AppError)
 	UpdateHashedPassword(user *model.User, newHashedPassword string) *model_helper.AppError
 	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model_helper.AppError
@@ -235,6 +234,7 @@ type AccountService interface {
 	UpdateUserAuth(userID string, userAuth *model_helper.UserAuth) (*model_helper.UserAuth, *model_helper.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*model.User, *model_helper.AppError)
 	UpdateUserRolesWithUser(user model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model_helper.AppError)
+	UpsertAddress(transaction store.ContextRunner, address model.Address) (*model.Address, *model_helper.AppError)
 	UserById(ctx context.Context, userID string) (*model.User, *model_helper.AppError)
 	UserSetDefaultAddress(userID, addressID string, addressType model_helper.AddressTypeEnum) (*model.User, *model_helper.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model_helper.AppError

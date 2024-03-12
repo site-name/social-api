@@ -21,7 +21,7 @@ func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Paymen
 
 	res := payments[0]
 	for _, pm := range payments[1:] {
-		if pm != nil && pm.CreateAt > res.CreateAt {
+		if pm != nil && pm.CreatedAt > res.CreatedAt {
 			res = pm
 		}
 	}
@@ -36,7 +36,7 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackC
 	}
 
 	lastPayment := a.GetLastpayment(payments)
-	if lastPayment != nil && *lastPayment.IsActive {
+	if lastPayment != nil && lastPayment.IsActive {
 		paymentAuthorizedAmount, appErr := a.PaymentGetAuthorizedAmount(lastPayment)
 		if appErr != nil {
 			return nil, appErr
@@ -48,17 +48,22 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackC
 	return zeroMoney, nil
 }
 
-// GetSubTotal adds up all Total prices of given order lines
-func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model_helper.AppError) {
+func (a *ServicePayment) GetSubTotal(orderLines model.OrderLineSlice, fallbackCurrency string) (*goprices.TaxedMoney, *model_helper.AppError) {
 	total, err := util.ZeroTaxedMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, line := range orderLines {
-		line.PopulateNonDbFields()
+		if line == nil {
+			continue
+		}
+		totalPrice := model_helper.OrderLineGetTotalPrice(*line)
+		if totalPrice == nil {
+			continue
+		}
 
-		total, err = total.Add(line.TotalPrice)
+		total, err = total.Add(*totalPrice)
 		if err != nil {
 			return nil, model_helper.NewAppError("GetSubTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 		}

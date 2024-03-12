@@ -58,7 +58,7 @@ func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (
 }
 
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
-func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) (model.OrderLineSlice, *model_helper.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
@@ -67,7 +67,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.Ord
 	}
 
 	var (
-		digitalOrderLines []*model.OrderLine
+		digitalOrderLines model.OrderLineSlice
 		atomicValue       atomic.Int32
 		appErrChan        = make(chan *model_helper.AppError)
 		dititalLineChan   = make(chan *model.OrderLine) // every digital orderlines are sent to this channel
@@ -143,7 +143,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {

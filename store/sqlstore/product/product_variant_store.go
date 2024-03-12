@@ -78,7 +78,7 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		variantWeightUnit, productWeightUnit     measurement.WeightUnit
 	)
 
-	err := model.ProductVariantSlice(
+	err := model.ProductVariants(
 		qm.Select(
 			model.ProductVariantTableColumns.Weight,
 			model.ProductVariantTableColumns.WeightUnit,
@@ -113,7 +113,7 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 }
 
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
-	variant, err := model.ProductVariantSlice(
+	variant, err := model.ProductVariants(
 		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.OrderLines, model.ProductVariantTableColumns.ID, model.OrderLineTableColumns.VariantID)),
 		model.OrderLineWhere.ID.EQ(orderLineID),
 	).One(vs.GetReplica())
@@ -190,13 +190,13 @@ func (vs *SqlProductVariantStore) commonQueryBuilder(option model_helper.Product
 
 func (vs *SqlProductVariantStore) FilterByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, error) {
 	conds := vs.commonQueryBuilder(option)
-	return model.ProductVariantSlice(conds...).All(vs.GetReplica())
+	return model.ProductVariants(conds...).All(vs.GetReplica())
 }
 
 func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariantSlice, error) {
 	startOfDay := util.MillisFromTime(util.StartOfDay(time.Now().UTC()))
 
-	return model.ProductVariantSlice(
+	return model.ProductVariants(
 		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Products, model.ProductVariantTableColumns.ProductID, model.ProductTableColumns.ID)),
 		qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ProductChannelListings, model.ProductChannelListingTableColumns.ProductID, model.ProductTableColumns.ID)),
 		model.ProductChannelListingWhere.ChannelID.EQ(channelID),
@@ -273,7 +273,7 @@ func (s *SqlProductVariantStore) Delete(tx boil.ContextTransactor, ids []string)
 	// }
 
 	// delete variants
-	return model.ProductVariantSlice(
+	return model.ProductVariants(
 		model.ProductVariantWhere.ID.IN(ids),
 	).DeleteAll(tx)
 }

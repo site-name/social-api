@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/temp/model"
 )
 
 // CsvService contains methods for working with csv

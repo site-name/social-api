@@ -18,7 +18,7 @@ import (
 )
 
 // OrderCreated. `fromDraft` is default to false
-func (a *ServiceOrder) OrderCreated(tx *gorm.DB, order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface, fromDraft bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) OrderCreated(tx *gorm.DB, order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface, fromDraft bool) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	// create order created event
 	_, appErr := a.OrderCreatedEvent(order, user, nil, fromDraft)
 	if appErr != nil {
@@ -96,7 +96,7 @@ func (a *ServiceOrder) OrderConfirmed(tx *gorm.DB, order model.Order, user *mode
 // HandleFullyPaidOrder
 //
 // user can be nil
-func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, order model.Order, user *model.User, _ any) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, order model.Order, user *model.User, _ any) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -391,7 +391,7 @@ func (a *ServiceOrder) OrderAuthorized(order model.Order, user *model.User, _ an
 }
 
 // OrderCaptured
-func (a *ServiceOrder) OrderCaptured(order model.Order, user *model.User, _ any, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) OrderCaptured(order model.Order, user *model.User, _ any, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	var userID *string
 	if user != nil && model_helper.IsValidId(user.Id) {
 		userID = &user.Id
@@ -557,7 +557,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 		}
 	}
 
-	var orderLines []*model.OrderLine
+	var orderLines model.OrderLineSlice
 	for _, line := range fulfillmentLinesOfFulfillment {
 		orderLine := line.OrderLine
 		orderLine.QuantityFulfilled -= line.Quantity
@@ -592,7 +592,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 	return appErr
 }
 
-func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model_helper.InsufficientStock, *model_helper.AppError) {
 	// initialize a transaction
 	transaction := s.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
@@ -706,7 +706,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 // CreateGiftcardsWhenApprovingFulfillment
 func (s *ServiceOrder) CreateGiftcardsWhenApprovingFulfillment(order *model.Order, linesData []*model.OrderLineData, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings) *model_helper.AppError {
 	var (
-		giftcardLines = []*model.OrderLine{}
+		giftcardLines = model.OrderLineSlice{}
 		quantities    = map[string]int{}
 	)
 
@@ -806,7 +806,7 @@ func (a *ServiceOrder) CleanMarkOrderAsPaid(order *model.Order) *model_helper.Ap
 }
 
 func (s *ServiceOrder) increaseOrderLineQuantity(transaction boil.ContextTransactor, orderLinesInfo []*model.OrderLineData) *model_helper.AppError {
-	orderLines := []*model.OrderLine{}
+	orderLines := model.OrderLineSlice{}
 
 	for _, lineInfo := range orderLinesInfo {
 		line := lineInfo.Line
@@ -819,7 +819,7 @@ func (s *ServiceOrder) increaseOrderLineQuantity(transaction boil.ContextTransac
 }
 
 // FulfillOrderLines Fulfill order line with given quantity
-func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, model_helper.NewAppError("FulfillOrderLines", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -845,7 +845,7 @@ func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*model.OrderLineData, 
 
 // AutomaticallyFulfillDigitalLines
 // Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
-func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(order model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(order model.Order, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, model_helper.NewAppError("AutomaticallyFulfillDigitalLines", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -991,7 +991,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(order model.Order, manag
 //
 //	Raise:
 //	    InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, warehouseID string, lineDatas model.QuantityOrderLines, channelID string, manager interfaces.PluginManagerInterface, decreaseStock bool, allowStockTobeExceeded bool) ([]*model.FulfillmentLine, *model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, warehouseID string, lineDatas model.QuantityOrderLines, channelID string, manager interfaces.PluginManagerInterface, decreaseStock bool, allowStockTobeExceeded bool) ([]*model.FulfillmentLine, *model_helper.InsufficientStock, *model_helper.AppError) {
 
 	var variantIDs = lineDatas.OrderLines().ProductVariantIDs()
 
@@ -1097,7 +1097,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, wa
 
 	if len(insufficientStocks) > 0 {
 		return nil,
-			&model.InsufficientStock{
+			&model_helper.InsufficientStock{
 				Items: insufficientStocks,
 			},
 			nil
@@ -1150,7 +1150,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, wa
 //
 //	Raise:
 //	    InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) CreateFulfillments(user *model.User, _ any, order *model.Order, fulfillmentLinesForWarehouses map[string][]*model.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError) {
+func (a *ServiceOrder) CreateFulfillments(user *model.User, _ any, order *model.Order, fulfillmentLinesForWarehouses map[string][]*model.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*model.Fulfillment, *model_helper.InsufficientStock, *model_helper.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, nil, model_helper.NewAppError("CreateFulfillments", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -1277,7 +1277,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*mod
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
-		orderLinesToUpdate        []*model.OrderLine
+		orderLinesToUpdate        model.OrderLineSlice
 		orderLineDatasToDeAlocate []*model.OrderLineData
 	)
 
@@ -1633,7 +1633,7 @@ func (a *ServiceOrder) CreateReplaceOrder(user *model.User, _ any, originalOrder
 		orderLinesToCreateMap[orderLineID] = orderLine
 	}
 
-	orderLinesToCreate := []*model.OrderLine{}
+	orderLinesToCreate := model.OrderLineSlice{}
 	for _, orderLine := range orderLinesToCreateMap {
 		orderLinesToCreate = append(orderLinesToCreate, orderLine)
 	}
@@ -2267,7 +2267,7 @@ func (a *ServiceOrder) processRefund(
 	return amount, nil, nil
 }
 
-func (s *ServiceOrder) decreaseStocks(orderLinesInfo []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockToBeExceeded bool) (*model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceOrder) decreaseStocks(orderLinesInfo []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockToBeExceeded bool) (*model_helper.InsufficientStock, *model_helper.AppError) {
 	linesToDecreaseStock := s.srv.WarehouseService().GetOrderLinesWithTrackInventory(orderLinesInfo)
 	if len(linesToDecreaseStock) > 0 {
 		insufficientStock, appErr := s.srv.WarehouseService().DecreaseStock(linesToDecreaseStock, manager, true, allowStockToBeExceeded)

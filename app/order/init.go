@@ -39,7 +39,7 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 
 		var (
 			discount          any
-			notApplicableErr  *model.NotApplicable
+			notApplicableErr  *model_helper.NotApplicable
 			appErr            *model_helper.AppError
 			calculateDiscount bool
 		)

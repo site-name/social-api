@@ -1,6 +1,7 @@
 package model_helper
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -508,4 +509,29 @@ type OrderLineData struct {
 	Variant     *model.ProductVariant // can be nil
 	Replace     bool                  // default false
 	WarehouseID *string               // can be nil
+}
+
+func OrderLineString(o model.OrderLine) string {
+	if o.VariantName != "" {
+		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
+	}
+	return o.ProductName
+}
+
+// if either order line's total price net amount or total price gross amount is nil, then the result will be nil.
+func OrderLineGetTotalPrice(o model.OrderLine) *goprices.TaxedMoney {
+	if o.TotalPriceNetAmount.IsNil() || o.TotalPriceGrossAmount.IsNil() {
+		return nil
+	}
+
+	return &goprices.TaxedMoney{
+		Net: goprices.Money{
+			Amount:   *o.TotalPriceNetAmount.Decimal,
+			Currency: o.Currency.String(),
+		},
+		Gross: goprices.Money{
+			Amount:   *o.TotalPriceGrossAmount.Decimal,
+			Currency: o.Currency.String(),
+		},
+	}
 }

@@ -134,11 +134,11 @@ type PaymentData struct {
 	Token              *string // can be nil
 	CustomerID         *string // can be nil
 	ReuseSource        bool
-	Data               model_types.JSONString // can be nil
-	GraphqlPaymentID   string                 // default to payment's Token
-	GraphqlCustomerID  *string                // can be nil
-	StorePaymentMethod StorePaymentMethod     // default to StorePaymentMethodEnum_NONE ("none")
-	PaymentMetadata    map[string]string
+	Data               model_types.JSONString   // can be nil
+	GraphqlPaymentID   string                   // default to payment's Token
+	GraphqlCustomerID  *string                  // can be nil
+	StorePaymentMethod model.StorePaymentMethod // default to StorePaymentMethodEnum_NONE ("none")
+	PaymentMetadata    model_types.JSONString   // can be nil
 }
 
 // Dataclass for payment gateway token fetching customization.
@@ -191,28 +191,4 @@ type PaymentInterface interface {
 	ProcessPayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
 	GetClientToken(gateway string, tokenConfig *TokenConfig, channelSlug *string) string
 	ListPaymentSources(gateway string, customerId string, channelSlug *string) []*CustomerSource
-}
-
-// Represents if and how a payment should be stored in a payment gateway.
-// The following store types are possible:
-// - ON_SESSION - the payment is stored only to be reused when
-// the customer is present in the checkout flow
-// - OFF_SESSION - the payment is stored to be reused even if
-// the customer is absent
-// - NONE - the payment is not stored.
-type StorePaymentMethod string
-
-const (
-	ON_SESSION  StorePaymentMethod = "on_session"
-	OFF_SESSION StorePaymentMethod = "off_session"
-	NONE        StorePaymentMethod = "none"
-)
-
-func (m *StorePaymentMethod) IsValid() bool {
-	switch *m {
-	case ON_SESSION, OFF_SESSION, NONE:
-		return true
-	default:
-		return false
-	}
 }

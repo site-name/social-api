@@ -28,7 +28,7 @@ type VariantAvailability struct {
 
 // DiscountInfo contains information of a discount
 type DiscountInfo struct {
-	Sale            any // either *Sale || *Voucher
+	Sale            any // either Sale || Voucher
 	ChannelListings map[string]*model.SaleChannelListing
 	ProductIDs      util.AnyArray[string]
 	CategoryIDs     util.AnyArray[string]

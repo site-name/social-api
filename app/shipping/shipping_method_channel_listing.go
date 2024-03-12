@@ -20,7 +20,6 @@ func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option model_hel
 	return listings, nil
 }
 
-// Prepare mapping shipping method to price from channel listings
 func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethodSlice, channelSlug string) (map[string]*goprices.Money, *model_helper.AppError) {
 	shippinMethodIDs := lo.Map(shippingMethods, func(item *model.ShippingMethod, _ int) string { return item.ID })
 

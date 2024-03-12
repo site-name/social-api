@@ -171,10 +171,10 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 	return res
 }
 
-func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderLine] {
+func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[model.OrderLineSlice] {
 	var (
-		res     = make([]*dataloader.Result[[]*model.OrderLine], len(orderIDs))
-		lineMap = map[string][]*model.OrderLine{} // keys are order ids
+		res     = make([]*dataloader.Result[model.OrderLineSlice], len(orderIDs))
+		lineMap = map[string]model.OrderLineSlice{} // keys are order ids
 	)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
@@ -185,7 +185,7 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 		})
 	if appErr != nil {
 		for idx := range orderIDs {
-			res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
+			res[idx] = &dataloader.Result[model.OrderLineSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -194,15 +194,15 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 		lineMap[line.OrderID] = append(lineMap[line.OrderID], line)
 	}
 	for idx, id := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[id]}
+		res[idx] = &dataloader.Result[model.OrderLineSlice]{Data: lineMap[id]}
 	}
 	return res
 }
 
 // idPairs are strings with format variantID__channelID
-func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.OrderLine] {
+func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[model.OrderLineSlice] {
 	var (
-		res     = make([]*dataloader.Result[[]*model.OrderLine], len(idPairs))
+		res     = make([]*dataloader.Result[model.OrderLineSlice], len(idPairs))
 		lineMap = map[string]model.OrderLineSlice{} // keys have format variantID__channelID
 
 		variantIDs []string
@@ -228,7 +228,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 		})
 	if appErr != nil {
 		for idx := range idPairs {
-			res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
+			res[idx] = &dataloader.Result[model.OrderLineSlice]{Error: appErr}
 		}
 		return res
 	}
@@ -242,7 +242,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 	}
 
 	for idx, key := range idPairs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[key]}
+		res[idx] = &dataloader.Result[model.OrderLineSlice]{Data: lineMap[key]}
 	}
 	return res
 }

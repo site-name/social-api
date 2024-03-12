@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
@@ -53,7 +52,7 @@ func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model_helper.Check
 }
 
 // processShippingDataForOrder Fetch, process and return shipping data from checkout.
-func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.CheckoutInfo, shippingPrice *goprices.TaxedMoney, manager interfaces.PluginManagerInterface, lines model_helper.CheckoutLineInfos) (map[string]any, *model_helper.AppError) {
+func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.CheckoutInfo, shippingPrice goprices.TaxedMoney, manager interfaces.PluginManagerInterface, lines model_helper.CheckoutLineInfos) (map[string]any, *model_helper.AppError) {
 	var (
 		deliveryMethodInfo  = checkoutInfo.DeliveryMethodInfo
 		shippingAddress     = deliveryMethodInfo.GetShippingAddress()
@@ -62,7 +61,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.
 	)
 
 	if checkoutInfo.User != nil && shippingAddress != nil {
-		appErr = s.srv.Account.StoreUserAddress(checkoutInfo.User, *shippingAddress, model_helper.ADDRESS_TYPE_SHIPPING, manager)
+		appErr = s.srv.Account.StoreUserAddress(*checkoutInfo.User, *shippingAddress, model_helper.ADDRESS_TYPE_SHIPPING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -70,6 +69,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model_helper.
 		addressesOfUser, appErr := s.srv.Account.AddressesByOption(model_helper.AddressFilterOptions{
 			CommonQueryOptions: model_helper.NewCommonQueryOptions(
 				model.AddressWhere.ID.EQ(shippingAddress.ID),
+				model.AddressWhere.UserID.EQ(checkoutInfo.User.ID),
 			),
 		})
 		if appErr != nil {
@@ -120,7 +120,7 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model_helper.Chec
 	)
 
 	if checkoutInfo.User != nil && billingAddress != nil {
-		appErr = s.srv.Account.StoreUserAddress(checkoutInfo.User, *billingAddress, model_helper.ADDRESS_TYPE_BILLING, manager)
+		appErr = s.srv.Account.StoreUserAddress(*checkoutInfo.User, *billingAddress, model_helper.ADDRESS_TYPE_BILLING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -135,7 +135,7 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model_helper.Chec
 		}
 
 		if len(billingAddressOfUser) > 0 {
-			copyBillingAddress, appErr = s.srv.AccountService().CopyAddress(billingAddress)
+			copyBillingAddress, appErr = s.srv.Account.CopyAddress(billingAddress)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -267,7 +267,7 @@ func (s *ServiceCheckout) createLineForOrder(
 
 // createLinesForOrder Create a lines for the given order.
 // :raises InsufficientStock: when there is not enough items in stock for this variant.
-func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) ([]*model.OrderLineData, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) ([]*model.OrderLineData, *model_helper.InsufficientStock, *model_helper.AppError) {
 	lines = lines.FilterNils()
 	length := len(lines)
 
@@ -381,7 +381,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (map[string]any, *model.InsufficientStock, *model.NotApplicable, *model.TaxError, *model_helper.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discounts []*model_helper.DiscountInfo) (map[string]any, *model_helper.InsufficientStock, *model_helper.NotApplicable, *model.TaxError, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 	checkout.PopulateNonDbFields() // this call is important
 
@@ -397,7 +397,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 		return nil, nil, nil, nil, appErr
 	}
 
-	cardsTotal, appErr := s.CheckoutTotalGiftCardsBalance(&checkout)
+	cardsTotal, appErr := s.CheckoutTotalGiftCardsBalance(checkout)
 	if appErr != nil {
 		return nil, nil, nil, nil, appErr
 	}
@@ -417,7 +417,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 	taxedTotal.Gross = newTaxedTotalGross
 	taxedTotal.Net = newTaxedTotalNet
 
-	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkout.Currency)
+	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkout.Currency.String())
 	if taxedTotal.LessThan(zeroTaxedMoney) {
 		taxedTotal = zeroTaxedMoney
 	}
@@ -506,7 +506,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 // which language to use when sending email.
 //
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
-func (s *ServiceCheckout) createOrder(transaction boil.ContextTransactor, checkoutInfo model_helper.CheckoutInfo, orderData model_types.JSONString, user *model.User, _ any, manager interfaces.PluginManagerInterface, siteSettings model.ShopSettings) (*model.Order, *model.InsufficientStock, *model_helper.AppError) {
+func (s *ServiceCheckout) createOrder(transaction boil.ContextTransactor, checkoutInfo model_helper.CheckoutInfo, orderData model_types.JSONString, user *model.User, _ any, manager interfaces.PluginManagerInterface, siteSettings model.ShopSettings) (*model.Order, *model_helper.InsufficientStock, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 
 	_, orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
@@ -572,7 +572,7 @@ func (s *ServiceCheckout) createOrder(transaction boil.ContextTransactor, checko
 		}
 	}
 
-	var orderLines []*model.OrderLine
+	var orderLines model.OrderLineSlice
 	for _, lineInfo := range orderLinesInfo {
 		line := lineInfo.Line
 		line.OrderID = createdNewOrder.Id
@@ -652,7 +652,7 @@ func (s *ServiceCheckout) createOrder(transaction boil.ContextTransactor, checko
 }
 
 // prepareCheckout Prepare checkout object to complete the checkout process.
-func (s *ServiceCheckout) prepareCheckout(transaction boil.ContextTransactor, manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discoutns []*model_helper.DiscountInfo, trackingCode string, redirectURL string, payMent *model.Payment) (*model.PaymentError, *model_helper.AppError) {
+func (s *ServiceCheckout) prepareCheckout(transaction boil.ContextTransactor, manager interfaces.PluginManagerInterface, checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, discoutns []*model_helper.DiscountInfo, trackingCode string, redirectURL string, payment *model.Payment) (*model.PaymentError, *model_helper.AppError) {
 	checkout := checkoutInfo.Checkout
 
 	appErr := s.CleanCheckoutShipping(checkoutInfo, lines)
@@ -660,7 +660,7 @@ func (s *ServiceCheckout) prepareCheckout(transaction boil.ContextTransactor, ma
 		return nil, appErr
 	}
 
-	paymentErr, appErr := s.CleanCheckoutPayment(transaction, manager, checkoutInfo, lines, discoutns, payMent)
+	paymentErr, appErr := s.CleanCheckoutPayment(transaction, manager, checkoutInfo, lines, discoutns, payment)
 	if paymentErr != nil || appErr != nil {
 		return paymentErr, appErr
 	}
@@ -737,27 +737,27 @@ func (s *ServiceCheckout) getOrderData(manager interfaces.PluginManagerInterface
 }
 
 // processPayment Process the payment assigned to checkout
-func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.Payment, customerID *string, storeSource bool, paymentData map[string]any, orderData map[string]any, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
+func (s *ServiceCheckout) processPayment(dbTransaction boil.ContextTransactor, payment model.Payment, customerID *string, storeSource bool, paymentData map[string]any, orderData map[string]any, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
 	var (
 		transaction *model.PaymentTransaction
-		paymentErr  *model.PaymentError
+		paymentErr  *model_helper.PaymentError
 		appErr      *model_helper.AppError
-		paymentID   = payMent.Id
+		paymentID   = payment.ID
 	)
 
-	if payMent.ToConfirm {
-		transaction, paymentErr, appErr = s.srv.PaymentService().Confirm(
+	if payment.ToConfirm {
+		transaction, paymentErr, appErr = s.srv.Payment.Confirm(
 			dbTransaction,
-			*payMent,
+			payment,
 			manager,
 			channelSlug,
 			paymentData,
 		)
 	} else {
-		transaction, paymentErr, appErr = s.srv.PaymentService().ProcessPayment(
+		transaction, paymentErr, appErr = s.srv.Payment.ProcessPayment(
 			dbTransaction,
-			*payMent,
-			payMent.Token,
+			payment,
+			payment.Token,
 			manager,
 			channelSlug,
 			customerID,
@@ -777,7 +777,7 @@ func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.
 		return nil, nil, model_helper.NewAppError("processPayment", "app.checkout.payment_error.app_error", nil, paymentErr.Error(), 0)
 	}
 
-	_, appErr = s.srv.PaymentService().PaymentByID(nil, paymentID, false)
+	_, appErr = s.srv.Payment.PaymentByID(nil, paymentID, false)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -803,7 +803,7 @@ func (s *ServiceCheckout) processPayment(dbTransaction *gorm.DB, payMent *model.
 //
 // NOTE: Make sure user is authenticated before calling this method.
 func (s *ServiceCheckout) CompleteCheckout(
-	dbTransaction *gorm.DB,
+	dbTransaction boil.ContextTransactor,
 	manager interfaces.PluginManagerInterface,
 	checkoutInfo model_helper.CheckoutInfo,
 	lines model_helper.CheckoutLineInfos,
@@ -812,17 +812,16 @@ func (s *ServiceCheckout) CompleteCheckout(
 	discounts []*model_helper.DiscountInfo,
 	user *model.User,
 	_ any, // this param originally is `app`, but we not gonna integrate app feature in the early versions
-	siteSettings model.ShopSettings,
+	siteSettings model_helper.ShopSettings,
 	trackingCode string,
 	redirectURL string,
-) (*model.Order, bool, model_types.JSONString, *model.PaymentError, *model_helper.AppError) {
-
+) (*model.Order, bool, model_types.JSONString, *model_helper.PaymentError, *model_helper.AppError) {
 	var (
 		checkout    = checkoutInfo.Checkout
 		channelSlug = checkoutInfo.Channel.Slug
 	)
 
-	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(&checkout) // NOTE: returned payment still can be nil even when appErr is nil
+	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(checkout) // NOTE: returned payment still can be nil even when appErr is nil
 	if appErr != nil {
 		return nil, false, nil, nil, appErr
 	}
@@ -843,7 +842,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 	orderData, appErr := s.getOrderData(manager, checkoutInfo, lines, discounts)
 	if appErr != nil {
-		paymentErr, apErr := s.srv.PaymentService().PaymentRefundOrVoid(dbTransaction, lastActivePaymentOfCheckout, manager, channelSlug)
+		paymentErr, apErr := s.srv.Payment.PaymentRefundOrVoid(dbTransaction, lastActivePaymentOfCheckout, manager, channelSlug)
 		if paymentErr != nil || apErr != nil {
 			return nil, false, nil, paymentErr, apErr
 		}
@@ -853,7 +852,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 	var customerID *string
 	if lastActivePaymentOfCheckout != nil && user != nil {
-		uuid, appErr := s.srv.PaymentService().FetchCustomerId(user, lastActivePaymentOfCheckout.GateWay)
+		uuid, appErr := s.srv.Payment.FetchCustomerId(user, lastActivePaymentOfCheckout.Gateway)
 		if appErr != nil {
 			return nil, false, nil, nil, appErr
 		}
@@ -877,7 +876,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 	}
 
 	if transaction.CustomerID != nil && user != nil {
-		appErr = s.srv.PaymentService().StoreCustomerId(user.Id, lastActivePaymentOfCheckout.GateWay, *transaction.CustomerID)
+		appErr = s.srv.Payment.StoreCustomerId(user.Id, lastActivePaymentOfCheckout.GateWay, *transaction.CustomerID)
 		if appErr != nil {
 			return nil, false, nil, nil, appErr
 		}
@@ -890,7 +889,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 	var (
 		orDer                *model.Order
-		insufficientStockErr *model.InsufficientStock
+		insufficientStockErr *model_helper.InsufficientStock
 	)
 	if !transaction.ActionRequired {
 		orDer, insufficientStockErr, appErr = s.createOrder(dbTransaction, checkoutInfo, orderData, user, nil, manager, siteSettings)

@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
-	"github.com/sitename/sitename/model"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -21,9 +20,9 @@ type WarehouseService interface {
 	// Iterate by stocks and allocate as many items as needed or available in stock
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
-	AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model_types.JSONString) (*model.InsufficientStock, *model_helper.AppError)
+	AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model_types.JSONString) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
-	AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model.InsufficientStock, *model_helper.AppError)
+	AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
 	AllocationsByOption(option *model.AllocationFilterOption) (model.Allocations, *model_helper.AppError)
 	// ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
@@ -42,17 +41,17 @@ type WarehouseService interface {
 	BulkUpsertStocks(transaction boil.ContextTransactor, stocks []*model.Stock) ([]*model.Stock, *model_helper.AppError)
 	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 	// :raises InsufficientStock: when there is not enough available items for a variant.
-	CheckPreorderThresholdBulk(variants model.ProductVariantSlice, quantities []int, channelSlug string) (*model.InsufficientStock, *model_helper.AppError)
+	CheckPreorderThresholdBulk(variants model.ProductVariantSlice, quantities []int, channelSlug string) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
 	// or there is not enough available preorder items for a variant.
-	CheckStockAndPreorderQuantity(variant *model.ProductVariant, countryCode model.CountryCode, channelSlug string, quantity int) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockAndPreorderQuantity(variant *model.ProductVariant, countryCode model.CountryCode, channelSlug string, quantity int) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// CheckStockAndPreorderQuantityBulk Validate if products are available for stocks/preorder.
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
 	// or there is not enough available preorder items for a variant.
 	//
 	// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// DeAllocateStockForOrder Remove all allocations for given order
 	DeAllocateStockForOrder(ord *model.Order, manager interfaces.PluginManagerInterface) *model_helper.AppError
 	// DeactivatePreorderForVariant Complete preorder for product variant.
@@ -79,9 +78,9 @@ type WarehouseService interface {
 	// If allow_stock_to_be_exceeded flag is True then quantity could be < 0.
 	//
 	// updateStocks default to true
-	DecreaseStock(orderLineInfos model.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*model.InsufficientStock, *model_helper.AppError)
+	DecreaseStock(orderLineInfos model.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// DecreaseAllocations Decreate allocations for provided order lines.
-	DecreaseAllocations(lineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
+	DecreaseAllocations(lineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// DeletePreorderAllocations tells store to delete given preorder allocations
 	DeletePreorderAllocations(transaction boil.ContextTransactor, preorderAllocationIDs ...string) *model_helper.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
@@ -103,7 +102,7 @@ type WarehouseService interface {
 	// Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
 	GetVariantStocksForCountry(countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model_helper.AppError)
 	// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-	IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
+	IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
 	//
 	// Function lock for update stock and allocations related to given `order_line`
@@ -128,25 +127,25 @@ type WarehouseService interface {
 	//
 	// If so - returns None. If there is less stock then required raise InsufficientStock
 	// exception.
-	CheckStockQuantity(variant *model.ProductVariant, countryCode model.CountryCode, channelSlug string, quantity int) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockQuantity(variant *model.ProductVariant, countryCode model.CountryCode, channelSlug string, quantity int) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// Validate if there is stock available for given variants in given country.
 	//
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
-	CheckStockQuantityBulk(variants model.ProductVariantSlice, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model.InsufficientStock, *model_helper.AppError)
+	CheckStockQuantityBulk(variants model.ProductVariantSlice, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model_types.JSONString, existingLines model_helper.CheckoutLineInfos, replace bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// ValidateWarehouseCount
 	//
 	//	Every ShippingZone can be assigned to only one warehouse.
 	//
 	// If not there would be issue with automatically selecting stock for operation.
-	ValidateWarehouseCount(shippingZones model.ShippingZoneSlice, instance *model.Warehouse) (bool, *model_helper.AppError)
+	ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.Warehouse) (bool, *model_helper.AppError)
 	// WarehouseByOption returns a list of warehouses based on given option
-	WarehousesByOption(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError)
+	WarehousesByOption(option *model.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError)
 	// WarehouseByOption returns a warehouse filtered using given option
-	WarehouseByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError)
+	WarehouseByOption(option *model.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError)
 	// WarehouseByStockID returns a warehouse that owns the given stock
 	WarehouseByStockID(stockID string) (*model.Warehouse, *model_helper.AppError)
 	// WarehouseCountries returns countries of given warehouse
 	WarehouseCountries(warehouseID string) ([]string, *model_helper.AppError)
 	CreateWarehouse(warehouse *model.Warehouse) (*model.Warehouse, *model_helper.AppError)
-	DeleteStocks(options model_helper.StockFilterOption) (int64, *model_helper.AppError)
+	DeleteStocks(options *model.StockFilterOption) (int64, *model_helper.AppError)
 }

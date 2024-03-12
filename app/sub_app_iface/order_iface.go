@@ -21,26 +21,26 @@ type OrderService interface {
 	// AddVariantToOrder Add total_quantity of variant to order.
 	//
 	// Returns an order line the variant was added to.
-	AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model_helper.AppError)
+	AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ any, manager interfaces.PluginManagerInterface, discounts []*model_helper.DiscountInfo, allocateStock bool) (*model.OrderLine, *model_helper.InsufficientStock, *model_helper.AppError)
 	// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
-	AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model_helper.AppError)
+	AllDigitalOrderLinesOfOrder(orderID string) (model.OrderLineSlice, *model_helper.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
 	ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountValueType, currency string, priceToDiscount any) (any, error)
 	// AutomaticallyFulfillDigitalLines
 	// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
-	AutomaticallyFulfillDigitalLines(order model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
+	AutomaticallyFulfillDigitalLines(order model.Order, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
 	BulkDeleteFulfillments(transaction boil.ContextTransactor, fulfillments model.Fulfillments) *model_helper.AppError
 	// BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
 	BulkUpsertFulfillmentLines(transaction boil.ContextTransactor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model_helper.AppError)
 	// BulkUpsertOrderLines perform bulk upsert given order lines
-	BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model_helper.AppError)
+	BulkUpsertOrderLines(transaction boil.ContextTransactor, orderLines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError)
 	// BulkUpsertOrders performs bulk upsert given orders
 	BulkUpsertOrders(transaction boil.ContextTransactor, orders []*model.Order) ([]*model.Order, *model_helper.AppError)
 	// Calculate discount value depending on voucher and discount types.
 	//
 	// Raise NotApplicable if voucher of given type cannot be applied.
-	GetVoucherDiscountForOrder(order *model.Order) (result any, notApplicableErr *model.NotApplicable, appErr *model_helper.AppError)
+	GetVoucherDiscountForOrder(order *model.Order) (result any, notApplicableErr *model_helper.NotApplicable, appErr *model_helper.AppError)
 	// CanMarkOrderAsPaid checks if given order can be marked as paid.
 	CanMarkOrderAsPaid(ord *model.Order, payments []*model.Payment) (bool, *model_helper.AppError)
 	// CancelFulfillment Return products to corresponding stocks.
@@ -52,7 +52,7 @@ type OrderService interface {
 	// ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 	//
 	// NOTE: userID can be empty
-	ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model_helper.AppError)
+	ChangeOrderLineQuantity(transaction boil.ContextTransactor, userID string, _ any, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// CleanMarkOrderAsPaid Check if an order can be marked as paid.
 	CleanMarkOrderAsPaid(order *model.Order) *model_helper.AppError
 	// CommonCreateOrderEvent is common method for creating desired order event instance
@@ -68,7 +68,7 @@ type OrderService interface {
 	// DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
 	DeleteFulfillmentLinesByOption(transaction boil.ContextTransactor, option *model.FulfillmentLineFilterOption) *model_helper.AppError
 	// DeleteOrderLine Delete an order line from an order.
-	DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
+	DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
 	DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *model_helper.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option
@@ -103,9 +103,9 @@ type OrderService interface {
 	//
 	//	Raise:
 	//	    InsufficientStock: If system hasn't containt enough item in stock for any line.
-	CreateFulfillments(user *model.User, _ any, order *model.Order, fulfillmentLinesForWarehouses map[string][]*model.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
+	CreateFulfillments(user *model.User, _ any, order *model.Order, fulfillmentLinesForWarehouses map[string][]*model.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*model.Fulfillment, *model_helper.InsufficientStock, *model_helper.AppError)
 	// FulfillOrderLines Fulfill order line with given quantity
-	FulfillOrderLines(orderLineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*model.InsufficientStock, *model_helper.AppError)
+	FulfillOrderLines(orderLineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// FulfillmentByOption returns 1 fulfillment filtered using given options
 	FulfillmentByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, *model_helper.AppError)
 	// FulfillmentLinesByOption returns all fulfillment lines by option
@@ -119,9 +119,9 @@ type OrderService interface {
 	// Specific products are products, collections and categories.
 	// Product must be assigned directly to the discounted category, assigning
 	// product to child category won't work
-	GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model_helper.AppError)
+	GetPricesOfDiscountedSpecificProduct(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*goprices.Money, *model_helper.AppError)
 	// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-	GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) ([]*model.OrderLine, *model_helper.AppError)
+	GetDiscountedLines(orderLines model.OrderLineSlice, voucher *model.Voucher) (model.OrderLineSlice, *model_helper.AppError)
 	// GetOrderCountry Return country to which order will be shipped
 	GetOrderCountry(order *model.Order) (model.CountryCode, *model_helper.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
@@ -135,7 +135,7 @@ type OrderService interface {
 	// HandleFullyPaidOrder
 	//
 	// user can be nil
-	HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, order model.Order, user *model.User, _ any) (*model.InsufficientStock, *model_helper.AppError)
+	HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, order model.Order, user *model.User, _ any) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// Mark order as paid.
 	//
 	// Allows to create a payment for an order without actually performing any
@@ -158,11 +158,11 @@ type OrderService interface {
 	// OrderCanVoid
 	OrderCanVoid(ord *model.Order, payment *model.Payment) (bool, *model_helper.AppError)
 	// OrderCaptured
-	OrderCaptured(order model.Order, user *model.User, _ any, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model_helper.AppError)
+	OrderCaptured(order model.Order, user *model.User, _ any, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
 	OrderConfirmed(tx *gorm.DB, order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface, sendConfirmationEmail bool) *model_helper.AppError
 	// OrderCreated. `fromDraft` is default to false
-	OrderCreated(tx *gorm.DB, order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface, fromDraft bool) (*model.InsufficientStock, *model_helper.AppError)
+	OrderCreated(tx *gorm.DB, order model.Order, user *model.User, _ any, manager interfaces.PluginManagerInterface, fromDraft bool) (*model_helper.InsufficientStock, *model_helper.AppError)
 	// OrderFulfilled
 	OrderFulfilled(fulfillments []*model.Fulfillment, user *model.User, _ any, fulfillmentLines []*model.FulfillmentLine, manager interfaces.PluginManagerInterface, notifyCustomer bool) *model_helper.AppError
 	// OrderIsCaptured checks if given order is captured
@@ -304,7 +304,7 @@ type OrderService interface {
 	ValidateDraftOrder(order *model.Order) *model_helper.AppError
 	// ValidateProductIsPublishedInChannel checks if some of given variants belong to unpublished products
 	ValidateProductIsPublishedInChannel(variants model.ProductVariantSlice, channelID string) *model_helper.AppError
-	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model_helper.AppError)
+	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ any, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model_helper.InsufficientStock, *model_helper.AppError)
 	CreateOrderEvent(transaction boil.ContextTransactor, orderLine *model.OrderLine, userID string, quantityDiff int) *model_helper.AppError
 	CreateReturnFulfillment(requester *model.User, order model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model_helper.AppError)
 	DeleteOrders(transaction boil.ContextTransactor, ids []string) (int64, *model_helper.AppError)

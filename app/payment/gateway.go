@@ -94,7 +94,7 @@ func (a *ServicePayment) ProcessPayment(
 	customerID *string,
 	storeSource bool,
 	additionalData map[string]any,
-) (*model.PaymentTransaction, *model.PaymentError, *model_helper.AppError) {
+) (*model.PaymentTransaction, *model_helper.PaymentError, *model_helper.AppError) {
 
 	paymentErr := a.requireActivePayment("ProcessPayment", payMent)
 	if paymentErr != nil {
@@ -111,7 +111,7 @@ func (a *ServicePayment) ProcessPayment(
 		return nil, nil, appErr
 	}
 
-	response, errMsg := a.fetchGatewayResponse(manager.ProcessPayment, lockedPayment.GateWay, *paymentData, channelID)
+	response, errMsg := a.fetchGatewayResponse(manager.ProcessPayment, lockedPayment.Gateway, *paymentData, channelID)
 	actionRequired := response != nil && response.ActionRequired
 
 	if response != nil {
@@ -121,7 +121,7 @@ func (a *ServicePayment) ProcessPayment(
 		}
 	}
 
-	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.TRANSACTION_KIND_CAPTURE, paymentData, actionRequired, response, errMsg)
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.ID, model.TRANSACTION_KIND_CAPTURE, paymentData, actionRequired, response, errMsg)
 	if appErr != nil {
 		return nil, nil, appErr
 	}

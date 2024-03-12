@@ -25,7 +25,7 @@ func (a *ServiceDiscount) UpsertSale(transaction boil.ContextTransactor, sale mo
 func (a *ServiceDiscount) GetSaleDiscount(sale model.Sale, saleChannelListing model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
 	if sale.Type == model.DiscountValueTypeFixed {
 		discountAmount := &goprices.Money{ // can use directly here since sale channel listings are validated before saving
-			Amount:   *saleChannelListing.DiscountValue,
+			Amount:   saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency.String(),
 		}
 		return a.Decorator(discountAmount), nil
@@ -89,8 +89,8 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_h
 		date = model_helper.GetPointerOfValue(time.Now().UTC())
 	}
 
-	_, expiredSalesByDate, err := a.srv.Store.DiscountSale().
-		FilterSalesByOption(&model.SaleFilterOption{
+	expiredSalesByDate, err := a.srv.Store.DiscountSale().
+		FilterSalesByOption(model_helper.SaleFilterOption{
 			Conditions: squirrel.Lt{
 				model.SaleTableName + ".EndDate":   *date,
 				model.SaleTableName + ".StartDate": *date,
@@ -133,7 +133,6 @@ func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]
 	return res, nil
 }
 
-// SaleCategoriesByOption returns sale-category relations with an app error
 func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model_helper.AppError) {
 	args, err := store.BuildSqlizer(option, "SaleCategoriesByOption")
 	if err != nil {

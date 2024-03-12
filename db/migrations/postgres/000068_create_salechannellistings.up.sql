@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS sale_channel_listings (
   id varchar(36) NOT NULL PRIMARY KEY,
   sale_id varchar(36) NOT NULL,
   channel_id varchar(36) NOT NULL,
-  discount_value decimal(12,3) DEFAULT 0.00,
+  discount_value decimal(12,3) NOT NULL DEFAULT 0.00,
   currency Currency NOT NULL,
   created_at bigint NOT NULL
 );
