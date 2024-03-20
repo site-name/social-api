@@ -420,7 +420,7 @@ func (t *UploadFileTask) init(a *ServiceFile) {
 	}
 	t.teeInput = io.TeeReader(t.limitedInput, t.buf)
 
-	t.pluginsEnvironment, _ = a.srv.PluginService().GetPluginsEnvironment()
+	t.pluginsEnvironment, _ = a.srv.Plugin.GetPluginsEnvironment()
 	t.writeFile = a.WriteFile
 	t.saveToDatabase = a.srv.Store.FileInfo().Upsert
 }
@@ -730,7 +730,7 @@ func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now tim
 		info.ThumbnailPath = pathPrefix + nameWithoutExtension + "_thumb.jpg"
 	}
 
-	if pluginsEnvironment, appErr := a.srv.PluginService().GetPluginsEnvironment(); appErr == nil && pluginsEnvironment != nil {
+	if pluginsEnvironment, appErr := a.srv.Plugin.GetPluginsEnvironment(); appErr == nil && pluginsEnvironment != nil {
 		var rejectionError *model_helper.AppError
 		pluginContext := app.PluginContext(*c)
 		pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {

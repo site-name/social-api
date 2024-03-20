@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gorm.io/gorm"
 )
 
@@ -552,8 +553,7 @@ func (a *ServicePayment) validateRefundAmount(payMent *model.Payment, amount *de
 	return nil
 }
 
-// PaymentRefundOrVoid
-func (a *ServicePayment) PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model_helper.AppError) {
+func (a *ServicePayment) PaymentRefundOrVoid(dbTransaction boil.ContextTransactor, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model_helper.AppError) {
 	if payMent == nil {
 		return nil, nil
 	}

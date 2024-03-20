@@ -11,6 +11,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -46,7 +47,7 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	isDefaultShippingAddr := user.DefaultShippingAddressID.IsNotNilAndEqual(a.ID)
+	isDefaultShippingAddr := model_types.PrimitiveIsNotNilAndEqual(user.DefaultShippingAddressID.String, a.ID)
 	return &isDefaultShippingAddr, nil
 }
 
@@ -59,7 +60,7 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	isDefaultBillingAddr := user.DefaultBillingAddressID.IsNotNilAndEqual(a.ID)
+	isDefaultBillingAddr := model_types.PrimitiveIsNotNilAndEqual(user.DefaultBillingAddressID.String, a.ID)
 	return &isDefaultBillingAddr, nil
 }
 
@@ -69,7 +70,6 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 
 	addresses, appErr := webCtx.App.
-		Srv().
 		AccountService().
 		AddressesByOption(model_helper.AddressFilterOptions{
 			CommonQueryOptions: model_helper.NewCommonQueryOptions(
@@ -181,10 +181,11 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
+	model_helper.SessionGetUserRoles(*currentSession)
+
 	if currentSession.UserID == u.ID ||
-		currentSession.
-			GetUserRoles().
-			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
+		model_helper.SessionGetUserRoles(*currentSession).
+			InterSection([]string{model_helper.ShopStaffRoleId, model_helper.ShopAdminRoleId}).
 			Len() > 0 {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
@@ -209,19 +210,19 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID 
 
 	// ONLY customers can see their own payment sources.
 	if u.ID == embedCtx.AppContext.Session().UserID {
-		pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
-		paymentGateWays := embedCtx.App.Srv().PaymentService().ListGateways(pluginManager, embedCtx.CurrentChannelID)
+		pluginManager := embedCtx.App.PluginService().GetPluginManager()
+		paymentGateWays := embedCtx.App.PaymentService().ListGateways(pluginManager, embedCtx.CurrentChannelID)
 
 		res := []*PaymentSource{}
 
 		for _, gwt := range paymentGateWays {
-			customerId, appErr := embedCtx.App.Srv().PaymentService().FetchCustomerId(u.user, gwt.Id)
+			customerId, appErr := embedCtx.App.PaymentService().FetchCustomerId(u.user, gwt.Id)
 			if appErr != nil {
 				return nil, appErr
 			}
 
 			if customerId != "" {
-				paymentSources, appErr := embedCtx.App.Srv().PaymentService().ListPaymentSources(gwt.Id, customerId, pluginManager, args.ChannelID)
+				paymentSources, appErr := embedCtx.App.PaymentService().ListPaymentSources(gwt.Id, customerId, pluginManager, args.ChannelID)
 				if appErr != nil {
 					return nil, appErr
 				}
@@ -421,9 +422,8 @@ func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	users, appErr := webCtx.
 		App.
-		Srv().
 		AccountService().
-		GetUsersByIds(ids, &store.UserGetByIdsOpts{})
+		GetUsersByIds(ids, store.UserGetByIdsOpts{})
 	if appErr != nil {
 		for idx := range ids {
 			res[idx] = &dataloader.Result[*model.User]{Error: appErr}
@@ -432,7 +432,7 @@ func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 	}
 
 	userMap := lo.SliceToMap(users, func(u *model.User) (string, *model.User) {
-		return u.Id, u
+		return u.ID, u
 	})
 
 	for idx, id := range ids {
@@ -457,13 +457,9 @@ type CustomerEvent struct {
 	// OrderLine *OrderLine          `json:"orderLine"`
 }
 
-func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *CustomerEvent {
-	if event == nil {
-		return nil
-	}
-
+func SystemCustomerEventToGraphqlCustomerEvent(event model.CustomerEvent) *CustomerEvent {
 	res := new(CustomerEvent)
-	res.ID = event.Id
+	res.ID = event.ID
 	if event.Date != 0 {
 		res.Date = &DateTime{util.TimeFromMillis(event.Date)}
 	}
@@ -478,7 +474,7 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 		res.Count = model_helper.GetPointerOfValue(int32(count.(int)))
 	}
 
-	res.event = event
+	res.event = &event
 
 	return res
 }
@@ -488,11 +484,11 @@ func (c *CustomerEvent) App(ctx context.Context) (*App, error) {
 }
 
 func (c *CustomerEvent) Order(ctx context.Context) (*Order, error) {
-	if c.event.OrderID == nil {
+	if c.event.OrderID.IsNil() {
 		return nil, nil
 	}
 
-	order, err := OrderByIdLoader.Load(ctx, *c.event.OrderID)()
+	order, err := OrderByIdLoader.Load(ctx, *c.event.OrderID.String)()
 	if err != nil {
 		return nil, err
 	}
@@ -506,7 +502,6 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	customerEvents, appErr := webCtx.
 		App.
-		Srv().
 		AccountService().
 		CustomerEventsByOptions(squirrel.Eq{model.CustomerEventTableName + ".UserID": userIDs})
 	if appErr != nil {

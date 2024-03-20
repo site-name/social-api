@@ -54,7 +54,7 @@ func (ps *SqlPaymentStore) Upsert(transaction boil.ContextTransactor, payment mo
 func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
 	_, err := model.Payments(
 		model.PaymentWhere.CheckoutID.EQ(model_types.NewNullString(checkoutID)),
-		model.PaymentWhere.IsActive.EQ(model_types.NewNullBool(true)),
+		model.PaymentWhere.IsActive.EQ(true),
 	).UpdateAll(
 		ps.GetMaster(),
 		model.M{

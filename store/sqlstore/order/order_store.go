@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -196,7 +195,7 @@ func (os *SqlOrderStore) commonQueryBuilder(option model_helper.OrderFilterOptio
 		conds = append(
 			conds,
 			qm.InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.Payments, model.PaymentTableColumns.OrderID, model.OrderTableColumns.ID)),
-			model.PaymentWhere.IsActive.EQ(model_types.NewNullBool(true)),
+			model.PaymentWhere.IsActive.EQ(true),
 			option.PaymentChargeStatus,
 		)
 	}

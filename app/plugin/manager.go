@@ -90,7 +90,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model_helper.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError) {
+func (m *PluginManager) ChangeUserAddress(address model.Address, addressType model_helper.AddressTypeEnum, user *model.User) (*model.Address, *model_helper.AppError) {
 	var (
 		appErr        *model_helper.AppError
 		previousValue model.Address = address
@@ -1583,7 +1583,7 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 		if manifest.PluginID == pluginID {
 
 			// try get or create plugin configuration
-			pluginConfig, appErr := m.Srv.PluginService().GetPluginConfiguration(&model.PluginConfigurationFilterOptions{
+			pluginConfig, appErr := m.Srv.Plugin.GetPluginConfiguration(&model.PluginConfigurationFilterOptions{
 				Conditions: squirrel.Eq{
 					model.PluginConfigurationTableName + ".Identifier": pluginID,
 					model.PluginConfigurationTableName + ".ChannelID":  channelID,
