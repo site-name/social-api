@@ -535,3 +535,15 @@ func OrderLineGetTotalPrice(o model.OrderLine) *goprices.TaxedMoney {
 		},
 	}
 }
+
+func OrderLineSetTotalPrice(o *model.OrderLine, price goprices.TaxedMoney) {
+	o.TotalPriceNetAmount = model_types.NewNullDecimal(price.Net.Amount)
+	o.TotalPriceGrossAmount = model_types.NewNullDecimal(price.Gross.Amount)
+	o.Currency = model.Currency(strings.ToUpper(price.GetCurrency()))
+}
+
+func OrderLineSetUnitPrice(o *model.OrderLine, price goprices.TaxedMoney) {
+	o.UnitPriceNetAmount = price.Net.Amount
+	o.UnitPriceGrossAmount = price.Gross.Amount
+	o.Currency = model.Currency(strings.ToUpper(price.GetCurrency()))
+}

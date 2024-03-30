@@ -91,10 +91,11 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_h
 
 	expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(model_helper.SaleFilterOption{
-			Conditions: squirrel.Lt{
-				model.SaleTableName + ".EndDate":   *date,
-				model.SaleTableName + ".StartDate": *date,
-			},
+			// Conditions: squirrel.Lt{
+			// 	model.SaleTableName + ".EndDate":   *date,
+			// 	model.SaleTableName + ".StartDate": *date,
+			// },
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(),
 		})
 
 	if err != nil {

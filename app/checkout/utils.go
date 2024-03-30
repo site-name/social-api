@@ -565,7 +565,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model_helper.Checko
 		if len(vouchers) == 0 {
 			// finds vouchers that are active in a channel
 			var appErr *model_helper.AppError
-			_, vouchers, appErr = a.srv.Discount.VouchersByOption(model_helper.VoucherFilterOption{
+			vouchers, appErr = a.srv.Discount.VouchersByOption(model_helper.VoucherFilterOption{
 				VoucherChannelListing_ChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
 				VoucherChannelListing_ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
 				// Conditions: squirrel.And{

@@ -33,3 +33,6 @@ CREATE INDEX idx_products_name_lower_textpattern ON products USING btree (lower(
 CREATE INDEX idx_products_private_metadata ON products USING btree (private_metadata);
 
 CREATE INDEX idx_products_slug ON products USING btree (slug);
+
+ALTER TABLE ONLY products
+    ADD CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE;

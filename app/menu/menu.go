@@ -28,7 +28,7 @@ func init() {
 	})
 }
 
-func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model_helper.AppError) {
+func (s *ServiceMenu) MenuByOptions(options model_helper.MenuFilterOptions) (*model.Menu, *model_helper.AppError) {
 	mnu, err := s.srv.Store.Menu().GetByOptions(options)
 	if err != nil {
 		var statucCode int = http.StatusInternalServerError
@@ -42,7 +42,7 @@ func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Me
 	return mnu, nil
 }
 
-func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model_helper.AppError) {
+func (s *ServiceMenu) MenusByOptions(options model_helper.MenuFilterOptions) (model.MenuSlice, *model_helper.AppError) {
 	mnu, err := s.srv.Store.Menu().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -51,8 +51,8 @@ func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model
 	return mnu, nil
 }
 
-func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model_helper.AppError) {
-	menu, err := s.srv.Store.Menu().Save(menu)
+func (s *ServiceMenu) UpsertMenu(menu model.Menu) (*model.Menu, *model_helper.AppError) {
+	savedMenu, err := s.srv.Store.Menu().Upsert(menu)
 	if err != nil {
 		var statusCode = http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
@@ -62,5 +62,5 @@ func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model_helper.A
 		return nil, model_helper.NewAppError("UpsertMenu", "app.menu.upsert_menu.app_error", nil, err.Error(), statusCode)
 	}
 
-	return menu, nil
+	return savedMenu, nil
 }

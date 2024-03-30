@@ -24,7 +24,7 @@ import (
 func (a *ServiceCsv) GetProductsData(products model.ProductSlice, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model_types.JSONString {
 	var (
 		exportVariantID     = exportFields.Contains("variants__id")
-		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
+		productFields       = lo.Values(ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"])
 		productExportFields = exportFields.InterSection(productFields)
 	)
 
@@ -82,7 +82,7 @@ func (a *ServiceCsv) GetProductsData(products model.ProductSlice, exportFields, 
 // Otherwise it returns empty di`ct.
 func (s *ServiceCsv) getProductsRelationsData(products model.ProductSlice, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
 	var (
-		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
+		manyToManyFields = lo.Values(ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"])
 		relationFields   = exportFields.InterSection(manyToManyFields)
 	)
 
@@ -160,7 +160,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.ProductSlice, f
 }
 
 func (s *ServiceCsv) getVariantsRelationsData(products model.ProductSlice, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model_helper.StringMap {
-	manyToManyFields := ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"].Values()
+	manyToManyFields := lo.Values(ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"])
 	relationsFields := exportFields.InterSection(manyToManyFields)
 
 	if len(relationsFields) > 0 || len(attributeIDs) > 0 || len(channelIDs) > 0 {

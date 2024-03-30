@@ -61,6 +61,38 @@ func (j JSONString) Get(key string, defaultValue ...any) any {
 	return nil
 }
 
+func (j *JSONString) Set(key string, value any) {
+	(*j)[key] = value
+}
+
+func (j *JSONString) Merge(other JSONString) {
+	for key, value := range other {
+		(*j)[key] = value
+	}
+}
+
+func (j *JSONString) Pop(key string, defaultValue ...any) any {
+	value, exist := (*j)[key]
+	if exist {
+		delete(*j, key)
+		return value
+	}
+
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+
+	return nil
+}
+
+func (j JSONString) DeepCopy() JSONString {
+	clone := make(JSONString, len(j))
+	for key, value := range j {
+		clone[key] = value
+	}
+	return clone
+}
+
 func (JSONString) ImplementsGraphQLType(name string) bool {
 	return name == "JSONString"
 }

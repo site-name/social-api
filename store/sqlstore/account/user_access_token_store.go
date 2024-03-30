@@ -89,6 +89,9 @@ func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
 			model.UserAccessTokenTableColumns.UserID,
 		),
 		userId)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete related session of given user access token")
+	}
 
 	// delete user access token
 	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.UserID.EQ(userId)).DeleteAll(tx)

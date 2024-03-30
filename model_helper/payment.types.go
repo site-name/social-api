@@ -60,8 +60,8 @@ func (g *GatewayError) Error() string {
 type PaymentMethodInfo struct {
 	First4   *string
 	Last4    *string
-	ExpYear  *int32
-	ExpMonth *int32
+	ExpYear  *int
+	ExpMonth *int
 	Brand    *string
 	Name     *string
 	Type     *string
@@ -75,7 +75,7 @@ type GatewayResponse struct {
 	ActionRequired              bool
 	Kind                        model.TransactionKind
 	Amount                      decimal.Decimal
-	Currency                    string
+	Currency                    model.Currency
 	TransactionID               string
 	Error                       string
 	CustomerID                  string
@@ -124,7 +124,7 @@ func AddressDataFromAddress(a *model.Address) *AddressData {
 type PaymentData struct {
 	Gateway            string
 	Amount             decimal.Decimal
-	Currency           string
+	Currency           model.Currency
 	Billing            *AddressData // can be bil
 	Shipping           *AddressData // can be nil
 	PaymentID          string       // payment's Token property

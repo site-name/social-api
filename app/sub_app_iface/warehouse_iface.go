@@ -5,6 +5,7 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -139,7 +140,7 @@ type WarehouseService interface {
 	// If not there would be issue with automatically selecting stock for operation.
 	ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.Warehouse) (bool, *model_helper.AppError)
 	// WarehouseByOption returns a list of warehouses based on given option
-	WarehousesByOption(option *model.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError)
+	WarehousesByOption(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError)
 	// WarehouseByOption returns a warehouse filtered using given option
 	WarehouseByOption(option *model.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError)
 	// WarehouseByStockID returns a warehouse that owns the given stock

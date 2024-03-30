@@ -178,7 +178,7 @@ func cleanOrderRefund(where string, app app.AppIface, order *model.Order) *model
 	return nil
 }
 
-func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.DB, paymentErr *model.PaymentError, order *model.Order, payment *model.Payment) *model_helper.AppError {
+func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.DB, paymentErr *model_helper.PaymentError, order *model.Order, payment *model.Payment) *model_helper.AppError {
 	// create payment failed event
 	params := model_types.JSONString{
 		"message": paymentErr.Error(),

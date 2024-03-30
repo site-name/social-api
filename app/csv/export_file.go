@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// CreateExportFile inserts given export file into database then returns it
 func (s *ServiceCsv) CreateExportFile(file model.ExportFile) (*model.ExportFile, *model_helper.AppError) {
 	createdFile, err := s.srv.Store.CsvExportFile().Save(file)
 	if err != nil {
@@ -21,7 +20,6 @@ func (s *ServiceCsv) CreateExportFile(file model.ExportFile) (*model.ExportFile,
 	return createdFile, nil
 }
 
-// ExportFileById returns an export file found by given id
 func (s *ServiceCsv) ExportFileById(id string) (*model.ExportFile, *model_helper.AppError) {
 	file, err := s.srv.Store.CsvExportFile().Get(id)
 	if err != nil {

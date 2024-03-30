@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 )
 
-func (s *ServiceMenu) MenuItemsByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, *model_helper.AppError) {
+func (s *ServiceMenu) MenuItemsByOptions(options model_helper.MenuItemFilterOptions) (model.MenuItemSlice, *model_helper.AppError) {
 	items, err := s.srv.Store.MenuItem().FilterByOptions(options)
 	if err != nil {
 		return nil, model_helper.NewAppError("MenuItemsByOptions", "app.menu.menu_items_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -16,10 +16,10 @@ func (s *ServiceMenu) MenuItemsByOptions(options *model.MenuItemFilterOptions) (
 	return items, nil
 }
 
-func (s *ServiceMenu) UpsertMenuItem(item *model.MenuItem) (*model.MenuItem, *model_helper.AppError) {
-	item, err := s.srv.Store.MenuItem().Save(item)
+func (s *ServiceMenu) UpsertMenuItem(item model.MenuItem) (*model.MenuItem, *model_helper.AppError) {
+	menuItem, err := s.srv.Store.MenuItem().Upsert(item)
 	if err != nil {
 		return nil, model_helper.NewAppError("UpsertMenuItem", "app.menu.upsert_item.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	return item, nil
+	return menuItem, nil
 }

@@ -163,6 +163,7 @@ var ProductWhere = struct {
 
 // ProductRels is where relationship names are stored.
 var ProductRels = struct {
+	Category                       string
 	AssignedProductAttributes      string
 	CustomProductAttributes        string
 	Giftcards                      string
@@ -175,6 +176,7 @@ var ProductRels = struct {
 	ShippingMethodExcludedProducts string
 	VoucherProducts                string
 }{
+	Category:                       "Category",
 	AssignedProductAttributes:      "AssignedProductAttributes",
 	CustomProductAttributes:        "CustomProductAttributes",
 	Giftcards:                      "Giftcards",
@@ -190,6 +192,7 @@ var ProductRels = struct {
 
 // productR is where relationships are stored.
 type productR struct {
+	Category                       *Category                          `boil:"Category" json:"Category" toml:"Category" yaml:"Category"`
 	AssignedProductAttributes      AssignedProductAttributeSlice      `boil:"AssignedProductAttributes" json:"AssignedProductAttributes" toml:"AssignedProductAttributes" yaml:"AssignedProductAttributes"`
 	CustomProductAttributes        CustomProductAttributeSlice        `boil:"CustomProductAttributes" json:"CustomProductAttributes" toml:"CustomProductAttributes" yaml:"CustomProductAttributes"`
 	Giftcards                      GiftcardSlice                      `boil:"Giftcards" json:"Giftcards" toml:"Giftcards" yaml:"Giftcards"`
@@ -206,6 +209,13 @@ type productR struct {
 // NewStruct creates a new relationship struct
 func (*productR) NewStruct() *productR {
 	return &productR{}
+}
+
+func (r *productR) GetCategory() *Category {
+	if r == nil {
+		return nil
+	}
+	return r.Category
 }
 
 func (r *productR) GetAssignedProductAttributes() AssignedProductAttributeSlice {
@@ -387,6 +397,17 @@ func (q productQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
+// Category pointed to by the foreign key.
+func (o *Product) Category(mods ...qm.QueryMod) categoryQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CategoryID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Categories(queryMods...)
+}
+
 // AssignedProductAttributes retrieves all the assigned_product_attribute's AssignedProductAttributes with an executor.
 func (o *Product) AssignedProductAttributes(mods ...qm.QueryMod) assignedProductAttributeQuery {
 	var queryMods []qm.QueryMod
@@ -539,6 +560,118 @@ func (o *Product) VoucherProducts(mods ...qm.QueryMod) voucherProductQuery {
 	)
 
 	return VoucherProducts(queryMods...)
+}
+
+// LoadCategory allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (productL) LoadCategory(e boil.Executor, singular bool, maybeProduct interface{}, mods queries.Applicator) error {
+	var slice []*Product
+	var object *Product
+
+	if singular {
+		var ok bool
+		object, ok = maybeProduct.(*Product)
+		if !ok {
+			object = new(Product)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeProduct))
+			}
+		}
+	} else {
+		s, ok := maybeProduct.(*[]*Product)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeProduct)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeProduct))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &productR{}
+		}
+		args[object.CategoryID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &productR{}
+			}
+
+			args[obj.CategoryID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`categories`),
+		qm.WhereIn(`categories.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Category")
+	}
+
+	var resultSlice []*Category
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Category")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for categories")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for categories")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Category = foreign
+		if foreign.R == nil {
+			foreign.R = &categoryR{}
+		}
+		foreign.R.Products = append(foreign.R.Products, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CategoryID == foreign.ID {
+				local.R.Category = foreign
+				if foreign.R == nil {
+					foreign.R = &categoryR{}
+				}
+				foreign.R.Products = append(foreign.R.Products, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadAssignedProductAttributes allows an eager lookup of values, cached into the
@@ -1702,6 +1835,52 @@ func (productL) LoadVoucherProducts(e boil.Executor, singular bool, maybeProduct
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetCategory of the product to the related item.
+// Sets o.R.Category to related.
+// Adds o to related.R.Products.
+func (o *Product) SetCategory(exec boil.Executor, insert bool, related *Category) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"products\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"category_id"}),
+		strmangle.WhereClause("\"", "\"", 2, productPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CategoryID = related.ID
+	if o.R == nil {
+		o.R = &productR{
+			Category: related,
+		}
+	} else {
+		o.R.Category = related
+	}
+
+	if related.R == nil {
+		related.R = &categoryR{
+			Products: ProductSlice{o},
+		}
+	} else {
+		related.R.Products = append(related.R.Products, o)
 	}
 
 	return nil

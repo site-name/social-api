@@ -10,6 +10,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

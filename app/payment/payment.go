@@ -7,17 +7,16 @@ package payment
 import (
 	"net/http"
 
-	"github.com/mattermost/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// ServicePayment handle all logics related to payment
 type ServicePayment struct {
 	srv *app.Server
 }
@@ -29,12 +28,11 @@ func init() {
 	})
 }
 
-// PaymentByID returns a payment with given id
 func (a *ServicePayment) PaymentByID(transaction boil.ContextTransactor, paymentID string, lockForUpdate bool) (*model.Payment, *model_helper.AppError) {
-	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
-		Conditions:    squirrel.Expr(model.PaymentTableName+".Id = ?", paymentID),
-		DbTransaction: transaction,
-		LockForUpdate: lockForUpdate,
+	payments, appErr := a.PaymentsByOption(model_helper.PaymentFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentWhere.ID.EQ(paymentID),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -42,19 +40,22 @@ func (a *ServicePayment) PaymentByID(transaction boil.ContextTransactor, payment
 	return payments[0], nil
 }
 
-// PaymentsByOption returns all payments that satisfy given option
-func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model_helper.AppError) {
-	totalCount, payments, err := a.srv.Store.Payment().FilterByOption(option)
+func (a *ServicePayment) PaymentsByOption(option model_helper.PaymentFilterOptions) (model.PaymentSlice, *model_helper.AppError) {
+	payments, err := a.srv.Store.Payment().FilterByOption(option)
 	if err != nil {
-		return 0, nil, model_helper.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return totalCount, payments, nil
+	return payments, nil
 }
 
 func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model_helper.AppError) {
-	_, payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
-		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
+	payments, appError := a.PaymentsByOption(model_helper.PaymentFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentWhere.OrderID.EQ(model_types.NewNullString(orderID)),
+			qm.Limit(1),
+			qm.OrderBy(model.PaymentColumns.CreatedAt+" "+model_helper.DESC.String()),
+		),
 	})
 	if appError != nil {
 		return nil, appError
@@ -63,26 +64,21 @@ func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *m
 		return nil, model_helper.NewAppError("GetLastOrderPayment", "app.payment.order_has_no_payment.app_error", nil, "order has no payment yet", http.StatusNotFound)
 	}
 
-	var latestPayment *model.Payment
-	for _, payment := range payments {
-		if latestPayment == nil && payment.CreateAt >= latestPayment.CreateAt {
-			latestPayment = payment
-		}
-	}
-
-	return latestPayment, nil
+	return payments[0], nil
 }
 
 func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model_helper.AppError) {
-	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
+	trans, appErr := a.TransactionsByOption(model_helper.PaymentTransactionFilterOpts{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentTransactionWhere.PaymentID.EQ(paymentID),
+		),
 	})
 	if appErr != nil {
 		return false, appErr
 	}
 
 	for _, tran := range trans {
-		if tran.Kind == model.TRANSACTION_KIND_AUTH && tran.IsSuccess && !tran.ActionRequired {
+		if tran.Kind == model.TransactionKindAuth && tran.IsSuccess && !tran.ActionRequired {
 			return true, nil
 		}
 	}
@@ -90,14 +86,16 @@ func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model_hel
 	return false, nil
 }
 
-func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model_helper.AppError) {
-	authorizedMoney, err := util.ZeroMoney(payment.Currency)
+func (a *ServicePayment) PaymentGetAuthorizedAmount(payment model.Payment) (*goprices.Money, *model_helper.AppError) {
+	authorizedMoney, err := util.ZeroMoney(payment.Currency.String())
 	if err != nil {
 		return nil, model_helper.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: payment.Id},
+	transactions, appErr := a.TransactionsByOption(model_helper.PaymentTransactionFilterOpts{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentTransactionWhere.PaymentID.EQ(payment.ID),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -105,18 +103,18 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*go
 
 	// There is no authorized amount anymore when capture is succeeded
 	// since capture can only be made once, even it is a partial capture
-	for _, tran := range trans {
-		if tran.Kind == model.TRANSACTION_KIND_CAPTURE && tran.IsSuccess {
+	for _, tran := range transactions {
+		if tran.Kind == model.TransactionKindCapture && tran.IsSuccess {
 			return authorizedMoney, nil
 		}
 	}
 
 	// Filter the succeeded auth transactions
-	for _, tran := range trans {
-		if tran.Kind == model.TRANSACTION_KIND_AUTH && tran.IsSuccess && !tran.ActionRequired {
-			authorizedMoney, err = authorizedMoney.Add(&goprices.Money{
-				Amount:   *tran.Amount,
-				Currency: tran.Currency,
+	for _, transaction := range transactions {
+		if transaction.Kind == model.TransactionKindAuth && transaction.IsSuccess && !transaction.ActionRequired {
+			authorizedMoney, err = authorizedMoney.Add(goprices.Money{
+				Amount:   transaction.Amount,
+				Currency: transaction.Currency.String(),
 			})
 			if err != nil {
 				return nil, model_helper.NewAppError("PaymentGetAuthorizedAmount", "app.payment.error_calculation_payment_authorized_amount.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -127,43 +125,29 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*go
 	return authorizedMoney, nil
 }
 
-// PaymentCanVoid checks if given payment is: Active && not charged and authorized
-func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model_helper.AppError) {
-	authorized, err := a.PaymentIsAuthorized(payMent.Id)
+func (a *ServicePayment) PaymentCanVoid(payment model.Payment) (bool, *model_helper.AppError) {
+	authorized, err := a.PaymentIsAuthorized(payment.ID)
 	if err != nil {
 		return false, err
 	}
 
-	return *payMent.IsActive && payMent.NotCharged() && authorized, nil
+	return payment.IsActive && model_helper.PaymentIsNotCharged(payment) && authorized, nil
 }
 
-// UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction boil.ContextTransactor, payMent *model.Payment) (*model.Payment, *model_helper.AppError) {
-	var err error
-
-	if !model_helper.IsValidId(payMent.Id) {
-		payMent, err = a.srv.Store.Payment().Save(transaction, payMent)
-	} else {
-		payMent, err = a.srv.Store.Payment().Update(transaction, payMent)
-	}
+func (a *ServicePayment) UpsertPayment(transaction boil.ContextTransactor, payment model.Payment) (*model.Payment, *model_helper.AppError) {
+	savedPayment, err := a.srv.Store.Payment().Upsert(transaction, payment)
 	if err != nil {
-		if appErr, ok := err.(*model_helper.AppError); ok {
-			return nil, appErr
-		}
-		var statusCode = http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model_helper.NewAppError("UpsertPayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
+		return nil, model_helper.NewAppError("UpsertPayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return payMent, nil
+	return savedPayment, nil
 }
 
-// GetAllPaymentsByCheckout returns all payments that belong to given checkout
-func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model_helper.AppError) {
-	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
-		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
+func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) (model.PaymentSlice, *model_helper.AppError) {
+	payments, appErr := a.PaymentsByOption(model_helper.PaymentFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.PaymentWhere.CheckoutID.EQ(model_types.NewNullString(checkoutToken)),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -171,8 +155,7 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*mode
 	return payments, nil
 }
 
-// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option *model.PaymentPatch) *model_helper.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction boil.ContextTransactor, checkoutToken string, option model_helper.PaymentPatch) *model_helper.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
 		return model_helper.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)

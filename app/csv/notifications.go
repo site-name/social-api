@@ -14,20 +14,20 @@ func (a *ServiceCsv) GetDefaultExportPayload(exportFile model.ExportFile) (map[s
 		appErr *model_helper.AppError
 	)
 
-	if exportFile.UserID != nil {
-		user, appErr = a.srv.AccountService().UserById(context.Background(), *exportFile.UserID)
+	if !exportFile.UserID.IsNil() {
+		user, appErr = a.srv.Account.UserById(context.Background(), *exportFile.UserID.String)
 	}
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	return map[string]any{
-		"user_id":    user.Id,
+		"user_id":    user.ID,
 		"user_email": user.Email,
-		"id":         exportFile.Id,
+		"id":         exportFile.ID,
 		"status":     nil,
 		"message":    nil,
-		"created_at": exportFile.CreateAt,
-		"updated_at": exportFile.UpdateAt,
+		"created_at": exportFile.CreatedAt,
+		"updated_at": exportFile.UpdatedAt,
 	}, nil
 }

@@ -9,25 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model_helper.AppError) {
-	productTypes, err := a.srv.Store.ProductType().FilterProductTypesByCheckoutToken(checkoutToken)
-	if err != nil {
-		return nil, model_helper.NewAppError("ProductTypesByCheckoutToken", "app.product.error_finding_product_types_by_checkout_token.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return productTypes, nil
-}
-
-// ProductTypesByProductIDs returns all product types that belong to given products
-func (a *ServiceProduct) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, *model_helper.AppError) {
-	productTypes, err := a.srv.Store.ProductType().ProductTypesByProductIDs(productIDs)
-	if err != nil {
-		return nil, model_helper.NewAppError("ProductTypesByProductIDs", "app.product.error_finding_product_types_by_product_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return productTypes, nil
-}
-
 // ProductTypeByOption returns a product type with given option
 func (s *ServiceProduct) ProductTypeByOption(options *model.ProductTypeFilterOption) (*model.ProductType, *model_helper.AppError) {
 	productType, err := s.srv.Store.ProductType().GetByOption(options)

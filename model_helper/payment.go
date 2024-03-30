@@ -48,9 +48,6 @@ func paymentCommonPre(p *model.Payment) {
 	if p.ChargeStatus.IsValid() != nil {
 		p.ChargeStatus = model.PaymentChargeStatusNotCharged
 	}
-	if p.IsActive.IsNil() {
-		p.IsActive.Bool = GetPointerOfValue(true)
-	}
 	if p.Currency.IsValid() != nil {
 		p.Currency = DEFAULT_CURRENCY
 	}
@@ -80,7 +77,7 @@ func PaymentIsNotCharged(p model.Payment) bool {
 }
 
 func PaymentCanAuthorize(p model.Payment) bool {
-	return model_types.PrimitiveIsNotNilAndEqual(p.IsActive.Bool, true) && PaymentIsNotCharged(p)
+	return p.IsActive && PaymentIsNotCharged(p)
 }
 
 var PaymentCanCapture = PaymentCanAuthorize
@@ -93,7 +90,7 @@ var CanRefundPaymentChargeStatusMap = map[model.PaymentChargeStatus]bool{
 }
 
 func PaymentCanRefund(p model.Payment) bool {
-	return CanRefundPaymentChargeStatusMap[p.ChargeStatus] && model_types.PrimitiveIsNotNilAndEqual(p.IsActive.Bool, true)
+	return CanRefundPaymentChargeStatusMap[p.ChargeStatus] && p.IsActive
 }
 
 func PaymentIsManual(p model.Payment) bool {

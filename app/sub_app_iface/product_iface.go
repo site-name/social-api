@@ -8,6 +8,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -107,9 +108,9 @@ type ProductService interface {
 	// ProductVariantsAvailableInChannel returns product variants based on given channel slug
 	ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model_helper.AppError)
 	// ProductVariantsByOption returns a list of product variants satisfy given option
-	ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariantSlice, *model_helper.AppError)
+	ProductVariantsByOption(option model_helper.ProductVariantFilterOptions) (model.ProductVariantSlice, *model_helper.AppError)
 	// ProductsByOption returns a list of products that satisfy given option
-	ProductsByOption(option *model.ProductFilterOption) (model.ProductSlice, *model_helper.AppError)
+	ProductsByOption(option model_helper.ProductFilterOption) (model.ProductSlice, *model_helper.AppError)
 	// ProductsByVoucherID finds all products that have relationships with given voucher
 	ProductsByVoucherID(voucherID string) ([]*model.Product, *model_helper.AppError)
 	// ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
@@ -150,8 +151,6 @@ type ProductService interface {
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model_helper.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model_helper.AppError)
 	GetVisibleToUserProducts(channelIdOrSlug string, userIsShopStaff bool) (model.ProductSlice, *model_helper.AppError)
 	IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model_helper.AppError)
-	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model_helper.AppError)
-	ProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, *model_helper.AppError)
 	SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model_helper.AppError)
 	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model_helper.AppError
 	ToggleVariantRelations(variants model.ProductVariantSlice, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model_helper.AppError

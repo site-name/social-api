@@ -22,8 +22,7 @@ func init() {
 	})
 }
 
-// WarehouseByOption returns a list of warehouses based on given option
-func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError) {
+func (a *ServiceWarehouse) WarehousesByOption(option model_helper.WarehouseFilterOption) (model.WarehouseSlice, *model_helper.AppError) {
 	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
 	if err != nil {
 		return nil, model_helper.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -32,8 +31,7 @@ func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOptio
 	return warehouses, nil
 }
 
-// WarehouseByOption returns a warehouse filtered using given option
-func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError) {
+func (s *ServiceWarehouse) WarehouseByOption(option model_helper.WarehouseFilterOption) (*model.Warehouse, *model_helper.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -46,7 +44,6 @@ func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption
 	return warehouse, nil
 }
 
-// WarehouseByStockID returns a warehouse that owns the given stock
 func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.Warehouse, *model_helper.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
@@ -60,9 +57,8 @@ func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.Warehouse,
 	return warehouse, nil
 }
 
-// WarehouseCountries returns countries of given warehouse
 func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model_helper.AppError) {
-	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
+	shippingZonesOfWarehouse, appErr := a.srv.Shipping.ShippingZonesByOption(&model.ShippingZoneFilterOption{
 		WarehouseID: squirrel.Eq{model.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
 	if appErr != nil {
@@ -88,7 +84,6 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 	return res, nil
 }
 
-// FindWarehousesForCountry returns a list of warehouses that are available in given country
 func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) (model.WarehouseSlice, *model_helper.AppError) {
 	return a.WarehousesByOption(&model.WarehouseFilterOption{
 		ShippingZonesCountries: squirrel.Like{model.ShippingZoneTableName + ".Countries": countryCode},

@@ -11,14 +11,12 @@ import (
 
 // ChannelService contains methods for working with channels
 type ChannelService interface {
-	// ChannelByOption returns a channel that satisfies given options
 	ChannelByOption(option model_helper.ChannelFilterOptions) (*model.Channel, *model_helper.AppError)
-	// ValidateChannel check if a channel with given id is active
-	ValidateChannel(channelID string) (*model.Channel, *model_helper.AppError)
 	ChannelsByOption(option model_helper.ChannelFilterOptions) (model.ChannelSlice, *model_helper.AppError)
 	CleanChannel(channelID *string) (*model.Channel, *model_helper.AppError)
 	DeleteChannels(transaction boil.ContextTransactor, ids []string) *model_helper.AppError
 	GetDefaultChannel() (*model.Channel, *model_helper.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model_helper.AppError)
 	UpsertChannel(tx boil.ContextTransactor, channel model.Channel) (*model.Channel, *model_helper.AppError)
+	ValidateChannel(channelID string) (*model.Channel, *model_helper.AppError)
 }

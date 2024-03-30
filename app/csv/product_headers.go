@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Get export fields, all headers and headers mapping.
@@ -76,10 +76,11 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	go func() {
 		defer atomicValue.Add(-1)
 
-		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct:                       true,
-			Conditions:                     squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-			AttributeProduct_ProductTypeID: squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
+		attributes, appErr := a.srv.Attribute.AttributesByOption(model_helper.AttributeFilterOption{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				qm.Distinct(model.AttributeColumns.ID),
+				model.AttributeWhere.ID.IN(exportInfo.Attributes),
+			),
 		})
 		if appErr != nil {
 			appErrChan <- appErr
@@ -91,10 +92,11 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	go func() {
 		defer atomicValue.Add(-1)
 
-		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct:                       true,
-			Conditions:                     squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-			AttributeVariant_ProductTypeID: squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
+		attributes, appErr := a.srv.Attribute.AttributesByOption(model_helper.AttributeFilterOption{
+			CommonQueryOptions: model_helper.NewCommonQueryOptions(
+				qm.Distinct(model.AttributeColumns.ID),
+				model.AttributeWhere.ID.IN(exportInfo.Attributes),
+			),
 		})
 		if appErr != nil {
 			appErrChan <- appErr
@@ -136,8 +138,10 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
 		return []string{}, nil
 	}
 
-	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-		Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": exportInfo.Warehouses},
+	warehouses, appErr := a.srv.Warehouse.WarehousesByOption(model_helper.WarehouseFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.WarehouseWhere.ID.IN(exportInfo.Warehouses),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -169,8 +173,10 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
 		return []string{}, nil
 	}
 
-	channels, appErr := a.srv.ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": exportInfo.Channels},
+	channels, appErr := a.srv.Channel.ChannelsByOption(model_helper.ChannelFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.ChannelWhere.ID.IN(exportInfo.Channels),
+		),
 	})
 	if appErr != nil {
 		return nil, appErr

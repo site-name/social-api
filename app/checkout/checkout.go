@@ -81,7 +81,6 @@ func (a *ServiceCheckout) GetCustomerEmail(checkout model.Checkout) (string, *mo
 	return checkout.Email, nil
 }
 
-// TODO: check if we need this method. Since we don't use product_type anymore
 func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model_helper.AppError) {
 	productTypes, appErr := a.srv.Product.ProductTypesByCheckoutToken(checkoutToken)
 	if appErr != nil {
@@ -99,6 +98,28 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 	}
 
 	return false, nil
+
+	checkoutLines, appErr := a.CheckoutLinesByOption(model_helper.CheckoutLineFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.CheckoutLineWhere.CheckoutID.EQ(checkoutToken),
+			qm.Load(model.CheckoutLineRels.Variant+"."+model.ProductVariantRels.Product),
+		),
+	})
+	if appErr != nil {
+		return false, appErr
+	}
+
+	for _, checkoutLine := range checkoutLines {
+		if checkoutLine.R != nil &&
+			checkoutLine.R.Variant != nil &&
+			checkoutLine.R.Variant.R != nil &&
+			checkoutLine.R.Variant.R.Product != nil &&
+			checkoutLine.R.Variant.R.Product != nil {
+
+		}
+	}
+
+	a.CheckoutLine
 }
 
 func (a *ServiceCheckout) CheckoutSetCountry(checkout model.Checkout, newCountryCode model.CountryCode) *model_helper.AppError {

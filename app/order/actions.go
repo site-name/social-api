@@ -30,7 +30,7 @@ func (a *ServiceOrder) OrderCreated(tx *gorm.DB, order model.Order, user *model.
 		return nil, appErr
 	}
 
-	lastPaymentOfOrder, appErr := a.srv.PaymentService().GetLastOrderPayment(order.Id)
+	lastPaymentOfOrder, appErr := a.srv.Payment.GetLastOrderPayment(order.Id)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -728,7 +728,7 @@ func (s *ServiceOrder) CreateGiftcardsWhenApprovingFulfillment(order *model.Orde
 // payment by the gateway.
 //
 // externalReference can be empty
-func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.User, _ any, manager interfaces.PluginManagerInterface, externalReference string) (*model.PaymentError, *model_helper.AppError) {
+func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.User, _ any, manager interfaces.PluginManagerInterface, externalReference string) (*model_helper.PaymentError, *model_helper.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, model_helper.NewAppError("MarkOrderAsPaid", model_helper.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -1435,7 +1435,7 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 
-) (*model.Fulfillment, *model.PaymentError, *model_helper.AppError) {
+) (*model.Fulfillment, *model_helper.PaymentError, *model_helper.AppError) {
 	shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, order.ShippingPriceGrossAmount)
 
 	// begin transaction
@@ -1967,7 +1967,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 
-) (*model.Fulfillment, *model.Fulfillment, *model.Order, *model.PaymentError, *model_helper.AppError) {
+) (*model.Fulfillment, *model.Fulfillment, *model.Order, *model_helper.PaymentError, *model_helper.AppError) {
 
 	var (
 		returnOrderLines        []*model.OrderLineData
@@ -2002,7 +2002,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	var (
 		totalRefundAmount *decimal.Decimal
 		appErr            *model_helper.AppError
-		paymentErr        *model.PaymentError
+		paymentErr        *model_helper.PaymentError
 	)
 	if refund && payMent != nil {
 		totalRefundAmount, paymentErr, appErr = a.processRefund(
@@ -2179,7 +2179,7 @@ func (a *ServiceOrder) processRefund(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 	manager interfaces.PluginManagerInterface,
-) (*decimal.Decimal, *model.PaymentError, *model_helper.AppError) {
+) (*decimal.Decimal, *model_helper.PaymentError, *model_helper.AppError) {
 	// transaction begin
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {

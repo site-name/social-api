@@ -59,7 +59,7 @@ func (a *ServiceCheckout) CleanCheckoutPayment(tx boil.ContextTransactor, manage
 	}
 
 	if !isFullyPaid {
-		paymentErr, appErr := a.srv.Payment.PaymentRefundOrVoid(tx, lastPayment, manager, checkoutInfo.Channel.Slug)
+		paymentErr, appErr := a.srv.Payment.PaymentRefundOrVoid(tx, *lastPayment, manager, checkoutInfo.Channel.Slug)
 		if paymentErr != nil || appErr != nil {
 			return paymentErr, appErr
 		}

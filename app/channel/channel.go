@@ -25,7 +25,6 @@ func init() {
 	})
 }
 
-// ChannelByOption returns a channel that satisfies given options
 func (s *ServiceChannel) ChannelByOption(option model_helper.ChannelFilterOptions) (*model.Channel, *model_helper.AppError) {
 	channels, appErr := s.ChannelsByOption(option)
 	if appErr != nil {
@@ -38,7 +37,6 @@ func (s *ServiceChannel) ChannelByOption(option model_helper.ChannelFilterOption
 	return channels[0], nil
 }
 
-// ValidateChannel check if a channel with given id is active
 func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model_helper.AppError) {
 	channel, appErr := a.ChannelByOption(model_helper.ChannelFilterOptions{
 		CommonQueryOptions: model_helper.NewCommonQueryOptions(model.ChannelWhere.ID.EQ(channelID)),

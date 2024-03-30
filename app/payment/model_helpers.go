@@ -9,8 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-// GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
-func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Payment {
+func (a *ServicePayment) GetLastpayment(payments model.PaymentSlice) *model.Payment {
 	if len(payments) == 0 {
 		return nil
 	}
@@ -29,7 +28,7 @@ func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Paymen
 	return res
 }
 
-func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model_helper.AppError) {
+func (a *ServicePayment) GetTotalAuthorized(payments model.PaymentSlice, fallbackCurrency string) (*goprices.Money, *model_helper.AppError) {
 	zeroMoney, err := util.ZeroMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model_helper.NewAppError("GetTotalAuthorized", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
@@ -37,7 +36,7 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackC
 
 	lastPayment := a.GetLastpayment(payments)
 	if lastPayment != nil && lastPayment.IsActive {
-		paymentAuthorizedAmount, appErr := a.PaymentGetAuthorizedAmount(lastPayment)
+		paymentAuthorizedAmount, appErr := a.PaymentGetAuthorizedAmount(*lastPayment)
 		if appErr != nil {
 			return nil, appErr
 		}

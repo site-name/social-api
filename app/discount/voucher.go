@@ -199,7 +199,7 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher model.Voucher, custome
 }
 
 func (a *ServiceDiscount) ValidateOnlyForStaff(voucher model.Voucher, customerID string) (*model_helper.NotApplicable, *model_helper.AppError) {
-	if !voucher.OnlyForStaff.IsNil() && !*voucher.OnlyForStaff.Bool {
+	if !voucher.OnlyForStaff {
 		return nil, nil
 	}
 
@@ -255,12 +255,17 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model_helper.A
 // `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
 func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug string) (model.VoucherSlice, *model_helper.AppError) {
 	startOfDay := util.StartOfDay(date)
-	filterOptions := &model.VoucherFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Expr(model.VoucherTableName + ".UsageLimit IS NULL OR Vouchers.UsageLimit > Vouchers.Used"),
-			squirrel.Expr(model.VoucherTableName+".EndDate IS NULL OR Vouchers.EndDate >= ?", startOfDay),
-			squirrel.Expr(model.VoucherTableName+".StartDate <= ?", startOfDay),
-		},
+	filterOptions := model_helper.VoucherFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model_helper.Or{
+				squirrel.Eq{model.VoucherTableColumns.UsageLimit: nil},
+				squirrel.Gt{model.VoucherTableColumns.UsageLimit: model.VoucherTableColumns.Used},
+			},
+			model_helper.Or{
+				squirrel.Eq{model.VoucherTableColumns.EndDate: nil},
+				squirrel.GtOrEq{model.VoucherTableColumns.EndDate: startOfDay},
+			},
+		),
 	}
 
 	if channelSlug != "" {
@@ -268,11 +273,10 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 		filterOptions.VoucherChannelListing_ChannelIsActive = squirrel.Expr(model.ChannelTableName + ".IsActive")
 	}
 
-	_, vouchers, appErr := s.VouchersByOption(filterOptions)
+	vouchers, appErr := s.VouchersByOption(filterOptions)
 	return vouchers, appErr
 }
 
-// ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
 func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) (model.VoucherSlice, *model_helper.AppError) {
 	expiredVouchers, err := s.srv.Store.DiscountVoucher().ExpiredVouchers(date)
 	if err != nil {
@@ -291,7 +295,6 @@ func (s *ServiceDiscount) ToggleVoucherRelations(transaction boil.ContextTransac
 	return nil
 }
 
-// VoucherChannelListingsByOption finds voucher channel listings based on given options
 func (a *ServiceDiscount) VoucherChannelListingsByOption(option model_helper.VoucherChannelListingFilterOption) (model.VoucherChannelListingSlice, *model_helper.AppError) {
 	listings, err := a.srv.Store.VoucherChannelListing().FilterbyOption(option)
 	if err != nil {

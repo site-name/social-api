@@ -109,7 +109,7 @@ func (us *SqlUserStore) GetEtagForProfiles() string {
 		return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, model_helper.GetMillis())
 	}
 
-	return fmt.Sprint("%v.%v", model_helper.CurrentVersion, updatedAt)
+	return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, updatedAt)
 }
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
@@ -512,7 +512,7 @@ func (us *SqlUserStore) Search(term string, options model_helper.UserSearchOptio
 	query := us.GetQueryBuilder().
 		Select("*").
 		From(model.TableNames.Users).
-		OrderBy(fmt.Sprintf("%S ASC", model.UserColumns.Username)).
+		OrderBy(fmt.Sprintf("%s ASC", model.UserColumns.Username)).
 		Limit(uint64(options.Limit))
 	return us.performSearch(query, term, options)
 }
@@ -690,7 +690,7 @@ func (us *SqlUserStore) GetAllProfiles(options model_helper.UserGetOptions) (mod
 	}
 
 	if options.Role != "" {
-		queryMods = append(queryMods, model.UserWhere.Roles.ILIKE(fmt.Sprintf("%LOWER(%s)%", options.Role)))
+		queryMods = append(queryMods, model.UserWhere.Roles.ILIKE(fmt.Sprintf("%%LOWER(%s)%%", options.Role)))
 	}
 	if options.Sort != "" {
 		queryMods = append(queryMods, qm.OrderBy(options.Sort))
