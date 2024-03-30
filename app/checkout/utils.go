@@ -930,7 +930,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 	payments, appErr := s.srv.Payment.PaymentsByOption(model_helper.PaymentFilterOptions{
 		CommonQueryOptions: model_helper.NewCommonQueryOptions(
 			model.PaymentWhere.CheckoutID.EQ(model_types.NewNullString(checkout.Token)),
-			model.PaymentWhere.IsActive.EQ(model_types.NewNullBool(true)),
+			model.PaymentWhere.IsActive.EQ(true),
 		),
 	})
 	if appErr != nil {
@@ -988,7 +988,7 @@ func (a *ServiceCheckout) CancelActivePayments(checkout *model.Checkout) *model_
 func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines model_helper.CheckoutLineInfos) *model_helper.AppError {
 	var notAvailableVariantIDs util.AnyArray[string]
 	for _, line := range lines {
-		if line.ChannelListing.Price == nil {
+		if line.ChannelListing.PriceAmount.IsNil() {
 			notAvailableVariantIDs = append(notAvailableVariantIDs, line.Variant.ID)
 		}
 	}
@@ -1104,7 +1104,7 @@ func (s *ServiceCheckout) CheckLinesQuantity(variants model.ProductVariantSlice,
 	if insufficientStockErr != nil {
 		errors := make([]string, len(insufficientStockErr.Items))
 		for idx, item := range insufficientStockErr.Items {
-			errors[idx] = fmt.Sprintf("could not add items %s. Only %d remainning in stock.", item.Variant.String(), max(*item.AvailableQuantity, 0))
+			errors[idx] = fmt.Sprintf("could not add items %s. Only %d remainning in stock.", model_helper.ProductVariantString(item.Variant), max(*item.AvailableQuantity, 0))
 		}
 		return model_helper.NewAppError("CheckLinesQuantity", "app.checkout.insufficient_stock.app_error", map[string]any{"Quantity": errors}, insufficientStockErr.Error(), http.StatusNotAcceptable)
 	}
