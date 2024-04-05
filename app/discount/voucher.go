@@ -286,7 +286,7 @@ func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) (model.VoucherSlice, 
 	return expiredVouchers, nil
 }
 
-func (s *ServiceDiscount) ToggleVoucherRelations(transaction boil.ContextTransactor, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
+func (s *ServiceDiscount) ToggleVoucherRelations(transaction boil.ContextTransactor, vouchers model.VoucherSlice, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
 	err := s.srv.Store.DiscountVoucher().ToggleVoucherRelations(transaction, vouchers, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
 		return model_helper.NewAppError("ToggleVoucherRelations", "app.discount.insert_voucher_relations.app_error", nil, "failed to insert voucher relations", http.StatusInternalServerError)

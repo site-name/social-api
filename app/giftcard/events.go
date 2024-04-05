@@ -9,7 +9,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 func (s *ServiceGiftcard) GiftcardEventsByOptions(options model_helper.GiftCardEventFilterOption) (model.GiftcardEventSlice, *model_helper.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
 	if err != nil {
@@ -19,7 +18,6 @@ func (s *ServiceGiftcard) GiftcardEventsByOptions(options model_helper.GiftCardE
 	return events, nil
 }
 
-// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
 func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction boil.ContextTransactor, events model.GiftcardEventSlice) (model.GiftcardEventSlice, *model_helper.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().Upsert(transaction, events)
 	if err != nil {
@@ -32,19 +30,18 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction boil.ContextTrans
 	return events, nil
 }
 
-// GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction boil.ContextTransactor, balanceData model.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction boil.ContextTransactor, balanceData model_helper.BalanceData, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
 	if user != nil {
-		userID = &user.Id
+		userID = &user.ID
 	}
 
 	var events model.GiftcardEventSlice
 	for _, item := range balanceData {
-		events = append(events, &model.GiftCardEvent{
-			GiftcardID: item.Giftcard.Id,
-			UserID:     userID,
-			Type:       model.GIFT_CARD_EVENT_TYPE_USED_IN_ORDER,
+		events = append(events, &model.GiftcardEvent{
+			GiftcardID: item.Giftcard.ID,
+			UserID:     model_types.NullString{String: userID},
+			Type:       model.GiftcardEventTypeUsedInOrder,
 			Parameters: model_types.JSONString{
 				"order_id": orderID,
 				"balance": model_types.JSONString{
@@ -56,21 +53,21 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction boil.ContextTran
 		})
 	}
 
-	return s.BulkUpsertGiftcardEvents(transaction, events...)
+	return s.BulkUpsertGiftcardEvents(transaction, events)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction boil.ContextTransactor, giftcards []*model.GiftCard, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction boil.ContextTransactor, giftcards model.GiftcardSlice, orderID string, user *model.User, _ any) (model.GiftcardEventSlice, *model_helper.AppError) {
 	var userID *string
-	if user != nil && model_helper.IsValidId(user.Id) {
-		userID = &user.Id
+	if user != nil {
+		userID = &user.ID
 	}
 
 	events := model.GiftcardEventSlice{}
 	for _, giftCard := range giftcards {
-		events = append(events, &model.GiftCardEvent{
-			GiftcardID: giftCard.Id,
-			UserID:     userID,
-			Type:       model.GIFT_CARD_EVENT_TYPE_BOUGHT,
+		events = append(events, &model.GiftcardEvent{
+			GiftcardID: giftCard.ID,
+			UserID:     model_types.NullString{String: userID},
+			Type:       model.GiftcardEventTypeBought,
 			Parameters: model_types.JSONString{
 				"order_id":    orderID,
 				"expiry_date": giftCard.ExpiryDate,
@@ -78,5 +75,5 @@ func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction boil.ContextTransacto
 		})
 	}
 
-	return s.BulkUpsertGiftcardEvents(transaction, events...)
+	return s.BulkUpsertGiftcardEvents(transaction, events)
 }

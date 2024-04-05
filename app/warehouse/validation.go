@@ -13,8 +13,8 @@ import (
 //	Every ShippingZone can be assigned to only one warehouse.
 //
 // If not there would be issue with automatically selecting stock for operation.
-func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.Warehouse) (bool, *model_helper.AppError) {
-	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
+func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZoneSlice, instance model.Warehouse) (bool, *model_helper.AppError) {
+	shippingZones, appErr := a.srv.Shipping.ShippingZonesByOption(model_helper.ShippingZoneFilterOption{
 		SelectRelatedWarehouses: true,
 		Conditions:              squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZones.IDs()},
 		WarehouseID:             squirrel.NotEq{model.WarehouseShippingZoneTableName + ".WarehouseID": nil},
@@ -39,9 +39,9 @@ func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZo
 	if len(warehouseIdMap) > 1 {
 		return false, nil
 	}
-	if instance.Id == "" {
+	if instance.ID == "" {
 		return false, nil
 	}
 
-	return warehouseIdMap[instance.Id], nil
+	return warehouseIdMap[instance.ID], nil
 }

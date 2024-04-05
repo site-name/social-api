@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS categories (
   seo_description varchar(300) NOT NULL,
   name_translation jsonb,
   metadata jsonb,
-  private_metadata jsonb
+  private_metadata jsonb,
+  require_shipping boolean default true
 );
 
 ALTER TABLE ONLY categories

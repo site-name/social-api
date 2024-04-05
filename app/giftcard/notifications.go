@@ -14,14 +14,14 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		userID      *string
 	)
 	if requesterUser != nil {
-		userPayload = s.srv.AccountService().GetDefaultUserPayload(requesterUser)
-		userID = &requesterUser.Id
+		userPayload = s.srv.Account.GetDefaultUserPayload(requesterUser)
+		userID = &requesterUser.ID
 	}
 
-	payload := model_helper.StringInterface{
+	payload := model_types.JSONString{
 		"gift_card":         s.GetDefaultGiftcardPayload(giftCard),
 		"user":              userPayload,
-		"requester_user_id": model_helper.GetValueOfpointerOrNil(requesterUser.ID),
+		"requester_user_id": model_helper.GetValueOfpointerOrNil(userID),
 		"requester_app_id":  nil,
 		"recipient_email":   email,
 		"resending":         resending,
@@ -29,13 +29,13 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		"site_name":         s.srv.Config().ServiceSettings.SiteName,
 	}
 
-	_, appErr := manager.Notify(model.SEND_GIFT_CARD, payload, channelID, "")
+	_, appErr := manager.Notify(model_helper.SEND_GIFT_CARD, payload, channelID, "")
 	return appErr
 }
 
-func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard model.GiftCard) model_types.JSONString {
+func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard model.Giftcard) model_types.JSONString {
 	return model_types.JSONString{
-		"id":       giftCard.Id,
+		"id":       giftCard.ID,
 		"code":     giftCard.Code,
 		"balance":  giftCard.CurrentBalanceAmount,
 		"currency": giftCard.Currency,

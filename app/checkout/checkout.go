@@ -82,27 +82,10 @@ func (a *ServiceCheckout) GetCustomerEmail(checkout model.Checkout) (string, *mo
 }
 
 func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model_helper.AppError) {
-	productTypes, appErr := a.srv.Product.ProductTypesByCheckoutToken(checkoutToken)
-	if appErr != nil {
-		// if product types not found for checkout:
-		if appErr.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
-		return false, appErr
-	}
-
-	for _, prdType := range productTypes {
-		if prdType.IsShippingRequired != nil && *prdType.IsShippingRequired {
-			return true, nil
-		}
-	}
-
-	return false, nil
-
 	checkoutLines, appErr := a.CheckoutLinesByOption(model_helper.CheckoutLineFilterOptions{
 		CommonQueryOptions: model_helper.NewCommonQueryOptions(
 			model.CheckoutLineWhere.CheckoutID.EQ(checkoutToken),
-			qm.Load(model.CheckoutLineRels.Variant+"."+model.ProductVariantRels.Product),
+			qm.Load(model.CheckoutLineRels.Variant+"."+model.ProductVariantRels.Product+"."+model.ProductRels.Category),
 		),
 	})
 	if appErr != nil {
@@ -114,12 +97,17 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 			checkoutLine.R.Variant != nil &&
 			checkoutLine.R.Variant.R != nil &&
 			checkoutLine.R.Variant.R.Product != nil &&
-			checkoutLine.R.Variant.R.Product != nil {
-
+			checkoutLine.R.Variant.R.Product != nil &&
+			checkoutLine.R.Variant.R.Product.R != nil &&
+			checkoutLine.R.Variant.R.Product.R.Category != nil {
+			if !checkoutLine.R.Variant.R.Product.R.Category.RequireShipping.IsNil() &&
+				*checkoutLine.R.Variant.R.Product.R.Category.RequireShipping.Bool {
+				return true, nil
+			}
 		}
 	}
 
-	a.CheckoutLine
+	return false, nil
 }
 
 func (a *ServiceCheckout) CheckoutSetCountry(checkout model.Checkout, newCountryCode model.CountryCode) *model_helper.AppError {

@@ -879,17 +879,17 @@ func GetValueOfPointerOrZero[T any](ptr *T) T {
 
 type StringMap map[string]string
 
-// func (s StringMap) DeepCopy() StringMap {
-// 	if s == nil {
-// 		return nil
-// 	}
-// 	res := StringMap{}
-// 	for key, value := range s {
-// 		res[key] = value
-// 	}
+func (s StringMap) DeepCopy() StringMap {
+	if s == nil {
+		return nil
+	}
+	res := StringMap{}
+	for key, value := range s {
+		res[key] = value
+	}
 
-// 	return res
-// }
+	return res
+}
 
 // func (s StringMap) Merge(other StringMap) StringMap {
 // 	for key, value := range other {
@@ -898,21 +898,21 @@ type StringMap map[string]string
 // 	return s
 // }
 
-// func (m StringMap) Pop(key string, defaultValue ...string) string {
-// 	v := m.Get(key, defaultValue...)
-// 	delete(m, key)
-// 	return v
-// }
+func (m StringMap) Pop(key string, defaultValue ...string) string {
+	v := m.Get(key, defaultValue...)
+	delete(m, key)
+	return v
+}
 
-// func (m StringMap) Get(key string, defaultValue ...string) string {
-// 	if v, ok := m[key]; ok {
-// 		return v
-// 	}
-// 	if len(defaultValue) > 0 {
-// 		return defaultValue[0]
-// 	}
-// 	return ""
-// }
+func (m StringMap) Get(key string, defaultValue ...string) string {
+	if v, ok := m[key]; ok {
+		return v
+	}
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return ""
+}
 
 // func (m StringMap) Set(key, value string) {
 // 	m[key] = value

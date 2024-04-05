@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -58,7 +59,7 @@ func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.Warehouse,
 }
 
 func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model_helper.AppError) {
-	shippingZonesOfWarehouse, appErr := a.srv.Shipping.ShippingZonesByOption(&model.ShippingZoneFilterOption{
+	shippingZonesOfWarehouse, appErr := a.srv.Shipping.ShippingZonesByOption(model_helper.ShippingZoneFilterOption{
 		WarehouseID: squirrel.Eq{model.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
 	if appErr != nil {
@@ -85,15 +86,18 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 }
 
 func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) (model.WarehouseSlice, *model_helper.AppError) {
-	return a.WarehousesByOption(&model.WarehouseFilterOption{
-		ShippingZonesCountries: squirrel.Like{model.ShippingZoneTableName + ".Countries": countryCode},
-		SelectRelatedAddress:   true,
-		PrefetchShippingZones:  true,
+	countryPattern := fmt.Sprintf("%%%s%%", strings.ToUpper(countryCode.String()))
+	return a.WarehousesByOption(model_helper.WarehouseFilterOption{
+		ShippingZoneCountries: model.ShippingZoneWhere.Countries.ILIKE(countryPattern),
+		Preloads: []string{
+			model.WarehouseRels.Address,
+			model.WarehouseRels.WarehouseShippingZones + "." + model.WarehouseShippingZoneRels.ShippingZone,
+		},
 	})
 }
 
-func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.Warehouse) (*model.Warehouse, *model_helper.AppError) {
-	warehouse, err := s.srv.Store.Warehouse().Save(warehouse)
+func (s *ServiceWarehouse) CreateWarehouse(warehouse model.Warehouse) (*model.Warehouse, *model_helper.AppError) {
+	savedWarehouse, err := s.srv.Store.Warehouse().Upsert(warehouse)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -106,14 +110,14 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.Warehouse) (*model.W
 		return nil, model_helper.NewAppError("UpsertWarehouse", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "slug"}, err.Error(), statusCode)
 	}
 
-	return warehouse, nil
+	return savedWarehouse, nil
 }
 
 // ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
 // Note this method does not check stocks quantity for given `CheckoutLine`s.
 // This method should be used only if stocks quantity will be checked in further
 // validation steps, for instance in checkout completion.
-func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.WarehouseSlice, *model_helper.AppError) {
+func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLineSlice, country string) (model.WarehouseSlice, *model_helper.AppError) {
 	// stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
 	// 	SelectRelatedProductVariant: true,
 	// 	ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},

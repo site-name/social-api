@@ -853,7 +853,7 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model_
 	}
 
 	return a.srv.Shipping.ApplicableShippingMethodsForCheckout(
-		&checkoutInfo.Checkout,
+		checkoutInfo.Checkout,
 		checkoutInfo.Checkout.ChannelID,
 		subTotal.Gross,
 		countryCode,

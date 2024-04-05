@@ -37,6 +37,7 @@ type Category struct {
 	NameTranslation    model_types.JSONString `boil:"name_translation" json:"name_translation,omitempty" toml:"name_translation" yaml:"name_translation,omitempty"`
 	Metadata           model_types.JSONString `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata    model_types.JSONString `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	RequireShipping    model_types.NullBool   `boil:"require_shipping" json:"require_shipping,omitempty" toml:"require_shipping" yaml:"require_shipping,omitempty"`
 
 	R *categoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L categoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -57,6 +58,7 @@ var CategoryColumns = struct {
 	NameTranslation    string
 	Metadata           string
 	PrivateMetadata    string
+	RequireShipping    string
 }{
 	ID:                 "id",
 	Name:               "name",
@@ -72,6 +74,7 @@ var CategoryColumns = struct {
 	NameTranslation:    "name_translation",
 	Metadata:           "metadata",
 	PrivateMetadata:    "private_metadata",
+	RequireShipping:    "require_shipping",
 }
 
 var CategoryTableColumns = struct {
@@ -89,6 +92,7 @@ var CategoryTableColumns = struct {
 	NameTranslation    string
 	Metadata           string
 	PrivateMetadata    string
+	RequireShipping    string
 }{
 	ID:                 "categories.id",
 	Name:               "categories.name",
@@ -104,6 +108,7 @@ var CategoryTableColumns = struct {
 	NameTranslation:    "categories.name_translation",
 	Metadata:           "categories.metadata",
 	PrivateMetadata:    "categories.private_metadata",
+	RequireShipping:    "categories.require_shipping",
 }
 
 // Generated where
@@ -146,6 +151,7 @@ var CategoryWhere = struct {
 	NameTranslation    whereHelpermodel_types_JSONString
 	Metadata           whereHelpermodel_types_JSONString
 	PrivateMetadata    whereHelpermodel_types_JSONString
+	RequireShipping    whereHelpermodel_types_NullBool
 }{
 	ID:                 whereHelperstring{field: "\"categories\".\"id\""},
 	Name:               whereHelperstring{field: "\"categories\".\"name\""},
@@ -161,6 +167,7 @@ var CategoryWhere = struct {
 	NameTranslation:    whereHelpermodel_types_JSONString{field: "\"categories\".\"name_translation\""},
 	Metadata:           whereHelpermodel_types_JSONString{field: "\"categories\".\"metadata\""},
 	PrivateMetadata:    whereHelpermodel_types_JSONString{field: "\"categories\".\"private_metadata\""},
+	RequireShipping:    whereHelpermodel_types_NullBool{field: "\"categories\".\"require_shipping\""},
 }
 
 // CategoryRels is where relationship names are stored.
@@ -251,9 +258,9 @@ func (r *categoryR) GetVoucherCategories() VoucherCategorySlice {
 type categoryL struct{}
 
 var (
-	categoryAllColumns            = []string{"id", "name", "slug", "description", "parent_id", "level", "background_image", "background_image_alt", "images", "seo_title", "seo_description", "name_translation", "metadata", "private_metadata"}
+	categoryAllColumns            = []string{"id", "name", "slug", "description", "parent_id", "level", "background_image", "background_image_alt", "images", "seo_title", "seo_description", "name_translation", "metadata", "private_metadata", "require_shipping"}
 	categoryColumnsWithoutDefault = []string{"id", "name", "slug", "level", "background_image_alt", "seo_title", "seo_description"}
-	categoryColumnsWithDefault    = []string{"description", "parent_id", "background_image", "images", "name_translation", "metadata", "private_metadata"}
+	categoryColumnsWithDefault    = []string{"description", "parent_id", "background_image", "images", "name_translation", "metadata", "private_metadata", "require_shipping"}
 	categoryPrimaryKeyColumns     = []string{"id"}
 	categoryGeneratedColumns      = []string{}
 )

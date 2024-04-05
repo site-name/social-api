@@ -5,6 +5,7 @@ package sub_app_iface
 
 import (
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -16,11 +17,11 @@ type ShippingService interface {
 	// ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
 	ApplicableShippingMethodsForOrder(order model.Order, channelID string, price goprices.Money, countryCode model.CountryCode, lines model_helper.CheckoutLineInfos) (model.ShippingMethodSlice, *model_helper.AppError)
 	// DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
-	DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model_helper.AppError)
+	DefaultShippingZoneExists(shippingZoneID string) (model.ShippingZoneSlice, *model_helper.AppError)
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model_helper.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
-	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model_helper.AppError)
+	ShippingZonesByOption(option model_helper.ShippingZoneFilterOption) (model.ShippingZoneSlice, *model_helper.AppError)
 	CreateShippingMethodPostalCodeRules(transaction boil.ContextTransactor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model_helper.AppError)
 	DeleteShippingMethodChannelListings(transaction boil.ContextTransactor, ids []string) *model_helper.AppError
 	DeleteShippingZones(transaction boil.ContextTransactor, conditions *model.ShippingZoneFilterOption) (int64, *model_helper.AppError)

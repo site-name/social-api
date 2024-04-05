@@ -18,7 +18,7 @@ import (
 func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(checkout *model.Checkout, email, promoCode, currency string) (*model.InvalidPromoCode, *model_helper.AppError) {
 	now := time.Now()
 
-	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Expr(model.GiftcardTableName+".Code = ?", promoCode),
 			squirrel.Expr(model.GiftcardTableName+".Currency = ?", strings.ToUpper(currency)),

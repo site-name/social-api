@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -29,7 +30,7 @@ func init() {
 }
 
 func (a *ServiceGiftcard) GetGiftCard(id string) (*model.Giftcard, *model_helper.AppError) {
-	giftcard, err := a.srv.Store.Giftcard().GetById(id)
+	giftcard, err := a.srv.Store.GiftCard().GetById(id)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
@@ -42,16 +43,17 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*model.Giftcard, *model_helper
 }
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) (model.GiftcardSlice, *model_helper.AppError) {
-	_, giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
-		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkoutToken},
+	giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CheckoutToken: model.GiftcardCheckoutWhere.CheckoutID.EQ(checkoutToken),
 	})
 	return giftcards, appErr
 }
 
-// PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model_helper.AppError) {
-	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
-		Conditions: squirrel.Eq{model.GiftcardTableName + ".Code": code},
+	giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.GiftcardWhere.Code.EQ(code),
+		),
 	})
 	if appErr != nil {
 		return false, appErr
@@ -60,19 +62,17 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model_helper.
 	return len(giftcards) > 0, nil
 }
 
-// GiftcardsByOption finds a list of giftcards with given option
-func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOption) (int64, model.GiftcardSlice, *model_helper.AppError) {
-	totalCount, giftcards, err := a.srv.Store.Giftcard().FilterByOption(option)
+func (a *ServiceGiftcard) GiftcardsByOption(option model_helper.GiftcardFilterOption) (model.GiftcardSlice, *model_helper.AppError) {
+	giftcards, err := a.srv.Store.GiftCard().FilterByOption(option)
 	if err != nil {
-		return 0, nil, model_helper.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model_helper.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return totalCount, giftcards, nil
+	return giftcards, nil
 }
 
-// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcards(transaction boil.ContextTransactor, giftcards ...*model.Giftcard) (model.GiftcardSlice, *model_helper.AppError) {
-	giftcards, err := a.srv.Store.Giftcard().BulkUpsert(transaction, giftcards...)
+func (a *ServiceGiftcard) UpsertGiftcards(transaction boil.ContextTransactor, giftcards model.GiftcardSlice) (model.GiftcardSlice, *model_helper.AppError) {
+	giftcards, err := a.srv.Store.GiftCard().BulkUpsert(transaction, giftcards)
 	if err != nil {
 		if appErr, ok := err.(*model_helper.AppError); ok {
 			return nil, appErr
@@ -91,22 +91,21 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction boil.ContextTransactor, gi
 	return giftcards, nil
 }
 
-// ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) (model.GiftcardSlice, *model_helper.AppError) {
-	_, giftcards, appErr := s.GiftcardsByOption(&model.GiftCardFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Or{
-				squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
-				squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
+	giftcards, appErr := s.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model_helper.Or{
+				squirrel.Eq{model.GiftcardTableColumns.ExpiryDate: nil},
+				squirrel.GtOrEq{model.GiftcardTableColumns.ExpiryDate: util.StartOfDay(date)},
 			},
-			squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
-		},
+			model.GiftcardWhere.IsActive.EQ(model_types.NewNullBool(true)),
+		),
 	})
 	return giftcards, appErr
 }
 
 func (s *ServiceGiftcard) DeleteGiftcards(transaction boil.ContextTransactor, ids []string) *model_helper.AppError {
-	err := s.srv.Store.Giftcard().Delete(transaction, ids)
+	err := s.srv.Store.GiftCard().Delete(transaction, ids)
 	if err != nil {
 		return model_helper.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
