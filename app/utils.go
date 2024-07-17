@@ -70,30 +70,20 @@ func PluginContext(c request.Context) *plugin.Context {
 // ToLocalCurrency performs convert given price to local currency
 //
 // NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
-func (a *Server) ToLocalCurrency(price any, currency string) (any, *model_helper.AppError) {
-	// validate if currency exchange is enabled
+func (a *Server) ToLocalCurrency(price goprices.Currencier, destCurrency string) (goprices.Currencier, *model_helper.AppError) {
 	if a.Config().ThirdPartySettings.OpenExchangeRateApiKey == nil {
 		return nil, model_helper.NewAppError("ToLocalCurrency", "app.setting.currency_conversion_disabled.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
-	// validate price is valid:
-	var fromCurrency string
+	fromCurrency := price.GetCurrency()
+	destCurrency = strings.ToUpper(destCurrency)
 
-	switch t := price.(type) {
-	case goprices.Currencier:
-		fromCurrency = t.GetCurrency()
-
-	default:
-		return nil, model_helper.NewAppError("ToLocalCurrency", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
-	}
-	// validate provided currency is valid:
-	currency = strings.ToUpper(currency)
-	if goprices.CurrenciesMap[currency] == "" {
+	if goprices.CurrenciesMap[destCurrency] == "" {
 		return nil, model_helper.NewAppError("ToLocalCurrency", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
 	}
 
-	if !strings.EqualFold(currency, fromCurrency) {
-		return a.ExchangeCurrency(price, currency, nil)
+	if !strings.EqualFold(destCurrency, fromCurrency) {
+		return a.ExchangeCurrency(price, destCurrency, nil)
 	}
 
 	return price, nil
@@ -104,27 +94,20 @@ func (a *Server) ToLocalCurrency(price any, currency string) (any, *model_helper
 // that returns proper conversion rate
 //
 // `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange.
-// `conversionrate` can be nil
-//
-// NOTE: `base` and `toCurrency` must be validated before given to me.
-func (a *Server) ExchangeCurrency(base any, toCurrency string, conversionRate *decimal.Decimal) (any, *model_helper.AppError) {
+// `conversionRate` can be nil
+func (a *Server) ExchangeCurrency(base goprices.Currencier, toCurrency string, conversionRate *decimal.Decimal) (any, *model_helper.AppError) {
 	var appErr *model_helper.AppError
 
-	impl, ok := base.(goprices.Currencier)
-	if ok {
-		if !strings.EqualFold(impl.GetCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
-			!strings.EqualFold(toCurrency, model_helper.DEFAULT_CURRENCY.String()) {
-			base, appErr = a.ExchangeCurrency(base, model_helper.DEFAULT_CURRENCY.String(), conversionRate)
-			if appErr != nil {
-				return nil, appErr
-			}
+	if !strings.EqualFold(base.GetCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
+		!strings.EqualFold(toCurrency, model_helper.DEFAULT_CURRENCY.String()) {
+		base, appErr = a.ExchangeCurrency(base, model_helper.DEFAULT_CURRENCY.String(), conversionRate)
+		if appErr != nil {
+			return nil, appErr
 		}
-	} else {
-		return nil, model_helper.NewAppError("ExchangeCurrency", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "base"}, "", http.StatusBadRequest)
 	}
 
 	if conversionRate == nil {
-		conversionRate, appErr = a.GetConversionRate(impl.GetCurrency(), toCurrency)
+		conversionRate, appErr = a.GetConversionRate(base.GetCurrency(), toCurrency)
 	}
 	if appErr != nil {
 		return nil, appErr

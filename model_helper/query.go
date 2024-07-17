@@ -116,7 +116,10 @@ func (a AnnotationAggregator) Apply(q *queries.Query) {
 	}
 
 	buf := strmangle.GetBuffer()
-	defer strmangle.PutBuffer(buf)
+	defer func() {
+		buf.Reset()
+		strmangle.PutBuffer(buf)
+	}()
 
 	counter := 0
 	for key, value := range a {
