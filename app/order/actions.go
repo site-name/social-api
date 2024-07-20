@@ -2093,7 +2093,7 @@ func (a *ServiceOrder) calculateRefundAmount(
 
 ) (*decimal.Decimal, *model_helper.AppError) {
 
-	refundAmount := decimal.Zero
+	refundAmount := decimal.NewFromInt(0)
 	for _, lineData := range returnOrderLineDatas {
 		if unitPriceGrossAmount := lineData.Line.UnitPriceGrossAmount; unitPriceGrossAmount != nil {
 			refundAmount = refundAmount.Add(

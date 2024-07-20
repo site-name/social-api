@@ -939,7 +939,7 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *model.GiftCard, totalPric
 		totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
 	} else {
 		totalPriceLeft, _ = totalPriceLeft.Sub(giftCard.CurrentBalance)
-		*giftCard.CurrentBalanceAmount = decimal.Zero
+		*giftCard.CurrentBalanceAmount = decimal.NewFromInt(0)
 	}
 
 	return model.BalanceObject{

@@ -40,7 +40,9 @@ func (a *App) SaveComplianceReport(job model.Compliance) (*model.Compliance, *mo
 		return nil, model_helper.NewAppError("SaveComplianceReport", "app.compliance.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	jCopy := savedJob.DeepCopy()
+	model_helper.ComplianceDeepCopy(*savedJob)
+
+	jCopy := model_helper.ComplianceDeepCopy(*savedJob)
 	a.Srv().Go(func() {
 		err := a.Compliance().RunComplianceJob(jCopy)
 		if err != nil {

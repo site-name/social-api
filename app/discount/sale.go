@@ -24,10 +24,7 @@ func (a *ServiceDiscount) UpsertSale(transaction boil.ContextTransactor, sale mo
 
 func (a *ServiceDiscount) GetSaleDiscount(sale model.Sale, saleChannelListing model.SaleChannelListing) (types.DiscountCalculator, *model_helper.AppError) {
 	if sale.Type == model.DiscountValueTypeFixed {
-		discountAmount := &goprices.Money{ // can use directly here since sale channel listings are validated before saving
-			Amount:   saleChannelListing.DiscountValue,
-			Currency: saleChannelListing.Currency.String(),
-		}
+		discountAmount, _ := goprices.NewMoneyFromDecimal(saleChannelListing.DiscountValue, saleChannelListing.Currency.String())
 		return a.Decorator(discountAmount), nil
 	}
 	return a.Decorator(saleChannelListing.DiscountValue), nil
@@ -110,7 +107,7 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model_h
 }
 
 func (s *ServiceDiscount) ToggleSaleRelations(transaction boil.ContextTransactor, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model_helper.AppError {
-	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.Sales{{Id: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
+	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.SaleSlice{{ID: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
 		return model_helper.NewAppError("ToggleSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale relations", http.StatusInternalServerError)
 	}

@@ -62,10 +62,8 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher model.Voucher, channelID st
 	firstListing := voucherChannelListings[0]
 
 	if voucher.DiscountValueType == model.DiscountValueTypeFixed {
-		return a.Decorator(goprices.Money{
-			Amount:   firstListing.DiscountValue,
-			Currency: firstListing.Currency.String(),
-		}), nil
+		money, _ := goprices.NewMoneyFromDecimal(firstListing.DiscountValue, firstListing.Currency.String())
+		return a.Decorator(money), nil
 	}
 
 	// otherwise DiscountValueType is 'percentage'
@@ -102,7 +100,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher model.Voucher, price any,
 
 	switch priceType := price.(type) {
 	case goprices.Money:
-		if afterDiscount.(goprices.Money).Amount.LessThan(decimal.Zero) {
+		if afterDiscount := afterDiscount.(goprices.Money); afterDiscount.GetAmount().LessThan(decimal.Zero) {
 			return priceType, nil
 		}
 		sub, _ := priceType.Sub(afterDiscount.(goprices.Money))
@@ -145,9 +143,9 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher model.Voucher, price any,
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
 func (a *ServiceDiscount) ValidateMinSpent(voucher model.Voucher, value goprices.TaxedMoney, channelID string) (notApplicableErr *model_helper.NotApplicable, appErr *model_helper.AppError) {
-	money := value.Net
+	money := value.GetNet()
 	if *a.srv.Config().ShopSettings.DisplayGrossPrices {
-		money = value.Gross
+		money = value.GetGross()
 	}
 
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(model_helper.VoucherChannelListingFilterOption{
@@ -170,7 +168,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher model.Voucher, value goprices
 	minSpent := model_helper.VoucherChannelListingGetMinSpent(*voucherChannelListings[0])
 	if money.LessThan(minSpent) {
 		notApplicableErr = &model_helper.NotApplicable{
-			Message: "This offer is only valid for orders over " + minSpent.Amount.String(),
+			Message: "This offer is only valid for orders over " + minSpent.GetAmount().String(),
 		}
 		return
 	}

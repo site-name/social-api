@@ -93,9 +93,9 @@ func (a *Server) ToLocalCurrency(price goprices.Currencier, destCurrency string)
 // get_rate parameter is a callable taking single argument (target currency)
 // that returns proper conversion rate
 //
-// `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange.
+// `base` must be either Money, MoneyRange, TaxedMoney, TaxedMoneyRange.
 // `conversionRate` can be nil
-func (a *Server) ExchangeCurrency(base goprices.Currencier, toCurrency string, conversionRate *decimal.Decimal) (any, *model_helper.AppError) {
+func (a *Server) ExchangeCurrency(base goprices.Currencier, toCurrency string, conversionRate *decimal.Decimal) (goprices.Currencier, *model_helper.AppError) {
 	var appErr *model_helper.AppError
 
 	if !strings.EqualFold(base.GetCurrency(), model_helper.DEFAULT_CURRENCY.String()) &&
@@ -108,59 +108,60 @@ func (a *Server) ExchangeCurrency(base goprices.Currencier, toCurrency string, c
 
 	if conversionRate == nil {
 		conversionRate, appErr = a.GetConversionRate(base.GetCurrency(), toCurrency)
-	}
-	if appErr != nil {
-		return nil, appErr
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	switch t := base.(type) {
-	case *goprices.Money:
-		newAmount := t.Amount.Mul(*conversionRate)
-		return &goprices.Money{
-			Amount:   newAmount,
-			Currency: toCurrency,
-		}, nil
+	case goprices.Money:
+		newAmount := t.GetAmount().Mul(*conversionRate)
+		money, _ := goprices.NewMoneyFromDecimal(newAmount, toCurrency)
+		return money, nil
 
-	case *goprices.MoneyRange:
-		newStart, appErr := a.ExchangeCurrency(t.Start, toCurrency, conversionRate)
+	case goprices.MoneyRange:
+		newStart, appErr := a.ExchangeCurrency(t.GetStart(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		newStop, appErr := a.ExchangeCurrency(t.Stop, toCurrency, conversionRate)
+		newStop, appErr := a.ExchangeCurrency(t.GetStop(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		res, _ := goprices.NewMoneyRange(newStart.(*goprices.Money), newStop.(*goprices.Money))
+		res, _ := goprices.NewMoneyRange(newStart.(goprices.Money), newStop.(goprices.Money))
 		return res, nil
 
-	case *goprices.TaxedMoney:
-		newNet, appErr := a.ExchangeCurrency(t.Net, toCurrency, conversionRate)
+	case goprices.TaxedMoney:
+		newNet, appErr := a.ExchangeCurrency(t.GetNet(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		newGross, appErr := a.ExchangeCurrency(t.Gross, toCurrency, conversionRate)
+		newGross, appErr := a.ExchangeCurrency(t.GetGross(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		res, _ := goprices.NewTaxedMoney(newNet.(*goprices.Money), newGross.(*goprices.Money))
+		res, _ := goprices.NewTaxedMoney(newNet.(goprices.Money), newGross.(goprices.Money))
 		return res, nil
 
-	case *goprices.TaxedMoneyRange:
-		newStart, appErr := a.ExchangeCurrency(t.Start, toCurrency, conversionRate)
+	case goprices.TaxedMoneyRange:
+		newStart, appErr := a.ExchangeCurrency(t.GetStart(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		newStop, appErr := a.ExchangeCurrency(t.Stop, toCurrency, conversionRate)
+		newStop, appErr := a.ExchangeCurrency(t.GetStop(), toCurrency, conversionRate)
 		if appErr != nil {
 			return nil, appErr
 		}
-		res, _ := goprices.NewTaxedMoneyRange(newStart.(*goprices.TaxedMoney), newStop.(*goprices.TaxedMoney))
+		res, _ := goprices.NewTaxedMoneyRange(newStart.(goprices.TaxedMoney), newStop.(goprices.TaxedMoney))
 		return res, nil
 
 	default:
 		return nil, nil
 	}
 }
+
+// decimalOne holds value of 1.0
+var decimalOne = decimal.NewFromInt(1)
 
 // GetConversionRate get conversion rate to use in exchange.
 // It first try getting exchange rate from cache and returns the found value. If nothing found, it try finding from database
@@ -182,8 +183,11 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 	var rate decimal.Decimal
 	// try get rate from the cache first, if not found, find in database
 	value, exist := a.ExchangeRateMap.Load(rateCurrency)
-	if exist {
-		rate = *(value.(*model.OpenExchangeRate).Rate)
+	if exist && value != nil {
+		exchangeRate, ok := value.(*model.OpenExchangeRate)
+		if ok && exchangeRate != nil && !exchangeRate.Rate.IsNil() {
+			rate = *exchangeRate.Rate.Decimal
+		}
 	} else {
 		exchangeRatesFromDatabase, err := a.Store.OpenExchangeRate().GetAll()
 		if err != nil {
@@ -191,15 +195,15 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 		}
 
 		for _, exchangeRate := range exchangeRatesFromDatabase {
-			if exchangeRate.ToCurrency == rateCurrency {
-				rate = *exchangeRate.Rate
+			if exchangeRate.ToCurrency.String() == rateCurrency {
+				rate = *exchangeRate.Rate.Decimal
 				break
 			}
 		}
 	}
 
 	if reverseRate {
-		rate = decimal.NewFromInt(1).Div(rate)
+		rate = decimalOne.Div(rate)
 	}
 
 	return &rate, nil

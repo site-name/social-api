@@ -273,7 +273,7 @@ func (s *ServiceOrder) getDiscountsPayload(order *model.Order) (model_types.JSON
 		}
 
 		allDiscounts[idx] = discountObj
-		if orderDiscount.Type == model.VOUCHER {
+		if orderDiscount.Type == model_helper.VOUCHER {
 			voucherDiscount = discountObj
 		}
 
@@ -305,7 +305,7 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 		return nil, appErr
 	}
 
-	tax := order.TotalGrossAmount.Sub(*order.TotalNetAmount)
+	tax := order.TotalGrossAmount.Sub(order.TotalNetAmount)
 
 	orderLines, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Expr(model.OrderLineTableName+".OrderID = ?", order.Id),
@@ -373,7 +373,7 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 		"language_code":                   order.LanguageCode,
 
 		"channel_id":                  order.ChannelID,
-		"created":                     order.CreateAt,
+		"created":                     order.CreatedAt,
 		"shipping_price_net_amount":   order.ShippingPriceNetAmount,
 		"shipping_price_gross_amount": order.ShippingPriceGrossAmount,
 		"order_details_url":           orderDetailsUrl,

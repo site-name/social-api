@@ -444,7 +444,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		payment.CapturedAmount = payment.CapturedAmount.Sub(paymentTransaction.Amount)
 		payment.ChargeStatus = model.PaymentChargeStatusPartiallyRefunded
 		if payment.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-			payment.CapturedAmount = decimal.Zero
+			payment.CapturedAmount = decimal.NewFromInt(0)
 			payment.ChargeStatus = model.PaymentChargeStatusFullyRefunded
 			payment.IsActive = false
 		}
@@ -463,7 +463,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 			payment.CapturedAmount = payment.CapturedAmount.Sub(paymentTransaction.Amount)
 			payment.ChargeStatus = model.PaymentChargeStatusPartiallyCharged
 			if payment.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-				payment.CapturedAmount = decimal.Zero
+				payment.CapturedAmount = decimal.NewFromInt(0)
 			}
 			changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 		}

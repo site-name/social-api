@@ -98,17 +98,13 @@ func PaymentIsManual(p model.Payment) bool {
 }
 
 func PaymentGetTotalPrice(p model.Payment) goprices.Money {
-	return goprices.Money{
-		Amount:   p.Total,
-		Currency: p.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(p.Total, string(p.Currency))
+	return *money
 }
 
 func PaymentGetCapturedAmount(p model.Payment) goprices.Money {
-	return goprices.Money{
-		Amount:   p.CapturedAmount,
-		Currency: p.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(p.CapturedAmount, string(p.Currency))
+	return *money
 }
 
 func PaymentIsValid(p model.Payment) *AppError {
@@ -210,8 +206,6 @@ func PaymentTransactionIsValid(pt model.PaymentTransaction) *AppError {
 }
 
 func PaymentTransactionGetAmount(pt model.PaymentTransaction) goprices.Money {
-	return goprices.Money{
-		Amount:   pt.Amount,
-		Currency: pt.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(pt.Amount, pt.Currency.String())
+	return *money
 }

@@ -176,6 +176,10 @@ func ComplianceCommonPre(c *model.Compliance) {
 	c.Keywords = strings.ToLower(c.Keywords)
 }
 
+func ComplianceDeepCopy(c model.Compliance) *model.Compliance {
+	return &c
+}
+
 func ComplianceJobNName(c *model.Compliance) string {
 	jobName := c.Type.String()
 	if c.Type == model.ComplianceTypeDaily {

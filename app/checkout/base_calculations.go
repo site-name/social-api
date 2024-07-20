@@ -68,10 +68,10 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_hel
 
 // BaseCheckoutTotal returns the total cost of the checkout
 //
-// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency model.Currency) (*goprices.TaxedMoney, *model_helper.AppError) {
+// NOTE: discount must be either *Money, *TaxedMoney
+func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount goprices.Currencier, currency model.Currency) (*goprices.TaxedMoney, *model_helper.AppError) {
 	switch discount.(type) {
-	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
+	case *goprices.Money, *goprices.TaxedMoney:
 	default:
 		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
 	}
@@ -80,7 +80,7 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippi
 	currencyMap := map[string]bool{}
 	currencyMap[subTotal.GetCurrency()] = true
 	currencyMap[shippingPrice.GetCurrency()] = true
-	currencyMap[discount.(goprices.Currencier).GetCurrency()] = true // validated in the beginning
+	currencyMap[discount.GetCurrency()] = true // validated in the beginning
 	currencyMap[currency.String()] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency.String()); err != nil || len(currencyMap) > 1 {
@@ -117,10 +117,12 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo model_helper.Ch
 	amount := variantPrice.Mul(float64(checkoutLineInfo.Line.Quantity))
 	quantizedAmount, _ := amount.Quantize(goprices.Up, -1)
 
-	return &goprices.TaxedMoney{
-		Net:   *quantizedAmount,
-		Gross: *quantizedAmount,
-	}, nil
+	taxedMoney, err := goprices.NewTaxedMoney(*quantizedAmount, *quantizedAmount)
+	if err != nil {
+		return nil, model_helper.NewAppError("BaseCheckoutLineTotal", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return taxedMoney, nil
 }
 
 func (a *ServiceCheckout) BaseOrderLineTotal(orderLine model.OrderLine) (*goprices.TaxedMoney, *model_helper.AppError) {
@@ -132,11 +134,12 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine model.OrderLine) (*gopric
 }
 
 func (a *ServiceCheckout) BaseTaxRate(price goprices.TaxedMoney) (*decimal.Decimal, *model_helper.AppError) {
-	taxRate := decimal.Zero
-	if !price.Gross.Amount.IsZero() {
-		tax := price.Tax()
-		div := tax.TrueDiv(price.Net.Amount.InexactFloat64())
-		taxRate = div.Amount
+	taxRate := decimal.NewFromInt(0)
+	priceGross := price.GetGross()
+	if !priceGross.GetAmount().IsZero() {
+		priceNet := price.GetNet()
+		div := price.Tax().TrueDiv(priceNet.GetAmount().InexactFloat64())
+		taxRate = div.GetAmount()
 	}
 
 	return &taxRate, nil

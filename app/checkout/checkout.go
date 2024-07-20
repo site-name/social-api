@@ -187,17 +187,15 @@ func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkout model.Checkout)
 		return nil, appErr
 	}
 
-	balanceAmount := decimal.Zero
+	balanceAmount := decimal.NewFromInt(0)
 	for _, giftcard := range giftcards {
 		if giftcard != nil && !giftcard.CurrentBalanceAmount.IsNil() {
 			balanceAmount = balanceAmount.Add(*giftcard.CurrentBalanceAmount.Decimal)
 		}
 	}
 
-	return &goprices.Money{
-		Amount:   balanceAmount,
-		Currency: checkout.Currency.String(),
-	}, nil
+	money, _ := goprices.NewMoneyFromDecimal(balanceAmount, checkout.Currency.String())
+	return money, nil
 }
 
 func (a *ServiceCheckout) CheckoutLineWithVariant(checkout model.Checkout, productVariantID string) (*model.CheckoutLine, *model_helper.AppError) {

@@ -357,7 +357,7 @@ func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfac
 		return nil, nil, appErr
 	}
 
-	money, appErr := s.srv.Discount.GetDiscountAmountFor(voucher, checkoutShippingPrice.Gross, checkoutInfo.Channel.ID)
+	money, appErr := s.srv.Discount.GetDiscountAmountFor(voucher, checkoutShippingPrice.GetGross(), checkoutInfo.Channel.ID)
 	return money.(*goprices.Money), nil, appErr
 }
 
@@ -415,7 +415,8 @@ func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interface
 		}
 
 		for i := 0; i < lineInfo.Line.Quantity; i++ {
-			linePrices = append(linePrices, &taxedMoney.Gross)
+			gross := taxedMoney.GetGross()
+			linePrices = append(linePrices, &gross)
 		}
 	}
 
@@ -434,7 +435,7 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 		if appErr != nil {
 			return nil, nil, appErr
 		}
-		money, appErr := s.srv.Discount.GetDiscountAmountFor(voucher, checkoutSubTotal.Gross, checkoutInfo.Channel.ID)
+		money, appErr := s.srv.Discount.GetDiscountAmountFor(voucher, checkoutSubTotal.GetGross(), checkoutInfo.Channel.ID)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -650,8 +651,8 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		}
 
 		if voucher.Type != model.VoucherTypeShipping {
-			if checkoutSubTotal.Gross.LessThan(*discount) {
-				model_helper.CheckoutSetDiscountAmount(&checkout, checkoutSubTotal.Gross)
+			if gross := checkoutSubTotal.GetGross(); gross.LessThan(*discount) {
+				model_helper.CheckoutSetDiscountAmount(&checkout, gross)
 			} else {
 				model_helper.CheckoutSetDiscountAmount(&checkout, *discount)
 			}
@@ -855,7 +856,7 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model_
 	return a.srv.Shipping.ApplicableShippingMethodsForCheckout(
 		checkoutInfo.Checkout,
 		checkoutInfo.Checkout.ChannelID,
-		subTotal.Gross,
+		subTotal.GetGross(),
 		countryCode,
 		lineInfos,
 	)
@@ -940,7 +941,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 		// ignore not found error
 	}
 
-	totalPaid := decimal.Zero
+	totalPaid := decimal.NewFromInt(0)
 	for _, payment := range payments {
 		if payment == nil {
 			continue
@@ -972,7 +973,8 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 		checkoutTotal = zeroTaxedMoney
 	}
 
-	return checkoutTotal.Gross.Amount.LessThan(totalPaid), nil
+	checkoutTotalGross := checkoutTotal.GetGross()
+	return checkoutTotalGross.GetAmount().LessThan(totalPaid), nil
 }
 
 // CancelActivePayments set all active payments belong to given checkout

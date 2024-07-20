@@ -8,7 +8,7 @@ import (
 )
 
 // SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ any, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model_helper.AppError {
+func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ any, customerUser *model.User, email string, giftCard model.Giftcard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model_helper.AppError {
 	var (
 		userPayload any
 		userID      *string

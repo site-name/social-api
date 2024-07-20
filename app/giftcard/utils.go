@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/mattermost/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
@@ -19,38 +21,40 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(checkout *model.Checkout, em
 	now := time.Now()
 
 	giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Expr(model.GiftcardTableName+".Code = ?", promoCode),
-			squirrel.Expr(model.GiftcardTableName+".Currency = ?", strings.ToUpper(currency)),
-			squirrel.Expr(model.GiftcardTableName+".StartDate <= ?", now),
-			squirrel.Expr(model.GiftcardTableName + ".IsActive"),
-			squirrel.Or{
-				squirrel.Expr(model.GiftcardTableName+".ExpiryDate >= ?", now),
-				squirrel.Expr(model.GiftcardTableName + ".ExpiryDate IS NULL"),
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.GiftcardWhere.Code.EQ(promoCode),
+			model.GiftcardWhere.Currency.EQ(model.Currency(strings.ToUpper(currency))),
+			model.GiftcardWhere.StartDate.LTE(model_types.NewNullTime(now)),
+			model.GiftcardWhere.IsActive.EQ(model_types.NewNullBool(true)),
+			model_helper.Or{
+				squirrel.GtOrEq{model.GiftcardTableColumns.ExpiryDate: now},
+				squirrel.Eq{model.GiftcardTableColumns.ExpiryDate: nil},
 			},
-		},
+		),
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 	if len(giftcards) == 0 {
-		return &model.InvalidPromoCode{}, nil
+		return &model_helper.InvalidPromoCode{}, nil
 	}
 
 	giftcard := giftcards[0]
 
 	// giftcard can be used only by one user
-	if giftcard.UsedByEmail != nil && *giftcard.UsedByEmail != email {
-		return &model.InvalidPromoCode{}, nil
+	if !giftcard.UsedByEmail.IsNil() && *giftcard.UsedByEmail.String != email {
+		return &model_helper.InvalidPromoCode{}, nil
 	}
 
-	return nil, a.AddGiftcardRelations(nil, model.Giftcards{giftcard}, model.CheckoutSlice{checkout})
+	return nil, a.AddGiftcardRelations(nil, model.GiftcardSlice{giftcard}, model.CheckoutSlice{checkout})
 }
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkout, giftcardCode string) *model_helper.AppError {
-	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
-		Conditions: squirrel.Expr(model.GiftcardTableName+".Code = ?", giftcardCode),
+	giftcards, appErr := a.GiftcardsByOption(model_helper.GiftcardFilterOption{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.GiftcardWhere.Code.EQ(giftcardCode),
+		),
 	})
 	if appErr != nil {
 		return appErr
@@ -63,7 +67,7 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkou
 }
 
 // ToggleGiftcardStatus set status of given giftcard to inactive/active
-func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_helper.AppError {
+func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.Giftcard) *model_helper.AppError {
 	if *giftCard.IsActive {
 		giftCard.IsActive = model_helper.GetPointerOfValue(false)
 	} else {
@@ -79,8 +83,8 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model_
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model.ShopSettings, user *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.InsufficientStock, *model_helper.AppError) {
-	if user != nil && !model_helper.IsValidId(user.Id) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLineSlice, siteSettings model_helper.ShopSettings, user *model.User, _ any, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model_helper.InsufficientStock, *model_helper.AppError) {
+	if user != nil && !model_helper.IsValidId(user.ID) {
 		user = nil
 	}
 
@@ -101,7 +105,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, order
 
 	var orderLineIDQuantityMap = map[string]int{} // orderLineIDQuantityMap has keys are order line ids
 	for _, line := range giftcardLines {
-		orderLineIDQuantityMap[line.Id] = line.Quantity
+		orderLineIDQuantityMap[line.ID] = line.Quantity
 	}
 
 	res, appErr := s.GiftcardsCreate(nil, order, giftcardLines, orderLineIDQuantityMap, siteSettings, user, nil, manager)
@@ -110,11 +114,13 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, order
 
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLineSlice) (model.OrderLineSlice, *model_helper.AppError) {
 	giftcardLines := GetGiftcardLines(lines)
-	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions: squirrel.Eq{
-			model.OrderLineTableName + ".Id":                 giftcardLines.IDs(),
-			model.OrderLineTableName + ".IsShippingRequired": true,
-		},
+	giftcardLineIDs := lo.Map(giftcardLines, func(o *model.OrderLine, _ int) string { return o.ID })
+
+	nonShippableLines, appErr := s.srv.Order.OrderLinesByOption(model_helper.OrderLineFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.OrderLineWhere.ID.IN(giftcardLineIDs),
+			model.OrderLineWhere.IsShippingRequired.EQ(true),
+		),
 	})
 
 	if appErr != nil {
@@ -133,23 +139,23 @@ func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftc
 		customerUserID        *string
 		appErr                *model_helper.AppError
 		userEmail             = order.UserEmail
-		giftcards             = []*model.GiftCard{}
-		nonShippableGiftcards = []*model.GiftCard{}
+		giftcards             = model.GiftcardSlice{}
+		nonShippableGiftcards = model.GiftcardSlice{}
 		expiryDate            = s.CalculateExpiryDate(settings)
 	)
 
-	if order.UserID != nil {
-		customerUser, appErr = s.srv.AccountService().UserById(context.Background(), *order.UserID)
+	if !order.UserID.IsNil() {
+		customerUser, appErr = s.srv.Account.UserById(context.Background(), *order.UserID.String)
 		if appErr != nil {
 			return nil, appErr
 		}
 	}
 	if customerUser != nil {
-		customerUserID = &customerUser.Id
+		customerUserID = &customerUser.ID
 	}
 
 	// refetch order lines with prefetching options
-	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+	giftcardLines, appErr = s.srv.Order.OrderLinesByOption(model_helper.OrderLineFilterOptions{
 		Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
 		Preload:    []string{"ProductVariant.Product"},
 	})
@@ -160,14 +166,14 @@ func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftc
 	for _, orderLine := range giftcardLines {
 		var (
 			priceAmount   = orderLine.UnitPriceGrossAmount
-			lineGiftcards = []*model.GiftCard{}
+			lineGiftcards = model.GiftcardSlice{}
 			productID     *string
 		)
 		if orderLine.VariantID != nil && orderLine.ProductVariant != nil {
 			productID = &orderLine.ProductVariant.ProductID
 		}
 
-		for i := 0; i < quantities[orderLine.Id]; i++ {
+		for i := 0; i < quantities[orderLine.ID]; i++ {
 			lineGiftcards = append(lineGiftcards, &model.GiftCard{
 				Code:                 model.NewPromoCode(),
 				InitialBalanceAmount: priceAmount,

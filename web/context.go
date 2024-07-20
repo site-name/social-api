@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
+// Context represents context of a request.
 type Context struct {
 	App        app.AppIface
 	AppContext *request.Context // AppContext holds information of an http request. It is created when an http request is made

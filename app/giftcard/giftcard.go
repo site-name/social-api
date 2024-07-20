@@ -115,7 +115,7 @@ func (s *ServiceGiftcard) DeleteGiftcards(transaction boil.ContextTransactor, id
 
 // relations must be []*Order || []*Checkout
 func (s *ServiceGiftcard) AddGiftcardRelations(transaction boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) *model_helper.AppError {
-	err := s.srv.Store.Giftcard().AddRelations(transaction, giftcards, relations)
+	err := s.srv.Store.GiftCard().AddRelations(transaction, giftcards, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
@@ -129,7 +129,7 @@ func (s *ServiceGiftcard) AddGiftcardRelations(transaction boil.ContextTransacto
 
 // relations must be []*Order || []*Checkout
 func (s *ServiceGiftcard) RemoveGiftcardRelations(transaction boil.ContextTransactor, giftcards model.GiftcardSlice, relations any) *model_helper.AppError {
-	err := s.srv.Store.Giftcard().RemoveRelations(transaction, giftcards, relations)
+	err := s.srv.Store.GiftCard().RemoveRelations(transaction, giftcards, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {

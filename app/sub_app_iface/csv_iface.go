@@ -5,6 +5,7 @@ package sub_app_iface
 
 import (
 	"github.com/mattermost/squirrel"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/util"
@@ -17,11 +18,11 @@ type CsvService interface {
 	// CreateExportFile inserts given export file into database then returns it
 	CreateExportFile(file model.ExportFile) (*model.ExportFile, *model_helper.AppError)
 	// ExportEventsByOption returns a list of export events filtered using given options
-	ExportEventsByOption(options model.ExportEventFilterOption) ([]*model.ExportEvent, *model_helper.AppError)
+	ExportEventsByOption(options model_helper.ExportEventFilterOption) (model.ExportEventSlice, *model_helper.AppError)
 	// ExportFileById returns an export file found by given id
 	ExportFileById(id string) (*model.ExportFile, *model_helper.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products
-	ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model_helper.AppError
+	ExportProducts(input model_helper.ExportProductsFilterOptions, delimeter string) *model_helper.AppError
 	// Get export fields, all headers and headers mapping.
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/mattermost/squirrel"
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
@@ -14,11 +13,9 @@ import (
 )
 
 func TestApplicableShippingMethods(t *testing.T) {
+	money, _ := goprices.NewMoney(56.78, "USD")
 	_, err := ApplicableShippingMethods(
-		&goprices.Money{
-			Amount:   decimal.NewFromFloat(56.78),
-			Currency: "USD",
-		},
+		money,
 		model_helper.NewId(),
 		&measurement.ZeroWeight,
 		"US",
@@ -61,11 +58,11 @@ func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *
 		"ShippingMethodPostalCodeRules.InclusionType",
 	}
 
-	priceAmount, _ := price.Amount.Float64()
+	priceAmount := price.GetAmount().InexactFloat64()
 
 	params := map[string]any{
 		"ChannelID":               channelID,
-		"Currency":                price.Currency,
+		"Currency":                price.GetCurrency(),
 		"CountryCode":             "%" + countryCode + "%",
 		"MinimumOrderPriceAmount": priceAmount,
 		"MaximumOrderPriceAmount": priceAmount,

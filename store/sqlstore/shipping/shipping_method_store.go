@@ -90,7 +90,7 @@ func (ss *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money
 		InnerJoin(fmt.Sprintf("%s ON %s = %s", model.TableNames.ShippingZoneChannels, model.ShippingZoneChannelTableColumns.ShippingZoneID, model.ShippingZoneTableColumns.ID)).
 		Where(squirrel.Eq{
 			model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
-			model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+			model.ShippingMethodChannelListingTableColumns.Currency:  price.GetCurrency(),
 			model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
 			model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypePrice,
 		}).
@@ -111,14 +111,14 @@ func (ss *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money
 			shippingMethodIdSelectQuery,
 		)).
 		Where(squirrel.LtOrEq{
-			model.ShippingMethodChannelListingTableColumns.MinimumOrderPriceAmount: price.Amount,
+			model.ShippingMethodChannelListingTableColumns.MinimumOrderPriceAmount: price.GetAmount(),
 		}).
 		Where(squirrel.Or{
 			squirrel.Eq{
 				model.ShippingMethodChannelListingTableColumns.MaximumOrderPriceAmount: nil,
 			},
 			squirrel.GtOrEq{
-				model.ShippingMethodChannelListingTableColumns.MaximumOrderPriceAmount: price.Amount,
+				model.ShippingMethodChannelListingTableColumns.MaximumOrderPriceAmount: price.GetAmount(),
 			},
 		})
 
@@ -155,7 +155,7 @@ func (ss *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money
 			squirrel.And{
 				squirrel.Eq{
 					model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
-					model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+					model.ShippingMethodChannelListingTableColumns.Currency:  price.GetCurrency(),
 					model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
 					model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypePrice,
 				},
@@ -166,7 +166,7 @@ func (ss *SqlShippingMethodStore) ApplicableShippingMethods(price goprices.Money
 			squirrel.And{
 				squirrel.Eq{
 					model.ShippingMethodChannelListingTableColumns.ChannelID: channelID,
-					model.ShippingMethodChannelListingTableColumns.Currency:  price.Currency,
+					model.ShippingMethodChannelListingTableColumns.Currency:  price.GetCurrency(),
 					model.ShippingZoneChannelTableColumns.ChannelID:          channelID,
 					model.ShippingMethodTableColumns.Type:                    model.ShippingMethodTypeWeight,
 				},

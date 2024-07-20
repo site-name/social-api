@@ -272,7 +272,7 @@ func (a *ServiceAccount) AttachSessionCookies(c *request.Context, w http.Respons
 
 	csrfCookie := &http.Cookie{
 		Name:    model_helper.SESSION_COOKIE_CSRF,
-		Value:   model_helper.SessionGetCSRF(*c.Session()),
+		Value:   model_helper.SessionGetCSRF(c.Session()),
 		Path:    subpath,
 		MaxAge:  maxAge,
 		Expires: expiresAt,

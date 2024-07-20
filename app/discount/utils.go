@@ -247,7 +247,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher model.Voucher, pric
 		return price.(*goprices.Money), nil
 	}
 
-	totalAmount, _ := util.ZeroMoney(prices[0].Currency) // ignore error since channels's Currencies are validated before saving
+	totalAmount, _ := util.ZeroMoney(prices[0].GetCurrency()) // ignore error since channels's Currencies are validated before saving
 
 	var (
 		atomicValue atomic.Int32
@@ -597,13 +597,13 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 			switch t := v.(type) {
 			case model.CategorySlice:
-				res["categories"] = t.IDs(false)
+				res["categories"] = lo.Map(t, func(c *model.Category, _ int) string { return c.ID })
 			case model.ProductSlice:
-				res["products"] = t.IDs()
+				res["products"] = lo.Map(t, func(p *model.Product, _ int) string { return p.ID })
 			case model.ProductVariantSlice:
-				res["variants"] = t.IDs()
+				res["variants"] = lo.Map(t, func(v *model.ProductVariant, _ int) string { return v.ID })
 			case model.CollectionSlice:
-				res["collections"] = t.IDs()
+				res["collections"] = lo.Map(t, func(c *model.Collection, _ int) string { return c.ID })
 			}
 		}
 	}

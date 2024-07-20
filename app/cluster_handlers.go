@@ -95,8 +95,8 @@ func (s *Server) clusterInvalidateCacheForUserHandler(msg *model_helper.ClusterM
 }
 
 func (s *Server) clusterUpdateStatusHandler(msg *model_helper.ClusterMessage) {
-	status := model_helper.StatusFromJson(bytes.NewReader(msg.Data))
-	s.StatusCache.Set(status.UserId, status)
+	status := model_helper.StatusFromJson(msg.Data)
+	s.Account.AddStatusCache(status)
 }
 
 func (s *Server) clearSessionCacheForAllUsersSkipClusterSend() {

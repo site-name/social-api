@@ -115,13 +115,13 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 				bodyBytes, _ := io.ReadAll(r.Body)
 				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 				r.ParseForm()
-				sentToken = r.FormValue("csrf")
+				sentToken = r.FormValue(model_helper.SESSION_CSRF_KEY)
 				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			} else {
 				sentToken = r.Header.Get(model_helper.HeaderCsrfToken)
 			}
 
-			expectedToken := model_helper.SessionGetCSRF(*session)
+			expectedToken := model_helper.SessionGetCSRF(session)
 
 			if sentToken == expectedToken {
 				csrfCheckPassed = true

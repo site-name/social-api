@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/model_types"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
@@ -261,7 +259,7 @@ func SessionPreSave(s *model.Session) {
 	}
 }
 
-func SessionIsUnrestricted(s model.Session) bool {
+func SessionIsUnrestricted(s *model.Session) bool {
 	return s.Local
 }
 
@@ -284,11 +282,9 @@ func SessionSanitize(s *model.Session) {
 	s.Token = ""
 }
 
-func SessionIsExpired(s model.Session) bool {
-	if s.ExpiresAt <= 0 {
-		return false
-	}
-	return GetMillis() > s.ExpiresAt
+// SessionIsExpired returns "false" if given session is nil, otherwise it checks "ExpiresAt" > current milliseconds at the calling time
+func SessionIsExpired(s *model.Session) bool {
+	return s != nil && s.ExpiresAt > 0 && GetMillis() > s.ExpiresAt
 }
 
 // Deprecated: SetExpireInDays is deprecated and should not be used.
@@ -305,6 +301,9 @@ func SessionSetExpireInDays(s *model.Session, days int) {
 
 // AddProp adds given value to session's Props with key of given key
 func SessionAddProp(s *model.Session, key string, value string) {
+	if s == nil {
+		return
+	}
 	if s.Props == nil {
 		s.Props = map[string]any{}
 	}
@@ -312,77 +311,60 @@ func SessionAddProp(s *model.Session, key string, value string) {
 }
 
 // IsMobileApp check if current session has non-empty `DeviceId` field or IsMobile()
-func SessionIsMobileApp(s model.Session) bool {
-	return s.DeviceID != "" || SessionIsMobile(s)
+func SessionIsMobileApp(s *model.Session) bool {
+	return s != nil && (s.DeviceID != "" || SessionIsMobile(s))
 }
 
 // IsMobile checks if the Props field has an item is ("isMobile": "true")
-func SessionIsMobile(s model.Session) bool {
-	if s.Props == nil || len(s.Props) == 0 {
-		return false
-	}
-	val, ok := s.Props[USER_AUTH_SERVICE_IS_MOBILE]
-	return ok && strings.EqualFold(val.(string), "true")
+func SessionIsMobile(s *model.Session) bool {
+	return s != nil && len(s.Props) > 0 && s.Props[USER_AUTH_SERVICE_IS_MOBILE] == "true"
 }
 
-func SessionIsSaml(s model.Session) bool {
-	if s.Props == nil || len(s.Props) == 0 {
-		return false
-	}
-	val, ok := s.Props[USER_AUTH_SERVICE_IS_SAML]
-	if !ok {
-		return false
-	}
-	isSaml, err := strconv.ParseBool(val.(string))
-	if err != nil {
-		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
-		return false
-	}
-	return isSaml
+func SessionIsSaml(s *model.Session) bool {
+	return s != nil && len(s.Props) > 0 && s.Props[USER_AUTH_SERVICE_IS_SAML] == "true"
 }
 
-func SessionIsOAuthUser(s model.Session) bool {
-	if s.Props == nil || len(s.Props) == 0 {
-		return false
-	}
-
-	val, ok := s.Props[USER_AUTH_SERVICE_IS_OAUTH]
-	if !ok {
-		return false
-	}
-	isOAuthUser, err := strconv.ParseBool(val.(string))
-	if err != nil {
-		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
-		return false
-	}
-	return isOAuthUser
+func SessionIsOAuthUser(s *model.Session) bool {
+	return s != nil && len(s.Props) > 0 && s.Props[USER_AUTH_SERVICE_IS_OAUTH] == "true"
 }
 
-func SessionIsSSOLogin(s model.Session) bool {
+func SessionIsSSOLogin(s *model.Session) bool {
+	if s == nil {
+		return false
+	}
 	return SessionIsOAuthUser(s) || SessionIsSaml(s)
 }
 
 // GetUserRoles turns current session's Roles into a slice of strings
-func SessionGetUserRoles(s model.Session) util.AnyArray[string] {
+func SessionGetUserRoles(s *model.Session) util.AnyArray[string] {
+	if s == nil {
+		return []string{}
+	}
 	return strings.Fields(s.Roles)
 }
 
 // GenerateCSRF simply generates new UUID, then add that uuid to its "Props" with key is "csrf". Finally returns that token
 func SessionGenerateCSRF(s *model.Session) string {
+	if s == nil {
+		return ""
+	}
 	if s.Props == nil {
 		s.Props = map[string]any{}
 	}
 	token := NewId()
-	s.Props["csrf"] = token
+	s.Props[SESSION_CSRF_KEY] = token
 	return token
 }
 
 // get value with key of "csrf" from session's Props
-func SessionGetCSRF(s model.Session) string {
+func SessionGetCSRF(s *model.Session) string {
+	if s == nil {
+		return ""
+	}
 	if s.Props == nil || len(s.Props) == 0 {
 		return ""
 	}
-	value, ok := s.Props["csrf"]
+	value, ok := s.Props[SESSION_CSRF_KEY]
 	if !ok {
 		return ""
 	}
@@ -911,6 +893,12 @@ func StatusIsValid(s model.Status) *AppError {
 		return NewAppError("StatusIsValid", "model.status.is_valid.user_id.app_error", nil, "invalid user id", http.StatusBadRequest)
 	}
 	return nil
+}
+
+func StatusFromJson(data []byte) model.Status {
+	var status model.Status
+	json.Unmarshal(data, &status)
+	return status
 }
 
 // ------------------ term of service ----------------

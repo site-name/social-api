@@ -12,6 +12,7 @@ const (
 	USER_AUTH_SERVICE_IS_SAML   = "isSaml"
 	USER_AUTH_SERVICE_IS_MOBILE = "isMobile"
 	USER_AUTH_SERVICE_IS_OAUTH  = "isOAuthUser"
+	SESSION_CSRF_KEY            = "csrf"
 )
 
 type SamlAuthRequest struct {

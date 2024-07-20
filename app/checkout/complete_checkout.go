@@ -399,8 +399,11 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 		return nil, nil, nil, nil, appErr
 	}
 
-	newTaxedTotalGross, err1 := taxedTotal.Gross.Sub(*cardsTotal)
-	newTaxedTotalNet, err2 := taxedTotal.Net.Sub(*cardsTotal)
+	taxedTotalGross := taxedTotal.GetGross()
+	taxedTotalNet := taxedTotal.GetNet()
+
+	newTaxedTotalGross, err1 := taxedTotalGross.Sub(*cardsTotal)
+	newTaxedTotalNet, err2 := taxedTotalNet.Sub(*cardsTotal)
 	if err1 != nil || err2 != nil {
 		var errMsg string
 		if err1 != nil {
@@ -411,8 +414,8 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 		return nil, nil, nil, nil, model_helper.NewAppError("prepareOrderData", model_helper.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
 	}
 
-	taxedTotal.Gross = *newTaxedTotalGross
-	taxedTotal.Net = *newTaxedTotalNet
+	taxedTotal.SetGross(*newTaxedTotalGross)
+	taxedTotal.SetNet(*newTaxedTotalNet)
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkout.Currency.String())
 	if taxedTotal.LessThan(*zeroTaxedMoney) {
@@ -487,7 +490,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 	taxedMoney, _ = taxedMoney.Add(shippingTotal)
 	taxedMoney, _ = taxedMoney.Sub(model_helper.CheckoutGetDiscountMoney(checkout))
 
-	orderData["total_price_left"] = taxedMoney.Gross
+	orderData["total_price_left"] = taxedMoney.GetGross()
 
 	manager.PreprocessOrderCreation(checkoutInfo, discounts, lines)
 

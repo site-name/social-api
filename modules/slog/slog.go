@@ -79,31 +79,31 @@ func (lc LoggerConfiguration) toTargetCfg() map[string]logrcfg.TargetCfg {
 var Any = logr.Any
 
 // Int64 constructs a field containing a key and Int64 value.
-var Int64 = logr.Int64
+var Int64 = logr.Int[int64]
 
 // Int32 constructs a field containing a key and Int32 value.
-var Int32 = logr.Int32
+var Int32 = logr.Int[int32]
 
 // Int constructs a field containing a key and Int value.
-var Int = logr.Int
+var Int = logr.Int[int]
 
 // Uint64 constructs a field containing a key and Uint64 value.
-var Uint64 = logr.Uint64
+var Uint64 = logr.Uint[uint64]
 
 // Uint32 constructs a field containing a key and Uint32 value.
-var Uint32 = logr.Uint32
+var Uint32 = logr.Uint[uint32]
 
 // Uint constructs a field containing a key and Uint value.
-var Uint = logr.Uint
+var Uint = logr.Uint[uint]
 
 // Float64 constructs a field containing a key and Float64 value.
-var Float64 = logr.Float64
+var Float64 = logr.Float[float64]
 
 // Float32 constructs a field containing a key and Float32 value.
-var Float32 = logr.Float32
+var Float32 = logr.Float[float32]
 
 // String constructs a field containing a key and String value.
-var String = logr.String
+var String = logr.String[string]
 
 // Stringer constructs a field containing a key and a fmt.Stringer value.
 // The fmt.Stringer's `String` method is called lazily.
@@ -128,7 +128,7 @@ var NamedErr = func(key string, err error) logr.Field {
 }
 
 // Bool constructs a field containing a key and bool value.
-var Bool = logr.Bool
+var Bool = logr.Bool[bool]
 
 // Time constructs a field containing a key and time.Time value.
 var Time = logr.Time
@@ -139,12 +139,6 @@ var Duration = logr.Duration
 // Millis constructs a field containing a key and timestamp value.
 // The timestamp is expected to be milliseconds since Jan 1, 1970 UTC.
 var Millis = logr.Millis
-
-// Array constructs a field containing a key and array value.
-var Array = logr.Array
-
-// Map constructs a field containing a key and map value.
-var Map = logr.Map
 
 // Logger provides a thin wrapper around a Logr instance. This is a struct instead of an interface
 // so that there are no allocations on the heap each interface method invocation. Normally not

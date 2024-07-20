@@ -35,13 +35,13 @@ func (*ServiceDiscount) Decorator(preValue any) types.DiscountCalculator {
 		if fromGross == nil { // fixed discount
 			switch t := first.(type) {
 			case goprices.Money:
-				return goprices.FixedDiscount[*goprices.Money](&t, preValue.(goprices.Money))
+				return goprices.FixedDiscount(&t, preValue.(goprices.Money))
 			case goprices.MoneyRange:
-				return goprices.FixedDiscount[*goprices.MoneyRange](&t, preValue.(goprices.Money))
+				return goprices.FixedDiscount(&t, preValue.(goprices.Money))
 			case goprices.TaxedMoney:
-				return goprices.FixedDiscount[*goprices.TaxedMoney](&t, preValue.(goprices.Money))
+				return goprices.FixedDiscount(&t, preValue.(goprices.Money))
 			case goprices.TaxedMoneyRange:
-				return goprices.FixedDiscount[*goprices.TaxedMoneyRange](&t, preValue.(goprices.Money))
+				return goprices.FixedDiscount(&t, preValue.(goprices.Money))
 			default:
 				return nil, fmt.Errorf("invalid first value provided with type: %T", first)
 			}
@@ -50,13 +50,13 @@ func (*ServiceDiscount) Decorator(preValue any) types.DiscountCalculator {
 		f64 := preValue.(decimal.Decimal).InexactFloat64()
 		switch t := first.(type) {
 		case goprices.Money:
-			return goprices.PercentageDiscount[*goprices.Money](&t, f64, *fromGross)
+			return goprices.PercentageDiscount(&t, f64, *fromGross)
 		case goprices.MoneyRange:
-			return goprices.PercentageDiscount[*goprices.MoneyRange](&t, f64, *fromGross)
+			return goprices.PercentageDiscount(&t, f64, *fromGross)
 		case goprices.TaxedMoney:
-			return goprices.PercentageDiscount[*goprices.TaxedMoney](&t, f64, *fromGross)
+			return goprices.PercentageDiscount(&t, f64, *fromGross)
 		case goprices.TaxedMoneyRange:
-			return goprices.PercentageDiscount[*goprices.TaxedMoneyRange](&t, f64, *fromGross)
+			return goprices.PercentageDiscount(&t, f64, *fromGross)
 		default:
 			return nil, fmt.Errorf("invalid first value provided with type: %T", first)
 		}

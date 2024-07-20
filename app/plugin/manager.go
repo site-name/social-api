@@ -1545,7 +1545,7 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj any, country string) (*dec
 		return nil, model_helper.NewAppError("GetTaxRatePercentageValue", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
-	defaultValue := decimal.Zero.Round(0)
+	defaultValue := decimal.NewFromInt(0).Round(0)
 
 	var (
 		deci   *decimal.Decimal

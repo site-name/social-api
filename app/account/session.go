@@ -48,7 +48,6 @@ func (a *ServiceAccount) AddSessionToCache(s *model.Session) {
 
 // GetSessions get session from database with UserID attribute of given `userID`
 func (a *ServiceAccount) GetSessions(userID string) ([]*model.Session, *model_helper.AppError) {
-
 	sessions, err := a.srv.Store.Session().GetSessions(userID)
 	if err != nil {
 		return nil, model_helper.NewAppError("GetSessions", "app.session.get_sessions.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -78,6 +77,15 @@ func (a *ServiceAccount) RevokeAllSessions(userID string) *model_helper.AppError
 
 	return nil
 }
+
+// func (a *ServiceAccount) RevokeAccessToken(token string) *model_helper.AppError {
+// 	a.GetSession()
+// 	if err := a.srv.Store.Session().RemoveAccessToken(token); err != nil {
+// 		return model_helper.NewAppError("RevokeAccessToken", "app.session.remove_access_token.app_error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
+
+// 	return nil
+// }
 
 // ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 func (a *ServiceAccount) ClearSessionCacheForUser(userID string) {
@@ -137,7 +145,7 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model_helper
 					return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "session token is different from the one in DB", http.StatusUnauthorized)
 				}
 
-				if !model_helper.SessionIsExpired(*session) {
+				if !model_helper.SessionIsExpired(session) {
 					a.AddSessionToCache(session)
 				}
 			}
@@ -164,13 +172,13 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model_helper
 		}
 	}
 
-	if session.ID == "" || model_helper.SessionIsExpired(*session) {
+	if session.ID == "" || model_helper.SessionIsExpired(session) {
 		return nil, model_helper.NewAppError("GetSession", "api.context.invalid_token.error", map[string]any{"Token": token, "Error": ""}, "session is either nil or expired", http.StatusUnauthorized)
 	}
 
 	if *a.srv.Config().ServiceSettings.SessionIdleTimeoutInMinutes > 0 &&
 		!session.IsOauth &&
-		!model_helper.SessionIsMobileApp(*session) &&
+		!model_helper.SessionIsMobileApp(session) &&
 		session.Props[model_helper.SESSION_PROP_TYPE] != model_helper.SESSION_TYPE_USER_ACCESS_TOKEN &&
 		!*a.srv.Config().ServiceSettings.ExtendSessionLengthWithActivity {
 
@@ -365,9 +373,9 @@ func (a *ServiceAccount) GetSessionLengthInMillis(session *model.Session) int64 
 	}
 	var days int
 	switch {
-	case model_helper.SessionIsMobileApp(*session):
+	case model_helper.SessionIsMobileApp(session):
 		days = *a.srv.Config().ServiceSettings.SessionLengthMobileInDays
-	case model_helper.SessionIsSSOLogin(*session):
+	case model_helper.SessionIsSSOLogin(session):
 		days = *a.srv.Config().ServiceSettings.SessionLengthSSOInDays
 	default:
 		days = *a.srv.Config().ServiceSettings.SessionLengthWebInDays
@@ -529,7 +537,7 @@ func (a *ServiceAccount) ExtendSessionExpiryIfNeeded(session *model.Session) boo
 		return false
 	}
 
-	if session == nil || model_helper.SessionIsExpired(*session) {
+	if session == nil || model_helper.SessionIsExpired(session) {
 		return false
 	}
 

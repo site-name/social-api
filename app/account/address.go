@@ -3,6 +3,7 @@ package account
 import (
 	"net/http"
 
+	"github.com/mattermost/logr/v2"
 	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -92,7 +93,7 @@ func (s *ServiceAccount) DeleteAddresses(tx boil.ContextTransactor, ids []string
 		return "", struct{}{}
 	})
 	if len(usedAddressIDsmap) > 0 {
-		slog.Debug("some address(es) is/are being used by warehouse(s). We are deleting the free ones only.", slog.Array("used addresses", lo.Keys(usedAddressIDsmap)))
+		slog.Debug("some address(es) is/are being used by warehouse(s). We are deleting the free ones only.", logr.Array("used addresses", lo.Keys(usedAddressIDsmap)))
 	}
 
 	todeleteAddressIDs := lo.Filter(ids, func(id string, _ int) bool {

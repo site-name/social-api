@@ -20,7 +20,11 @@ func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions []*mo
 }
 
 // SessionHasPermissionTo checks if this user has given permission to procceed
-func (a *ServiceAccount) SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionTo(session *model.Session, permission *model_helper.Permission) bool {
+	if session == nil || permission == nil {
+		return false
+	}
+
 	if model_helper.SessionIsUnrestricted(session) {
 		return true
 	}
@@ -28,7 +32,7 @@ func (a *ServiceAccount) SessionHasPermissionTo(session model.Session, permissio
 }
 
 // SessionHasPermissionToAny checks if current user has atleast one of given permissions
-func (a *ServiceAccount) SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permissions []*model_helper.Permission) bool {
 	for _, perm := range permissions {
 		if a.SessionHasPermissionTo(session, perm) {
 			return true
@@ -38,7 +42,7 @@ func (a *ServiceAccount) SessionHasPermissionToAny(session model.Session, permis
 }
 
 // SessionHasPermissionToAll checks if given session has all given permissions
-func (a *ServiceAccount) SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionToAll(session *model.Session, permissions []*model_helper.Permission) bool {
 	if model_helper.SessionIsUnrestricted(session) {
 		return true
 	}
@@ -52,7 +56,11 @@ func (a *ServiceAccount) SessionHasPermissionToAll(session model.Session, permis
 }
 
 // SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
-func (a *ServiceAccount) SessionHasPermissionToUser(session model.Session, userID string) bool {
+func (a *ServiceAccount) SessionHasPermissionToUser(session *model.Session, userID string) bool {
+	if session == nil {
+		return false
+	}
+
 	if userID == "" {
 		return false
 	}
@@ -64,7 +72,7 @@ func (a *ServiceAccount) SessionHasPermissionToUser(session model.Session, userI
 		return true
 	}
 
-	if a.SessionHasPermissionTo(session, *model_helper.PermissionEditOtherUsers) {
+	if a.SessionHasPermissionTo(session, model_helper.PermissionEditOtherUsers) {
 		return true
 	}
 
@@ -72,7 +80,7 @@ func (a *ServiceAccount) SessionHasPermissionToUser(session model.Session, userI
 }
 
 // HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
-func (a *ServiceAccount) HasPermissionTo(askingUserId string, permission model_helper.Permission) bool {
+func (a *ServiceAccount) HasPermissionTo(askingUserId string, permission *model_helper.Permission) bool {
 	user, err := a.UserById(context.Background(), askingUserId)
 	if err != nil {
 		return false
@@ -87,7 +95,7 @@ func (a *ServiceAccount) HasPermissionToUser(askingUserId string, userID string)
 		return true
 	}
 
-	if a.HasPermissionTo(askingUserId, *model_helper.PermissionEditOtherUsers) {
+	if a.HasPermissionTo(askingUserId, model_helper.PermissionEditOtherUsers) {
 		return true
 	}
 

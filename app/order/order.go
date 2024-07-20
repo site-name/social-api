@@ -117,7 +117,7 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction boil.ContextTransactor, 
 		return appErr
 	}
 
-	total := decimal.Zero
+	total := decimal.NewFromInt(0)
 	for _, payment := range payments {
 		if payment.CapturedAmount != nil {
 			total = total.Add(*payment.CapturedAmount)
