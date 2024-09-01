@@ -61,9 +61,6 @@ func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Reque
 		Srv:             w.srv,
 		HandleFunc:      h,
 		HandlerName:     GetHandlerName(h),
-		RequireSession:  false,
-		TrustRequester:  false,
-		RequireMfa:      false,
 		IsStatic:        true,
 		cspShaDirective: model_helper.GetSubpathScriptHash(subpath),
 	}

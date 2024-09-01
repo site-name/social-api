@@ -13,7 +13,7 @@ import (
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
 func (a *ServiceProduct) GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model_helper.AppError {
 	assignedVariantAttributes, appErr := a.srv.
-		AttributeService().
+		Attribute.
 		AssignedVariantAttributesByOption(&model.AssignedVariantAttributeFilterOption{
 			Preloads:   []string{"Values"},
 			Conditions: squirrel.Eq{model.AssignedVariantAttributeTableName + "." + model.AssignedVariantAttributeColumnVariantID: variant.Id},

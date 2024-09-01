@@ -179,7 +179,7 @@ type OrderService interface {
 	// NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
 	OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine) (bool, *model_helper.AppError)
 	// OrderLinesByOption returns a list of order lines by given option
-	OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLineSlice, *model_helper.AppError)
+	OrderLinesByOption(option model_helper.OrderLineFilterOptions) (model.OrderLineSlice, *model_helper.AppError)
 	// OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
 	OrderNeedsAutomaticFulfillment(order model.Order) (bool, *model_helper.AppError)
 	// OrderRefunded

@@ -100,17 +100,18 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 	if len(response.Errors) > 0 {
 		logFunc := slog.Error
+		errorStrings := ", "
 
 		for _, err := range response.Errors {
-			if err.Err != nil {
+			if err != nil && err.Err != nil {
 				if appErr, ok := err.Err.(*model_helper.AppError); ok && appErr.StatusCode < http.StatusInternalServerError {
 					logFunc = slog.Debug
-					break
 				}
+				errorStrings += err.Error() + ", "
 			}
 		}
 
-		logFunc("Error executing request", slog.String("operation", params.OperationName), slog.Array("errors", response.Errors))
+		logFunc("Error executing request", slog.String("operation", params.OperationName), slog.String("errors", errorStrings[1:]))
 	}
 }
 

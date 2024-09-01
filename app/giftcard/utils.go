@@ -357,12 +357,12 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(tx *gorm.DB, orderID string, 
 	return appErr
 }
 
-func (s *ServiceGiftcard) OrderHasGiftcardLines(order *model.Order) (bool, *model_helper.AppError) {
-	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions: squirrel.Eq{
-			model.OrderLineTableName + ".OrderID":    order.Id,
-			model.OrderLineTableName + ".IsGiftcard": true,
-		},
+func (s *ServiceGiftcard) OrderHasGiftcardLines(order model.Order) (bool, *model_helper.AppError) {
+	orderLines, appErr := s.srv.Order.OrderLinesByOption(model_helper.OrderLineFilterOptions{
+		CommonQueryOptions: model_helper.NewCommonQueryOptions(
+			model.OrderLineWhere.OrderID.EQ(order.ID),
+			model.OrderLineWhere.IsGiftcard.EQ(true),
+		),
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

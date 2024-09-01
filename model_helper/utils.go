@@ -883,20 +883,10 @@ func (s StringMap) DeepCopy() StringMap {
 	if s == nil {
 		return nil
 	}
-	res := StringMap{}
-	for key, value := range s {
-		res[key] = value
-	}
 
-	return res
+	m := (*StringMap)(unsafe.Pointer(&s))
+	return *m
 }
-
-// func (s StringMap) Merge(other StringMap) StringMap {
-// 	for key, value := range other {
-// 		s[key] = value
-// 	}
-// 	return s
-// }
 
 func (m StringMap) Pop(key string, defaultValue ...string) string {
 	v := m.Get(key, defaultValue...)
@@ -972,10 +962,21 @@ func (m StringMap) Get(key string, defaultValue ...string) string {
 type Map[K cmp.Ordered, V any] map[K]V
 
 func (m *Map[K, V]) Add(key K, value V) {
+	if m == nil {
+		return
+	}
 	(*m)[key] = value
 }
 
 func (m *Map[K, V]) Pop(key K, defaultValue ...V) V {
+	if m == nil {
+		if len(defaultValue) > 0 {
+			return defaultValue[0]
+		}
+		var res V
+		return res
+	}
+
 	value, ok := (*m)[key]
 	if ok {
 		delete(*m, key)

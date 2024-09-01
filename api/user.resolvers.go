@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
@@ -18,7 +17,7 @@ func (r *Resolver) Login(ctx context.Context, args struct{ Input LoginInput }) (
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) UserAvatarUpdate(ctx context.Context, args struct{ Image graphql.Upload }) (*UserAvatarUpdate, error) {
+func (r *Resolver) UserAvatarUpdate(ctx context.Context, args struct{ Image Upload }) (*UserAvatarUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
