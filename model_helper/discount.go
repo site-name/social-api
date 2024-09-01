@@ -318,27 +318,23 @@ func VoucherChannelListingIsValid(v model.VoucherChannelListing) *AppError {
 }
 
 func VoucherChannelListingGetDiscount(v model.VoucherChannelListing) goprices.Money {
-	return goprices.Money{
-		Amount:   v.DiscountValue,
-		Currency: v.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(v.DiscountValue, v.Currency.String())
+	return *money
 }
 
 func VoucherChannelListingGetMinSpent(v model.VoucherChannelListing) goprices.Money {
-	return goprices.Money{
-		Amount:   v.MinSpendAmount,
-		Currency: v.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(v.MinSpendAmount, v.Currency.String())
+	return *money
 }
 
 func VoucherChannelListingSetDiscount(v *model.VoucherChannelListing, discount goprices.Money) {
-	v.DiscountValue = discount.Amount
-	v.Currency = model.Currency(discount.Currency)
+	v.DiscountValue = discount.GetAmount()
+	v.Currency = model.Currency(discount.GetCurrency())
 }
 
 func VoucherChannelListingSetMinSpent(v *model.VoucherChannelListing, minSpent goprices.Money) {
-	v.MinSpendAmount = minSpent.Amount
-	v.Currency = model.Currency(minSpent.Currency)
+	v.MinSpendAmount = minSpent.GetAmount()
+	v.Currency = model.Currency(minSpent.GetCurrency())
 }
 
 type SaleTranslationFilterOption struct {

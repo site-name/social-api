@@ -17,15 +17,13 @@ type CheckoutFilterOptions struct {
 }
 
 func CheckoutGetDiscountMoney(c model.Checkout) goprices.Money {
-	return goprices.Money{
-		Amount:   c.DiscountAmount,
-		Currency: c.Currency.String(),
-	}
+	money, _ := goprices.NewMoney(c.DiscountAmount.InexactFloat64(), string(c.Currency))
+	return *money
 }
 
 func CheckoutSetDiscountAmount(c *model.Checkout, money goprices.Money) {
-	c.DiscountAmount = money.Amount
-	c.Currency = model.Currency(money.Currency)
+	c.DiscountAmount = money.GetAmount()
+	c.Currency = model.Currency(money.GetCurrency())
 }
 
 func CheckoutAddDiscountAmount(c *model.Checkout, amount decimal.Decimal) {

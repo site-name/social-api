@@ -394,7 +394,7 @@ func NewServer(options ...Option) (*Server, error) {
 	s.initJobs()
 
 	s.clusterLeaderListenerId = s.AddClusterLeaderChangedListener(func() {
-		slog.Info("Cluster leader changed. Determining if job schedulers should be running:", slog.Bool("isLeader", s.IsLeader()))
+		slog.Info("Cluster leader changed. Determining if job schedulers should be running:", slog.Any("isLeader", s.IsLeader()))
 		if s.Jobs != nil {
 			s.Jobs.HandleClusterLeaderChange(s.IsLeader())
 		}

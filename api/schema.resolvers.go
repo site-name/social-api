@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/web"
@@ -17,7 +16,7 @@ func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*Ord
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*FileUpload, error) {
+func (r *Resolver) FileUpload(ctx context.Context, args struct{ File Upload }) (*FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

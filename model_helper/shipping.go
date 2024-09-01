@@ -182,9 +182,7 @@ func ShippingMethodPostalCodeRuleIsValid(rule model.ShippingMethodPostalCodeRule
 	return nil
 }
 
-func ShippingMethodChannelListingGetTotal(listing *model.ShippingMethodChannelListing) goprices.Money {
-	return goprices.Money{
-		Amount:   listing.PriceAmount,
-		Currency: listing.Currency.String(),
-	}
+func ShippingMethodChannelListingGetTotal(listing model.ShippingMethodChannelListing) goprices.Money {
+	money, _ := goprices.NewMoneyFromDecimal(listing.PriceAmount, listing.Currency.String())
+	return *money
 }

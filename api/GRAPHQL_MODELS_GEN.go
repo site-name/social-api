@@ -3,12 +3,12 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
 	"unsafe"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/gosimple/slug"
 	"github.com/mattermost/squirrel"
 	"github.com/samber/lo"
@@ -197,6 +197,13 @@ type AppDeactivate struct {
 type AppDelete struct {
 	Errors []*AppError `json:"errors"`
 	App    *App        `json:"app"`
+}
+
+type Upload struct {
+	File        io.ReadSeeker
+	Filename    string
+	Size        int64
+	ContentType string
 }
 
 type AppDeleteFailedInstallation struct {
@@ -1010,14 +1017,14 @@ func (c *CollectionCreateInput) validate(api string) *model_helper.AppError {
 }
 
 type CollectionInput struct {
-	IsPublished        *bool           `json:"isPublished"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Description        JSONString      `json:"description"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
-	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *Date           `json:"publicationDate"`
+	IsPublished        *bool      `json:"isPublished"`
+	Name               *string    `json:"name"`
+	Slug               *string    `json:"slug"`
+	Description        JSONString `json:"description"`
+	BackgroundImage    *Upload    `json:"backgroundImage"`
+	BackgroundImageAlt *string    `json:"backgroundImageAlt"`
+	Seo                *SeoInput  `json:"seo"`
+	PublicationDate    *Date      `json:"publicationDate"`
 }
 
 func (c *CollectionInput) validate(api string) *model_helper.AppError {
@@ -1311,11 +1318,11 @@ type DigitalContentUpdate struct {
 }
 
 type DigitalContentUploadInput struct {
-	UseDefaultSettings   bool           `json:"useDefaultSettings"`
-	MaxDownloads         *int32         `json:"maxDownloads"`
-	URLValidDays         *int32         `json:"urlValidDays"`
-	AutomaticFulfillment *bool          `json:"automaticFulfillment"`
-	ContentFile          graphql.Upload `json:"contentFile"`
+	UseDefaultSettings   bool   `json:"useDefaultSettings"`
+	MaxDownloads         *int32 `json:"maxDownloads"`
+	URLValidDays         *int32 `json:"urlValidDays"`
+	AutomaticFulfillment *bool  `json:"automaticFulfillment"`
+	ContentFile          Upload `json:"contentFile"`
 }
 
 type DigitalContentURLCreate struct {
@@ -3519,10 +3526,10 @@ type ProductMediaCreate struct {
 }
 
 type ProductMediaCreateInput struct {
-	Alt      *string         `json:"alt"`
-	Image    *graphql.Upload `json:"image"`
-	Product  string          `json:"product"`
-	MediaURL *string         `json:"mediaUrl"`
+	Alt      *string `json:"alt"`
+	Image    *Upload `json:"image"`
+	Product  string  `json:"product"`
+	MediaURL *string `json:"mediaUrl"`
 }
 
 type ProductMediaDelete struct {

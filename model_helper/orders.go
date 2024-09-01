@@ -151,61 +151,29 @@ func OrderIsValid(o model.Order) *AppError {
 }
 
 func OrderGetShippingPrice(order model.Order) goprices.TaxedMoney {
-	shippingPriceNet := goprices.Money{
-		Amount:   order.ShippingPriceNetAmount,
-		Currency: order.Currency.String(),
-	}
-
-	shippingPriceGross := goprices.Money{
-		Amount:   order.ShippingPriceGrossAmount,
-		Currency: order.Currency.String(),
-	}
-
-	return goprices.TaxedMoney{
-		Net:   shippingPriceNet,
-		Gross: shippingPriceGross,
-	}
+	shippingPriceNet, _ := goprices.NewMoneyFromDecimal(order.ShippingPriceNetAmount, order.Currency.String())
+	shippingPriceGross, _ := goprices.NewMoneyFromDecimal(order.ShippingPriceGrossAmount, order.Currency.String())
+	taxedMoney, _ := goprices.NewTaxedMoney(*shippingPriceNet, *shippingPriceGross)
+	return *taxedMoney
 }
 
 func OrderGetTotalPrice(order model.Order) goprices.TaxedMoney {
-	totalPriceNet := goprices.Money{
-		Amount:   order.TotalNetAmount,
-		Currency: order.Currency.String(),
-	}
-
-	totalPriceGross := goprices.Money{
-		Amount:   order.TotalGrossAmount,
-		Currency: order.Currency.String(),
-	}
-
-	return goprices.TaxedMoney{
-		Net:   totalPriceNet,
-		Gross: totalPriceGross,
-	}
+	totalPriceNet, _ := goprices.NewMoneyFromDecimal(order.TotalNetAmount, order.Currency.String())
+	totalPriceGross, _ := goprices.NewMoneyFromDecimal(order.TotalGrossAmount, order.Currency.String())
+	taxedMoney, _ := goprices.NewTaxedMoney(*totalPriceNet, *totalPriceGross)
+	return *taxedMoney
 }
 
 func OrderGetTotalPaidPrice(o model.Order) goprices.Money {
-	return goprices.Money{
-		Amount:   o.TotalPaidAmount,
-		Currency: o.Currency.String(),
-	}
+	money, _ := goprices.NewMoneyFromDecimal(o.TotalPaidAmount, o.Currency.String())
+	return *money
 }
 
 func OrderGetUnDiscountedTotalPrice(order model.Order) goprices.TaxedMoney {
-	totalPriceNet := goprices.Money{
-		Amount:   order.UndiscountedTotalNetAmount,
-		Currency: order.Currency.String(),
-	}
-
-	totalPriceGross := goprices.Money{
-		Amount:   order.UndiscountedTotalGrossAmount,
-		Currency: order.Currency.String(),
-	}
-
-	return goprices.TaxedMoney{
-		Net:   totalPriceNet,
-		Gross: totalPriceGross,
-	}
+	totalPriceNet, _ := goprices.NewMoneyFromDecimal(order.UndiscountedTotalNetAmount, order.Currency.String())
+	totalPriceGross, _ := goprices.NewMoneyFromDecimal(order.UndiscountedTotalGrossAmount, order.Currency.String())
+	taxedMoney, _ := goprices.NewTaxedMoney(*totalPriceNet, *totalPriceGross)
+	return *taxedMoney
 }
 
 func OrderIsDraft(o model.Order) bool {
@@ -233,7 +201,7 @@ var OrderGetTotalCapturedPrice = OrderGetTotalPaidPrice
 func OrderGetTotalBalance(o model.Order) goprices.Money {
 	var capturedPrice = OrderGetTotalCapturedPrice(o)
 	var totalPrice = OrderGetTotalPrice(o)
-	result, _ := capturedPrice.Sub(totalPrice.Gross)
+	result, _ := capturedPrice.Sub(totalPrice.GetGross())
 	return *result
 }
 
@@ -489,18 +457,10 @@ type FulfillmentLineFilterOption struct {
 }
 
 func OrderLineGetUnitPrice(o model.OrderLine) goprices.TaxedMoney {
-	unitPriceNet := goprices.Money{
-		Amount:   o.UnitPriceNetAmount,
-		Currency: string(o.Currency),
-	}
-	unitPriceGross := goprices.Money{
-		Amount:   o.UnitPriceGrossAmount,
-		Currency: string(o.Currency),
-	}
-	return goprices.TaxedMoney{
-		Net:   unitPriceNet,
-		Gross: unitPriceGross,
-	}
+	unitPriceNet, _ := goprices.NewMoneyFromDecimal(o.UnitPriceNetAmount, o.Currency.String())
+	unitPriceGross, _ := goprices.NewMoneyFromDecimal(o.UnitPriceGrossAmount, o.Currency.String())
+	taxedMoney, _ := goprices.NewTaxedMoney(*unitPriceNet, *unitPriceGross)
+	return *taxedMoney
 }
 
 type OrderLineData struct {
@@ -524,26 +484,26 @@ func OrderLineGetTotalPrice(o model.OrderLine) *goprices.TaxedMoney {
 		return nil
 	}
 
-	return &goprices.TaxedMoney{
-		Net: goprices.Money{
-			Amount:   *o.TotalPriceNetAmount.Decimal,
-			Currency: o.Currency.String(),
-		},
-		Gross: goprices.Money{
-			Amount:   *o.TotalPriceGrossAmount.Decimal,
-			Currency: o.Currency.String(),
-		},
-	}
+	net, _ := goprices.NewMoneyFromDecimal(*o.TotalPriceNetAmount.Decimal, o.Currency.String())
+	gross, _ := goprices.NewMoneyFromDecimal(*o.TotalPriceGrossAmount.Decimal, o.Currency.String())
+	taxedMoney, _ := goprices.NewTaxedMoney(*net, *gross)
+	return taxedMoney
 }
 
 func OrderLineSetTotalPrice(o *model.OrderLine, price goprices.TaxedMoney) {
-	o.TotalPriceNetAmount = model_types.NewNullDecimal(price.Net.Amount)
-	o.TotalPriceGrossAmount = model_types.NewNullDecimal(price.Gross.Amount)
+	net := price.GetNet()
+	gross := price.GetGross()
+
+	o.TotalPriceNetAmount = model_types.NewNullDecimal(net.GetAmount())
+	o.TotalPriceGrossAmount = model_types.NewNullDecimal(gross.GetAmount())
 	o.Currency = model.Currency(strings.ToUpper(price.GetCurrency()))
 }
 
 func OrderLineSetUnitPrice(o *model.OrderLine, price goprices.TaxedMoney) {
-	o.UnitPriceNetAmount = price.Net.Amount
-	o.UnitPriceGrossAmount = price.Gross.Amount
+	net := price.GetNet()
+	gross := price.GetGross()
+
+	o.UnitPriceNetAmount = net.GetAmount()
+	o.UnitPriceGrossAmount = gross.GetAmount()
 	o.Currency = model.Currency(strings.ToUpper(price.GetCurrency()))
 }

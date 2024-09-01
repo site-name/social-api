@@ -30,14 +30,14 @@ func (a *ServiceOrder) OrderCreated(tx *gorm.DB, order model.Order, user *model.
 		return nil, appErr
 	}
 
-	lastPaymentOfOrder, appErr := a.srv.Payment.GetLastOrderPayment(order.Id)
+	lastPaymentOfOrder, appErr := a.srv.Payment.GetLastOrderPayment(order.ID)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
 	}
 	if lastPaymentOfOrder != nil {
-		orderIsCaptured, appErr := a.OrderIsCaptured(order.Id)
+		orderIsCaptured, appErr := a.OrderIsCaptured(order.ID)
 		if appErr != nil {
 			return nil, appErr
 		}
