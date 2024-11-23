@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS product_variants (
   preorder_global_threshold integer,
   sort_order integer,
   metadata jsonb,
-  private_metadata jsonb
+  private_metadata jsonb,
+  quantity_limit_per_customer integer,
+  created_at bigint NOT NULL,
+  updated_at bigint
 );
 
 ALTER TABLE ONLY product_variants

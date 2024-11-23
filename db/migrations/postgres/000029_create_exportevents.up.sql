@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS export_events (
   type export_event_type NOT NULL,
   parameters text,
   export_file_id varchar(36) NOT NULL,
-  user_id varchar(36)
+  user_id varchar(36),
+  app_id varchar(36)
 );

@@ -21,8 +21,8 @@ func VoucherCustomerIsValid(v model.VoucherCustomer) *AppError {
 	if !IsValidId(v.ID) {
 		return NewAppError("VoucherCustomerIsValid", "model.voucher_customer.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
-	if !IsValidId(v.VoucherID) {
-		return NewAppError("VoucherCustomerIsValid", "model.voucher_customer.is_valid.voucher_id.app_error", nil, "invalid voucher id", http.StatusBadRequest)
+	if !IsValidId(v.VoucherCodeID) {
+		return NewAppError("VoucherCustomerIsValid", "model.voucher_customer.is_valid.voucher_code_id.app_error", nil, "invalid voucher id", http.StatusBadRequest)
 	}
 	if !IsValidEmail(v.CustomerEmail) {
 		return NewAppError("VoucherCustomerIsValid", "model.voucher_customer.is_valid.email.app_error", nil, "invalid email", http.StatusBadRequest)
@@ -84,13 +84,12 @@ func VoucherScanValues(v *model.Voucher) []any {
 		&v.ID,
 		&v.Type,
 		&v.Name,
-		&v.Code,
 		&v.UsageLimit,
-		&v.Used,
 		&v.StartDate,
 		&v.EndDate,
 		&v.ApplyOncePerOrder,
 		&v.ApplyOncePerCustomer,
+		&v.SingleUse,
 		&v.OnlyForStaff,
 		&v.DiscountValueType,
 		&v.Countries,
@@ -156,7 +155,10 @@ func SalePreUpdate(s *model.Sale) {
 	s.UpdatedAt = GetMillis()
 }
 
-func VoucherIsValid(v model.Voucher) *AppError {
+func VoucherIsValid(v *model.Voucher) *AppError {
+	if v == nil {
+		return nil
+	}
 	if !IsValidId(v.ID) {
 		return NewAppError("VoucherIsValid", "model.voucher.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
@@ -181,8 +183,8 @@ func VoucherIsValid(v model.Voucher) *AppError {
 	if v.StartDate == 0 {
 		return NewAppError("VoucherIsValid", "model.voucher.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
 	}
-	if !PromoCodeRegex.MatchString(v.Code) {
-		return NewAppError("VoucherIsValid", "model.voucher.is_valid.code.app_error", nil, "code must look like 78GH-UJKI-90RD", http.StatusBadRequest)
+	if !v.UsageLimit.IsNil() && *v.UsageLimit.Int <= 0 {
+		return NewAppError("VoucherIsValid", "model.voucher.is_valid.usage_limit.app_error", nil, "invalid usage limit", http.StatusBadRequest)
 	}
 	for _, country := range strings.Fields(v.Countries) {
 		if model.CountryCode(country).IsValid() != nil {
@@ -223,9 +225,6 @@ func voucherCommonPre(v *model.Voucher) {
 		v.UsageLimit.Int = GetPointerOfValue(0)
 	}
 	v.Countries = strings.ToUpper(v.Countries)
-	if v.Code == "" {
-		v.Code = NewPromoCode()
-	}
 }
 
 func VoucherValidateMinCheckoutItemsQuantity(v model.Voucher, quantity int) *NotApplicable {

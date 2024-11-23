@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS shipping_method_postal_code_rules (
   inclusion_type inclusion_type NOT NULL
 );
 ALTER TABLE ONLY shipping_method_postal_code_rules
-ADD CONSTRAINT shipping_method_postal_code_rules_shipping_method_id_start_end_key UNIQUE (shipping_method_id, "start", "end");
+  ADD CONSTRAINT shipping_method_postal_code_rules_shipping_method_id_start_end_key UNIQUE (shipping_method_id, "start", "end");

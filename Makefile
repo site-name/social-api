@@ -236,7 +236,7 @@ model-gen:
 
 migrate:
 	$(GO) install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://minh:anhyeuem98@localhost:5432/sitename_test?sslmode=disable up
+	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://sitename:sitename@localhost:5432/sitename?sslmode=disable up
 
 searchengine-mocks: ## Creates mock files for searchengines.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4

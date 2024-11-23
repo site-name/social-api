@@ -11,11 +11,11 @@ no-context = true
 tag-ignore = "annotations"
 
 [psql]
-  dbname = "sitename_test"
+  dbname = "sitename"
   host   = "localhost"
   port   = 5432
-  user   = "minh"
-  pass   = "anhyeuem98"
+  user   = "sitename"
+  pass   = "sitename"
   sslmode = "disable"
   blacklist = ["migrations", "other"]
 

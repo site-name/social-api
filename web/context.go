@@ -48,7 +48,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms []*model_helper.
 	if c.Err != nil {
 		return
 	}
-	if !c.App.AccountService().SessionHasPermissionToAll(*c.AppContext.Session(), perms) {
+	if !c.App.AccountService().SessionHasPermissionToAll(c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }
@@ -59,7 +59,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms []*model_helper.
 	if c.Err != nil {
 		return
 	}
-	if !c.App.AccountService().SessionHasPermissionToAny(*c.AppContext.Session(), perms) {
+	if !c.App.AccountService().SessionHasPermissionToAny(c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }
@@ -71,7 +71,7 @@ func (c *Context) CheckAuthenticatedAndHasRoles(apiName string, roleIDs ...strin
 	}
 
 	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
-	for _, role := range model_helper.SessionGetUserRoles(*c.AppContext.Session()) {
+	for _, role := range model_helper.SessionGetUserRoles(c.AppContext.Session()) {
 		if !roleIdsMap[role] {
 			c.Err = model_helper.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 			return
@@ -86,7 +86,7 @@ func (c *Context) CheckAuthenticatedAndHasRoleAny(apiName string, roleIDs ...str
 	}
 
 	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
-	for _, role := range model_helper.SessionGetUserRoles(*c.AppContext.Session()) {
+	for _, role := range model_helper.SessionGetUserRoles(c.AppContext.Session()) {
 		if roleIdsMap[role] {
 			return
 		}

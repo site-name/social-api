@@ -1,1 +1,2 @@
-DROP TABLE IF EXISTS shipping_method_postal_code_rules;
+ALTER TABLE shipping_method_postal_code_rules DROP CONSTRAINT shipping_method_postal_code_rules_shipping_method_id_start_end_key;
+  DROP TABLE IF EXISTS shipping_method_postal_code_rules;

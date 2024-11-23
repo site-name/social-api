@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS order_lines (
   product_variant_id varchar(255),
   is_shipping_required boolean NOT NULL,
   is_giftcard boolean NOT NULL,
+  is_gift boolean NOT NULL default false,
   quantity integer NOT NULL,
   quantity_fulfilled integer NOT NULL,
   currency Currency NOT NULL,
@@ -26,7 +27,16 @@ CREATE TABLE IF NOT EXISTS order_lines (
   undiscounted_unit_price_net_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   undiscounted_total_price_gross_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   undiscounted_total_price_net_amount decimal(12,3) NOT NULL DEFAULT 0.00,
-  tax_rate decimal(5,4)
+  base_unit_price_amount decimal(12,3) NOT NULL DEFAULT 0.00,
+  undiscounted_base_unit_price_amount decimal(12,3) NOT NULL DEFAULT 0.00,
+  tax_rate decimal(5,4),
+  tax_class_id varchar(36),
+  tax_class_name varchar(255),
+  tax_class_private_metadata jsonb,
+  tax_class_metadata jsonb,
+  is_price_overridden boolean,
+  voucher_code varchar(255),
+  sale_id varchar(36)
 );
 
 CREATE INDEX idx_order_lines_product_name_lower_textpattern ON order_lines USING btree (lower((product_name)::text) text_pattern_ops);

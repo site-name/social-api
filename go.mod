@@ -65,8 +65,8 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/volatiletech/null/v8 v8.1.2
-	github.com/volatiletech/sqlboiler/v4 v4.16.2
-	github.com/volatiletech/strmangle v0.0.6
+	github.com/volatiletech/sqlboiler/v4 v4.17.1
+	github.com/volatiletech/strmangle v0.0.7-0.20240503230658-86517898275a
 	golang.org/x/crypto v0.26.0
 	golang.org/x/image v0.19.0
 	golang.org/x/net v0.28.0
@@ -82,6 +82,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/ericlagergren/decimal v0.0.0-20190420051523-6335edbaa640 // indirect
 	github.com/splitio/go-split-commons/v6 v6.0.0 // indirect
 )
 

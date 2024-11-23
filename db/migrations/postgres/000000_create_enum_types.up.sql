@@ -1300,13 +1300,17 @@ CREATE TYPE order_event_type AS ENUM (
 	'canceled',
 	'order_marked_as_paid',
 	'order_fully_paid',
-	'order_replacement_created',
 	'order_discount_added',
 	'order_discount_automatically_updated',
 	'order_discount_updated',
 	'order_discount_deleted',
 	'order_line_discount_updated',
+	'transaction_event',
+	'transaction_charge_requested',
+	'transaction_refund_requested',
 	'order_line_discount_removed',
+	'transaction_cancel_requested',
+	'transaction_mark_as_paid_failed',
 	'order_line_product_deleted',
 	'order_line_variant_deleted',
 	'updated_address',
@@ -1330,7 +1334,10 @@ CREATE TYPE order_event_type AS ENUM (
 	'fulfillment_awaits_approval',
 	'tracking_updated',
 	'note_added',
-	'other'
+	'other',
+	'placed_automatically_from_paid_checkout',
+	'expired',
+	'order_replacement_created'
 );
 END IF;
 END $$;
@@ -1342,7 +1349,8 @@ THEN
 CREATE TYPE order_origin AS ENUM (
 	'checkout',
 	'draft',
-	'reissue'
+	'reissue',
+	'bulk_create'
 );
 END IF;
 END $$;
@@ -1359,7 +1367,8 @@ CREATE TYPE order_status AS ENUM (
 	'fulfilled',
 	'partially_returned',
 	'returned',
-	'canceled'
+	'canceled',
+	'expired'
 );
 END IF;
 END $$;
@@ -1729,23 +1738,197 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'warehouse_click_and_collect_option')
 THEN
 CREATE TYPE warehouse_click_and_collect_option AS ENUM (
-    'disabled',
-    'local',
-	'all'
-);
-END IF;
-END $$;
-
-DO $$
-BEGIN
-	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'product_media_type')
-THEN
-CREATE TYPE product_media_type AS ENUM (
-    'image',
-    'video'
+  	'disabled',
+  	'local',
+		'all'
 );
 END IF;
 END $$;
 
 -- enable trigram similarity
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'allocation_strategy')
+THEN
+CREATE TYPE allocation_strategy AS ENUM (
+    'prioritize_sorting_order', -- allocate stocks according to the warehouses' order
+    'prioritize_high_stock' -- allocate stock in a warehouse with the most stock
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'mark_as_paid_strategy')
+THEN
+CREATE TYPE mark_as_paid_strategy AS ENUM (
+    'transaction_flow', -- new orders marked as paid will receive a `TransactionItem` object, that will cover the `order.total`.
+    'payment_flow' -- new orders marked as paid will receive a `Payment` object, that will cover the `order.total`.
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'transaction_flow_strategy')
+THEN
+CREATE TYPE transaction_flow_strategy AS ENUM (
+    'authorization', -- the processed transaction should be only authorized
+    'charge' -- the processed transaction should be charged.
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'checkout_charge_status')
+THEN
+CREATE TYPE checkout_charge_status AS ENUM (
+  	'none',
+  	'partial',
+		'full',
+		'overcharged'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'checkout_authorize_status')
+THEN
+CREATE TYPE checkout_authorize_status AS ENUM (
+  	'none',
+  	'partial',
+		'full'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'promotion_type')
+THEN
+CREATE TYPE promotion_type AS ENUM (
+  	'catalogue',
+  	'order'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'reward_value_type')
+THEN
+CREATE TYPE reward_value_type AS ENUM (
+  	'fixed',
+  	'percentage'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'reward_type')
+THEN
+CREATE TYPE reward_type AS ENUM (
+  	'subtotal_discount',
+  	'gift'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'discount_type')
+THEN
+CREATE TYPE discount_type AS ENUM (
+  	'sale',
+  	'promotion',
+  	'order_promotion',
+  	'manual'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'promotion_event_type')
+THEN
+CREATE TYPE promotion_event_type AS ENUM (
+  	'promotion_created',
+  	'promotion_updated',
+  	'promotion_started',
+  	'promotion_ended',
+		'rule_created',
+		'rule_updated',
+		'rule_deleted'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'order_authorize_status')
+THEN
+CREATE TYPE order_authorize_status AS ENUM (
+  	'none',
+  	'partial',
+  	'full'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'order_charge_status')
+THEN
+CREATE TYPE order_charge_status AS ENUM (
+  	'none',
+  	'partial',
+  	'full',
+		'overcharged'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'order_granted_refund_status')
+THEN
+CREATE TYPE order_granted_refund_status AS ENUM (
+  	'none',
+  	'pending',
+  	'success',
+		'failure'
+);
+END IF;
+END $$;
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'transaction_event_type')
+THEN
+CREATE TYPE transaction_event_type AS ENUM (
+  	'authorization_success',
+		'authorization_failure',
+		'authorization_adjustment',
+		'authorization_request',
+		'authorization_action_required',
+		'charge_success',
+		'charge_failure',
+		'charge_back',
+		'charge_action_required',
+		'charge_request',
+		'refund_success',
+		'refund_failure',
+		'refund_reverse',
+		'refund_request',
+		'cancel_success',
+		'cancel_failure',
+		'cancel_request',
+		'info'
+);
+END IF;
+END $$;

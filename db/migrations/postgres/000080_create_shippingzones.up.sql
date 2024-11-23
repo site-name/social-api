@@ -10,5 +10,4 @@ CREATE TABLE IF NOT EXISTS shipping_zones (
 );
 
 CREATE INDEX idx_shipping_zones_name ON shipping_zones USING btree (name);
-
 CREATE INDEX idx_shipping_zones_name_lower_text_pattern ON shipping_zones USING btree (lower((name)::text) text_pattern_ops);

@@ -5,14 +5,14 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model_helper"
-	"github.com/sitename/sitename/temp/model"
+	"github.com/sitename/sitename/model"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // WishlistService contains methods for working with wishlists
 type WishlistService interface {
 	// AddProduct add or create a wishlist item that belongs to given wishlist and contains given product
-	AddProduct(wishlistID string, productID string) (*model.WishlistItem, *model_helper.AppError)
+	AddProduct(wishlistID string, productID string) (*model.Wishlist, *model_helper.AppError)
 	// AddProductVariant add given product variant into given wishlist
 	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model_helper.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it

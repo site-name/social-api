@@ -15,7 +15,11 @@ CREATE TABLE IF NOT EXISTS products (
   metadata jsonb,
   private_metadata jsonb,
   seo_title varchar(70) NOT NULL,
-  seo_description varchar(300) NOT NULL
+  seo_description varchar(300) NOT NULL,
+  search_document text,
+  search_vector tsvector,
+  search_index_dirty boolean,
+  tax_class_id varchar(36)
 );
 
 ALTER TABLE ONLY products

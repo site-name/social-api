@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS invoice_events (
   invoice_id varchar(36),
   order_id varchar(36),
   user_id varchar(36),
-  parameters jsonb
+  parameters jsonb,
+  app_id varchar(36)
 );
