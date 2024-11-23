@@ -1008,3 +1008,29 @@ func (m *Map[K, V]) Merge(other Map[K, V]) {
 		(*m)[key] = value
 	}
 }
+
+// ModelIdToGraphqlId converts model id to graphql id
+// E.g:
+//
+//	ModelIdToGraphqlId("User", "123") => "VXNlcjoxMjM="
+func ModelIdToGraphqlId(model, id string) string {
+	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", model, id)))
+}
+
+// GraphqlIdToModelId converts graphql id to model id
+// E.g:
+//
+//	GraphqlIdToModelId("VXNlcjoxMjM=") => "User:123"
+func GraphqlIdToModelId(graphqlId string) (string, string) {
+	decoded, err := base64.StdEncoding.DecodeString(graphqlId)
+	if err != nil {
+		return "", ""
+	}
+
+	parts := strings.Split(string(decoded), ":")
+	if len(parts) != 2 {
+		return "", ""
+	}
+
+	return parts[0], parts[1]
+}

@@ -186,3 +186,38 @@ func ShippingMethodChannelListingGetTotal(listing model.ShippingMethodChannelLis
 	money, _ := goprices.NewMoneyFromDecimal(listing.PriceAmount, listing.Currency.String())
 	return *money
 }
+
+// Dataclass for storing information about a shipping method
+type ShippingMethodData struct {
+	ID                  string
+	Price               goprices.Money
+	Name                *string
+	Descriptiuon        *string
+	Type                *string
+	MaximumOrderPrice   *goprices.Money
+	MinimumOrderPrice   *goprices.Money
+	MaximumOrderWeight  *measurement.Weight
+	MinimumOrderWeight  *measurement.Weight
+	MaximumDeliveryDays *int
+	MinimumDeliveryDays *int
+	Metadata            StringMap
+	PrivateMetadata     StringMap
+	TaxClass            *model.TaxClass
+	Active              bool // default `true`
+	Message             string
+}
+
+func (smd ShippingMethodData) IsExternal() bool {
+	typeName, _ := GraphqlIdToModelId(smd.ID)
+	if typeName != "" {
+		return typeName == AppIdPrefix
+	}
+	return false
+}
+
+func (smd ShippingMethodData) GraphqlID() string {
+	if smd.IsExternal() {
+		return smd.ID
+	}
+	return ModelIdToGraphqlId("ShippingMethod", smd.ID)
+}

@@ -1,15 +1,11 @@
 package checkout
 
 import (
-	"net/http"
-
-	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
@@ -23,79 +19,81 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo model_helper.Ch
 	return zeroTaxed, nil
 }
 
-func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo model_helper.CheckoutInfo, shippingMethodInfo model_helper.ShippingMethodInfo, lines model_helper.CheckoutLineInfos) (*goprices.TaxedMoney, *model_helper.AppError) {
-	var (
-		shippingMethod   = shippingMethodInfo.DeliveryMethod
-		shippingRequired bool
-		appErr           *model_helper.AppError
-	)
-
-	if len(lines) > 0 {
-		productIDs := lo.Map(lines.Products(), func(item *model.Product, _ int) string { return item.ID })
-		shippingRequired, appErr = s.srv.Product.ProductsRequireShipping(productIDs)
-	} else {
-		shippingRequired, appErr = s.srv.Checkout.CheckoutShippingRequired(checkoutInfo.Checkout.Token)
-	}
+func (s *ServiceCheckout) CalculateBasePriceForShippingMethod(checkoutInfo model_helper.CheckoutInfo, shippingMethodInfo model_helper.ShippingMethodInfo) (*goprices.Money, *model_helper.AppError) {
+	shippingRequired, appErr := s.CheckoutShippingRequired(checkoutInfo.Checkout.Token)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if !model_helper.IsValidId(shippingMethod.ID) || !shippingRequired {
-		zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency.String())
-		return zeroTaxedMoney, nil
+	if !shippingRequired {
+		money, _ := util.ZeroMoney(checkoutInfo.Checkout.Currency)
+		return money, nil
 	}
 
-	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.Shipping.
-		ShippingMethodChannelListingsByOption(
-			model_helper.ShippingMethodChannelListingFilterOption{
-				CommonQueryOptions: model_helper.NewCommonQueryOptions(
-					model.ShippingMethodChannelListingWhere.ShippingMethodID.EQ(shippingMethod.ID),
-					model.ShippingMethodChannelListingWhere.ChannelID.EQ(checkoutInfo.Checkout.ChannelID),
-					qm.Limit(1),
-				),
-			},
-		)
-	if appErr != nil {
-		return nil, appErr
+	result, err := goprices.QuantizePrice(&shippingMethodInfo.DeliveryMethod.Price, goprices.Up)
+	if err != nil {
+		return nil, model_helper.NewAppError("CalculateBasePriceForShippingMethod", model_helper.ErrorCalculatingMoneyErrorID, nil, err.Error(), 0)
 	}
 
-	shippingPrice := model_helper.ShippingMethodChannelListingGetTotal(shippingMethodChannelListingsOfShippingMethod[0])
-	taxedMoney, _ := goprices.NewTaxedMoney(shippingPrice, shippingPrice)
-
-	quantizedPrice, _ := taxedMoney.Quantize(goprices.Up, -1)
-	return quantizedPrice, nil
+	return result, nil
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout
 //
-// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-func (a *ServiceCheckout) BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency model.Currency) (*goprices.TaxedMoney, *model_helper.AppError) {
-	switch discount.(type) {
-	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
+// The price includes catalogue promotions, shipping, specific product
+// and applied once per order voucher discounts.
+// The price does not include order promotions and the entire order vouchers.
+func (a *ServiceCheckout) BaseCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.Money, *model_helper.AppError) {
+	subTotal, appErr := a.BaseCheckoutSubTotal(lines, checkoutInfo.Channel, checkoutInfo.Checkout.Currency, true)
+	if appErr != nil {
+		// return nil, appErr
+		// lines[0].
+	}
+}
+
+func (s *ServiceCheckout) BaseCheckoutDeliveryPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos, includeVoucher bool) (*goprices.Money, *model_helper.AppError) {
+	shippingPrice, appErr := s.BaseCheckoutUndiscountedDeliveryPrice(checkoutInfo, lines)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	isShippingVoucher := checkoutInfo.Voucher
+}
+
+func (s *ServiceCheckout) BaseCheckoutUndiscountedDeliveryPrice(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.Money, *model_helper.AppError) {
+	switch checkoutInfo.DeliveryMethodInfo.(type) {
+	case model_helper.ShippingMethodInfo:
+		money, _ := util.ZeroMoney(checkoutInfo.Checkout.Currency)
+		return money, nil
+
 	default:
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
+		return s.CalculateBasePriceForShippingMethod(checkoutInfo, checkoutInfo.DeliveryMethodInfo, lines)
+	}
+}
+
+// Return the checkout subtotal value.
+//
+// The price includes catalogue promotions, specific product and applied once per order
+// voucher discounts.
+// The price does not include order promotions and the entire order vouchers.
+func (c *ServiceCheckout) BaseCheckoutSubTotal(checkoutLines model_helper.CheckoutLineInfos, _ model.Channel, currency model.Currency, includeVoucher bool) (*goprices.Money, *model_helper.AppError) {
+	var result, _ = util.ZeroMoney(currency)
+
+	for _, line := range checkoutLines {
+		if line == nil {
+			continue
+		}
+		money, appErr := c.CalculateBaseLineTotalPrice(*line, includeVoucher)
+		if appErr != nil {
+			return nil, appErr
+		}
+		result.Add(*money)
 	}
 
-	// this method reqires all values's currencies are upper-cased and supported by system
-	currencyMap := map[string]bool{}
-	currencyMap[subTotal.GetCurrency()] = true
-	currencyMap[shippingPrice.GetCurrency()] = true
-	currencyMap[discount.(goprices.Currencier).GetCurrency()] = true // validated in the beginning
-	currencyMap[currency.String()] = true
+	return result, nil
+}
 
-	if _, err := goprices.GetCurrencyPrecision(currency.String()); err != nil || len(currencyMap) > 1 {
-		return nil, model_helper.NewAppError("BaseCheckoutTotal", model_helper.InvalidArgumentAppErrorID, map[string]any{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
-	}
-
-	total, _ := subTotal.Add(shippingPrice)
-	total, _ = total.Sub(discount)
-
-	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency.String())
-	if zeroTaxedMoney.LessThanOrEqual(*total) {
-		return total, nil
-	}
-
-	return zeroTaxedMoney, nil
+func (c *ServiceCheckout) CalculateBaseLineTotalPrice(lineInfo model_helper.CheckoutLineInfo, includeVoucher bool) (*goprices.Money, *model_helper.AppError) {
 }
 
 // BaseCheckoutLineTotal Return the total price of this line

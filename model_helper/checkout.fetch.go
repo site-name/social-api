@@ -10,12 +10,14 @@ import (
 
 // CheckoutLineInfo contains information of a checkout line
 type CheckoutLineInfo struct {
-	Line           model.CheckoutLine
-	Variant        model.ProductVariant
-	ChannelListing model.ProductVariantChannelListing
-	Product        model.Product
-	Collections    model.CollectionSlice
-	// ProductType    model.ProductType
+	Line      model.CheckoutLine
+	Variant   model.ProductVariant
+	Product   model.Product
+	Discounts model.CheckoutLineDiscountSlice
+	TaxClass  *model.TaxClass
+	// ChannelListing model.ProductVariantChannelListing
+	// Collections    model.CollectionSlice
+	//
 }
 
 // CheckoutLineInfos is a slice contains checkout line info(s)
@@ -42,21 +44,25 @@ func (cs CheckoutLineInfos) FilterNils() CheckoutLineInfos {
 
 // CheckoutInfo contains information of a checkout
 type CheckoutInfo struct {
-	Checkout                      model.Checkout
-	User                          *model.User
-	Channel                       model.Channel
-	BillingAddress                *model.Address
-	ShippingAddress               *model.Address
-	DeliveryMethodInfo            DeliveryMethodBaseInterface
-	ValidShippingMethods          model.ShippingMethodSlice
-	ValidPickupPoints             model.WarehouseSlice
-	ShippingMethodChannelListings *model.ShippingMethodChannelListing
+	Checkout                model.Checkout
+	Channel                 model.Channel
+	TaxConfiguration        model.TaxConfiguration
+	Discounts               model.CheckoutDiscountSlice
+	Lines                   CheckoutLineInfos
+	ShippingChannelListings model.ShippingMethodChannelListingSlice
+	User                    *model.User
+	BillingAddress          *model.Address
+	ShippingAddress         *model.Address
+	ShippingMethod          *model.ShippingMethod
+	CollectionPoint         *model.Warehouse
+	Voucher                 *model.Voucher
+	VoucherCode             *model.VoucherCode
 }
 
 // ValidDeliveryMethods returns a slice of interfaces.
 //
 // NOTE: These interfaces can be *Warehouse or *ShippingMethod
-func (c CheckoutInfo) ValidDeliveryMethods() []any {
+func (c *CheckoutInfo) ValidDeliveryMethods() []any {
 	var res []any
 
 	for _, item := range c.ValidShippingMethods {
@@ -124,8 +130,8 @@ var (
 
 // DeliveryMethodBase should not be modified after initialized
 type DeliveryMethodBase struct {
-	DeliveryMethod  any            // either *ShippingMethodData or *Warehouse. Can be nil
-	ShippingAddress *model.Address // can be nil
+	deliveryMethod  any            // either *ShippingMethodData or *Warehouse. Can be nil
+	shippingAddress *model.Address // can be nil
 }
 
 func (d DeliveryMethodBase) Self() any {
@@ -139,12 +145,6 @@ func (d DeliveryMethodBase) String() string {
 func (d DeliveryMethodBase) WarehousePK() string {
 	return ""
 }
-
-// func (d *DeliveryMethodBase) DeliveryMethodOrderField() map[string]any {
-// 	return map[string]any{
-// 		"shipping_method": d.DeliveryMethod,
-// 	}
-// }
 
 func (d DeliveryMethodBase) IsLocalCollectionPoint() bool {
 	return false
@@ -172,11 +172,11 @@ func (d DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) er
 }
 
 func (d DeliveryMethodBase) GetDeliveryMethod() any {
-	return d.DeliveryMethod
+	return d.deliveryMethod
 }
 
 func (d DeliveryMethodBase) GetShippingAddress() *model.Address {
-	return d.ShippingAddress
+	return d.shippingAddress
 }
 
 func (d DeliveryMethodBase) GetOrderKey() string {
@@ -186,7 +186,7 @@ func (d DeliveryMethodBase) GetOrderKey() string {
 // ShippingMethodInfo should not be modified after initializing
 type ShippingMethodInfo struct {
 	DeliveryMethodBase
-	DeliveryMethod  model.ShippingMethod
+	DeliveryMethod  ShippingMethodData
 	ShippingAddress *model.Address // can be nil
 }
 

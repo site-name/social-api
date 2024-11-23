@@ -18,7 +18,7 @@ import (
 func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*dataloader.Result[[]*model_helper.DiscountInfo] {
 	var (
 		res             = make([]*dataloader.Result[[]*model_helper.DiscountInfo], len(dateTimes))
-		salesMap        = map[time.Time]model.Sales{}
+		salesMap        = map[time.Time]model.SaleSlice{}
 		saleIDS         []string
 		channelListings = map[string]map[string]*model.SaleChannelListing{}
 		products        = map[string][]string{}

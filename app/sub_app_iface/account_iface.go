@@ -113,13 +113,13 @@ type AccountService interface {
 	// SendAccountDeleteConfirmationNotification Trigger sending a account delete notification for the given user
 	SendAccountDeleteConfirmationNotification(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model_helper.AppError
 	// SessionHasPermissionTo checks if this user has given permission to procceed
-	SessionHasPermissionTo(session model.Session, permission model_helper.Permission) bool
+	SessionHasPermissionTo(session *model.Session, permission *model_helper.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
-	SessionHasPermissionToAll(session model.Session, permissions ...model_helper.Permission) bool
+	SessionHasPermissionToAll(session *model.Session, permissions []*model_helper.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session model.Session, permissions []model_helper.Permission) bool
+	SessionHasPermissionToAny(session *model.Session, permissions []*model_helper.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
-	SessionHasPermissionToUser(session model.Session, userID string) bool
+	SessionHasPermissionToUser(session *model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.

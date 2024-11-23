@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS addresses (
   phone varchar(11) NOT NULL,
   user_id varchar(36) NOT NULL,
   created_at bigint NOT NULL,
-  updated_at bigint NOT NULL
+  updated_at bigint NOT NULL,
+  validation_skipped boolean NOT NULL DEFAULT false
 );
 
 CREATE INDEX IF NOT EXISTS idx_address_city ON addresses USING btree (city);

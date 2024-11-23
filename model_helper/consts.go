@@ -41,6 +41,7 @@ const (
 	STATUS_UNHEALTHY         = "UNHEALTHY"
 	STATUS_REMOVE            = "REMOVE"
 	CLIENT_DIR               = "client"
+	AppIdPrefix              = "app"
 )
 
 var UUID_NAMESPACE = uuid.New()

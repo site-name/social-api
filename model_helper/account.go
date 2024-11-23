@@ -261,8 +261,8 @@ func SessionPreSave(s *model.Session) {
 	}
 }
 
-func SessionIsUnrestricted(s model.Session) bool {
-	return s.Local
+func SessionIsUnrestricted(s *model.Session) bool {
+	return s != nil && s.Local
 }
 
 func SessionIsValid(s model.Session) *AppError {
@@ -363,7 +363,10 @@ func SessionIsSSOLogin(s model.Session) bool {
 }
 
 // GetUserRoles turns current session's Roles into a slice of strings
-func SessionGetUserRoles(s model.Session) util.AnyArray[string] {
+func SessionGetUserRoles(s *model.Session) util.AnyArray[string] {
+	if s == nil {
+		return []string{}
+	}
 	return strings.Fields(s.Roles)
 }
 
@@ -379,7 +382,7 @@ func SessionGenerateCSRF(s *model.Session) string {
 
 // get value with key of "csrf" from session's Props
 func SessionGetCSRF(s model.Session) string {
-	if s.Props == nil || len(s.Props) == 0 {
+	if len(s.Props) == 0 {
 		return ""
 	}
 	value, ok := s.Props["csrf"]
@@ -482,6 +485,9 @@ func UserIsOauth(u model.User) bool {
 }
 
 func UserPreSave(u *model.User) {
+	if u == nil {
+		return
+	}
 	if u.ID == "" {
 		u.ID = NewId()
 	}
@@ -652,14 +658,15 @@ func UserSanitizeProfile(u *model.User, options map[string]bool) {
 
 func UserGetFullName(u model.User) string {
 	if u.FirstName != "" && u.LastName != "" {
-		return u.FirstName + " " + u.LastName
-	} else if u.FirstName != "" {
-		return u.FirstName
-	} else if u.LastName != "" {
-		return u.LastName
-	} else {
-		return ""
+		return strings.TrimSpace((u.FirstName + " " + u.LastName))
 	}
+	if u.R != nil && u.R.DefaultBillingAddress != nil {
+		return AddressFullname(*u.R.DefaultBillingAddress)
+	}
+	if u.R != nil && u.R.DefaultShippingAddress != nil {
+		return AddressFullname(*u.R.DefaultShippingAddress)
+	}
+	return u.Email
 }
 
 func getUserDisplayName(u model.User, baseName, nameFormat string) string {

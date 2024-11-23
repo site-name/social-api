@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS giftcard_events (
   type giftcard_event_type NOT NULL,
   parameters jsonb,
   user_id varchar(36),
-  giftcard_id varchar(36) NOT NULL
+  giftcard_id varchar(36) NOT NULL,
+  app_id varchar(36),
+  order_id varchar(36)
 );
-
-CREATE INDEX idx_giftcard_events_date ON giftcard_events USING btree (date);

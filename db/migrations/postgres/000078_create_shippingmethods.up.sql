@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS shipping_methods (
   minimum_delivery_days integer,
   description jsonb,
   metadata jsonb,
-  private_metadata jsonb
+  private_metadata jsonb,
+  tax_class_id varchar(36)
 );
 
 CREATE INDEX idx_shipping_methods_name ON shipping_methods USING btree (name);

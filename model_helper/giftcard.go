@@ -72,6 +72,9 @@ func GiftcardPreSave(g *model.Giftcard) {
 }
 
 func GiftcardCommonPre(g *model.Giftcard) {
+	if g == nil {
+		return
+	}
 	if g.Currency.IsValid() != nil {
 		g.Currency = DEFAULT_CURRENCY
 	}
@@ -84,15 +87,18 @@ func GiftcardCommonPre(g *model.Giftcard) {
 	if g.IsActive.IsNil() {
 		g.IsActive = model_types.NewNullBool(true)
 	}
-	if g.StartDate.IsNil() {
-		g.StartDate = model_types.NewNullTime(GetTimeUTCNow())
-	}
+	// if g.StartDate.IsNil() {
+	// 	g.StartDate = model_types.NewNullTime(GetTimeUTCNow())
+	// }
 	if g.Code == "" {
 		g.Code = NewPromoCode()
 	}
 }
 
-func GiftcardIsValid(g model.Giftcard) *AppError {
+func GiftcardIsValid(g *model.Giftcard) *AppError {
+	if g == nil {
+		return nil
+	}
 	if !IsValidId(g.ID) {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.id.app_error", nil, "invalid id", http.StatusBadRequest)
 	}
@@ -111,9 +117,9 @@ func GiftcardIsValid(g model.Giftcard) *AppError {
 	if g.IsActive.IsNil() {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.is_active.app_error", nil, "invalid is active", http.StatusBadRequest)
 	}
-	if g.StartDate.IsNil() {
-		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
-	}
+	// if g.StartDate.IsNil() {
+	// 	return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
+	// }
 	if !PromoCodeRegex.MatchString(g.Code) {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.code.app_error", nil, "invalid code", http.StatusBadRequest)
 	}
@@ -135,9 +141,9 @@ func GiftcardIsValid(g model.Giftcard) *AppError {
 	if !g.LastUsedOn.IsNil() && *g.LastUsedOn.Int64 <= 0 {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.last_used_on.app_error", nil, "invalid last used on", http.StatusBadRequest)
 	}
-	if !g.StartDate.IsNil() && g.StartDate.Time.IsZero() {
-		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
-	}
+	// if !g.StartDate.IsNil() && g.StartDate.Time.IsZero() {
+	// 	return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.start_date.app_error", nil, "invalid start date", http.StatusBadRequest)
+	// }
 	if !g.ExpiryDate.IsNil() && g.ExpiryDate.Time.IsZero() {
 		return NewAppError("GiftcardIsValid", "model.giftcard.is_valid.expiry_date.app_error", nil, "invalid expiry date", http.StatusBadRequest)
 	}

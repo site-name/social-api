@@ -1,0 +1,1 @@
+ALTER TABLE shipping_methods DROP CONSTRAINT fk_shipping_methods_tax_class;

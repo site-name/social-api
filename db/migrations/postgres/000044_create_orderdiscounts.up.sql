@@ -8,10 +8,16 @@ CREATE TABLE IF NOT EXISTS order_discounts (
   currency Currency NOT NULL,
   name varchar(255),
   translated_name varchar(255),
-  reason text
+  reason text,
+  promotion_rule_id varchar(36),
+  voucher_id varchar(36),
+  voucher_code varchar(255),
+  created_at bigint NOT NULL
 );
 
 CREATE INDEX idx_order_discounts_name ON order_discounts USING btree (name);
+CREATE INDEX idx_order_discounts_voucher_code ON order_discounts USING btree (voucher_code);
+CREATE INDEX idx_order_discounts_promotion_rule ON order_discounts USING btree (promotion_rule_id);
 
 CREATE INDEX idx_order_discounts_translated_name ON order_discounts USING btree (translated_name);
 

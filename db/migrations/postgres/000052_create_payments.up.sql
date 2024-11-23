@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS payments (
   id varchar(36) NOT NULL PRIMARY KEY,
   gateway varchar(255) NOT NULL,
+  partial boolean NOT NULL,
   is_active boolean NOT NULL DEFAULT true,
   to_confirm boolean NOT NULL,
   created_at bigint NOT NULL,

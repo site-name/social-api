@@ -20,7 +20,7 @@ type AttributeService interface {
 	// `attributeID` must be ID of processing `Attribute`
 	//
 	// Returned any must be either: `*AssignedProductAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance any, attributeID string, values model.AttributeValueSlice) (any, *model_helper.AppError)
+	// AssociateAttributeValuesToInstance(instance any, attributeID string, values model.AttributeValueSlice) (any, *model_helper.AppError)
 	// AttributesByOption returns a list of attributes filtered using given options
 	AttributesByOption(option model_helper.AttributeFilterOption) (model.AttributeSlice, *model_helper.AppError)
 	// UpsertAttribute inserts or updates given attribute and returns it

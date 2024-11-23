@@ -46,7 +46,7 @@ type CheckoutService interface {
 	// BaseCheckoutTotal returns the total cost of the checkout
 	//
 	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
-	BaseCheckoutTotal(subTotal goprices.TaxedMoney, shippingPrice goprices.TaxedMoney, discount any, currency model.Currency) (*goprices.TaxedMoney, *model_helper.AppError)
+	BaseCheckoutTotal(checkoutInfo model_helper.CheckoutInfo, lines model_helper.CheckoutLineInfos) (*goprices.Money, *model_helper.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
 	CancelActivePayments(checkout *model.Checkout) *model_helper.AppError
 	// Check if current shipping method is valid
